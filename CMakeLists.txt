@@ -1,12 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 project(libop2dgtoolkit CXX)
 
-if (BUILD_STATIC)
-  set(BUILD_TYPE STATIC)
-else ()
-  set(BUILD_TYPE SHARED)
-endif ()
-
 # Default OP2 location for me
 if(NOT OP2_DIR)
   set(OP2_DIR "/home/u1717021/Code/PhD/OP2-Common/op2/c/build")
