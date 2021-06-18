@@ -1,8 +1,8 @@
-#include "constants.h"
+#include "dg_constants.h"
 
 #include "constants/all_constants.h"
 
-Constants::Constants() {
+DGConstants::DGConstants() {
   // Cubature constants
   cudaMalloc((void**)&cubDr_d, 46 * 15 * sizeof(double));
   cudaMemcpy(cubDr_d, cubDr_g, 46 * 15 * sizeof(double), cudaMemcpyHostToDevice);
@@ -86,7 +86,7 @@ Constants::Constants() {
   cublasSetPointerMode(handle, CUBLAS_POINTER_MODE_HOST);
 }
 
-Constants::~Constants() {
+DGConstants::~DGConstants() {
   // Cubature constants
   cudaFree(cubDr_d);
   cudaFree(cubDs_d);
@@ -132,7 +132,7 @@ Constants::~Constants() {
   cublasDestroy(handle);
 }
 
-double* Constants::get_ptr(Constant_Matrix mat) {
+double* DGConstants::get_ptr(Constant_Matrix mat) {
   switch(mat) {
     case CUB_DR:
       return cubDr_d;

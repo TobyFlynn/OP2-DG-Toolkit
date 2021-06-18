@@ -1,5 +1,5 @@
-set(CPU_SRC constants.cpp)
-set(GPU_SRC constants.cu)
+set(CPU_SRC dg_constants.cpp)
+set(GPU_SRC dg_constants.cu)
 
 op2_application(op2dgtoolkit_seq LIBS op2_seq op2_hdf5 SOURCES ${CPU_SRC} BIN library)
 target_include_directories(op2dgtoolkit_seq PUBLIC ${OPENBLAS_DIR}/include ${PROJECT_SOURCE_DIR}/include)

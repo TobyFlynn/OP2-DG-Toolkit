@@ -1,8 +1,8 @@
-#include "constants.h"
+#include "dg_constants.h"
 
 #include "constants/all_constants.h"
 
-Constants::Constants() {
+DGConstants::DGConstants() {
   // Cubature constants
   cubDr  = cubDr_g;
   cubDs  = cubDs_g;
@@ -47,11 +47,11 @@ Constants::Constants() {
   ones    = ones_g;
 }
 
-Constants::~Constants() {
+DGConstants::~DGConstants() {
 
 }
 
-double* Constants::get_ptr(Constant_Matrix mat) {
+double* DGConstants::get_ptr(Constant_Matrix mat) {
   switch(mat) {
     case CUB_DR:
       return cubDr;

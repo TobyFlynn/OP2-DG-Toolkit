@@ -1,5 +1,5 @@
-#ifndef __CONSTANTS_H
-#define __CONSTANTS_H
+#ifndef __DG_CONSTANTS_H
+#define __DG_CONSTANTS_H
 
 extern double cubDr_g[46*15];
 extern double cubDs_g[46*15];
@@ -46,7 +46,7 @@ extern double ones_g[15];
 #include "cublas_v2.h"
 #endif
 
-class Constants {
+class DGConstants {
 public:
   enum Constant_Matrix {
     CUB_DR, CUB_DS, CUB_V, CUB_VDR, CUB_VDS, CUB_W,
@@ -62,8 +62,8 @@ public:
     INV_MASS, LIFT, MASS, R, S, ONES
   };
 
-  Constants();
-  ~Constants();
+  DGConstants();
+  ~DGConstants();
 
   double* get_ptr(Constant_Matrix mat);
 
