@@ -28,3 +28,7 @@ target_include_directories(op2dgtoolkit_mpi_cuda PUBLIC ${CUDAToolkit_INCLUDE_DI
 target_link_libraries(op2dgtoolkit_mpi_cuda CUDA::cudart_static CUDA::cublas)
 set_property(TARGET op2dgtoolkit_mpi_cuda PROPERTY CUDA_ARCHITECTURES OFF)
 target_compile_definitions(op2dgtoolkit_mpi_cuda PRIVATE OP2_DG_CUDA)
+
+set(DG_LIBS op2dgtoolkit_seq op2dgtoolkit_openmp op2dgtoolkit_cuda op2dgtoolkit_mpi op2dgtoolkit_mpi_openmp op2dgtoolkit_mpi_cuda)
+
+install(TARGETS ${DG_LIBS} DESTINATION lib)

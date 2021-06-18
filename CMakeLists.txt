@@ -40,5 +40,9 @@ find_package(CUDAToolkit)
 include_directories(${CUDAToolkit_INCLUDE_DIRS})
 set(CMAKE_CUDA_COMPILER ${CUDAToolkit_NVCC_EXECUTABLE})
 
+# Install headers
+file(GLOB HEADERS include/*.h)
+install(FILES ${HEADERS} DESTINATION include)
+
 # Invoke subprojects
 add_subdirectory(src)
