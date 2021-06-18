@@ -7,18 +7,30 @@
 #define op_par_loop_init_nodes op_par_loop_init_nodes_gpu
 #define op_par_loop_init_grid op_par_loop_init_grid_gpu
 #define op_par_loop_init_edges op_par_loop_init_edges_gpu
+#define op_par_loop_div op_par_loop_div_gpu
+#define op_par_loop_curl op_par_loop_curl_gpu
+#define op_par_loop_grad op_par_loop_grad_gpu
 #include "dg_mesh_kernels.cu"
 #undef op_par_loop_init_nodes
 #undef op_par_loop_init_grid
 #undef op_par_loop_init_edges
+#undef op_par_loop_div
+#undef op_par_loop_curl
+#undef op_par_loop_grad
 #else
 #define op_par_loop_init_nodes op_par_loop_init_nodes_cpu
 #define op_par_loop_init_grid op_par_loop_init_grid_cpu
 #define op_par_loop_init_edges op_par_loop_init_edges_cpu
+#define op_par_loop_div op_par_loop_div_cpu
+#define op_par_loop_curl op_par_loop_curl_cpu
+#define op_par_loop_grad op_par_loop_grad_cpu
 #include "../openmp/dg_mesh_kernels.cpp"
 #undef op_par_loop_init_nodes
 #undef op_par_loop_init_grid
 #undef op_par_loop_init_edges
+#undef op_par_loop_div
+#undef op_par_loop_curl
+#undef op_par_loop_grad
 
 //user kernel files
 
@@ -180,6 +192,228 @@ void op_par_loop_init_edges(char const *name, op_set set,
     arg1,
     arg2,
     arg3);
+
+  }
+#endif //OP_HYBRID_GPU
+
+void op_par_loop_div_gpu(char const *name, op_set set,
+  op_arg arg0,
+  op_arg arg1,
+  op_arg arg2,
+  op_arg arg3,
+  op_arg arg4,
+  op_arg arg5,
+  op_arg arg6,
+  op_arg arg7,
+  op_arg arg8);
+
+//GPU host stub function
+#if OP_HYBRID_GPU
+void op_par_loop_div(char const *name, op_set set,
+  op_arg arg0,
+  op_arg arg1,
+  op_arg arg2,
+  op_arg arg3,
+  op_arg arg4,
+  op_arg arg5,
+  op_arg arg6,
+  op_arg arg7,
+  op_arg arg8){
+
+  if (OP_hybrid_gpu) {
+    op_par_loop_div_gpu(name, set,
+      arg0,
+      arg1,
+      arg2,
+      arg3,
+      arg4,
+      arg5,
+      arg6,
+      arg7,
+      arg8);
+
+    }else{
+    op_par_loop_div_cpu(name, set,
+      arg0,
+      arg1,
+      arg2,
+      arg3,
+      arg4,
+      arg5,
+      arg6,
+      arg7,
+      arg8);
+
+  }
+}
+#else
+void op_par_loop_div(char const *name, op_set set,
+  op_arg arg0,
+  op_arg arg1,
+  op_arg arg2,
+  op_arg arg3,
+  op_arg arg4,
+  op_arg arg5,
+  op_arg arg6,
+  op_arg arg7,
+  op_arg arg8){
+
+  op_par_loop_div_gpu(name, set,
+    arg0,
+    arg1,
+    arg2,
+    arg3,
+    arg4,
+    arg5,
+    arg6,
+    arg7,
+    arg8);
+
+  }
+#endif //OP_HYBRID_GPU
+
+void op_par_loop_curl_gpu(char const *name, op_set set,
+  op_arg arg0,
+  op_arg arg1,
+  op_arg arg2,
+  op_arg arg3,
+  op_arg arg4,
+  op_arg arg5,
+  op_arg arg6,
+  op_arg arg7,
+  op_arg arg8);
+
+//GPU host stub function
+#if OP_HYBRID_GPU
+void op_par_loop_curl(char const *name, op_set set,
+  op_arg arg0,
+  op_arg arg1,
+  op_arg arg2,
+  op_arg arg3,
+  op_arg arg4,
+  op_arg arg5,
+  op_arg arg6,
+  op_arg arg7,
+  op_arg arg8){
+
+  if (OP_hybrid_gpu) {
+    op_par_loop_curl_gpu(name, set,
+      arg0,
+      arg1,
+      arg2,
+      arg3,
+      arg4,
+      arg5,
+      arg6,
+      arg7,
+      arg8);
+
+    }else{
+    op_par_loop_curl_cpu(name, set,
+      arg0,
+      arg1,
+      arg2,
+      arg3,
+      arg4,
+      arg5,
+      arg6,
+      arg7,
+      arg8);
+
+  }
+}
+#else
+void op_par_loop_curl(char const *name, op_set set,
+  op_arg arg0,
+  op_arg arg1,
+  op_arg arg2,
+  op_arg arg3,
+  op_arg arg4,
+  op_arg arg5,
+  op_arg arg6,
+  op_arg arg7,
+  op_arg arg8){
+
+  op_par_loop_curl_gpu(name, set,
+    arg0,
+    arg1,
+    arg2,
+    arg3,
+    arg4,
+    arg5,
+    arg6,
+    arg7,
+    arg8);
+
+  }
+#endif //OP_HYBRID_GPU
+
+void op_par_loop_grad_gpu(char const *name, op_set set,
+  op_arg arg0,
+  op_arg arg1,
+  op_arg arg2,
+  op_arg arg3,
+  op_arg arg4,
+  op_arg arg5,
+  op_arg arg6,
+  op_arg arg7);
+
+//GPU host stub function
+#if OP_HYBRID_GPU
+void op_par_loop_grad(char const *name, op_set set,
+  op_arg arg0,
+  op_arg arg1,
+  op_arg arg2,
+  op_arg arg3,
+  op_arg arg4,
+  op_arg arg5,
+  op_arg arg6,
+  op_arg arg7){
+
+  if (OP_hybrid_gpu) {
+    op_par_loop_grad_gpu(name, set,
+      arg0,
+      arg1,
+      arg2,
+      arg3,
+      arg4,
+      arg5,
+      arg6,
+      arg7);
+
+    }else{
+    op_par_loop_grad_cpu(name, set,
+      arg0,
+      arg1,
+      arg2,
+      arg3,
+      arg4,
+      arg5,
+      arg6,
+      arg7);
+
+  }
+}
+#else
+void op_par_loop_grad(char const *name, op_set set,
+  op_arg arg0,
+  op_arg arg1,
+  op_arg arg2,
+  op_arg arg3,
+  op_arg arg4,
+  op_arg arg5,
+  op_arg arg6,
+  op_arg arg7){
+
+  op_par_loop_grad_gpu(name, set,
+    arg0,
+    arg1,
+    arg2,
+    arg3,
+    arg4,
+    arg5,
+    arg6,
+    arg7);
 
   }
 #endif //OP_HYBRID_GPU

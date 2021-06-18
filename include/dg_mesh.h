@@ -70,6 +70,7 @@ public:
   op_map cell2nodes, edge2nodes, edge2cells, bedge2nodes, bedge2cells;
   op_dat node_coords, nodeX, nodeY, x, y, rx, ry, sx, sy, nx,
          ny, J, sJ, fscale, bedge_type, edgeNum, bedgeNum, reverse;
+  op_dat op_tmp[4];
 private:
   // Pointers to private memory
   double *nodeX_data;
@@ -86,6 +87,7 @@ private:
   double *sJ_data;
   double *fscale_data;
   bool *reverse_data;
+  double *op_tmp_data[4];
 };
 
 #endif

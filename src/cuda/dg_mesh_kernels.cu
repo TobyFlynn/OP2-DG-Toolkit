@@ -215,3 +215,6 @@ int size, char *dat, char const *name){
 #include "init_nodes_kernel.cu"
 #include "init_grid_kernel.cu"
 #include "init_edges_kernel.cu"
+#include "div_kernel.cu"
+#include "curl_kernel.cu"
+#include "grad_kernel.cu"

@@ -51,3 +51,6 @@ int size, char *dat, char const *name){}
 #include "init_nodes_acckernel.c"
 #include "init_grid_acckernel.c"
 #include "init_edges_acckernel.c"
+#include "div_acckernel.c"
+#include "curl_acckernel.c"
+#include "grad_acckernel.c"

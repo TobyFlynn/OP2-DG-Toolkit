@@ -9,3 +9,6 @@
 #include "init_nodes_omp4kernel.cpp"
 #include "init_grid_omp4kernel.cpp"
 #include "init_edges_omp4kernel.cpp"
+#include "div_omp4kernel.cpp"
+#include "curl_omp4kernel.cpp"
+#include "grad_omp4kernel.cpp"

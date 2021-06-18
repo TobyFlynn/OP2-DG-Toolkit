@@ -167,3 +167,6 @@ void op_decl_const_char(int dim, char const *type,
 #include "init_nodes_omp4kernel_func.cpp"
 #include "init_grid_omp4kernel_func.cpp"
 #include "init_edges_omp4kernel_func.cpp"
+#include "div_omp4kernel_func.cpp"
+#include "curl_omp4kernel_func.cpp"
+#include "grad_omp4kernel_func.cpp"

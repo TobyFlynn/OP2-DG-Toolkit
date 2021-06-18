@@ -73,22 +73,25 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   numCells           = numCells_a;
   numEdges           = numEdges_a;
   numBoundaryEdges   = numBoundaryEdges_a;
-  
+
   // Initialise memory
-  nodeX_data  = (double*)calloc(3 * numCells, sizeof(double));
-  nodeY_data  = (double*)calloc(3 * numCells, sizeof(double));
-  x_data      = (double *)calloc(15 * numCells, sizeof(double));
-  y_data      = (double *)calloc(15 * numCells, sizeof(double));
-  rx_data     = (double *)calloc(15 * numCells, sizeof(double));
-  ry_data     = (double *)calloc(15 * numCells, sizeof(double));
-  sx_data     = (double *)calloc(15 * numCells, sizeof(double));
-  sy_data     = (double *)calloc(15 * numCells, sizeof(double));
-  nx_data     = (double *)calloc(15 * numCells, sizeof(double));
-  ny_data     = (double *)calloc(15 * numCells, sizeof(double));
-  J_data      = (double *)calloc(15 * numCells, sizeof(double));
-  sJ_data     = (double *)calloc(15 * numCells, sizeof(double));
-  fscale_data = (double *)calloc(15 * numCells, sizeof(double));
+  nodeX_data   = (double*)calloc(3 * numCells, sizeof(double));
+  nodeY_data   = (double*)calloc(3 * numCells, sizeof(double));
+  x_data       = (double *)calloc(15 * numCells, sizeof(double));
+  y_data       = (double *)calloc(15 * numCells, sizeof(double));
+  rx_data      = (double *)calloc(15 * numCells, sizeof(double));
+  ry_data      = (double *)calloc(15 * numCells, sizeof(double));
+  sx_data      = (double *)calloc(15 * numCells, sizeof(double));
+  sy_data      = (double *)calloc(15 * numCells, sizeof(double));
+  nx_data      = (double *)calloc(15 * numCells, sizeof(double));
+  ny_data      = (double *)calloc(15 * numCells, sizeof(double));
+  J_data       = (double *)calloc(15 * numCells, sizeof(double));
+  sJ_data      = (double *)calloc(15 * numCells, sizeof(double));
+  fscale_data  = (double *)calloc(15 * numCells, sizeof(double));
   reverse_data = (bool *)calloc(numEdges, sizeof(bool));
+  for(int i = 0; i < 4; i++) {
+    op_tmp_data[i] = (double *)calloc(15 * numCells, sizeof(double));
+  }
 
   // Initialise OP2
   // Declare OP2 sets
@@ -129,6 +132,10 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   edgeNum    = op_decl_dat(edges, 2, "int", edgeNum_data, "edgeNum");
   bedgeNum   = op_decl_dat(bedges, 1, "int", bedgeNum_data, "bedgeNum");
   reverse    = op_decl_dat(edges, 1, "bool", reverse_data, "reverse");
+  for(int i = 0; i < 4; i++) {
+    string tmpname = "op_tmp" + to_string(i);
+    op_tmp[i] = op_decl_dat(cells, 15, "double", op_tmp_data[i], tmpname.c_str());
+  }
 
   op_decl_const2("gam",1,"double",&gam);
   op_decl_const2("mu",1,"double",&mu);
@@ -195,6 +202,9 @@ DGMesh::~DGMesh() {
   free(sJ_data);
   free(fscale_data);
   free(reverse_data);
+  for(int i = 0; i < 4; i++) {
+    free(op_tmp_data[i]);
+  }
 }
 
 void DGMesh::init() {

@@ -53,3 +53,6 @@ extern double lift_drag_vec[5];
 #include "init_nodes_kernel.cpp"
 #include "init_grid_kernel.cpp"
 #include "init_edges_kernel.cpp"
+#include "div_kernel.cpp"
+#include "curl_kernel.cpp"
+#include "grad_kernel.cpp"
