@@ -1,5 +1,5 @@
-#ifndef __INS_BLAS_CALLS_H
-#define __INS_BLAS_CALLS_H
+#ifndef __DG_BLAS_CALLS_H
+#define __DG_BLAS_CALLS_H
 
 #include "op_seq.h"
 #include "dg_mesh.h"
