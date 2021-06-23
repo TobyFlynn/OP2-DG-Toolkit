@@ -58,3 +58,8 @@ extern double lift_drag_vec[5];
 #include "div_kernel.cpp"
 #include "curl_kernel.cpp"
 #include "grad_kernel.cpp"
+#include "cub_grad_kernel.cpp"
+#include "cub_div_kernel.cpp"
+#include "cub_grad_weak_kernel.cpp"
+#include "cub_div_weak_kernel.cpp"
+#include "inv_J_kernel.cpp"

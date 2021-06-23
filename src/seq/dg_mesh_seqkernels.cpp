@@ -54,3 +54,8 @@ extern double lift_drag_vec[5];
 #include "div_seqkernel.cpp"
 #include "curl_seqkernel.cpp"
 #include "grad_seqkernel.cpp"
+#include "cub_grad_seqkernel.cpp"
+#include "cub_div_seqkernel.cpp"
+#include "cub_grad_weak_seqkernel.cpp"
+#include "cub_div_weak_seqkernel.cpp"
+#include "inv_J_seqkernel.cpp"

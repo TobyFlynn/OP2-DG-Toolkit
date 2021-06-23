@@ -220,3 +220,8 @@ int size, char *dat, char const *name){
 #include "div_kernel.cu"
 #include "curl_kernel.cu"
 #include "grad_kernel.cu"
+#include "cub_grad_kernel.cu"
+#include "cub_div_kernel.cu"
+#include "cub_grad_weak_kernel.cu"
+#include "cub_div_weak_kernel.cu"
+#include "inv_J_kernel.cu"

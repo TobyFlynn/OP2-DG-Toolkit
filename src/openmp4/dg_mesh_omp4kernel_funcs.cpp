@@ -172,3 +172,8 @@ void op_decl_const_char(int dim, char const *type,
 #include "div_omp4kernel_func.cpp"
 #include "curl_omp4kernel_func.cpp"
 #include "grad_omp4kernel_func.cpp"
+#include "cub_grad_omp4kernel_func.cpp"
+#include "cub_div_omp4kernel_func.cpp"
+#include "cub_grad_weak_omp4kernel_func.cpp"
+#include "cub_div_weak_omp4kernel_func.cpp"
+#include "inv_J_omp4kernel_func.cpp"

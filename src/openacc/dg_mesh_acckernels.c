@@ -56,3 +56,8 @@ int size, char *dat, char const *name){}
 #include "div_acckernel.c"
 #include "curl_acckernel.c"
 #include "grad_acckernel.c"
+#include "cub_grad_acckernel.c"
+#include "cub_div_acckernel.c"
+#include "cub_grad_weak_acckernel.c"
+#include "cub_div_weak_acckernel.c"
+#include "inv_J_acckernel.c"

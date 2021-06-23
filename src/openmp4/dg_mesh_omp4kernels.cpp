@@ -14,3 +14,8 @@
 #include "div_omp4kernel.cpp"
 #include "curl_omp4kernel.cpp"
 #include "grad_omp4kernel.cpp"
+#include "cub_grad_omp4kernel.cpp"
+#include "cub_div_omp4kernel.cpp"
+#include "cub_grad_weak_omp4kernel.cpp"
+#include "cub_div_weak_omp4kernel.cpp"
+#include "inv_J_omp4kernel.cpp"
