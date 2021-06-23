@@ -23,6 +23,15 @@ void op_par_loop_init_cubature(char const *, op_set,
   op_arg,
   op_arg );
 
+void op_par_loop_init_gauss(char const *, op_set,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg );
+
 void op_par_loop_init_nodes(char const *, op_set,
   op_arg,
   op_arg,
@@ -115,6 +124,56 @@ void DGCubatureData::init() {
   // Temp is in row-major at this point
   op2_gemm(false, true, 15, 15, 46, 1.0, constants->get_ptr(DGConstants::CUB_V), 15, op_tmp[0], 15, 0.0, mm, 15);
   // mm is in col-major at this point
+}
+
+DGGaussData::DGGaussData(DGMesh *m) {
+  mesh = m;
+
+  x_data  = (double *)calloc(21 * mesh->numCells, sizeof(double));
+  y_data  = (double *)calloc(21 * mesh->numCells, sizeof(double));
+  rx_data = (double *)calloc(21 * mesh->numCells, sizeof(double));
+  sx_data = (double *)calloc(21 * mesh->numCells, sizeof(double));
+  ry_data = (double *)calloc(21 * mesh->numCells, sizeof(double));
+  sy_data = (double *)calloc(21 * mesh->numCells, sizeof(double));
+  sJ_data = (double *)calloc(21 * mesh->numCells, sizeof(double));
+  nx_data = (double *)calloc(21 * mesh->numCells, sizeof(double));
+  ny_data = (double *)calloc(21 * mesh->numCells, sizeof(double));
+
+  x  = op_decl_dat(mesh->cells, 21, "double", x_data, "gauss-x");
+  y  = op_decl_dat(mesh->cells, 21, "double", y_data, "gauss-y");
+  rx = op_decl_dat(mesh->cells, 21, "double", rx_data, "gauss-rx");
+  sx = op_decl_dat(mesh->cells, 21, "double", sx_data, "gauss-sx");
+  ry = op_decl_dat(mesh->cells, 21, "double", ry_data, "gauss-ry");
+  sy = op_decl_dat(mesh->cells, 21, "double", sy_data, "gauss-sy");
+  sJ = op_decl_dat(mesh->cells, 21, "double", sJ_data, "gauss-sJ");
+  nx = op_decl_dat(mesh->cells, 21, "double", nx_data, "gauss-nx");
+  ny = op_decl_dat(mesh->cells, 21, "double", ny_data, "gauss-ny");
+}
+
+DGGaussData::~DGGaussData() {
+  free(x_data);
+  free(y_data);
+  free(rx_data);
+  free(sx_data);
+  free(ry_data);
+  free(sy_data);
+  free(sJ_data);
+  free(nx_data);
+  free(ny_data);
+}
+
+void DGGaussData::init() {
+  // Initialise geometric factors for Gauss nodes
+  init_gauss_blas(mesh, this);
+
+  op_par_loop_init_gauss("init_gauss",mesh->cells,
+              op_arg_dat(rx,-1,OP_ID,21,"double",OP_RW),
+              op_arg_dat(sx,-1,OP_ID,21,"double",OP_RW),
+              op_arg_dat(ry,-1,OP_ID,21,"double",OP_RW),
+              op_arg_dat(sy,-1,OP_ID,21,"double",OP_RW),
+              op_arg_dat(nx,-1,OP_ID,21,"double",OP_WRITE),
+              op_arg_dat(ny,-1,OP_ID,21,"double",OP_WRITE),
+              op_arg_dat(sJ,-1,OP_ID,21,"double",OP_WRITE));
 }
 
 DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
@@ -244,6 +303,7 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   op_decl_const2("lift_drag_vec",5,"double",lift_drag_vec);
 
   cubature = new DGCubatureData(this);
+  gauss = new DGGaussData(this);
 }
 
 DGMesh::~DGMesh() {
@@ -276,6 +336,7 @@ DGMesh::~DGMesh() {
   }
 
   delete cubature;
+  delete gauss;
 }
 
 void DGMesh::init() {
@@ -305,4 +366,5 @@ void DGMesh::init() {
               op_arg_dat(reverse,-1,OP_ID,1,"bool",OP_WRITE));
 
   cubature->init();
+  gauss->init();
 }

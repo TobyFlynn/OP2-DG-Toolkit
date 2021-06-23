@@ -32,6 +32,28 @@ private:
   double *op_tmp_data[4];
 };
 
+class DGGaussData {
+public:
+  DGGaussData(DGMesh *m);
+  ~DGGaussData();
+  void init();
+
+  op_dat x, y;
+  op_dat rx, sx, ry, sy, sJ, nx, ny;
+private:
+  DGMesh *mesh;
+
+  double *x_data;
+  double *y_data;
+  double *rx_data;
+  double *sx_data;
+  double *ry_data;
+  double *sy_data;
+  double *sJ_data;
+  double *nx_data;
+  double *ny_data;
+};
+
 class DGMesh {
 public:
   DGMesh(double *coords_a, int *cells_a, int *edge2node_a, int *edge2cell_a,
@@ -61,6 +83,7 @@ public:
   op_dat op_tmp[4];
 
   DGCubatureData *cubature;
+  DGGaussData *gauss;
 private:
   // Pointers to private memory
   double *nodeX_data;

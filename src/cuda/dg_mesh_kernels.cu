@@ -213,6 +213,7 @@ int size, char *dat, char const *name){
 
 //user kernel files
 #include "init_cubature_kernel.cu"
+#include "init_gauss_kernel.cu"
 #include "init_nodes_kernel.cu"
 #include "init_grid_kernel.cu"
 #include "init_edges_kernel.cu"

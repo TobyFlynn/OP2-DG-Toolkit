@@ -51,6 +51,7 @@ extern double lift_drag_vec[5];
 
 // user kernel files
 #include "init_cubature_kernel.cpp"
+#include "init_gauss_kernel.cpp"
 #include "init_nodes_kernel.cpp"
 #include "init_grid_kernel.cpp"
 #include "init_edges_kernel.cpp"

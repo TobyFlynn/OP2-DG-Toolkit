@@ -5,6 +5,7 @@
 //header
 #ifdef GPUPASS
 #define op_par_loop_init_cubature op_par_loop_init_cubature_gpu
+#define op_par_loop_init_gauss op_par_loop_init_gauss_gpu
 #define op_par_loop_init_nodes op_par_loop_init_nodes_gpu
 #define op_par_loop_init_grid op_par_loop_init_grid_gpu
 #define op_par_loop_init_edges op_par_loop_init_edges_gpu
@@ -13,6 +14,7 @@
 #define op_par_loop_grad op_par_loop_grad_gpu
 #include "dg_mesh_kernels.cu"
 #undef op_par_loop_init_cubature
+#undef op_par_loop_init_gauss
 #undef op_par_loop_init_nodes
 #undef op_par_loop_init_grid
 #undef op_par_loop_init_edges
@@ -21,6 +23,7 @@
 #undef op_par_loop_grad
 #else
 #define op_par_loop_init_cubature op_par_loop_init_cubature_cpu
+#define op_par_loop_init_gauss op_par_loop_init_gauss_cpu
 #define op_par_loop_init_nodes op_par_loop_init_nodes_cpu
 #define op_par_loop_init_grid op_par_loop_init_grid_cpu
 #define op_par_loop_init_edges op_par_loop_init_edges_cpu
@@ -29,6 +32,7 @@
 #define op_par_loop_grad op_par_loop_grad_cpu
 #include "../openmp/dg_mesh_kernels.cpp"
 #undef op_par_loop_init_cubature
+#undef op_par_loop_init_gauss
 #undef op_par_loop_init_nodes
 #undef op_par_loop_init_grid
 #undef op_par_loop_init_edges
@@ -92,6 +96,70 @@ void op_par_loop_init_cubature(char const *name, op_set set,
     arg3,
     arg4,
     arg5);
+
+  }
+#endif //OP_HYBRID_GPU
+
+void op_par_loop_init_gauss_gpu(char const *name, op_set set,
+  op_arg arg0,
+  op_arg arg1,
+  op_arg arg2,
+  op_arg arg3,
+  op_arg arg4,
+  op_arg arg5,
+  op_arg arg6);
+
+//GPU host stub function
+#if OP_HYBRID_GPU
+void op_par_loop_init_gauss(char const *name, op_set set,
+  op_arg arg0,
+  op_arg arg1,
+  op_arg arg2,
+  op_arg arg3,
+  op_arg arg4,
+  op_arg arg5,
+  op_arg arg6){
+
+  if (OP_hybrid_gpu) {
+    op_par_loop_init_gauss_gpu(name, set,
+      arg0,
+      arg1,
+      arg2,
+      arg3,
+      arg4,
+      arg5,
+      arg6);
+
+    }else{
+    op_par_loop_init_gauss_cpu(name, set,
+      arg0,
+      arg1,
+      arg2,
+      arg3,
+      arg4,
+      arg5,
+      arg6);
+
+  }
+}
+#else
+void op_par_loop_init_gauss(char const *name, op_set set,
+  op_arg arg0,
+  op_arg arg1,
+  op_arg arg2,
+  op_arg arg3,
+  op_arg arg4,
+  op_arg arg5,
+  op_arg arg6){
+
+  op_par_loop_init_gauss_gpu(name, set,
+    arg0,
+    arg1,
+    arg2,
+    arg3,
+    arg4,
+    arg5,
+    arg6);
 
   }
 #endif //OP_HYBRID_GPU
