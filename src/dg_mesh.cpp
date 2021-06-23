@@ -9,6 +9,65 @@
 
 using namespace std;
 
+DGCubatureData::DGCubatureData(DGMesh *m) {
+  mesh = m;
+
+  rx_data = (double *)calloc(46 * mesh->numCells, sizeof(double));
+  sx_data = (double *)calloc(46 * mesh->numCells, sizeof(double));
+  ry_data = (double *)calloc(46 * mesh->numCells, sizeof(double));
+  sy_data = (double *)calloc(46 * mesh->numCells, sizeof(double));
+  J_data  = (double *)calloc(46 * mesh->numCells, sizeof(double));
+  mm_data = (double *)calloc(15 * 15 * mesh->numCells, sizeof(double));
+
+  for(int i = 0; i < 4; i++) {
+    op_tmp_data[i] = (double *)calloc(46 * mesh->numCells, sizeof(double));
+  }
+
+  rx    = op_decl_dat(mesh->cells, 46, "double", rx_data, "cub-rx");
+  sx    = op_decl_dat(mesh->cells, 46, "double", sx_data, "cub-sx");
+  ry    = op_decl_dat(mesh->cells, 46, "double", ry_data, "cub-ry");
+  sy    = op_decl_dat(mesh->cells, 46, "double", sy_data, "cub-sy");
+  J     = op_decl_dat(mesh->cells, 46, "double", J_data, "cub-J");
+  mm    = op_decl_dat(mesh->cells, 15 * 15, "double", mm_data, "cub-mm");
+
+  for(int i = 0; i < 4; i++) {
+    string tmpname = "cub-op_tmp" + to_string(i);
+    op_tmp[i] = op_decl_dat(mesh->cells, 46, "double", op_tmp_data[i], tmpname.c_str());
+  }
+}
+
+DGCubatureData::~DGCubatureData() {
+  free(rx_data);
+  free(sx_data);
+  free(ry_data);
+  free(sy_data);
+  free(J_data);
+  free(mm_data);
+
+  for(int i = 0; i < 4; i++) {
+    free(op_tmp_data[i]);
+  }
+}
+
+void DGCubatureData::init() {
+  // Calculate geometric factors for cubature volume nodes
+  op2_gemv(true, 46, 15, 1.0, constants->get_ptr(DGConstants::CUB_DR), 15, mesh->x, 0.0, rx);
+  op2_gemv(true, 46, 15, 1.0, constants->get_ptr(DGConstants::CUB_DS), 15, mesh->x, 0.0, sx);
+  op2_gemv(true, 46, 15, 1.0, constants->get_ptr(DGConstants::CUB_DR), 15, mesh->y, 0.0, ry);
+  op2_gemv(true, 46, 15, 1.0, constants->get_ptr(DGConstants::CUB_DS), 15, mesh->y, 0.0, sy);
+
+  op_par_loop(init_cubature, "init_cubature", mesh->cells,
+              op_arg_dat(rx,   -1, OP_ID, 46, "double", OP_RW),
+              op_arg_dat(sx,   -1, OP_ID, 46, "double", OP_RW),
+              op_arg_dat(ry,   -1, OP_ID, 46, "double", OP_RW),
+              op_arg_dat(sy,   -1, OP_ID, 46, "double", OP_RW),
+              op_arg_dat(J,    -1, OP_ID, 46, "double", OP_WRITE),
+              op_arg_dat(op_tmp[0], -1, OP_ID, 46 * 15, "double", OP_WRITE));
+  // Temp is in row-major at this point
+  op2_gemm(false, true, 15, 15, 46, 1.0, constants->get_ptr(DGConstants::CUB_V), 15, op_tmp[0], 15, 0.0, mm, 15);
+  // mm is in col-major at this point
+}
+
 DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
                int *edge2cell_a, int *bedge2node_a, int *bedge2cell_a,
                int *bedge_type_a, int *edgeNum_a, int *bedgeNum_a,
@@ -134,6 +193,8 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   op_decl_const(7*15, "double", gFInterp1R_g);
   op_decl_const(7*15, "double", gFInterp2R_g);
   op_decl_const(5, "double", lift_drag_vec);
+
+  cubature = new DGCubatureData(this);
 }
 
 DGMesh::~DGMesh() {
@@ -164,6 +225,8 @@ DGMesh::~DGMesh() {
   for(int i = 0; i < 4; i++) {
     free(op_tmp_data[i]);
   }
+
+  delete cubature;
 }
 
 void DGMesh::init() {
@@ -191,4 +254,6 @@ void DGMesh::init() {
               op_arg_dat(nodeX, -2, edge2cells, 3, "double", OP_READ),
               op_arg_dat(nodeY, -2, edge2cells, 3, "double", OP_READ),
               op_arg_dat(reverse, -1, OP_ID, 1, "bool", OP_WRITE));
+
+  cubature->init();
 }

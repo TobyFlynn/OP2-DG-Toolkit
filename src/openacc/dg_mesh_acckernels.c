@@ -48,6 +48,7 @@ extern double lift_drag_vec[5];
 void op_decl_const_char(int dim, char const *type,
 int size, char *dat, char const *name){}
 // user kernel files
+#include "init_cubature_acckernel.c"
 #include "init_nodes_acckernel.c"
 #include "init_grid_acckernel.c"
 #include "init_edges_acckernel.c"

@@ -1,5 +1,6 @@
 set(KERNEL_HEADERS kernels/init_grid.h kernels/init_edges.h kernels/init_nodes.h)
 list(APPEND KERNEL_HEADERS kernels/div.h kernels/curl.h kernels/grad.h)
+list(APPEND KERNEL_HEADERS kernels/init_cubature.h)
 
 set(OPENBLAS_SRC openBLAS_op/init_grid_op.cpp openBLAS_op/op2_gemv_op.cpp openBLAS_op/op2_gemm_op.cpp openBLAS_op/op2_gemv_batch_op.cpp openBLAS_op/op2_gemm_batch_op.cpp)
 set(CUBLAS_SRC cuBLAS_op/init_grid_op.cu cuBLAS_op/op2_gemv_op.cu cuBLAS_op/op2_gemm_op.cu cuBLAS_op/op2_gemv_batch_op.cu cuBLAS_op/op2_gemm_batch_op.cu)

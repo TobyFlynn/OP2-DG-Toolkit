@@ -7,6 +7,31 @@
 
 #include "dg_global_constants.h"
 
+class DGMesh;
+
+class DGCubatureData {
+public:
+  DGCubatureData(DGMesh *m);
+  ~DGCubatureData();
+  void init();
+
+  // mm and OP are stored in column major format
+  // OP is the local stiffness matrix used by the Poisson solver
+  op_dat rx, sx, ry, sy, J, mm;
+  op_dat op_tmp[4];
+
+private:
+  DGMesh *mesh;
+
+  double *rx_data;
+  double *sx_data;
+  double *ry_data;
+  double *sy_data;
+  double *J_data;
+  double *mm_data;
+  double *op_tmp_data[4];
+};
+
 class DGMesh {
 public:
   DGMesh(double *coords_a, int *cells_a, int *edge2node_a, int *edge2cell_a,
@@ -34,6 +59,8 @@ public:
   op_dat node_coords, nodeX, nodeY, x, y, rx, ry, sx, sy, nx,
          ny, J, sJ, fscale, bedge_type, edgeNum, bedgeNum, reverse;
   op_dat op_tmp[4];
+
+  DGCubatureData *cubature;
 private:
   // Pointers to private memory
   double *nodeX_data;
