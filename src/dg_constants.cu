@@ -1,6 +1,6 @@
 #include "dg_constants.h"
 
-#include "constants/all_constants.h"
+#include "dg_global_constants.h"
 
 DGConstants::DGConstants() {
   // Cubature constants

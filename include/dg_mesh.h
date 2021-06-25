@@ -5,8 +5,6 @@
 
 #include <string>
 
-#include "dg_global_constants.h"
-
 class DGMesh;
 
 class DGCubatureData {
@@ -18,7 +16,7 @@ public:
   // mm and OP are stored in column major format
   // OP is the local stiffness matrix used by the Poisson solver
   op_dat rx, sx, ry, sy, J, mm;
-  op_dat op_tmp[4];
+  op_dat op_tmp[4], tmp;
 
 private:
   DGMesh *mesh;
@@ -30,6 +28,7 @@ private:
   double *J_data;
   double *mm_data;
   double *op_tmp_data[4];
+  double *tmp_data;
 };
 
 class DGGaussData {
