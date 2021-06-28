@@ -10,6 +10,8 @@
 
 using namespace std;
 
+void set_cuda_const();
+
 DGCubatureData::DGCubatureData(DGMesh *m) {
   mesh = m;
 
@@ -209,6 +211,9 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
     op_tmp[i] = op_decl_dat(cells, 15, "double", op_tmp_data[i], tmpname.c_str());
   }
 
+  #ifdef OP2_DG_CUDA
+  set_cuda_const();
+  #else
   op_decl_const(1, "double", &gam);
   op_decl_const(1, "double", &mu);
   op_decl_const(1, "double", &nu0);
@@ -247,6 +252,7 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   op_decl_const(7*15, "double", gFInterp1R_g);
   op_decl_const(7*15, "double", gFInterp2R_g);
   op_decl_const(5, "double", lift_drag_vec);
+  #endif
 
   cubature = new DGCubatureData(this);
   gauss = new DGGaussData(this);

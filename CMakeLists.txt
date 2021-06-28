@@ -16,6 +16,7 @@ find_package(OP2 REQUIRED PATHS
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OP2_CXX_FLAGS} -std=c++14")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OP2_C_FLAGS}")
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=sm_75")
+#set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=sm_75 -rdc=true")
 
 include_directories(${OP2_INCLUDE_DIRS})
 add_definitions(${OP2_USER_DEFINITIONS})
