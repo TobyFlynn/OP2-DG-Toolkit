@@ -111,6 +111,9 @@ DGGaussData::~DGGaussData() {
 }
 
 void DGGaussData::init() {
+  op2_gemv(true, 21, 15, 1.0, constants->get_ptr(DGConstants::GAUSS_INTERP), 15, mesh->x, 0.0, x);
+  op2_gemv(true, 21, 15, 1.0, constants->get_ptr(DGConstants::GAUSS_INTERP), 15, mesh->y, 0.0, y);
+
   // Initialise geometric factors for Gauss nodes
   init_gauss_blas(mesh, this);
 
