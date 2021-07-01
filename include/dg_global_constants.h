@@ -7,6 +7,7 @@ extern double nu0;
 extern double nu1;
 extern double rho0;
 extern double rho1;
+extern double ren;
 extern double bc_mach;
 extern double bc_alpha;
 extern double bc_p;

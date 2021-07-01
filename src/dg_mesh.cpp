@@ -223,6 +223,7 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   op_decl_const(1, "double", &nu1);
   op_decl_const(1, "double", &rho0);
   op_decl_const(1, "double", &rho1);
+  op_decl_const(1, "double", &ren);
   op_decl_const(1, "double", &bc_mach);
   op_decl_const(1, "double", &bc_alpha);
   op_decl_const(1, "double", &bc_p);

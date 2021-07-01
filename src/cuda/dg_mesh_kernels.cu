@@ -13,6 +13,7 @@ __constant__ double nu0_cuda;
 __constant__ double nu1_cuda;
 __constant__ double rho0_cuda;
 __constant__ double rho1_cuda;
+__constant__ double ren_cuda;
 __constant__ double bc_mach_cuda;
 __constant__ double bc_alpha_cuda;
 __constant__ double bc_p_cuda;
@@ -60,6 +61,7 @@ void set_cuda_const() {
   cutilSafeCall(cudaMemcpyToSymbol(nu1_cuda, &nu1, sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(rho0_cuda, &rho0, sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(rho1_cuda, &rho1, sizeof(double)));
+  cutilSafeCall(cudaMemcpyToSymbol(ren_cuda, &ren, sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(bc_mach_cuda, &bc_mach, sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(bc_alpha_cuda, &bc_alpha, sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(bc_p_cuda, &bc_p, sizeof(double)));
