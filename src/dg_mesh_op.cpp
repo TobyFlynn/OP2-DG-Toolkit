@@ -275,21 +275,7 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   #ifdef OP2_DG_CUDA
   set_cuda_const();
   #else
-  op_decl_const2("gam",1,"double",&gam);
-  op_decl_const2("mu",1,"double",&mu);
-  op_decl_const2("nu0",1,"double",&nu0);
-  op_decl_const2("nu1",1,"double",&nu1);
-  op_decl_const2("rho0",1,"double",&rho0);
-  op_decl_const2("rho1",1,"double",&rho1);
-  op_decl_const2("ren",1,"double",&ren);
-  op_decl_const2("bc_mach",1,"double",&bc_mach);
-  op_decl_const2("bc_alpha",1,"double",&bc_alpha);
-  op_decl_const2("bc_p",1,"double",&bc_p);
-  op_decl_const2("bc_u",1,"double",&bc_u);
-  op_decl_const2("bc_v",1,"double",&bc_v);
   op_decl_const2("FMASK",15,"int",FMASK);
-  op_decl_const2("ic_u",1,"double",&ic_u);
-  op_decl_const2("ic_v",1,"double",&ic_v);
   op_decl_const2("cubW_g",46,"double",cubW_g);
   op_decl_const2("cubV_g",690,"double",cubV_g);
   op_decl_const2("cubVDr_g",690,"double",cubVDr_g);
@@ -313,7 +299,6 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   op_decl_const2("gFInterp0R_g",105,"double",gFInterp0R_g);
   op_decl_const2("gFInterp1R_g",105,"double",gFInterp1R_g);
   op_decl_const2("gFInterp2R_g",105,"double",gFInterp2R_g);
-  op_decl_const2("lift_drag_vec",5,"double",lift_drag_vec);
   #endif
 
   cubature = new DGCubatureData(this);

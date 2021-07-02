@@ -1,21 +1,7 @@
 #ifndef __DG_GLOBAL_CONSTANTS_H
 #define __DG_GLOBAL_CONSTANTS_H
 
-extern double gam;
-extern double mu;
-extern double nu0;
-extern double nu1;
-extern double rho0;
-extern double rho1;
-extern double ren;
-extern double bc_mach;
-extern double bc_alpha;
-extern double bc_p;
-extern double bc_u;
-extern double bc_v;
 extern int FMASK[15];
-extern double ic_u;
-extern double ic_v;
 
 extern double cubV_g[46 * 15];
 extern double cubW_g[46];
@@ -45,8 +31,6 @@ extern double gF2DrR_g[7 * 15];
 extern double gF2DsR_g[7 * 15];
 extern double gInterp_g[21*15];
 extern double invMassGaussInterpT_g[15*21];
-
-extern double lift_drag_vec[5];
 
 extern double Dr_g[15*15];
 extern double Drw_g[15*15];

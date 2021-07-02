@@ -7,21 +7,7 @@
 #define MAX_CONST_SIZE 128
 #endif
 
-__constant__ double gam_cuda;
-__constant__ double mu_cuda;
-__constant__ double nu0_cuda;
-__constant__ double nu1_cuda;
-__constant__ double rho0_cuda;
-__constant__ double rho1_cuda;
-__constant__ double ren_cuda;
-__constant__ double bc_mach_cuda;
-__constant__ double bc_alpha_cuda;
-__constant__ double bc_p_cuda;
-__constant__ double bc_u_cuda;
-__constant__ double bc_v_cuda;
 __constant__ int FMASK_cuda[15];
-__constant__ double ic_u_cuda;
-__constant__ double ic_v_cuda;
 __constant__ double cubW_g_cuda[46];
 __constant__ double cubV_g_cuda[690];
 __constant__ double cubVDr_g_cuda[690];
@@ -45,7 +31,6 @@ __constant__ double gF2DsR_g_cuda[105];
 __constant__ double gFInterp0R_g_cuda[105];
 __constant__ double gFInterp1R_g_cuda[105];
 __constant__ double gFInterp2R_g_cuda[105];
-__constant__ double lift_drag_vec_cuda[5];
 
 //header
 #include "op_lib_cpp.h"
@@ -55,21 +40,7 @@ __constant__ double lift_drag_vec_cuda[5];
 #include "dg_global_constants.h"
 
 void set_cuda_const() {
-  cutilSafeCall(cudaMemcpyToSymbol(gam_cuda, &gam, sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(mu_cuda, &mu, sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(nu0_cuda, &nu0, sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(nu1_cuda, &nu1, sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(rho0_cuda, &rho0, sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(rho1_cuda, &rho1, sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(ren_cuda, &ren, sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(bc_mach_cuda, &bc_mach, sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(bc_alpha_cuda, &bc_alpha, sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(bc_p_cuda, &bc_p, sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(bc_u_cuda, &bc_u, sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(bc_v_cuda, &bc_v, sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(FMASK_cuda, FMASK, 15 * sizeof(int)));
-  cutilSafeCall(cudaMemcpyToSymbol(ic_u_cuda, &ic_u, sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(ic_v_cuda, &ic_v, sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(cubW_g_cuda, cubW_g, 46 * sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(cubV_g_cuda, cubV_g, 690 * sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(cubVDr_g_cuda, cubVDr_g, 690 * sizeof(double)));
@@ -93,7 +64,6 @@ void set_cuda_const() {
   cutilSafeCall(cudaMemcpyToSymbol(gFInterp0R_g_cuda, gFInterp0R_g, 105 * sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(gFInterp1R_g_cuda, gFInterp1R_g, 105 * sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(gFInterp2R_g_cuda, gFInterp2R_g, 105 * sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(lift_drag_vec_cuda, lift_drag_vec, 5 * sizeof(double)));
 }
 
 //user kernel files

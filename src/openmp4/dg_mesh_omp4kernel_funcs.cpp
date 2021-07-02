@@ -3,21 +3,7 @@
 //
 
 // global constants
-double gam_ompkernel;
-double mu_ompkernel;
-double nu0_ompkernel;
-double nu1_ompkernel;
-double rho0_ompkernel;
-double rho1_ompkernel;
-double ren_ompkernel;
-double bc_mach_ompkernel;
-double bc_alpha_ompkernel;
-double bc_p_ompkernel;
-double bc_u_ompkernel;
-double bc_v_ompkernel;
 int FMASK_ompkernel[15];
-double ic_u_ompkernel;
-double ic_v_ompkernel;
 double cubW_g_ompkernel[46];
 double cubV_g_ompkernel[690];
 double cubVDr_g_ompkernel[690];
@@ -41,58 +27,15 @@ double gF2DsR_g_ompkernel[105];
 double gFInterp0R_g_ompkernel[105];
 double gFInterp1R_g_ompkernel[105];
 double gFInterp2R_g_ompkernel[105];
-double lift_drag_vec_ompkernel[5];
 
 // header
 #include "op_lib_cpp.h"
 
 void op_decl_const_char(int dim, char const *type,
   int size, char *dat, char const *name){
-  if(!strcmp(name, "gam")) {
-    memcpy(&gam_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:gam_ompkernel)
-  } else if(!strcmp(name, "mu")) {
-    memcpy(&mu_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:mu_ompkernel)
-  } else if(!strcmp(name, "nu0")) {
-    memcpy(&nu0_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:nu0_ompkernel)
-  } else if(!strcmp(name, "nu1")) {
-    memcpy(&nu1_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:nu1_ompkernel)
-  } else if(!strcmp(name, "rho0")) {
-    memcpy(&rho0_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:rho0_ompkernel)
-  } else if(!strcmp(name, "rho1")) {
-    memcpy(&rho1_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:rho1_ompkernel)
-  } else if(!strcmp(name, "ren")) {
-    memcpy(&ren_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:ren_ompkernel)
-  } else if(!strcmp(name, "bc_mach")) {
-    memcpy(&bc_mach_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:bc_mach_ompkernel)
-  } else if(!strcmp(name, "bc_alpha")) {
-    memcpy(&bc_alpha_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:bc_alpha_ompkernel)
-  } else if(!strcmp(name, "bc_p")) {
-    memcpy(&bc_p_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:bc_p_ompkernel)
-  } else if(!strcmp(name, "bc_u")) {
-    memcpy(&bc_u_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:bc_u_ompkernel)
-  } else if(!strcmp(name, "bc_v")) {
-    memcpy(&bc_v_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:bc_v_ompkernel)
-  } else if(!strcmp(name, "FMASK")) {
+  if(!strcmp(name, "FMASK")) {
     memcpy(FMASK_ompkernel, dat, dim*size);
   #pragma omp target enter data map(to:FMASK_ompkernel[:15])
-  } else if(!strcmp(name, "ic_u")) {
-    memcpy(&ic_u_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:ic_u_ompkernel)
-  } else if(!strcmp(name, "ic_v")) {
-    memcpy(&ic_v_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:ic_v_ompkernel)
   } else if(!strcmp(name, "cubW_g")) {
     memcpy(cubW_g_ompkernel, dat, dim*size);
   #pragma omp target enter data map(to:cubW_g_ompkernel[:46])
@@ -162,9 +105,6 @@ void op_decl_const_char(int dim, char const *type,
   } else if(!strcmp(name, "gFInterp2R_g")) {
     memcpy(gFInterp2R_g_ompkernel, dat, dim*size);
   #pragma omp target enter data map(to:gFInterp2R_g_ompkernel[:105])
-  } else if(!strcmp(name, "lift_drag_vec")) {
-    memcpy(lift_drag_vec_ompkernel, dat, dim*size);
-  #pragma omp target enter data map(to:lift_drag_vec_ompkernel[:5])
   }
 }
 // user kernel files
