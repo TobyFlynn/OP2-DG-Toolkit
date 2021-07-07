@@ -20,6 +20,8 @@ add_definitions(${OP2_USER_DEFINITIONS})
 
 include(OP2Application)
 
+find_package(OpenBLAS)
+
 enable_language(CUDA)
 find_package(CUDAToolkit)
 include_directories(${CUDAToolkit_INCLUDE_DIRS})
