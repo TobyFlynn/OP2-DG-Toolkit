@@ -30,6 +30,10 @@ endif()
 
 set(PARMETIS_DIR "/home/u1717021/Code/PhD/parmetis-4.0.3/build")
 
+if(NOT ARMA_DIR)
+  set(ARMA_DIR "/home/u1717021/Code/PhD/armadillo-10.5.3/build")
+endif()
+
 enable_language(CUDA)
 find_package(CUDAToolkit)
 include_directories(${CUDAToolkit_INCLUDE_DIRS})

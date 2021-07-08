@@ -15,20 +15,14 @@ public:
 
   // mm and OP are stored in column major format
   // OP is the local stiffness matrix used by the Poisson solver
-  op_dat rx, sx, ry, sy, J, mm;
+  op_dat rx, sx, ry, sy, J, mm, mmInv;
   op_dat op_tmp[4], tmp;
 
 private:
   DGMesh *mesh;
 
-  double *rx_data;
-  double *sx_data;
-  double *ry_data;
-  double *sy_data;
-  double *J_data;
-  double *mm_data;
-  double *op_tmp_data[4];
-  double *tmp_data;
+  double *rx_data, *sx_data, *ry_data, *sy_data, *J_data;
+  double *mm_data, *mmInv_data, *op_tmp_data[4], *tmp_data;
 };
 
 class DGGaussData {
@@ -42,15 +36,8 @@ public:
 private:
   DGMesh *mesh;
 
-  double *x_data;
-  double *y_data;
-  double *rx_data;
-  double *sx_data;
-  double *ry_data;
-  double *sy_data;
-  double *sJ_data;
-  double *nx_data;
-  double *ny_data;
+  double *x_data, *y_data, *rx_data, *sx_data, *ry_data, *sy_data;
+  double *sJ_data, *nx_data, *ny_data;
 };
 
 class DGMesh {
@@ -85,21 +72,10 @@ public:
   DGGaussData *gauss;
 private:
   // Pointers to private memory
-  double *nodeX_data;
-  double *nodeY_data;
-  double *x_data;
-  double *y_data;
-  double *rx_data;
-  double *ry_data;
-  double *sx_data;
-  double *sy_data;
-  double *nx_data;
-  double *ny_data;
-  double *J_data;
-  double *sJ_data;
-  double *fscale_data;
+  double *nodeX_data, *nodeY_data, *x_data, *y_data;
+  double *rx_data, *ry_data, *sx_data, *sy_data, *nx_data, *ny_data;
+  double *J_data, *sJ_data, *fscale_data, *op_tmp_data[4];
   bool *reverse_data;
-  double *op_tmp_data[4];
 };
 
 #endif

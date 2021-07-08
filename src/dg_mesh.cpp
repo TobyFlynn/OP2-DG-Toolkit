@@ -15,25 +15,27 @@ void set_cuda_const();
 DGCubatureData::DGCubatureData(DGMesh *m) {
   mesh = m;
 
-  rx_data  = (double *)calloc(46 * mesh->numCells, sizeof(double));
-  sx_data  = (double *)calloc(46 * mesh->numCells, sizeof(double));
-  ry_data  = (double *)calloc(46 * mesh->numCells, sizeof(double));
-  sy_data  = (double *)calloc(46 * mesh->numCells, sizeof(double));
-  J_data   = (double *)calloc(46 * mesh->numCells, sizeof(double));
-  mm_data  = (double *)calloc(15 * 15 * mesh->numCells, sizeof(double));
-  tmp_data = (double *)calloc(46 * 15 * mesh->numCells, sizeof(double));
+  rx_data    = (double *)calloc(46 * mesh->numCells, sizeof(double));
+  sx_data    = (double *)calloc(46 * mesh->numCells, sizeof(double));
+  ry_data    = (double *)calloc(46 * mesh->numCells, sizeof(double));
+  sy_data    = (double *)calloc(46 * mesh->numCells, sizeof(double));
+  J_data     = (double *)calloc(46 * mesh->numCells, sizeof(double));
+  mm_data    = (double *)calloc(15 * 15 * mesh->numCells, sizeof(double));
+  mmInv_data = (double *)calloc(15 * 15 * mesh->numCells, sizeof(double));
+  tmp_data   = (double *)calloc(46 * 15 * mesh->numCells, sizeof(double));
 
   for(int i = 0; i < 4; i++) {
     op_tmp_data[i] = (double *)calloc(46 * mesh->numCells, sizeof(double));
   }
 
-  rx  = op_decl_dat(mesh->cells, 46, "double", rx_data, "cub-rx");
-  sx  = op_decl_dat(mesh->cells, 46, "double", sx_data, "cub-sx");
-  ry  = op_decl_dat(mesh->cells, 46, "double", ry_data, "cub-ry");
-  sy  = op_decl_dat(mesh->cells, 46, "double", sy_data, "cub-sy");
-  J   = op_decl_dat(mesh->cells, 46, "double", J_data, "cub-J");
-  mm  = op_decl_dat(mesh->cells, 15 * 15, "double", mm_data, "cub-mm");
-  tmp = op_decl_dat(mesh->cells, 46 * 15, "double", tmp_data, "cub-tmp");
+  rx    = op_decl_dat(mesh->cells, 46, "double", rx_data, "cub-rx");
+  sx    = op_decl_dat(mesh->cells, 46, "double", sx_data, "cub-sx");
+  ry    = op_decl_dat(mesh->cells, 46, "double", ry_data, "cub-ry");
+  sy    = op_decl_dat(mesh->cells, 46, "double", sy_data, "cub-sy");
+  J     = op_decl_dat(mesh->cells, 46, "double", J_data, "cub-J");
+  mm    = op_decl_dat(mesh->cells, 15 * 15, "double", mm_data, "cub-mm");
+  mmInv = op_decl_dat(mesh->cells, 15 * 15, "double", mmInv_data, "cub-mmInv");
+  tmp   = op_decl_dat(mesh->cells, 46 * 15, "double", tmp_data, "cub-tmp");
 
   for(int i = 0; i < 4; i++) {
     string tmpname = "cub-op_tmp" + to_string(i);
@@ -48,6 +50,7 @@ DGCubatureData::~DGCubatureData() {
   free(sy_data);
   free(J_data);
   free(mm_data);
+  free(mmInv_data);
   free(tmp_data);
 
   for(int i = 0; i < 4; i++) {
