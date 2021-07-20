@@ -37,9 +37,10 @@ void inv_blas(DGMesh *mesh, op_dat in, op_dat out) {
     double *inv_c      = (double *)out->data + i * out->dim;
 
     arma::mat a(in_c, 15, 15);
-    arma::mat inv(inv_c, 15, 15, false, true);
+    arma::mat b(inv_c, 15, 15, false, true);
 
-    inv = arma::inv(a);
+    b = arma::inv(a.t());
+    b = b.t();
   }
 
   op_mpi_set_dirtybit(2, inv_args);
