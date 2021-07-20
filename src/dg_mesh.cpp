@@ -21,7 +21,6 @@ DGCubatureData::DGCubatureData(DGMesh *m) {
   sy_data    = (double *)calloc(46 * mesh->numCells, sizeof(double));
   J_data     = (double *)calloc(46 * mesh->numCells, sizeof(double));
   mm_data    = (double *)calloc(15 * 15 * mesh->numCells, sizeof(double));
-  mmInv_data = (double *)calloc(15 * 15 * mesh->numCells, sizeof(double));
   tmp_data   = (double *)calloc(46 * 15 * mesh->numCells, sizeof(double));
 
   for(int i = 0; i < 4; i++) {
@@ -34,7 +33,6 @@ DGCubatureData::DGCubatureData(DGMesh *m) {
   sy    = op_decl_dat(mesh->cells, 46, "double", sy_data, "cub-sy");
   J     = op_decl_dat(mesh->cells, 46, "double", J_data, "cub-J");
   mm    = op_decl_dat(mesh->cells, 15 * 15, "double", mm_data, "cub-mm");
-  mmInv = op_decl_dat(mesh->cells, 15 * 15, "double", mmInv_data, "cub-mmInv");
   tmp   = op_decl_dat(mesh->cells, 46 * 15, "double", tmp_data, "cub-tmp");
 
   for(int i = 0; i < 4; i++) {
@@ -50,7 +48,6 @@ DGCubatureData::~DGCubatureData() {
   free(sy_data);
   free(J_data);
   free(mm_data);
-  free(mmInv_data);
   free(tmp_data);
 
   for(int i = 0; i < 4; i++) {

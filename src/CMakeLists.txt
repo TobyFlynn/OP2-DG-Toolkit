@@ -6,11 +6,11 @@ list(APPEND KERNEL_HEADERS kernels/cub_div_weak.h kernels/inv_J.h)
 
 set(OPENBLAS_SRC openBLAS_op/init_grid_op.cpp openBLAS_op/op2_gemv_op.cpp openBLAS_op/op2_gemm_op.cpp)
 list(APPEND OPENBLAS_SRC openBLAS_op/op2_gemv_batch_op.cpp openBLAS_op/op2_gemm_batch_op.cpp)
-list(APPEND OPENBLAS_SRC openBLAS_op/init_gauss_op.cpp openBLAS_op/inv_mm_op.cpp)
+list(APPEND OPENBLAS_SRC openBLAS_op/init_gauss_op.cpp openBLAS_op/inv_op.cpp)
 
 set(CUBLAS_SRC cuBLAS_op/init_grid_op.cu cuBLAS_op/op2_gemv_op.cu cuBLAS_op/op2_gemm_op.cu)
 list(APPEND CUBLAS_SRC cuBLAS_op/op2_gemv_batch_op.cu cuBLAS_op/op2_gemm_batch_op.cu)
-list(APPEND CUBLAS_SRC cuBLAS_op/init_gauss_op.cu cuBLAS_op/inv_mm_op.cu)
+list(APPEND CUBLAS_SRC cuBLAS_op/init_gauss_op.cu cuBLAS_op/inv_op.cu)
 
 set(COMMON_SRC dg_mesh_op.cpp dg_operators_op.cpp)
 set(CPU_SRC dg_constants.cpp)
