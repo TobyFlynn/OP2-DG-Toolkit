@@ -23,7 +23,7 @@ include(OP2Application)
 find_package(OpenBLAS)
 
 if(NOT ARMA_DIR)
-  set(ARMA_DIR "/home/u1717021/Code/PhD/armadillo-10.5.3/build")
+  set(ARMA_DIR "/gpfs/users/tsf79-sxa03/armadillo-10.6.1/build")
 endif()
 
 enable_language(CUDA)
