@@ -22,6 +22,10 @@ include(OP2Application)
 
 find_package(OpenBLAS)
 
+if(NOT ARMA_DIR)
+  set(ARMA_DIR "/home/u1717021/Code/PhD/armadillo-10.5.3/build")
+endif()
+
 enable_language(CUDA)
 find_package(CUDAToolkit)
 include_directories(${CUDAToolkit_INCLUDE_DIRS})

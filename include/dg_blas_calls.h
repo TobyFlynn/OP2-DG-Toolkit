@@ -11,6 +11,8 @@ void init_grid_blas(DGMesh *mesh);
 
 void init_gauss_blas(DGMesh *mesh, DGGaussData *gaussData);
 
+void inv_blas(DGMesh *mesh, op_dat in, op_dat out);
+
 // Assumes matrix is in column major form and both op_dat are defined on the same set
 void op2_gemv(bool transpose, int m, int n, double alpha, double *A_ptr, int lda, op_dat x, double beta, op_dat y);
 
