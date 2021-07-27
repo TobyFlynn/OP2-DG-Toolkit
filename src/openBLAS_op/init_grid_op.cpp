@@ -21,6 +21,7 @@ extern "C" {
 #endif
 
 #include "dg_blas_calls.h"
+#include "dg_compiler_defs.h"
 
 inline void openblas_init_grid(const int numCells, const double *nodeX,
                                const double *nodeY, double *x, double *y,
@@ -31,39 +32,39 @@ inline void openblas_init_grid(const int numCells, const double *nodeX,
     const double n1[] = {nodeX[c * 3 + 1], nodeY[3 * c + 1]};
     const double n2[] = {nodeX[c * 3 + 2], nodeY[3 * c + 2]};
 
-    double temp[15];
-    double *x_c = x + c * 15;
-    double *y_c = y + c * 15;
-    double *xr_c = xr + c * 15;
-    double *xs_c = xs + c * 15;
-    double *yr_c = yr + c * 15;
-    double *ys_c = ys + c * 15;
+    double temp[DG_NP];
+    double *x_c = x + c * DG_NP;
+    double *y_c = y + c * DG_NP;
+    double *xr_c = xr + c * DG_NP;
+    double *xs_c = xs + c * DG_NP;
+    double *yr_c = yr + c * DG_NP;
+    double *ys_c = ys + c * DG_NP;
 
-    cblas_dcopy(15, constants->ones, 1, x_c, 1);
-    cblas_daxpy(15, 1.0, constants->r, 1, x_c, 1);
-    cblas_dscal(15, 0.5 * n1[0], x_c, 1);
-    cblas_dcopy(15, constants->ones, 1, temp, 1);
-    cblas_daxpy(15, 1.0, constants->s, 1, temp, 1);
-    cblas_daxpy(15, 0.5 * n2[0], temp, 1, x_c, 1);
-    cblas_dcopy(15, constants->s, 1, temp, 1);
-    cblas_daxpy(15, 1.0, constants->r, 1, temp, 1);
-    cblas_daxpy(15, -0.5 * n0[0], temp, 1, x_c, 1);
+    cblas_dcopy(DG_NP, constants->ones, 1, x_c, 1);
+    cblas_daxpy(DG_NP, 1.0, constants->r, 1, x_c, 1);
+    cblas_dscal(DG_NP, 0.5 * n1[0], x_c, 1);
+    cblas_dcopy(DG_NP, constants->ones, 1, temp, 1);
+    cblas_daxpy(DG_NP, 1.0, constants->s, 1, temp, 1);
+    cblas_daxpy(DG_NP, 0.5 * n2[0], temp, 1, x_c, 1);
+    cblas_dcopy(DG_NP, constants->s, 1, temp, 1);
+    cblas_daxpy(DG_NP, 1.0, constants->r, 1, temp, 1);
+    cblas_daxpy(DG_NP, -0.5 * n0[0], temp, 1, x_c, 1);
 
-    cblas_dcopy(15, constants->ones, 1, y_c, 1);
-    cblas_daxpy(15, 1.0, constants->r, 1, y_c, 1);
-    cblas_dscal(15, 0.5 * n1[1], y_c, 1);
-    cblas_dcopy(15, constants->ones, 1, temp, 1);
-    cblas_daxpy(15, 1.0, constants->s, 1, temp, 1);
-    cblas_daxpy(15, 0.5 * n2[1], temp, 1, y_c, 1);
-    cblas_dcopy(15, constants->s, 1, temp, 1);
-    cblas_daxpy(15, 1.0, constants->r, 1, temp, 1);
-    cblas_daxpy(15, -0.5 * n0[1], temp, 1, y_c, 1);
+    cblas_dcopy(DG_NP, constants->ones, 1, y_c, 1);
+    cblas_daxpy(DG_NP, 1.0, constants->r, 1, y_c, 1);
+    cblas_dscal(DG_NP, 0.5 * n1[1], y_c, 1);
+    cblas_dcopy(DG_NP, constants->ones, 1, temp, 1);
+    cblas_daxpy(DG_NP, 1.0, constants->s, 1, temp, 1);
+    cblas_daxpy(DG_NP, 0.5 * n2[1], temp, 1, y_c, 1);
+    cblas_dcopy(DG_NP, constants->s, 1, temp, 1);
+    cblas_daxpy(DG_NP, 1.0, constants->r, 1, temp, 1);
+    cblas_daxpy(DG_NP, -0.5 * n0[1], temp, 1, y_c, 1);
   }
 
-  cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, 15, numCells, 15, 1.0, constants->Dr, 15, x, 15, 0.0, xr, 15);
-  cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, 15, numCells, 15, 1.0, constants->Ds, 15, x, 15, 0.0, xs, 15);
-  cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, 15, numCells, 15, 1.0, constants->Dr, 15, y, 15, 0.0, yr, 15);
-  cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, 15, numCells, 15, 1.0, constants->Ds, 15, y, 15, 0.0, ys, 15);
+  cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, DG_NP, numCells, DG_NP, 1.0, constants->Dr, DG_NP, x, DG_NP, 0.0, xr, DG_NP);
+  cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, DG_NP, numCells, DG_NP, 1.0, constants->Ds, DG_NP, x, DG_NP, 0.0, xs, DG_NP);
+  cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, DG_NP, numCells, DG_NP, 1.0, constants->Dr, DG_NP, y, DG_NP, 0.0, yr, DG_NP);
+  cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, DG_NP, numCells, DG_NP, 1.0, constants->Ds, DG_NP, y, DG_NP, 0.0, ys, DG_NP);
 }
 
 void init_grid_blas(DGMesh *mesh) {
@@ -71,12 +72,12 @@ void init_grid_blas(DGMesh *mesh) {
   op_arg init_grid_args[] = {
     op_arg_dat(mesh->nodeX, -1, OP_ID, 3, "double", OP_READ),
     op_arg_dat(mesh->nodeY, -1, OP_ID, 3, "double", OP_READ),
-    op_arg_dat(mesh->x, -1, OP_ID, 15, "double", OP_WRITE),
-    op_arg_dat(mesh->y, -1, OP_ID, 15, "double", OP_WRITE),
-    op_arg_dat(mesh->rx, -1, OP_ID, 15, "double", OP_WRITE),
-    op_arg_dat(mesh->sx, -1, OP_ID, 15, "double", OP_WRITE),
-    op_arg_dat(mesh->ry, -1, OP_ID, 15, "double", OP_WRITE),
-    op_arg_dat(mesh->sy, -1, OP_ID, 15, "double", OP_WRITE)
+    op_arg_dat(mesh->x, -1, OP_ID, DG_NP, "double", OP_WRITE),
+    op_arg_dat(mesh->y, -1, OP_ID, DG_NP, "double", OP_WRITE),
+    op_arg_dat(mesh->rx, -1, OP_ID, DG_NP, "double", OP_WRITE),
+    op_arg_dat(mesh->sx, -1, OP_ID, DG_NP, "double", OP_WRITE),
+    op_arg_dat(mesh->ry, -1, OP_ID, DG_NP, "double", OP_WRITE),
+    op_arg_dat(mesh->sy, -1, OP_ID, DG_NP, "double", OP_WRITE)
   };
   op_mpi_halo_exchanges(mesh->cells, 8, init_grid_args);
 
