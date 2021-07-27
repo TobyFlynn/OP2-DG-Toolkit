@@ -50,9 +50,9 @@ void op_par_loop_inv_J(char const *name, op_set set,
     #pragma acc parallel loop independent deviceptr(data0,data1,data2)
     for ( int n=0; n<set->size; n++ ){
       inv_J_openacc(
-        &data0[15*n],
-        &data1[15*n],
-        &data2[15*n]);
+        &data0[DG_NP*n],
+        &data1[DG_NP*n],
+        &data2[DG_NP*n]);
     }
   }
 

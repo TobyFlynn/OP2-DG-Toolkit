@@ -26,13 +26,13 @@ void cub_grad_omp4_kernel(
   #pragma omp distribute parallel for schedule(static,1)
   for ( int n_op=0; n_op<count; n_op++ ){
     //variable mapping
-    const double *rx = &data0[46*n_op];
-    const double *sx = &data1[46*n_op];
-    const double *ry = &data2[46*n_op];
-    const double *sy = &data3[46*n_op];
-    const double *J = &data4[46*n_op];
-    double *temp0 = &data5[46*n_op];
-    double *temp1 = &data6[46*n_op];
+    const double *rx = &data0[DG_CUB_NP*n_op];
+    const double *sx = &data1[DG_CUB_NP*n_op];
+    const double *ry = &data2[DG_CUB_NP*n_op];
+    const double *sy = &data3[DG_CUB_NP*n_op];
+    const double *J = &data4[DG_CUB_NP*n_op];
+    double *temp0 = &data5[DG_CUB_NP*n_op];
+    double *temp1 = &data6[DG_CUB_NP*n_op];
 
     //inline function
     

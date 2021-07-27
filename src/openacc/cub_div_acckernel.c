@@ -72,15 +72,15 @@ void op_par_loop_cub_div(char const *name, op_set set,
     #pragma acc parallel loop independent deviceptr(data0,data1,data2,data3,data4,data5,data6,data7,data8)
     for ( int n=0; n<set->size; n++ ){
       cub_div_openacc(
-        &data0[46*n],
-        &data1[46*n],
-        &data2[46*n],
-        &data3[46*n],
-        &data4[46*n],
-        &data5[46*n],
-        &data6[46*n],
-        &data7[46*n],
-        &data8[46*n]);
+        &data0[DG_CUB_NP*n],
+        &data1[DG_CUB_NP*n],
+        &data2[DG_CUB_NP*n],
+        &data3[DG_CUB_NP*n],
+        &data4[DG_CUB_NP*n],
+        &data5[DG_CUB_NP*n],
+        &data6[DG_CUB_NP*n],
+        &data7[DG_CUB_NP*n],
+        &data8[DG_CUB_NP*n]);
     }
   }
 

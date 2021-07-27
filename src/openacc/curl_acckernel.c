@@ -70,15 +70,15 @@ void op_par_loop_curl(char const *name, op_set set,
     #pragma acc parallel loop independent deviceptr(data0,data1,data2,data3,data4,data5,data6,data7,data8)
     for ( int n=0; n<set->size; n++ ){
       curl_openacc(
-        &data0[15*n],
-        &data1[15*n],
-        &data2[15*n],
-        &data3[15*n],
-        &data4[15*n],
-        &data5[15*n],
-        &data6[15*n],
-        &data7[15*n],
-        &data8[15*n]);
+        &data0[DG_NP*n],
+        &data1[DG_NP*n],
+        &data2[DG_NP*n],
+        &data3[DG_NP*n],
+        &data4[DG_NP*n],
+        &data5[DG_NP*n],
+        &data6[DG_NP*n],
+        &data7[DG_NP*n],
+        &data8[DG_NP*n]);
     }
   }
 

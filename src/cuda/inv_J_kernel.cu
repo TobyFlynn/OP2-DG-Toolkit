@@ -22,9 +22,9 @@ __global__ void op_cuda_inv_J(
   for ( int n=threadIdx.x+blockIdx.x*blockDim.x; n<set_size; n+=blockDim.x*gridDim.x ){
 
     //user-supplied kernel call
-    inv_J_gpu(arg0+n*15,
-          arg1+n*15,
-          arg2+n*15);
+    inv_J_gpu(arg0+n*DG_NP,
+          arg1+n*DG_NP,
+          arg2+n*DG_NP);
   }
 }
 

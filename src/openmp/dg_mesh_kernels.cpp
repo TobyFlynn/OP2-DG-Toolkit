@@ -6,6 +6,8 @@
   #include <omp.h>
 #endif
 
+#include "dg_compiler_defs.h"
+
 // global constants
 extern int FMASK[15];
 extern double cubW_g[46];

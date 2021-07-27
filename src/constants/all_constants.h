@@ -1,6 +1,8 @@
 #ifndef __ALL_CONSTANTS_H
 #define __ALL_CONSTANTS_H
 
+#if DG_ORDER == 4
+
 #include "order-4/constant_r.h"
 #include "order-4/constant_s.h"
 #include "order-4/constant_Dr.h"
@@ -37,5 +39,46 @@
 #include "order-4/constant_gF1DsR.h"
 #include "order-4/constant_gF2DrR.h"
 #include "order-4/constant_gF2DsR.h"
+
+#elif DG_ORDER == 3
+
+#include "order-3/constant_r.h"
+#include "order-3/constant_s.h"
+#include "order-3/constant_Dr.h"
+#include "order-3/constant_Ds.h"
+#include "order-3/constant_Drw.h"
+#include "order-3/constant_Dsw.h"
+#include "order-3/constant_lift.h"
+#include "order-3/constant_mass.h"
+#include "order-3/constant_invMass.h"
+#include "order-3/constant_util.h"
+#include "order-3/constant_cubDr.h"
+#include "order-3/constant_cubDs.h"
+#include "order-3/constant_cubV.h"
+#include "order-3/constant_cubW.h"
+#include "order-3/constant_cubVDr.h"
+#include "order-3/constant_cubVDs.h"
+#include "order-3/constant_gFInterp0.h"
+#include "order-3/constant_gFInterp1.h"
+#include "order-3/constant_gFInterp2.h"
+#include "order-3/constant_gF0Dr.h"
+#include "order-3/constant_gF0Ds.h"
+#include "order-3/constant_gF1Dr.h"
+#include "order-3/constant_gF1Ds.h"
+#include "order-3/constant_gF2Dr.h"
+#include "order-3/constant_gF2Ds.h"
+#include "order-3/constant_gaussW.h"
+#include "order-3/constant_gInterp.h"
+#include "order-3/constant_gFInterp0R.h"
+#include "order-3/constant_gFInterp1R.h"
+#include "order-3/constant_gFInterp2R.h"
+#include "order-3/constant_gF0DrR.h"
+#include "order-3/constant_gF0DsR.h"
+#include "order-3/constant_gF1DrR.h"
+#include "order-3/constant_gF1DsR.h"
+#include "order-3/constant_gF2DrR.h"
+#include "order-3/constant_gF2DsR.h"
+
+#endif
 
 #endif

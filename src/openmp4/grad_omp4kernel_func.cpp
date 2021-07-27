@@ -27,14 +27,14 @@ void grad_omp4_kernel(
   #pragma omp distribute parallel for schedule(static,1)
   for ( int n_op=0; n_op<count; n_op++ ){
     //variable mapping
-    const double *div0 = &data0[15*n_op];
-    const double *div1 = &data1[15*n_op];
-    const double *rx = &data2[15*n_op];
-    const double *sx = &data3[15*n_op];
-    const double *ry = &data4[15*n_op];
-    const double *sy = &data5[15*n_op];
-    double *ux = &data6[15*n_op];
-    double *uy = &data7[15*n_op];
+    const double *div0 = &data0[DG_NP*n_op];
+    const double *div1 = &data1[DG_NP*n_op];
+    const double *rx = &data2[DG_NP*n_op];
+    const double *sx = &data3[DG_NP*n_op];
+    const double *ry = &data4[DG_NP*n_op];
+    const double *sy = &data5[DG_NP*n_op];
+    double *ux = &data6[DG_NP*n_op];
+    double *uy = &data7[DG_NP*n_op];
 
     //inline function
     

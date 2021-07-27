@@ -46,15 +46,15 @@ void op_par_loop_cub_div_weak(char const *name, op_set set,
 
     for ( int n=0; n<set_size; n++ ){
       cub_div_weak(
-        &((double*)arg0.data)[46*n],
-        &((double*)arg1.data)[46*n],
-        &((double*)arg2.data)[46*n],
-        &((double*)arg3.data)[46*n],
-        &((double*)arg4.data)[46*n],
-        &((double*)arg5.data)[46*n],
-        &((double*)arg6.data)[46*n],
-        &((double*)arg7.data)[46*n],
-        &((double*)arg8.data)[46*n]);
+        &((double*)arg0.data)[DG_CUB_NP*n],
+        &((double*)arg1.data)[DG_CUB_NP*n],
+        &((double*)arg2.data)[DG_CUB_NP*n],
+        &((double*)arg3.data)[DG_CUB_NP*n],
+        &((double*)arg4.data)[DG_CUB_NP*n],
+        &((double*)arg5.data)[DG_CUB_NP*n],
+        &((double*)arg6.data)[DG_CUB_NP*n],
+        &((double*)arg7.data)[DG_CUB_NP*n],
+        &((double*)arg8.data)[DG_CUB_NP*n]);
     }
   }
 

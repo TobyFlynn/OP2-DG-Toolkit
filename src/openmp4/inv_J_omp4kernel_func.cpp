@@ -17,9 +17,9 @@ void inv_J_omp4_kernel(
   #pragma omp distribute parallel for schedule(static,1)
   for ( int n_op=0; n_op<count; n_op++ ){
     //variable mapping
-    const double *J = &data0[15*n_op];
-    const double *tmp = &data1[15*n_op];
-    double *u = &data2[15*n_op];
+    const double *J = &data0[DG_NP*n_op];
+    const double *tmp = &data1[DG_NP*n_op];
+    double *u = &data2[DG_NP*n_op];
 
     //inline function
     

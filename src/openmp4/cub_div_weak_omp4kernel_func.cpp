@@ -30,15 +30,15 @@ void cub_div_weak_omp4_kernel(
   #pragma omp distribute parallel for schedule(static,1)
   for ( int n_op=0; n_op<count; n_op++ ){
     //variable mapping
-    double *temp0 = &data0[46*n_op];
-    double *temp1 = &data1[46*n_op];
-    const double *rx = &data2[46*n_op];
-    const double *sx = &data3[46*n_op];
-    const double *ry = &data4[46*n_op];
-    const double *sy = &data5[46*n_op];
-    const double *J = &data6[46*n_op];
-    double *temp2 = &data7[46*n_op];
-    double *temp3 = &data8[46*n_op];
+    double *temp0 = &data0[DG_CUB_NP*n_op];
+    double *temp1 = &data1[DG_CUB_NP*n_op];
+    const double *rx = &data2[DG_CUB_NP*n_op];
+    const double *sx = &data3[DG_CUB_NP*n_op];
+    const double *ry = &data4[DG_CUB_NP*n_op];
+    const double *sy = &data5[DG_CUB_NP*n_op];
+    const double *J = &data6[DG_CUB_NP*n_op];
+    double *temp2 = &data7[DG_CUB_NP*n_op];
+    double *temp3 = &data8[DG_CUB_NP*n_op];
 
     //inline function
     
