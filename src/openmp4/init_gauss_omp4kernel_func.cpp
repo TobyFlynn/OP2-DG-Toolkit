@@ -25,13 +25,13 @@ void init_gauss_omp4_kernel(
   #pragma omp distribute parallel for schedule(static,1)
   for ( int n_op=0; n_op<count; n_op++ ){
     //variable mapping
-    double *rx = &data0[21*n_op];
-    double *sx = &data1[21*n_op];
-    double *ry = &data2[21*n_op];
-    double *sy = &data3[21*n_op];
-    double *nx = &data4[21*n_op];
-    double *ny = &data5[21*n_op];
-    double *sJ = &data6[21*n_op];
+    double *rx = &data0[DG_G_NP*n_op];
+    double *sx = &data1[DG_G_NP*n_op];
+    double *ry = &data2[DG_G_NP*n_op];
+    double *sy = &data3[DG_G_NP*n_op];
+    double *nx = &data4[DG_G_NP*n_op];
+    double *ny = &data5[DG_G_NP*n_op];
+    double *sJ = &data6[DG_G_NP*n_op];
 
     //inline function
     

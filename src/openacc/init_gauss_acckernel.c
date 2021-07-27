@@ -99,13 +99,13 @@ void op_par_loop_init_gauss(char const *name, op_set set,
     #pragma acc parallel loop independent deviceptr(data0,data1,data2,data3,data4,data5,data6)
     for ( int n=0; n<set->size; n++ ){
       init_gauss_openacc(
-        &data0[21*n],
-        &data1[21*n],
-        &data2[21*n],
-        &data3[21*n],
-        &data4[21*n],
-        &data5[21*n],
-        &data6[21*n]);
+        &data0[DG_G_NP*n],
+        &data1[DG_G_NP*n],
+        &data2[DG_G_NP*n],
+        &data3[DG_G_NP*n],
+        &data4[DG_G_NP*n],
+        &data5[DG_G_NP*n],
+        &data6[DG_G_NP*n]);
     }
   }
 

@@ -79,12 +79,12 @@ void op_par_loop_init_cubature(char const *name, op_set set,
     #pragma acc parallel loop independent deviceptr(data0,data1,data2,data3,data4,data5)
     for ( int n=0; n<set->size; n++ ){
       init_cubature_openacc(
-        &data0[46*n],
-        &data1[46*n],
-        &data2[46*n],
-        &data3[46*n],
-        &data4[46*n],
-        &data5[690*n]);
+        &data0[DG_CUB_NP*n],
+        &data1[DG_CUB_NP*n],
+        &data2[DG_CUB_NP*n],
+        &data3[DG_CUB_NP*n],
+        &data4[DG_CUB_NP*n],
+        &data5[DG_CUB_NP * DG_NP*n]);
     }
   }
 

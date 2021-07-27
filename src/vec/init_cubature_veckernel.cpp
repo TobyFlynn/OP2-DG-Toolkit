@@ -82,12 +82,12 @@ void op_par_loop_init_cubature(char const *name, op_set set,
       #pragma omp simd simdlen(SIMD_VEC)
       for ( int i=0; i<SIMD_VEC; i++ ){
         init_cubature(
-          &(ptr0)[46 * (n+i)],
-          &(ptr1)[46 * (n+i)],
-          &(ptr2)[46 * (n+i)],
-          &(ptr3)[46 * (n+i)],
-          &(ptr4)[46 * (n+i)],
-          &(ptr5)[690 * (n+i)]);
+          &(ptr0)[DG_CUB_NP * (n+i)],
+          &(ptr1)[DG_CUB_NP * (n+i)],
+          &(ptr2)[DG_CUB_NP * (n+i)],
+          &(ptr3)[DG_CUB_NP * (n+i)],
+          &(ptr4)[DG_CUB_NP * (n+i)],
+          &(ptr5)[DG_CUB_NP * DG_NP * (n+i)]);
       }
     }
     //remainder
@@ -96,12 +96,12 @@ void op_par_loop_init_cubature(char const *name, op_set set,
     for ( int n=0; n<exec_size; n++ ){
     #endif
       init_cubature(
-        &(ptr0)[46*n],
-        &(ptr1)[46*n],
-        &(ptr2)[46*n],
-        &(ptr3)[46*n],
-        &(ptr4)[46*n],
-        &(ptr5)[690*n]);
+        &(ptr0)[DG_CUB_NP*n],
+        &(ptr1)[DG_CUB_NP*n],
+        &(ptr2)[DG_CUB_NP*n],
+        &(ptr3)[DG_CUB_NP*n],
+        &(ptr4)[DG_CUB_NP*n],
+        &(ptr5)[DG_CUB_NP * DG_NP*n]);
     }
   }
 

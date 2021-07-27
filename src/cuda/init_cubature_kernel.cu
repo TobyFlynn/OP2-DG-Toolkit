@@ -45,12 +45,12 @@ __global__ void op_cuda_init_cubature(
   for ( int n=threadIdx.x+blockIdx.x*blockDim.x; n<set_size; n+=blockDim.x*gridDim.x ){
 
     //user-supplied kernel call
-    init_cubature_gpu(arg0+n*46,
-                  arg1+n*46,
-                  arg2+n*46,
-                  arg3+n*46,
-                  arg4+n*46,
-                  arg5+n*690);
+    init_cubature_gpu(arg0+n*DG_CUB_NP,
+                  arg1+n*DG_CUB_NP,
+                  arg2+n*DG_CUB_NP,
+                  arg3+n*DG_CUB_NP,
+                  arg4+n*DG_CUB_NP,
+                  arg5+n*DG_CUB_NP * DG_NP);
   }
 }
 

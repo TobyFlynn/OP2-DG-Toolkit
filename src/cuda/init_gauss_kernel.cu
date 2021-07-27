@@ -63,13 +63,13 @@ __global__ void op_cuda_init_gauss(
   for ( int n=threadIdx.x+blockIdx.x*blockDim.x; n<set_size; n+=blockDim.x*gridDim.x ){
 
     //user-supplied kernel call
-    init_gauss_gpu(arg0+n*21,
-               arg1+n*21,
-               arg2+n*21,
-               arg3+n*21,
-               arg4+n*21,
-               arg5+n*21,
-               arg6+n*21);
+    init_gauss_gpu(arg0+n*DG_G_NP,
+               arg1+n*DG_G_NP,
+               arg2+n*DG_G_NP,
+               arg3+n*DG_G_NP,
+               arg4+n*DG_G_NP,
+               arg5+n*DG_G_NP,
+               arg6+n*DG_G_NP);
   }
 }
 

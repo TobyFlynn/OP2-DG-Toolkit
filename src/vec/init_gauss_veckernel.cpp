@@ -106,13 +106,13 @@ void op_par_loop_init_gauss(char const *name, op_set set,
       #pragma omp simd simdlen(SIMD_VEC)
       for ( int i=0; i<SIMD_VEC; i++ ){
         init_gauss(
-          &(ptr0)[21 * (n+i)],
-          &(ptr1)[21 * (n+i)],
-          &(ptr2)[21 * (n+i)],
-          &(ptr3)[21 * (n+i)],
-          &(ptr4)[21 * (n+i)],
-          &(ptr5)[21 * (n+i)],
-          &(ptr6)[21 * (n+i)]);
+          &(ptr0)[DG_G_NP * (n+i)],
+          &(ptr1)[DG_G_NP * (n+i)],
+          &(ptr2)[DG_G_NP * (n+i)],
+          &(ptr3)[DG_G_NP * (n+i)],
+          &(ptr4)[DG_G_NP * (n+i)],
+          &(ptr5)[DG_G_NP * (n+i)],
+          &(ptr6)[DG_G_NP * (n+i)]);
       }
     }
     //remainder
@@ -121,13 +121,13 @@ void op_par_loop_init_gauss(char const *name, op_set set,
     for ( int n=0; n<exec_size; n++ ){
     #endif
       init_gauss(
-        &(ptr0)[21*n],
-        &(ptr1)[21*n],
-        &(ptr2)[21*n],
-        &(ptr3)[21*n],
-        &(ptr4)[21*n],
-        &(ptr5)[21*n],
-        &(ptr6)[21*n]);
+        &(ptr0)[DG_G_NP*n],
+        &(ptr1)[DG_G_NP*n],
+        &(ptr2)[DG_G_NP*n],
+        &(ptr3)[DG_G_NP*n],
+        &(ptr4)[DG_G_NP*n],
+        &(ptr5)[DG_G_NP*n],
+        &(ptr6)[DG_G_NP*n]);
     }
   }
 

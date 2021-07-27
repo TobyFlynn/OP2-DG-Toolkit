@@ -65,6 +65,7 @@ void op_par_loop_init_edges(char const *, op_set,
 
 #include "constants/all_constants.h"
 #include "dg_blas_calls.h"
+#include "dg_compiler_defs.h"
 
 using namespace std;
 
@@ -73,29 +74,29 @@ void set_cuda_const();
 DGCubatureData::DGCubatureData(DGMesh *m) {
   mesh = m;
 
-  rx_data    = (double *)calloc(46 * mesh->numCells, sizeof(double));
-  sx_data    = (double *)calloc(46 * mesh->numCells, sizeof(double));
-  ry_data    = (double *)calloc(46 * mesh->numCells, sizeof(double));
-  sy_data    = (double *)calloc(46 * mesh->numCells, sizeof(double));
-  J_data     = (double *)calloc(46 * mesh->numCells, sizeof(double));
-  mm_data    = (double *)calloc(15 * 15 * mesh->numCells, sizeof(double));
-  tmp_data   = (double *)calloc(46 * 15 * mesh->numCells, sizeof(double));
+  rx_data    = (double *)calloc(DG_CUB_NP * mesh->numCells, sizeof(double));
+  sx_data    = (double *)calloc(DG_CUB_NP * mesh->numCells, sizeof(double));
+  ry_data    = (double *)calloc(DG_CUB_NP * mesh->numCells, sizeof(double));
+  sy_data    = (double *)calloc(DG_CUB_NP * mesh->numCells, sizeof(double));
+  J_data     = (double *)calloc(DG_CUB_NP * mesh->numCells, sizeof(double));
+  mm_data    = (double *)calloc(DG_NP * DG_NP * mesh->numCells, sizeof(double));
+  tmp_data   = (double *)calloc(DG_CUB_NP * DG_NP * mesh->numCells, sizeof(double));
 
   for(int i = 0; i < 4; i++) {
-    op_tmp_data[i] = (double *)calloc(46 * mesh->numCells, sizeof(double));
+    op_tmp_data[i] = (double *)calloc(DG_CUB_NP * mesh->numCells, sizeof(double));
   }
 
-  rx    = op_decl_dat(mesh->cells, 46, "double", rx_data, "cub-rx");
-  sx    = op_decl_dat(mesh->cells, 46, "double", sx_data, "cub-sx");
-  ry    = op_decl_dat(mesh->cells, 46, "double", ry_data, "cub-ry");
-  sy    = op_decl_dat(mesh->cells, 46, "double", sy_data, "cub-sy");
-  J     = op_decl_dat(mesh->cells, 46, "double", J_data, "cub-J");
-  mm    = op_decl_dat(mesh->cells, 15 * 15, "double", mm_data, "cub-mm");
-  tmp   = op_decl_dat(mesh->cells, 46 * 15, "double", tmp_data, "cub-tmp");
+  rx    = op_decl_dat(mesh->cells, DG_CUB_NP, "double", rx_data, "cub-rx");
+  sx    = op_decl_dat(mesh->cells, DG_CUB_NP, "double", sx_data, "cub-sx");
+  ry    = op_decl_dat(mesh->cells, DG_CUB_NP, "double", ry_data, "cub-ry");
+  sy    = op_decl_dat(mesh->cells, DG_CUB_NP, "double", sy_data, "cub-sy");
+  J     = op_decl_dat(mesh->cells, DG_CUB_NP, "double", J_data, "cub-J");
+  mm    = op_decl_dat(mesh->cells, DG_NP * DG_NP, "double", mm_data, "cub-mm");
+  tmp   = op_decl_dat(mesh->cells, DG_CUB_NP * DG_NP, "double", tmp_data, "cub-tmp");
 
   for(int i = 0; i < 4; i++) {
     string tmpname = "cub-op_tmp" + to_string(i);
-    op_tmp[i] = op_decl_dat(mesh->cells, 46, "double", op_tmp_data[i], tmpname.c_str());
+    op_tmp[i] = op_decl_dat(mesh->cells, DG_CUB_NP, "double", op_tmp_data[i], tmpname.c_str());
   }
 }
 
@@ -115,45 +116,45 @@ DGCubatureData::~DGCubatureData() {
 
 void DGCubatureData::init() {
   // Calculate geometric factors for cubature volume nodes
-  op2_gemv(true, 46, 15, 1.0, constants->get_ptr(DGConstants::CUB_DR), 15, mesh->x, 0.0, rx);
-  op2_gemv(true, 46, 15, 1.0, constants->get_ptr(DGConstants::CUB_DS), 15, mesh->x, 0.0, sx);
-  op2_gemv(true, 46, 15, 1.0, constants->get_ptr(DGConstants::CUB_DR), 15, mesh->y, 0.0, ry);
-  op2_gemv(true, 46, 15, 1.0, constants->get_ptr(DGConstants::CUB_DS), 15, mesh->y, 0.0, sy);
+  op2_gemv(true, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DR), DG_NP, mesh->x, 0.0, rx);
+  op2_gemv(true, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DS), DG_NP, mesh->x, 0.0, sx);
+  op2_gemv(true, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DR), DG_NP, mesh->y, 0.0, ry);
+  op2_gemv(true, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DS), DG_NP, mesh->y, 0.0, sy);
 
   op_par_loop_init_cubature("init_cubature",mesh->cells,
-              op_arg_dat(rx,-1,OP_ID,46,"double",OP_RW),
-              op_arg_dat(sx,-1,OP_ID,46,"double",OP_RW),
-              op_arg_dat(ry,-1,OP_ID,46,"double",OP_RW),
-              op_arg_dat(sy,-1,OP_ID,46,"double",OP_RW),
-              op_arg_dat(J,-1,OP_ID,46,"double",OP_WRITE),
-              op_arg_dat(tmp,-1,OP_ID,690,"double",OP_WRITE));
+              op_arg_dat(rx,-1,OP_ID,DG_CUB_NP,"double",OP_RW),
+              op_arg_dat(sx,-1,OP_ID,DG_CUB_NP,"double",OP_RW),
+              op_arg_dat(ry,-1,OP_ID,DG_CUB_NP,"double",OP_RW),
+              op_arg_dat(sy,-1,OP_ID,DG_CUB_NP,"double",OP_RW),
+              op_arg_dat(J,-1,OP_ID,DG_CUB_NP,"double",OP_WRITE),
+              op_arg_dat(tmp,-1,OP_ID,DG_CUB_NP * DG_NP,"double",OP_WRITE));
   // Temp is in row-major at this point
-  op2_gemm(false, true, 15, 15, 46, 1.0, constants->get_ptr(DGConstants::CUB_V), 15, tmp, 15, 0.0, mm, 15);
+  op2_gemm(false, true, DG_NP, DG_NP, DG_CUB_NP, 1.0, constants->get_ptr(DGConstants::CUB_V), DG_NP, tmp, DG_NP, 0.0, mm, DG_NP);
   // mm is in col-major at this point
 }
 
 DGGaussData::DGGaussData(DGMesh *m) {
   mesh = m;
 
-  x_data  = (double *)calloc(21 * mesh->numCells, sizeof(double));
-  y_data  = (double *)calloc(21 * mesh->numCells, sizeof(double));
-  rx_data = (double *)calloc(21 * mesh->numCells, sizeof(double));
-  sx_data = (double *)calloc(21 * mesh->numCells, sizeof(double));
-  ry_data = (double *)calloc(21 * mesh->numCells, sizeof(double));
-  sy_data = (double *)calloc(21 * mesh->numCells, sizeof(double));
-  sJ_data = (double *)calloc(21 * mesh->numCells, sizeof(double));
-  nx_data = (double *)calloc(21 * mesh->numCells, sizeof(double));
-  ny_data = (double *)calloc(21 * mesh->numCells, sizeof(double));
+  x_data  = (double *)calloc(DG_G_NP * mesh->numCells, sizeof(double));
+  y_data  = (double *)calloc(DG_G_NP * mesh->numCells, sizeof(double));
+  rx_data = (double *)calloc(DG_G_NP * mesh->numCells, sizeof(double));
+  sx_data = (double *)calloc(DG_G_NP * mesh->numCells, sizeof(double));
+  ry_data = (double *)calloc(DG_G_NP * mesh->numCells, sizeof(double));
+  sy_data = (double *)calloc(DG_G_NP * mesh->numCells, sizeof(double));
+  sJ_data = (double *)calloc(DG_G_NP * mesh->numCells, sizeof(double));
+  nx_data = (double *)calloc(DG_G_NP * mesh->numCells, sizeof(double));
+  ny_data = (double *)calloc(DG_G_NP * mesh->numCells, sizeof(double));
 
-  x  = op_decl_dat(mesh->cells, 21, "double", x_data, "gauss-x");
-  y  = op_decl_dat(mesh->cells, 21, "double", y_data, "gauss-y");
-  rx = op_decl_dat(mesh->cells, 21, "double", rx_data, "gauss-rx");
-  sx = op_decl_dat(mesh->cells, 21, "double", sx_data, "gauss-sx");
-  ry = op_decl_dat(mesh->cells, 21, "double", ry_data, "gauss-ry");
-  sy = op_decl_dat(mesh->cells, 21, "double", sy_data, "gauss-sy");
-  sJ = op_decl_dat(mesh->cells, 21, "double", sJ_data, "gauss-sJ");
-  nx = op_decl_dat(mesh->cells, 21, "double", nx_data, "gauss-nx");
-  ny = op_decl_dat(mesh->cells, 21, "double", ny_data, "gauss-ny");
+  x  = op_decl_dat(mesh->cells, DG_G_NP, "double", x_data, "gauss-x");
+  y  = op_decl_dat(mesh->cells, DG_G_NP, "double", y_data, "gauss-y");
+  rx = op_decl_dat(mesh->cells, DG_G_NP, "double", rx_data, "gauss-rx");
+  sx = op_decl_dat(mesh->cells, DG_G_NP, "double", sx_data, "gauss-sx");
+  ry = op_decl_dat(mesh->cells, DG_G_NP, "double", ry_data, "gauss-ry");
+  sy = op_decl_dat(mesh->cells, DG_G_NP, "double", sy_data, "gauss-sy");
+  sJ = op_decl_dat(mesh->cells, DG_G_NP, "double", sJ_data, "gauss-sJ");
+  nx = op_decl_dat(mesh->cells, DG_G_NP, "double", nx_data, "gauss-nx");
+  ny = op_decl_dat(mesh->cells, DG_G_NP, "double", ny_data, "gauss-ny");
 }
 
 DGGaussData::~DGGaussData() {
@@ -169,20 +170,20 @@ DGGaussData::~DGGaussData() {
 }
 
 void DGGaussData::init() {
-  op2_gemv(true, 21, 15, 1.0, constants->get_ptr(DGConstants::GAUSS_INTERP), 15, mesh->x, 0.0, x);
-  op2_gemv(true, 21, 15, 1.0, constants->get_ptr(DGConstants::GAUSS_INTERP), 15, mesh->y, 0.0, y);
+  op2_gemv(true, DG_G_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::GAUSS_INTERP), DG_NP, mesh->x, 0.0, x);
+  op2_gemv(true, DG_G_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::GAUSS_INTERP), DG_NP, mesh->y, 0.0, y);
 
   // Initialise geometric factors for Gauss nodes
   init_gauss_blas(mesh, this);
 
   op_par_loop_init_gauss("init_gauss",mesh->cells,
-              op_arg_dat(rx,-1,OP_ID,21,"double",OP_RW),
-              op_arg_dat(sx,-1,OP_ID,21,"double",OP_RW),
-              op_arg_dat(ry,-1,OP_ID,21,"double",OP_RW),
-              op_arg_dat(sy,-1,OP_ID,21,"double",OP_RW),
-              op_arg_dat(nx,-1,OP_ID,21,"double",OP_WRITE),
-              op_arg_dat(ny,-1,OP_ID,21,"double",OP_WRITE),
-              op_arg_dat(sJ,-1,OP_ID,21,"double",OP_WRITE));
+              op_arg_dat(rx,-1,OP_ID,DG_G_NP,"double",OP_RW),
+              op_arg_dat(sx,-1,OP_ID,DG_G_NP,"double",OP_RW),
+              op_arg_dat(ry,-1,OP_ID,DG_G_NP,"double",OP_RW),
+              op_arg_dat(sy,-1,OP_ID,DG_G_NP,"double",OP_RW),
+              op_arg_dat(nx,-1,OP_ID,DG_G_NP,"double",OP_WRITE),
+              op_arg_dat(ny,-1,OP_ID,DG_G_NP,"double",OP_WRITE),
+              op_arg_dat(sJ,-1,OP_ID,DG_G_NP,"double",OP_WRITE));
 }
 
 DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
@@ -212,20 +213,20 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   // Initialise memory
   nodeX_data   = (double*)calloc(3 * numCells, sizeof(double));
   nodeY_data   = (double*)calloc(3 * numCells, sizeof(double));
-  x_data       = (double *)calloc(15 * numCells, sizeof(double));
-  y_data       = (double *)calloc(15 * numCells, sizeof(double));
-  rx_data      = (double *)calloc(15 * numCells, sizeof(double));
-  ry_data      = (double *)calloc(15 * numCells, sizeof(double));
-  sx_data      = (double *)calloc(15 * numCells, sizeof(double));
-  sy_data      = (double *)calloc(15 * numCells, sizeof(double));
-  nx_data      = (double *)calloc(15 * numCells, sizeof(double));
-  ny_data      = (double *)calloc(15 * numCells, sizeof(double));
-  J_data       = (double *)calloc(15 * numCells, sizeof(double));
-  sJ_data      = (double *)calloc(15 * numCells, sizeof(double));
-  fscale_data  = (double *)calloc(15 * numCells, sizeof(double));
+  x_data       = (double *)calloc(DG_NP * numCells, sizeof(double));
+  y_data       = (double *)calloc(DG_NP * numCells, sizeof(double));
+  rx_data      = (double *)calloc(DG_NP * numCells, sizeof(double));
+  ry_data      = (double *)calloc(DG_NP * numCells, sizeof(double));
+  sx_data      = (double *)calloc(DG_NP * numCells, sizeof(double));
+  sy_data      = (double *)calloc(DG_NP * numCells, sizeof(double));
+  nx_data      = (double *)calloc(DG_NP * numCells, sizeof(double));
+  ny_data      = (double *)calloc(DG_NP * numCells, sizeof(double));
+  J_data       = (double *)calloc(DG_NP * numCells, sizeof(double));
+  sJ_data      = (double *)calloc(DG_NP * numCells, sizeof(double));
+  fscale_data  = (double *)calloc(DG_NP * numCells, sizeof(double));
   reverse_data = (bool *)calloc(numEdges, sizeof(bool));
   for(int i = 0; i < 4; i++) {
-    op_tmp_data[i] = (double *)calloc(15 * numCells, sizeof(double));
+    op_tmp_data[i] = (double *)calloc(DG_NP * numCells, sizeof(double));
   }
 
   // Initialise OP2
@@ -249,56 +250,56 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   nodeX = op_decl_dat(cells, 3, "double", nodeX_data, "nodeX");
   nodeY = op_decl_dat(cells, 3, "double", nodeY_data, "nodeY");
     // The x and y coordinates of all the solution points in a cell
-  x = op_decl_dat(cells, 15, "double", x_data, "x");
-  y = op_decl_dat(cells, 15, "double", y_data, "y");
+  x = op_decl_dat(cells, DG_NP, "double", x_data, "x");
+  y = op_decl_dat(cells, DG_NP, "double", y_data, "y");
     // Geometric factors that relate to mapping between global and local (cell) coordinates
-  rx = op_decl_dat(cells, 15, "double", rx_data, "rx");
-  ry = op_decl_dat(cells, 15, "double", ry_data, "ry");
-  sx = op_decl_dat(cells, 15, "double", sx_data, "sx");
-  sy = op_decl_dat(cells, 15, "double", sy_data, "sy");
+  rx = op_decl_dat(cells, DG_NP, "double", rx_data, "rx");
+  ry = op_decl_dat(cells, DG_NP, "double", ry_data, "ry");
+  sx = op_decl_dat(cells, DG_NP, "double", sx_data, "sx");
+  sy = op_decl_dat(cells, DG_NP, "double", sy_data, "sy");
     // Normals for each cell (calculated for each node on each edge, nodes can appear on multiple edges)
-  nx = op_decl_dat(cells, 15, "double", nx_data, "nx");
-  ny = op_decl_dat(cells, 15, "double", ny_data, "ny");
+  nx = op_decl_dat(cells, DG_NP, "double", nx_data, "nx");
+  ny = op_decl_dat(cells, DG_NP, "double", ny_data, "ny");
     // surface Jacobian / Jacobian (used when lifting the boundary fluxes)
-  J          = op_decl_dat(cells, 15, "double", J_data, "J");
-  sJ         = op_decl_dat(cells, 15, "double", sJ_data, "sJ");
-  fscale     = op_decl_dat(cells, 15, "double", fscale_data, "fscale");
+  J          = op_decl_dat(cells, DG_NP, "double", J_data, "J");
+  sJ         = op_decl_dat(cells, DG_NP, "double", sJ_data, "sJ");
+  fscale     = op_decl_dat(cells, DG_NP, "double", fscale_data, "fscale");
   bedge_type = op_decl_dat(bedges, 1, "int", bedge_type_data, "bedge_type");
   edgeNum    = op_decl_dat(edges, 2, "int", edgeNum_data, "edgeNum");
   bedgeNum   = op_decl_dat(bedges, 1, "int", bedgeNum_data, "bedgeNum");
   reverse    = op_decl_dat(edges, 1, "bool", reverse_data, "reverse");
   for(int i = 0; i < 4; i++) {
     string tmpname = "op_tmp" + to_string(i);
-    op_tmp[i] = op_decl_dat(cells, 15, "double", op_tmp_data[i], tmpname.c_str());
+    op_tmp[i] = op_decl_dat(cells, DG_NP, "double", op_tmp_data[i], tmpname.c_str());
   }
 
   #ifdef OP2_DG_CUDA
   set_cuda_const();
   #else
-  op_decl_const2("FMASK",15,"int",FMASK);
-  op_decl_const2("cubW_g",46,"double",cubW_g);
-  op_decl_const2("cubV_g",690,"double",cubV_g);
-  op_decl_const2("cubVDr_g",690,"double",cubVDr_g);
-  op_decl_const2("cubVDs_g",690,"double",cubVDs_g);
-  op_decl_const2("gF0Dr_g",105,"double",gF0Dr_g);
-  op_decl_const2("gF0Ds_g",105,"double",gF0Ds_g);
-  op_decl_const2("gF1Dr_g",105,"double",gF1Dr_g);
-  op_decl_const2("gF1Ds_g",105,"double",gF1Ds_g);
-  op_decl_const2("gF2Dr_g",105,"double",gF2Dr_g);
-  op_decl_const2("gF2Ds_g",105,"double",gF2Ds_g);
-  op_decl_const2("gaussW_g",7,"double",gaussW_g);
-  op_decl_const2("gFInterp0_g",105,"double",gFInterp0_g);
-  op_decl_const2("gFInterp1_g",105,"double",gFInterp1_g);
-  op_decl_const2("gFInterp2_g",105,"double",gFInterp2_g);
-  op_decl_const2("gF0DrR_g",105,"double",gF0DrR_g);
-  op_decl_const2("gF0DsR_g",105,"double",gF0DsR_g);
-  op_decl_const2("gF1DrR_g",105,"double",gF1DrR_g);
-  op_decl_const2("gF1DsR_g",105,"double",gF1DsR_g);
-  op_decl_const2("gF2DrR_g",105,"double",gF2DrR_g);
-  op_decl_const2("gF2DsR_g",105,"double",gF2DsR_g);
-  op_decl_const2("gFInterp0R_g",105,"double",gFInterp0R_g);
-  op_decl_const2("gFInterp1R_g",105,"double",gFInterp1R_g);
-  op_decl_const2("gFInterp2R_g",105,"double",gFInterp2R_g);
+  op_decl_const2("FMASK",DG_NP,"int",FMASK);
+  op_decl_const2("cubW_g",DG_CUB_NP,"double",cubW_g);
+  op_decl_const2("cubV_g",DG_CUB_NP * DG_NP,"double",cubV_g);
+  op_decl_const2("cubVDr_g",DG_CUB_NP * DG_NP,"double",cubVDr_g);
+  op_decl_const2("cubVDs_g",DG_CUB_NP * DG_NP,"double",cubVDs_g);
+  op_decl_const2("gF0Dr_g",DG_GF_NP * DG_NP,"double",gF0Dr_g);
+  op_decl_const2("gF0Ds_g",DG_GF_NP * DG_NP,"double",gF0Ds_g);
+  op_decl_const2("gF1Dr_g",DG_GF_NP * DG_NP,"double",gF1Dr_g);
+  op_decl_const2("gF1Ds_g",DG_GF_NP * DG_NP,"double",gF1Ds_g);
+  op_decl_const2("gF2Dr_g",DG_GF_NP * DG_NP,"double",gF2Dr_g);
+  op_decl_const2("gF2Ds_g",DG_GF_NP * DG_NP,"double",gF2Ds_g);
+  op_decl_const2("gaussW_g",DG_GF_NP,"double",gaussW_g);
+  op_decl_const2("gFInterp0_g",DG_GF_NP * DG_NP,"double",gFInterp0_g);
+  op_decl_const2("gFInterp1_g",DG_GF_NP * DG_NP,"double",gFInterp1_g);
+  op_decl_const2("gFInterp2_g",DG_GF_NP * DG_NP,"double",gFInterp2_g);
+  op_decl_const2("gF0DrR_g",DG_GF_NP * DG_NP,"double",gF0DrR_g);
+  op_decl_const2("gF0DsR_g",DG_GF_NP * DG_NP,"double",gF0DsR_g);
+  op_decl_const2("gF1DrR_g",DG_GF_NP * DG_NP,"double",gF1DrR_g);
+  op_decl_const2("gF1DsR_g",DG_GF_NP * DG_NP,"double",gF1DsR_g);
+  op_decl_const2("gF2DrR_g",DG_GF_NP * DG_NP,"double",gF2DrR_g);
+  op_decl_const2("gF2DsR_g",DG_GF_NP * DG_NP,"double",gF2DsR_g);
+  op_decl_const2("gFInterp0R_g",DG_GF_NP * DG_NP,"double",gFInterp0R_g);
+  op_decl_const2("gFInterp1R_g",DG_GF_NP * DG_NP,"double",gFInterp1R_g);
+  op_decl_const2("gFInterp2R_g",DG_GF_NP * DG_NP,"double",gFInterp2R_g);
   #endif
 
   cubature = new DGCubatureData(this);
@@ -348,15 +349,15 @@ void DGMesh::init() {
   init_grid_blas(this);
 
   op_par_loop_init_grid("init_grid",cells,
-              op_arg_dat(rx,-1,OP_ID,15,"double",OP_RW),
-              op_arg_dat(ry,-1,OP_ID,15,"double",OP_RW),
-              op_arg_dat(sx,-1,OP_ID,15,"double",OP_RW),
-              op_arg_dat(sy,-1,OP_ID,15,"double",OP_RW),
-              op_arg_dat(nx,-1,OP_ID,15,"double",OP_WRITE),
-              op_arg_dat(ny,-1,OP_ID,15,"double",OP_WRITE),
-              op_arg_dat(J,-1,OP_ID,15,"double",OP_WRITE),
-              op_arg_dat(sJ,-1,OP_ID,15,"double",OP_WRITE),
-              op_arg_dat(fscale,-1,OP_ID,15,"double",OP_WRITE));
+              op_arg_dat(rx,-1,OP_ID,DG_NP,"double",OP_RW),
+              op_arg_dat(ry,-1,OP_ID,DG_NP,"double",OP_RW),
+              op_arg_dat(sx,-1,OP_ID,DG_NP,"double",OP_RW),
+              op_arg_dat(sy,-1,OP_ID,DG_NP,"double",OP_RW),
+              op_arg_dat(nx,-1,OP_ID,DG_NP,"double",OP_WRITE),
+              op_arg_dat(ny,-1,OP_ID,DG_NP,"double",OP_WRITE),
+              op_arg_dat(J,-1,OP_ID,DG_NP,"double",OP_WRITE),
+              op_arg_dat(sJ,-1,OP_ID,DG_NP,"double",OP_WRITE),
+              op_arg_dat(fscale,-1,OP_ID,DG_NP,"double",OP_WRITE));
 
   op_par_loop_init_edges("init_edges",edges,
               op_arg_dat(edgeNum,-1,OP_ID,2,"int",OP_READ),
