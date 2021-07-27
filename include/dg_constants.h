@@ -18,7 +18,7 @@ public:
     GAUSS_F1DR, GAUSS_F1DR_R, GAUSS_F1DS, GAUSS_F1DS_R,
     GAUSS_F2DR, GAUSS_F2DR_R, GAUSS_F2DS, GAUSS_F2DS_R,
     GAUSS_FINTERP0, GAUSS_FINTERP0_R, GAUSS_FINTERP1, GAUSS_FINTERP1_R,
-    GAUSS_FINTERP2, GAUSS_FINTERP2_R, GAUSS_INTERP, INV_MASS_GAUSS_INTERP_T,
+    GAUSS_FINTERP2, GAUSS_FINTERP2_R, GAUSS_INTERP,
 
     INV_MASS, LIFT, MASS, R, S, ONES
   };
@@ -60,7 +60,6 @@ public:
   double *gFInterp2, *gFInterp2_d;
   double *gFInterp2R, *gFInterp2R_d;
   double *gInterp, *gInterp_d;
-  double *invMassGaussInterpT, *invMassGaussInterpT_d;
 
   double *invMass, *invMass_d;
   double *lift, *lift_d;
