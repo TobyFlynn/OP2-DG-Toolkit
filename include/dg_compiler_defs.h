@@ -40,6 +40,19 @@
 // Number of gauss points per face
 #define DG_GF_NP 4
 
+#elif DG_ORDER == 1
+
+// Number of points per triangle
+#define DG_NP 3
+// Number of points per face
+#define DG_NPF 2
+// Number of cubature points per triangle
+#define DG_CUB_NP 12
+// Number of gauss points per triangle
+#define DG_G_NP 9
+// Number of gauss points per face
+#define DG_GF_NP 3
+
 #endif
 
 #endif

@@ -1,0 +1,4 @@
+#ifndef __CONSTANTS_INVMASS_H
+#define __CONSTANTS_INVMASS_H
+double invMass_g[3*3] = {4.5, -1.4999999999999996, -1.5, -1.4999999999999996, 4.4999999999999982, -1.5, -1.5, -1.5, 4.5};
+#endif
