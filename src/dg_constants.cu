@@ -69,8 +69,8 @@ DGConstants::DGConstants() {
   // Other constants
   cudaMalloc((void**)&invMass_d, DG_NP * DG_NP * sizeof(double));
   cudaMemcpy(invMass_d, invMass_g, DG_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
-  cudaMalloc((void**)&lift_d, DG_NP * DG_NP * sizeof(double));
-  cudaMemcpy(lift_d, lift_g, DG_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
+  cudaMalloc((void**)&lift_d, DG_NP * DG_NPF * 3 * sizeof(double));
+  cudaMemcpy(lift_d, lift_g, DG_NP * DG_NPF * 3 * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&mass_d, DG_NP * DG_NP * sizeof(double));
   cudaMemcpy(mass_d, mass_g, DG_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&r_d, DG_NP * sizeof(double));

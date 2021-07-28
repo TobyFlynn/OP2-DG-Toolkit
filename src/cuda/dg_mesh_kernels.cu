@@ -9,7 +9,7 @@
 
 #include "dg_compiler_defs.h"
 
-__constant__ int FMASK_cuda[DG_NP];
+__constant__ int FMASK_cuda[DG_NPF * 3];
 __constant__ double cubW_g_cuda[DG_CUB_NP];
 __constant__ double cubV_g_cuda[DG_CUB_NP * DG_NP];
 __constant__ double cubVDr_g_cuda[DG_CUB_NP * DG_NP];
@@ -42,7 +42,7 @@ __constant__ double gFInterp2R_g_cuda[DG_GF_NP * DG_NP];
 #include "dg_global_constants.h"
 
 void set_cuda_const() {
-  cutilSafeCall(cudaMemcpyToSymbol(FMASK_cuda, FMASK, DG_NP * sizeof(int)));
+  cutilSafeCall(cudaMemcpyToSymbol(FMASK_cuda, FMASK, DG_NPF * 3 * sizeof(int)));
   cutilSafeCall(cudaMemcpyToSymbol(cubW_g_cuda, cubW_g, DG_CUB_NP * sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(cubV_g_cuda, cubV_g, DG_CUB_NP * DG_NP * sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(cubVDr_g_cuda, cubVDr_g, DG_CUB_NP * DG_NP * sizeof(double)));

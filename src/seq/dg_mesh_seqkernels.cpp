@@ -5,7 +5,7 @@
 #include "dg_compiler_defs.h"
 
 // global constants
-extern int FMASK[DG_NP];
+extern int FMASK[DG_NPF * 3];
 extern double cubW_g[DG_CUB_NP];
 extern double cubV_g[DG_CUB_NP * DG_NP];
 extern double cubVDr_g[DG_CUB_NP * DG_NP];

@@ -276,7 +276,7 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   #ifdef OP2_DG_CUDA
   set_cuda_const();
   #else
-  op_decl_const2("FMASK",DG_NP,"int",FMASK);
+  op_decl_const2("FMASK",DG_NPF * 3,"int",FMASK);
   op_decl_const2("cubW_g",DG_CUB_NP,"double",cubW_g);
   op_decl_const2("cubV_g",DG_CUB_NP * DG_NP,"double",cubV_g);
   op_decl_const2("cubVDr_g",DG_CUB_NP * DG_NP,"double",cubVDr_g);
