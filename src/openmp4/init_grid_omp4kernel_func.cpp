@@ -34,36 +34,36 @@ void init_grid_omp4_kernel(
     double *ry = &data1[DG_NP*n_op];
     double *sx = &data2[DG_NP*n_op];
     double *sy = &data3[DG_NP*n_op];
-    double *nx = &data4[DG_NP*n_op];
-    double *ny = &data5[DG_NP*n_op];
+    double *nx = &data4[3 * DG_NPF*n_op];
+    double *ny = &data5[3 * DG_NPF*n_op];
     double *J = &data6[DG_NP*n_op];
-    double *sJ = &data7[DG_NP*n_op];
-    double *fscale = &data8[DG_NP*n_op];
+    double *sJ = &data7[3 * DG_NPF*n_op];
+    double *fscale = &data8[3 * DG_NPF*n_op];
 
     //inline function
     
 
 
-    for(int i = 0; i < 5; i++) {
+    for(int i = 0; i < DG_NPF; i++) {
       nx[i] = ry[FMASK_ompkernel[i]];
       ny[i] = -rx[FMASK_ompkernel[i]];
     }
 
-    for(int i = 0; i < 5; i++) {
-      nx[5 + i] = sy[FMASK_ompkernel[5 + i]] - ry[FMASK_ompkernel[5 + i]];
-      ny[5 + i] = rx[FMASK_ompkernel[5 + i]] - sx[FMASK_ompkernel[5 + i]];
+    for(int i = 0; i < DG_NPF; i++) {
+      nx[DG_NPF + i] = sy[FMASK_ompkernel[DG_NPF + i]] - ry[FMASK_ompkernel[DG_NPF + i]];
+      ny[DG_NPF + i] = rx[FMASK_ompkernel[DG_NPF + i]] - sx[FMASK_ompkernel[DG_NPF + i]];
     }
 
-    for(int i = 0; i < 5; i++) {
-      nx[2 * 5 + i] = -sy[FMASK_ompkernel[2 * 5 + i]];
-      ny[2 * 5 + i] = sx[FMASK_ompkernel[2 * 5 + i]];
+    for(int i = 0; i < DG_NPF; i++) {
+      nx[2 * DG_NPF + i] = -sy[FMASK_ompkernel[2 * DG_NPF + i]];
+      ny[2 * DG_NPF + i] = sx[FMASK_ompkernel[2 * DG_NPF + i]];
     }
 
-    for(int i = 0; i < 15; i++) {
+    for(int i = 0; i < DG_NP; i++) {
       J[i] = -sx[i] * ry[i] + rx[i] * sy[i];
     }
 
-    for(int i = 0; i < 15; i++) {
+    for(int i = 0; i < DG_NP; i++) {
       double rx_n = sy[i] / J[i];
       double sx_n = -ry[i] / J[i];
       double ry_n = -sx[i] / J[i];
@@ -74,7 +74,7 @@ void init_grid_omp4_kernel(
       sy[i] = sy_n;
     }
 
-    for(int i = 0; i < 3 * 5; i++) {
+    for(int i = 0; i < 3 * DG_NPF; i++) {
       sJ[i] = sqrt(nx[i] * nx[i] + ny[i] * ny[i]);
       nx[i] = nx[i] / sJ[i];
       ny[i] = ny[i] / sJ[i];

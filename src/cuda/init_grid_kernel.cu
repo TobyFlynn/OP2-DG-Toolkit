@@ -4,29 +4,30 @@
 
 //user function
 __device__ void init_grid_gpu( double *rx, double *ry, double *sx, double *sy,
-                      double *nx, double *ny, double *J, double *sJ, double *fscale) {
+                      double *nx, double *ny, double *J, double *sJ,
+                      double *fscale) {
 
 
-  for(int i = 0; i < 5; i++) {
+  for(int i = 0; i < DG_NPF; i++) {
     nx[i] = ry[FMASK_cuda[i]];
     ny[i] = -rx[FMASK_cuda[i]];
   }
 
-  for(int i = 0; i < 5; i++) {
-    nx[5 + i] = sy[FMASK_cuda[5 + i]] - ry[FMASK_cuda[5 + i]];
-    ny[5 + i] = rx[FMASK_cuda[5 + i]] - sx[FMASK_cuda[5 + i]];
+  for(int i = 0; i < DG_NPF; i++) {
+    nx[DG_NPF + i] = sy[FMASK_cuda[DG_NPF + i]] - ry[FMASK_cuda[DG_NPF + i]];
+    ny[DG_NPF + i] = rx[FMASK_cuda[DG_NPF + i]] - sx[FMASK_cuda[DG_NPF + i]];
   }
 
-  for(int i = 0; i < 5; i++) {
-    nx[2 * 5 + i] = -sy[FMASK_cuda[2 * 5 + i]];
-    ny[2 * 5 + i] = sx[FMASK_cuda[2 * 5 + i]];
+  for(int i = 0; i < DG_NPF; i++) {
+    nx[2 * DG_NPF + i] = -sy[FMASK_cuda[2 * DG_NPF + i]];
+    ny[2 * DG_NPF + i] = sx[FMASK_cuda[2 * DG_NPF + i]];
   }
 
-  for(int i = 0; i < 15; i++) {
+  for(int i = 0; i < DG_NP; i++) {
     J[i] = -sx[i] * ry[i] + rx[i] * sy[i];
   }
 
-  for(int i = 0; i < 15; i++) {
+  for(int i = 0; i < DG_NP; i++) {
     double rx_n = sy[i] / J[i];
     double sx_n = -ry[i] / J[i];
     double ry_n = -sx[i] / J[i];
@@ -37,7 +38,7 @@ __device__ void init_grid_gpu( double *rx, double *ry, double *sx, double *sy,
     sy[i] = sy_n;
   }
 
-  for(int i = 0; i < 3 * 5; i++) {
+  for(int i = 0; i < 3 * DG_NPF; i++) {
     sJ[i] = sqrt(nx[i] * nx[i] + ny[i] * ny[i]);
     nx[i] = nx[i] / sJ[i];
     ny[i] = ny[i] / sJ[i];
@@ -68,11 +69,11 @@ __global__ void op_cuda_init_grid(
               arg1+n*DG_NP,
               arg2+n*DG_NP,
               arg3+n*DG_NP,
-              arg4+n*DG_NP,
-              arg5+n*DG_NP,
+              arg4+n*3 * DG_NPF,
+              arg5+n*3 * DG_NPF,
               arg6+n*DG_NP,
-              arg7+n*DG_NP,
-              arg8+n*DG_NP);
+              arg7+n*3 * DG_NPF,
+              arg8+n*3 * DG_NPF);
   }
 }
 

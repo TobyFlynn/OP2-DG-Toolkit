@@ -219,11 +219,11 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   ry_data      = (double *)calloc(DG_NP * numCells, sizeof(double));
   sx_data      = (double *)calloc(DG_NP * numCells, sizeof(double));
   sy_data      = (double *)calloc(DG_NP * numCells, sizeof(double));
-  nx_data      = (double *)calloc(DG_NP * numCells, sizeof(double));
-  ny_data      = (double *)calloc(DG_NP * numCells, sizeof(double));
+  nx_data      = (double *)calloc(3 * DG_NPF * numCells, sizeof(double));
+  ny_data      = (double *)calloc(3 * DG_NPF * numCells, sizeof(double));
   J_data       = (double *)calloc(DG_NP * numCells, sizeof(double));
-  sJ_data      = (double *)calloc(DG_NP * numCells, sizeof(double));
-  fscale_data  = (double *)calloc(DG_NP * numCells, sizeof(double));
+  sJ_data      = (double *)calloc(3 * DG_NPF * numCells, sizeof(double));
+  fscale_data  = (double *)calloc(3 * DG_NPF * numCells, sizeof(double));
   reverse_data = (bool *)calloc(numEdges, sizeof(bool));
   for(int i = 0; i < 4; i++) {
     op_tmp_data[i] = (double *)calloc(DG_NP * numCells, sizeof(double));
@@ -258,12 +258,12 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   sx = op_decl_dat(cells, DG_NP, "double", sx_data, "sx");
   sy = op_decl_dat(cells, DG_NP, "double", sy_data, "sy");
     // Normals for each cell (calculated for each node on each edge, nodes can appear on multiple edges)
-  nx = op_decl_dat(cells, DG_NP, "double", nx_data, "nx");
-  ny = op_decl_dat(cells, DG_NP, "double", ny_data, "ny");
+  nx = op_decl_dat(cells, 3 * DG_NPF, "double", nx_data, "nx");
+  ny = op_decl_dat(cells, 3 * DG_NPF, "double", ny_data, "ny");
     // surface Jacobian / Jacobian (used when lifting the boundary fluxes)
   J          = op_decl_dat(cells, DG_NP, "double", J_data, "J");
-  sJ         = op_decl_dat(cells, DG_NP, "double", sJ_data, "sJ");
-  fscale     = op_decl_dat(cells, DG_NP, "double", fscale_data, "fscale");
+  sJ         = op_decl_dat(cells, 3 * DG_NPF, "double", sJ_data, "sJ");
+  fscale     = op_decl_dat(cells, 3 * DG_NPF, "double", fscale_data, "fscale");
   bedge_type = op_decl_dat(bedges, 1, "int", bedge_type_data, "bedge_type");
   edgeNum    = op_decl_dat(edges, 2, "int", edgeNum_data, "edgeNum");
   bedgeNum   = op_decl_dat(bedges, 1, "int", bedgeNum_data, "bedgeNum");
@@ -353,11 +353,11 @@ void DGMesh::init() {
               op_arg_dat(ry,-1,OP_ID,DG_NP,"double",OP_RW),
               op_arg_dat(sx,-1,OP_ID,DG_NP,"double",OP_RW),
               op_arg_dat(sy,-1,OP_ID,DG_NP,"double",OP_RW),
-              op_arg_dat(nx,-1,OP_ID,DG_NP,"double",OP_WRITE),
-              op_arg_dat(ny,-1,OP_ID,DG_NP,"double",OP_WRITE),
+              op_arg_dat(nx,-1,OP_ID,3 * DG_NPF,"double",OP_WRITE),
+              op_arg_dat(ny,-1,OP_ID,3 * DG_NPF,"double",OP_WRITE),
               op_arg_dat(J,-1,OP_ID,DG_NP,"double",OP_WRITE),
-              op_arg_dat(sJ,-1,OP_ID,DG_NP,"double",OP_WRITE),
-              op_arg_dat(fscale,-1,OP_ID,DG_NP,"double",OP_WRITE));
+              op_arg_dat(sJ,-1,OP_ID,3 * DG_NPF,"double",OP_WRITE),
+              op_arg_dat(fscale,-1,OP_ID,3 * DG_NPF,"double",OP_WRITE));
 
   op_par_loop_init_edges("init_edges",edges,
               op_arg_dat(edgeNum,-1,OP_ID,2,"int",OP_READ),

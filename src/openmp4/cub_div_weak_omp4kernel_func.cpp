@@ -42,7 +42,7 @@ void cub_div_weak_omp4_kernel(
 
     //inline function
     
-    for(int i = 0; i < 46; i++) {
+    for(int i = 0; i < DG_CUB_NP; i++) {
       double Vu = temp0[i];
       double Vv = temp1[i];
       temp0[i] = cubW_g_ompkernel[i] * J[i] * rx[i] * Vu;

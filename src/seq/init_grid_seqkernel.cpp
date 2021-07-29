@@ -50,11 +50,11 @@ void op_par_loop_init_grid(char const *name, op_set set,
         &((double*)arg1.data)[DG_NP*n],
         &((double*)arg2.data)[DG_NP*n],
         &((double*)arg3.data)[DG_NP*n],
-        &((double*)arg4.data)[DG_NP*n],
-        &((double*)arg5.data)[DG_NP*n],
+        &((double*)arg4.data)[3 * DG_NPF*n],
+        &((double*)arg5.data)[3 * DG_NPF*n],
         &((double*)arg6.data)[DG_NP*n],
-        &((double*)arg7.data)[DG_NP*n],
-        &((double*)arg8.data)[DG_NP*n]);
+        &((double*)arg7.data)[3 * DG_NPF*n],
+        &((double*)arg8.data)[3 * DG_NPF*n]);
     }
   }
 

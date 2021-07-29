@@ -41,7 +41,7 @@ void div_omp4_kernel(
 
     //inline function
     
-    for(int i = 0; i < 15; i++) {
+    for(int i = 0; i < DG_NP; i++) {
       res[i] = rx[i] * div0[i] + sx[i] * div1[i] + ry[i] * div2[i] + sy[i] * div3[i];
     }
     //end inline func

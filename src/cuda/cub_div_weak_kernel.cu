@@ -6,7 +6,7 @@
 __device__ void cub_div_weak_gpu( double *temp0, double *temp1, const double *rx,
                          const double *sx, const double *ry, const double *sy,
                          const double *J, double *temp2, double *temp3) {
-  for(int i = 0; i < 46; i++) {
+  for(int i = 0; i < DG_CUB_NP; i++) {
     double Vu = temp0[i];
     double Vv = temp1[i];
     temp0[i] = cubW_g_cuda[i] * J[i] * rx[i] * Vu;

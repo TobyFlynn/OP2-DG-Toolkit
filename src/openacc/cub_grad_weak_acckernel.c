@@ -8,7 +8,7 @@
 inline void cub_grad_weak_openacc( double *temp0, const double *rx, const double *sx,
                           const double *ry, const double *sy, const double *J,
                           double *temp1, double *temp2, double *temp3) {
-  for(int i = 0; i < 46; i++) {
+  for(int i = 0; i < DG_CUB_NP; i++) {
     temp1[i] = cubW_g[i] * J[i] * sx[i] * temp0[i];
     temp2[i] = cubW_g[i] * J[i] * ry[i] * temp0[i];
     temp3[i] = cubW_g[i] * J[i] * sy[i] * temp0[i];

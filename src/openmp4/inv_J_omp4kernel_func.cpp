@@ -23,7 +23,7 @@ void inv_J_omp4_kernel(
 
     //inline function
     
-    for(int i = 0; i < 15; i++) {
+    for(int i = 0; i < DG_NP; i++) {
       u[i] = tmp[i] / J[i];
     }
     //end inline func

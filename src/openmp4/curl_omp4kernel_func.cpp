@@ -41,7 +41,7 @@ void curl_omp4_kernel(
 
     //inline function
     
-    for(int i = 0; i < 15; i++) {
+    for(int i = 0; i < DG_NP; i++) {
       res[i] = rx[i] * div2[i] + sx[i] * div3[i] - ry[i] * div0[i] - sy[i] * div1[i];
     }
     //end inline func

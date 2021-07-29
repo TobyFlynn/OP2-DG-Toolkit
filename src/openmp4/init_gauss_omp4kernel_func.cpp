@@ -36,12 +36,12 @@ void init_gauss_omp4_kernel(
     //inline function
     
 
-    double J[21];
-    for(int i = 0; i < 21; i++) {
+    double J[DG_G_NP];
+    for(int i = 0; i < DG_G_NP; i++) {
       J[i] = -sx[i] * ry[i] + rx[i] * sy[i];
     }
 
-    for(int i = 0; i < 21; i++) {
+    for(int i = 0; i < DG_G_NP; i++) {
       double rx_n = sy[i] / J[i];
       double sx_n = -ry[i] / J[i];
       double ry_n = -sx[i] / J[i];
@@ -53,22 +53,22 @@ void init_gauss_omp4_kernel(
     }
 
 
-    for(int i = 0; i < 7; i++) {
+    for(int i = 0; i < DG_GF_NP; i++) {
       nx[i] = -sx[i];
       ny[i] = -sy[i];
     }
 
-    for(int i = 7; i < 14; i++) {
+    for(int i = DG_GF_NP; i < 2 * DG_GF_NP; i++) {
       nx[i] = rx[i] + sx[i];
       ny[i] = ry[i] + sy[i];
     }
 
-    for(int i = 14; i < 21; i++) {
+    for(int i = 2 * DG_GF_NP; i < DG_G_NP; i++) {
       nx[i] = -rx[i];
       ny[i] = -ry[i];
     }
 
-    for(int i = 0; i < 21; i++) {
+    for(int i = 0; i < DG_G_NP; i++) {
       sJ[i] = sqrt(nx[i] * nx[i] + ny[i] * ny[i]);
       nx[i] = nx[i] / sJ[i];
       ny[i] = ny[i] / sJ[i];

@@ -36,7 +36,7 @@ void cub_grad_omp4_kernel(
 
     //inline function
     
-    for(int i = 0; i < 46; i++) {
+    for(int i = 0; i < DG_CUB_NP; i++) {
       double dru = temp0[i];
       double dsu = temp1[i];
       temp0[i] = cubW_g_ompkernel[i] * J[i] * (rx[i] * dru + sx[i] * dsu);

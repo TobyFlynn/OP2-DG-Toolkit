@@ -42,7 +42,7 @@ void cub_grad_weak_omp4_kernel(
 
     //inline function
     
-    for(int i = 0; i < 46; i++) {
+    for(int i = 0; i < DG_CUB_NP; i++) {
       temp1[i] = cubW_g_ompkernel[i] * J[i] * sx[i] * temp0[i];
       temp2[i] = cubW_g_ompkernel[i] * J[i] * ry[i] * temp0[i];
       temp3[i] = cubW_g_ompkernel[i] * J[i] * sy[i] * temp0[i];
