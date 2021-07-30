@@ -3,7 +3,7 @@
 
 #include "dg_compiler_defs.h"
 
-extern int FMASK[DG_NP];
+extern int FMASK[3 * DG_NPF];
 
 extern double cubV_g[DG_CUB_NP * DG_NP];
 extern double cubW_g[DG_CUB_NP];
@@ -38,7 +38,7 @@ extern double Drw_g[DG_NP * DG_NP];
 extern double Ds_g[DG_NP * DG_NP];
 extern double Dsw_g[DG_NP * DG_NP];
 extern double invMass_g[DG_NP * DG_NP];
-extern double lift_g[DG_NP * DG_NP];
+extern double lift_g[DG_NP * 3 * DG_NPF];
 extern double mass_g[DG_NP * DG_NP];
 extern double r_g[DG_NP];
 extern double s_g[DG_NP];
