@@ -7,13 +7,13 @@ inline void init_gauss(double *rx, double *sx, double *ry, double *sy,
                        double *nx, double *ny, double *sJ) {
 
   // J = -xs.*yr + xr.*ys
-  double J[21];
-  for(int i = 0; i < 21; i++) {
+  double J[DG_G_NP];
+  for(int i = 0; i < DG_G_NP; i++) {
     J[i] = -sx[i] * ry[i] + rx[i] * sy[i];
   }
 
   // rx = ys./J; sx =-yr./J; ry =-xs./J; sy = xr./J;
-  for(int i = 0; i < 21; i++) {
+  for(int i = 0; i < DG_G_NP; i++) {
     double rx_n = sy[i] / J[i];
     double sx_n = -ry[i] / J[i];
     double ry_n = -sx[i] / J[i];
@@ -26,23 +26,23 @@ inline void init_gauss(double *rx, double *sx, double *ry, double *sy,
 
   // Calculate normals
   // Face 0
-  for(int i = 0; i < 7; i++) {
+  for(int i = 0; i < DG_GF_NP; i++) {
     nx[i] = -sx[i];
     ny[i] = -sy[i];
   }
   // Face 1
-  for(int i = 7; i < 14; i++) {
+  for(int i = DG_GF_NP; i < 2 * DG_GF_NP; i++) {
     nx[i] = rx[i] + sx[i];
     ny[i] = ry[i] + sy[i];
   }
   // Face 2
-  for(int i = 14; i < 21; i++) {
+  for(int i = 2 * DG_GF_NP; i < DG_G_NP; i++) {
     nx[i] = -rx[i];
     ny[i] = -ry[i];
   }
 
   // Normalise
-  for(int i = 0; i < 21; i++) {
+  for(int i = 0; i < DG_G_NP; i++) {
     sJ[i] = sqrt(nx[i] * nx[i] + ny[i] * ny[i]);
     nx[i] = nx[i] / sJ[i];
     ny[i] = ny[i] / sJ[i];
@@ -106,13 +106,13 @@ void op_par_loop_init_gauss(char const *name, op_set set,
       #pragma omp simd simdlen(SIMD_VEC)
       for ( int i=0; i<SIMD_VEC; i++ ){
         init_gauss(
-          &(ptr0)[21 * (n+i)],
-          &(ptr1)[21 * (n+i)],
-          &(ptr2)[21 * (n+i)],
-          &(ptr3)[21 * (n+i)],
-          &(ptr4)[21 * (n+i)],
-          &(ptr5)[21 * (n+i)],
-          &(ptr6)[21 * (n+i)]);
+          &(ptr0)[DG_G_NP * (n+i)],
+          &(ptr1)[DG_G_NP * (n+i)],
+          &(ptr2)[DG_G_NP * (n+i)],
+          &(ptr3)[DG_G_NP * (n+i)],
+          &(ptr4)[DG_G_NP * (n+i)],
+          &(ptr5)[DG_G_NP * (n+i)],
+          &(ptr6)[DG_G_NP * (n+i)]);
       }
     }
     //remainder
@@ -121,13 +121,13 @@ void op_par_loop_init_gauss(char const *name, op_set set,
     for ( int n=0; n<exec_size; n++ ){
     #endif
       init_gauss(
-        &(ptr0)[21*n],
-        &(ptr1)[21*n],
-        &(ptr2)[21*n],
-        &(ptr3)[21*n],
-        &(ptr4)[21*n],
-        &(ptr5)[21*n],
-        &(ptr6)[21*n]);
+        &(ptr0)[DG_G_NP*n],
+        &(ptr1)[DG_G_NP*n],
+        &(ptr2)[DG_G_NP*n],
+        &(ptr3)[DG_G_NP*n],
+        &(ptr4)[DG_G_NP*n],
+        &(ptr5)[DG_G_NP*n],
+        &(ptr6)[DG_G_NP*n]);
     }
   }
 

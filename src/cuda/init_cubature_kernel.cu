@@ -6,11 +6,11 @@
 __device__ void init_cubature_gpu( double *rx, double *sx, double *ry, double *sy,
                           double *J, double *temp) {
 
-  for(int i = 0; i < 46; i++) {
+  for(int i = 0; i < DG_CUB_NP; i++) {
     J[i] = -sx[i] * ry[i] + rx[i] * sy[i];
   }
 
-  for(int i = 0; i < 46; i++) {
+  for(int i = 0; i < DG_CUB_NP; i++) {
     double rx_n = sy[i] / J[i];
     double sx_n = -ry[i] / J[i];
     double ry_n = -sx[i] / J[i];
@@ -21,9 +21,9 @@ __device__ void init_cubature_gpu( double *rx, double *sx, double *ry, double *s
     sy[i] = sy_n;
   }
 
-  for(int m = 0; m < 46; m++) {
-    for(int n = 0; n < 15; n++) {
-      int ind = m * 15 + n;
+  for(int m = 0; m < DG_CUB_NP; m++) {
+    for(int n = 0; n < DG_NP; n++) {
+      int ind = m * DG_NP + n;
       temp[ind] = J[m] * cubW_g_cuda[m] * cubV_g_cuda[ind];
     }
   }
@@ -45,12 +45,12 @@ __global__ void op_cuda_init_cubature(
   for ( int n=threadIdx.x+blockIdx.x*blockDim.x; n<set_size; n+=blockDim.x*gridDim.x ){
 
     //user-supplied kernel call
-    init_cubature_gpu(arg0+n*46,
-                  arg1+n*46,
-                  arg2+n*46,
-                  arg3+n*46,
-                  arg4+n*46,
-                  arg5+n*690);
+    init_cubature_gpu(arg0+n*DG_CUB_NP,
+                  arg1+n*DG_CUB_NP,
+                  arg2+n*DG_CUB_NP,
+                  arg3+n*DG_CUB_NP,
+                  arg4+n*DG_CUB_NP,
+                  arg5+n*DG_CUB_NP * DG_NP);
   }
 }
 

@@ -8,12 +8,12 @@
 inline void init_gauss_openacc( double *rx, double *sx, double *ry, double *sy,
                        double *nx, double *ny, double *sJ) {
 
-  double J[21];
-  for(int i = 0; i < 21; i++) {
+  double J[DG_G_NP];
+  for(int i = 0; i < DG_G_NP; i++) {
     J[i] = -sx[i] * ry[i] + rx[i] * sy[i];
   }
 
-  for(int i = 0; i < 21; i++) {
+  for(int i = 0; i < DG_G_NP; i++) {
     double rx_n = sy[i] / J[i];
     double sx_n = -ry[i] / J[i];
     double ry_n = -sx[i] / J[i];
@@ -25,22 +25,22 @@ inline void init_gauss_openacc( double *rx, double *sx, double *ry, double *sy,
   }
 
 
-  for(int i = 0; i < 7; i++) {
+  for(int i = 0; i < DG_GF_NP; i++) {
     nx[i] = -sx[i];
     ny[i] = -sy[i];
   }
 
-  for(int i = 7; i < 14; i++) {
+  for(int i = DG_GF_NP; i < 2 * DG_GF_NP; i++) {
     nx[i] = rx[i] + sx[i];
     ny[i] = ry[i] + sy[i];
   }
 
-  for(int i = 14; i < 21; i++) {
+  for(int i = 2 * DG_GF_NP; i < DG_G_NP; i++) {
     nx[i] = -rx[i];
     ny[i] = -ry[i];
   }
 
-  for(int i = 0; i < 21; i++) {
+  for(int i = 0; i < DG_G_NP; i++) {
     sJ[i] = sqrt(nx[i] * nx[i] + ny[i] * ny[i]);
     nx[i] = nx[i] / sJ[i];
     ny[i] = ny[i] / sJ[i];
@@ -99,13 +99,13 @@ void op_par_loop_init_gauss(char const *name, op_set set,
     #pragma acc parallel loop independent deviceptr(data0,data1,data2,data3,data4,data5,data6)
     for ( int n=0; n<set->size; n++ ){
       init_gauss_openacc(
-        &data0[21*n],
-        &data1[21*n],
-        &data2[21*n],
-        &data3[21*n],
-        &data4[21*n],
-        &data5[21*n],
-        &data6[21*n]);
+        &data0[DG_G_NP*n],
+        &data1[DG_G_NP*n],
+        &data2[DG_G_NP*n],
+        &data3[DG_G_NP*n],
+        &data4[DG_G_NP*n],
+        &data5[DG_G_NP*n],
+        &data6[DG_G_NP*n]);
     }
   }
 

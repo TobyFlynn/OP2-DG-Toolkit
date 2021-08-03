@@ -3,30 +3,30 @@
 //
 
 // global constants
-extern int FMASK[15];
-extern double cubW_g[46];
-extern double cubV_g[690];
-extern double cubVDr_g[690];
-extern double cubVDs_g[690];
-extern double gF0Dr_g[105];
-extern double gF0Ds_g[105];
-extern double gF1Dr_g[105];
-extern double gF1Ds_g[105];
-extern double gF2Dr_g[105];
-extern double gF2Ds_g[105];
-extern double gaussW_g[7];
-extern double gFInterp0_g[105];
-extern double gFInterp1_g[105];
-extern double gFInterp2_g[105];
-extern double gF0DrR_g[105];
-extern double gF0DsR_g[105];
-extern double gF1DrR_g[105];
-extern double gF1DsR_g[105];
-extern double gF2DrR_g[105];
-extern double gF2DsR_g[105];
-extern double gFInterp0R_g[105];
-extern double gFInterp1R_g[105];
-extern double gFInterp2R_g[105];
+extern int FMASK[2];
+extern double cubW_g[2];
+extern double cubV_g[2];
+extern double cubVDr_g[2];
+extern double cubVDs_g[2];
+extern double gF0Dr_g[2];
+extern double gF0Ds_g[2];
+extern double gF1Dr_g[2];
+extern double gF1Ds_g[2];
+extern double gF2Dr_g[2];
+extern double gF2Ds_g[2];
+extern double gaussW_g[2];
+extern double gFInterp0_g[2];
+extern double gFInterp1_g[2];
+extern double gFInterp2_g[2];
+extern double gF0DrR_g[2];
+extern double gF0DsR_g[2];
+extern double gF1DrR_g[2];
+extern double gF1DsR_g[2];
+extern double gF2DrR_g[2];
+extern double gF2DsR_g[2];
+extern double gFInterp0R_g[2];
+extern double gFInterp1R_g[2];
+extern double gFInterp2R_g[2];
 
 // header
 #include "op_lib_c.h"

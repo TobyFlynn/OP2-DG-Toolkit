@@ -6,7 +6,7 @@
 __device__ void cub_grad_gpu( const double *rx, const double *sx, const double *ry,
                      const double *sy, const double *J, double *temp0,
                      double *temp1) {
-  for(int i = 0; i < 46; i++) {
+  for(int i = 0; i < DG_CUB_NP; i++) {
     double dru = temp0[i];
     double dsu = temp1[i];
     temp0[i] = cubW_g_cuda[i] * J[i] * (rx[i] * dru + sx[i] * dsu);
@@ -31,13 +31,13 @@ __global__ void op_cuda_cub_grad(
   for ( int n=threadIdx.x+blockIdx.x*blockDim.x; n<set_size; n+=blockDim.x*gridDim.x ){
 
     //user-supplied kernel call
-    cub_grad_gpu(arg0+n*46,
-             arg1+n*46,
-             arg2+n*46,
-             arg3+n*46,
-             arg4+n*46,
-             arg5+n*46,
-             arg6+n*46);
+    cub_grad_gpu(arg0+n*DG_CUB_NP,
+             arg1+n*DG_CUB_NP,
+             arg2+n*DG_CUB_NP,
+             arg3+n*DG_CUB_NP,
+             arg4+n*DG_CUB_NP,
+             arg5+n*DG_CUB_NP,
+             arg6+n*DG_CUB_NP);
   }
 }
 

@@ -55,13 +55,13 @@ void op_par_loop_init_gauss(char const *name, op_set set,
       int finish = (set->size*(thr+1))/nthreads;
       for ( int n=start; n<finish; n++ ){
         init_gauss(
-          &((double*)arg0.data)[21*n],
-          &((double*)arg1.data)[21*n],
-          &((double*)arg2.data)[21*n],
-          &((double*)arg3.data)[21*n],
-          &((double*)arg4.data)[21*n],
-          &((double*)arg5.data)[21*n],
-          &((double*)arg6.data)[21*n]);
+          &((double*)arg0.data)[DG_G_NP*n],
+          &((double*)arg1.data)[DG_G_NP*n],
+          &((double*)arg2.data)[DG_G_NP*n],
+          &((double*)arg3.data)[DG_G_NP*n],
+          &((double*)arg4.data)[DG_G_NP*n],
+          &((double*)arg5.data)[DG_G_NP*n],
+          &((double*)arg6.data)[DG_G_NP*n]);
       }
     }
   }

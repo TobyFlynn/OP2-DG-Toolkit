@@ -6,7 +6,7 @@
 //user function
 //#pragma acc routine
 inline void inv_J_openacc( const double *J, const double *tmp, double *u) {
-  for(int i = 0; i < 15; i++) {
+  for(int i = 0; i < DG_NP; i++) {
     u[i] = tmp[i] / J[i];
   }
 }
@@ -50,9 +50,9 @@ void op_par_loop_inv_J(char const *name, op_set set,
     #pragma acc parallel loop independent deviceptr(data0,data1,data2)
     for ( int n=0; n<set->size; n++ ){
       inv_J_openacc(
-        &data0[15*n],
-        &data1[15*n],
-        &data2[15*n]);
+        &data0[DG_NP*n],
+        &data1[DG_NP*n],
+        &data2[DG_NP*n]);
     }
   }
 

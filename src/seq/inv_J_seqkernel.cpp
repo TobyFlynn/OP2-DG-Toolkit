@@ -34,9 +34,9 @@ void op_par_loop_inv_J(char const *name, op_set set,
 
     for ( int n=0; n<set_size; n++ ){
       inv_J(
-        &((double*)arg0.data)[15*n],
-        &((double*)arg1.data)[15*n],
-        &((double*)arg2.data)[15*n]);
+        &((double*)arg0.data)[DG_NP*n],
+        &((double*)arg1.data)[DG_NP*n],
+        &((double*)arg2.data)[DG_NP*n]);
     }
   }
 

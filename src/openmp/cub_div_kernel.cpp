@@ -59,15 +59,15 @@ void op_par_loop_cub_div(char const *name, op_set set,
       int finish = (set->size*(thr+1))/nthreads;
       for ( int n=start; n<finish; n++ ){
         cub_div(
-          &((double*)arg0.data)[46*n],
-          &((double*)arg1.data)[46*n],
-          &((double*)arg2.data)[46*n],
-          &((double*)arg3.data)[46*n],
-          &((double*)arg4.data)[46*n],
-          &((double*)arg5.data)[46*n],
-          &((double*)arg6.data)[46*n],
-          &((double*)arg7.data)[46*n],
-          &((double*)arg8.data)[46*n]);
+          &((double*)arg0.data)[DG_CUB_NP*n],
+          &((double*)arg1.data)[DG_CUB_NP*n],
+          &((double*)arg2.data)[DG_CUB_NP*n],
+          &((double*)arg3.data)[DG_CUB_NP*n],
+          &((double*)arg4.data)[DG_CUB_NP*n],
+          &((double*)arg5.data)[DG_CUB_NP*n],
+          &((double*)arg6.data)[DG_CUB_NP*n],
+          &((double*)arg7.data)[DG_CUB_NP*n],
+          &((double*)arg8.data)[DG_CUB_NP*n]);
       }
     }
   }

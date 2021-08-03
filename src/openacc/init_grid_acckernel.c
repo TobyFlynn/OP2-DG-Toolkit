@@ -6,29 +6,30 @@
 //user function
 //#pragma acc routine
 inline void init_grid_openacc( double *rx, double *ry, double *sx, double *sy,
-                      double *nx, double *ny, double *J, double *sJ, double *fscale) {
+                      double *nx, double *ny, double *J, double *sJ,
+                      double *fscale) {
 
 
-  for(int i = 0; i < 5; i++) {
+  for(int i = 0; i < DG_NPF; i++) {
     nx[i] = ry[FMASK[i]];
     ny[i] = -rx[FMASK[i]];
   }
 
-  for(int i = 0; i < 5; i++) {
-    nx[5 + i] = sy[FMASK[5 + i]] - ry[FMASK[5 + i]];
-    ny[5 + i] = rx[FMASK[5 + i]] - sx[FMASK[5 + i]];
+  for(int i = 0; i < DG_NPF; i++) {
+    nx[DG_NPF + i] = sy[FMASK[DG_NPF + i]] - ry[FMASK[DG_NPF + i]];
+    ny[DG_NPF + i] = rx[FMASK[DG_NPF + i]] - sx[FMASK[DG_NPF + i]];
   }
 
-  for(int i = 0; i < 5; i++) {
-    nx[2 * 5 + i] = -sy[FMASK[2 * 5 + i]];
-    ny[2 * 5 + i] = sx[FMASK[2 * 5 + i]];
+  for(int i = 0; i < DG_NPF; i++) {
+    nx[2 * DG_NPF + i] = -sy[FMASK[2 * DG_NPF + i]];
+    ny[2 * DG_NPF + i] = sx[FMASK[2 * DG_NPF + i]];
   }
 
-  for(int i = 0; i < 15; i++) {
+  for(int i = 0; i < DG_NP; i++) {
     J[i] = -sx[i] * ry[i] + rx[i] * sy[i];
   }
 
-  for(int i = 0; i < 15; i++) {
+  for(int i = 0; i < DG_NP; i++) {
     double rx_n = sy[i] / J[i];
     double sx_n = -ry[i] / J[i];
     double ry_n = -sx[i] / J[i];
@@ -39,7 +40,7 @@ inline void init_grid_openacc( double *rx, double *ry, double *sx, double *sy,
     sy[i] = sy_n;
   }
 
-  for(int i = 0; i < 3 * 5; i++) {
+  for(int i = 0; i < 3 * DG_NPF; i++) {
     sJ[i] = sqrt(nx[i] * nx[i] + ny[i] * ny[i]);
     nx[i] = nx[i] / sJ[i];
     ny[i] = ny[i] / sJ[i];
@@ -104,15 +105,15 @@ void op_par_loop_init_grid(char const *name, op_set set,
     #pragma acc parallel loop independent deviceptr(data0,data1,data2,data3,data4,data5,data6,data7,data8)
     for ( int n=0; n<set->size; n++ ){
       init_grid_openacc(
-        &data0[15*n],
-        &data1[15*n],
-        &data2[15*n],
-        &data3[15*n],
-        &data4[15*n],
-        &data5[15*n],
-        &data6[15*n],
-        &data7[15*n],
-        &data8[15*n]);
+        &data0[DG_NP*n],
+        &data1[DG_NP*n],
+        &data2[DG_NP*n],
+        &data3[DG_NP*n],
+        &data4[3 * DG_NPF*n],
+        &data5[3 * DG_NPF*n],
+        &data6[DG_NP*n],
+        &data7[3 * DG_NPF*n],
+        &data8[3 * DG_NPF*n]);
     }
   }
 

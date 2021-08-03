@@ -6,12 +6,12 @@
 __device__ void init_gauss_gpu( double *rx, double *sx, double *ry, double *sy,
                        double *nx, double *ny, double *sJ) {
 
-  double J[21];
-  for(int i = 0; i < 21; i++) {
+  double J[DG_G_NP];
+  for(int i = 0; i < DG_G_NP; i++) {
     J[i] = -sx[i] * ry[i] + rx[i] * sy[i];
   }
 
-  for(int i = 0; i < 21; i++) {
+  for(int i = 0; i < DG_G_NP; i++) {
     double rx_n = sy[i] / J[i];
     double sx_n = -ry[i] / J[i];
     double ry_n = -sx[i] / J[i];
@@ -23,22 +23,22 @@ __device__ void init_gauss_gpu( double *rx, double *sx, double *ry, double *sy,
   }
 
 
-  for(int i = 0; i < 7; i++) {
+  for(int i = 0; i < DG_GF_NP; i++) {
     nx[i] = -sx[i];
     ny[i] = -sy[i];
   }
 
-  for(int i = 7; i < 14; i++) {
+  for(int i = DG_GF_NP; i < 2 * DG_GF_NP; i++) {
     nx[i] = rx[i] + sx[i];
     ny[i] = ry[i] + sy[i];
   }
 
-  for(int i = 14; i < 21; i++) {
+  for(int i = 2 * DG_GF_NP; i < DG_G_NP; i++) {
     nx[i] = -rx[i];
     ny[i] = -ry[i];
   }
 
-  for(int i = 0; i < 21; i++) {
+  for(int i = 0; i < DG_G_NP; i++) {
     sJ[i] = sqrt(nx[i] * nx[i] + ny[i] * ny[i]);
     nx[i] = nx[i] / sJ[i];
     ny[i] = ny[i] / sJ[i];
@@ -63,13 +63,13 @@ __global__ void op_cuda_init_gauss(
   for ( int n=threadIdx.x+blockIdx.x*blockDim.x; n<set_size; n+=blockDim.x*gridDim.x ){
 
     //user-supplied kernel call
-    init_gauss_gpu(arg0+n*21,
-               arg1+n*21,
-               arg2+n*21,
-               arg3+n*21,
-               arg4+n*21,
-               arg5+n*21,
-               arg6+n*21);
+    init_gauss_gpu(arg0+n*DG_G_NP,
+               arg1+n*DG_G_NP,
+               arg2+n*DG_G_NP,
+               arg3+n*DG_G_NP,
+               arg4+n*DG_G_NP,
+               arg5+n*DG_G_NP,
+               arg6+n*DG_G_NP);
   }
 }
 

@@ -6,7 +6,7 @@
 __device__ void curl_gpu( const double *div0, const double *div1, const double *div2,
                 const double *div3, const double *rx, const double *sx,
                 const double *ry, const double *sy, double *res) {
-  for(int i = 0; i < 15; i++) {
+  for(int i = 0; i < DG_NP; i++) {
     res[i] = rx[i] * div2[i] + sx[i] * div3[i] - ry[i] * div0[i] - sy[i] * div1[i];
   }
 
@@ -30,15 +30,15 @@ __global__ void op_cuda_curl(
   for ( int n=threadIdx.x+blockIdx.x*blockDim.x; n<set_size; n+=blockDim.x*gridDim.x ){
 
     //user-supplied kernel call
-    curl_gpu(arg0+n*15,
-         arg1+n*15,
-         arg2+n*15,
-         arg3+n*15,
-         arg4+n*15,
-         arg5+n*15,
-         arg6+n*15,
-         arg7+n*15,
-         arg8+n*15);
+    curl_gpu(arg0+n*DG_NP,
+         arg1+n*DG_NP,
+         arg2+n*DG_NP,
+         arg3+n*DG_NP,
+         arg4+n*DG_NP,
+         arg5+n*DG_NP,
+         arg6+n*DG_NP,
+         arg7+n*DG_NP,
+         arg8+n*DG_NP);
   }
 }
 
