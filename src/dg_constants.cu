@@ -73,6 +73,10 @@ DGConstants::DGConstants() {
   cudaMemcpy(lift_d, lift_g, DG_NP * DG_NPF * 3 * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&mass_d, DG_NP * DG_NP * sizeof(double));
   cudaMemcpy(mass_d, mass_g, DG_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
+  cudaMalloc((void**)&v_d, DG_NP * DG_NP * sizeof(double));
+  cudaMemcpy(v_d, v_g, DG_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
+  cudaMalloc((void**)&invV_d, DG_NP * DG_NP * sizeof(double));
+  cudaMemcpy(invV_d, invV_g, DG_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&r_d, DG_NP * sizeof(double));
   cudaMemcpy(r_d, r_g, DG_NP * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&s_d, DG_NP * sizeof(double));
@@ -122,6 +126,8 @@ DGConstants::~DGConstants() {
   cudaFree(invMass_d);
   cudaFree(lift_d);
   cudaFree(mass_d);
+  cudaFree(v_d);
+  cudaFree(invV_d);
   cudaFree(r_d);
   cudaFree(s_d);
   cudaFree(ones_d);
@@ -197,6 +203,10 @@ double* DGConstants::get_ptr(Constant_Matrix mat) {
       return lift_d;
     case MASS:
       return mass_d;
+    case V:
+      return v_d;
+    case INV_V:
+      return invV_d;
     case R:
       return r_d;
     case S:

@@ -41,6 +41,8 @@ DGConstants::DGConstants() {
   invMass = invMass_g;
   lift    = lift_g;
   mass    = mass_g;
+  v       = v_g;
+  invV    = invV_g;
   r       = r_g;
   s       = s_g;
   ones    = ones_g;
@@ -118,6 +120,10 @@ double* DGConstants::get_ptr(Constant_Matrix mat) {
       return lift;
     case MASS:
       return mass;
+    case V:
+      return v;
+    case INV_V:
+      return invV;
     case R:
       return r;
     case S:

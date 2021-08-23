@@ -20,7 +20,7 @@ public:
     GAUSS_FINTERP0, GAUSS_FINTERP0_R, GAUSS_FINTERP1, GAUSS_FINTERP1_R,
     GAUSS_FINTERP2, GAUSS_FINTERP2_R, GAUSS_INTERP,
 
-    INV_MASS, LIFT, MASS, R, S, ONES
+    INV_MASS, LIFT, MASS, INV_V, V, R, S, ONES
   };
 
   DGConstants();
@@ -64,6 +64,8 @@ public:
   double *invMass, *invMass_d;
   double *lift, *lift_d;
   double *mass, *mass_d;
+  double *v, *v_d;
+  double *invV, *invV_d;
   double *r, *r_d;
   double *s, *s_d;
   double *ones, *ones_d;

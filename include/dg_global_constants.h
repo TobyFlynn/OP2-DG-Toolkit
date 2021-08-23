@@ -40,6 +40,8 @@ extern double Dsw_g[DG_NP * DG_NP];
 extern double invMass_g[DG_NP * DG_NP];
 extern double lift_g[DG_NP * 3 * DG_NPF];
 extern double mass_g[DG_NP * DG_NP];
+extern double v_g[DG_NP * DG_NP];
+extern double invV_g[DG_NP * DG_NP];
 extern double r_g[DG_NP];
 extern double s_g[DG_NP];
 extern double ones_g[DG_NP];

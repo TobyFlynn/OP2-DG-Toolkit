@@ -39,6 +39,8 @@
 #include "order-4/constant_gF1DsR.h"
 #include "order-4/constant_gF2DrR.h"
 #include "order-4/constant_gF2DsR.h"
+#include "order-4/constant_v.h"
+#include "order-4/constant_invV.h"
 
 #elif DG_ORDER == 3
 
@@ -78,6 +80,8 @@
 #include "order-3/constant_gF1DsR.h"
 #include "order-3/constant_gF2DrR.h"
 #include "order-3/constant_gF2DsR.h"
+#include "order-3/constant_v.h"
+#include "order-3/constant_invV.h"
 
 #elif DG_ORDER == 2
 
@@ -117,6 +121,8 @@
 #include "order-2/constant_gF1DsR.h"
 #include "order-2/constant_gF2DrR.h"
 #include "order-2/constant_gF2DsR.h"
+#include "order-2/constant_v.h"
+#include "order-2/constant_invV.h"
 
 #elif DG_ORDER == 1
 
@@ -156,6 +162,8 @@
 #include "order-1/constant_gF1DsR.h"
 #include "order-1/constant_gF2DrR.h"
 #include "order-1/constant_gF2DsR.h"
+#include "order-1/constant_v.h"
+#include "order-1/constant_invV.h"
 
 #endif
 
