@@ -3,6 +3,8 @@
 #include "dg_global_constants.h"
 
 DGConstants::DGConstants() {
+  setup(3);
+
   // Cubature constants
   cudaMalloc((void**)&cubDr_d, DG_CUB_NP * DG_NP * sizeof(double));
   cudaMemcpy(cubDr_d, cubDr_g, DG_CUB_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
