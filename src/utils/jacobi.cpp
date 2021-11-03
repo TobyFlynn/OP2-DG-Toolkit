@@ -2,19 +2,17 @@
 
 #include <cmath>
 
-#define ARMA_ALLOW_FAKE_GCC
-#include <armadillo>
-
 void DGUtils::jacobiGQ(const double alpha, const double beta, const int N,
-                       std::vector<double> &x, std::vector<double> &w) {
+                       arma::vec &x, arma::vec &w) {
+  x.reset(); w.reset();
   if(N == 0) {
-    x.clear(); w.clear();
-    x.push_back(-(alpha - beta) / (alpha + beta + 2.0));
-    w.push_back(2.0);
+    x.set_size(1); w.set_size(1);
+    x[0] = -(alpha - beta) / (alpha + beta + 2.0);
+    w[0] = 2.0;
     return;
   }
 
-  std::vector<double> h1(N + 1);
+  arma::vec h1(N + 1);
   for(int i = 0; i < N + 1; i++) {
     h1[i] = 2.0 * i + alpha + beta;
   }
@@ -41,7 +39,7 @@ void DGUtils::jacobiGQ(const double alpha, const double beta, const int N,
   arma::eig_sym(eigVal, eigVec, j);
 
   x.clear(); w.clear();
-  x.resize(eigVal.n_elem); w.resize(eigVal.n_elem);
+  x.set_size(eigVal.n_elem); w.set_size(eigVal.n_elem);
 
   for(int i = 0; i < eigVal.n_elem; i++) {
     x[i] = eigVal(i);
@@ -51,18 +49,19 @@ void DGUtils::jacobiGQ(const double alpha, const double beta, const int N,
   }
 }
 
-std::vector<double> DGUtils::jacobiGL(const double alpha, const double beta,
-                                      const int N) {
-  std::vector<double> x(N + 1);
+arma::vec DGUtils::jacobiGL(const double alpha, const double beta,
+                            const int N) {
+  arma::vec x(N + 1);
   if(N == 1) {
     x[0] = -1.0;
     x[1] = 1.0;
     return x;
   }
 
-  std::vector<double> w;
+  arma::vec w;
   jacobiGQ(alpha + 1.0, beta + 1.0, N - 2, x, w);
-  x.insert(x.begin(), -1.0);
-  x.push_back(1.0);
-  return x;
+  std::vector<double> x_tmp = arma::conv_to<std::vector<double>>::from(x);
+  x_tmp.insert(x_tmp.begin(), -1.0);
+  x_tmp.push_back(1.0);
+  return arma::vec(x_tmp);
 }

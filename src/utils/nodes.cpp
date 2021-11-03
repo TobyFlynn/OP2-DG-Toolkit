@@ -63,6 +63,8 @@ void DGUtils::setXY(std::vector<double> &x, std::vector<double> &y,
 
 // Calculate warp function based on in interpolation nodes
 std::vector<double> DGUtils::warpFactor(std::vector<double> in, const int N) {
-  std::vector<double> lglPts = jacobiGL(0.0, 0.0, N);
+  arma::vec lglPts = jacobiGL(0.0, 0.0, N);
+  arma::vec rEq    = arma::linspace(-1.0, 1.0, N + 1);
+  arma::mat v1D    = vandermonde1D(rEq, N);
   // TODO
 }

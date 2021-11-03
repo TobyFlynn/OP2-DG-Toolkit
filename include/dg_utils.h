@@ -1,6 +1,9 @@
 #ifndef __DG_UTILS_H
 #define __DG_UTILS_H
 
+#define ARMA_ALLOW_FAKE_GCC
+#include <armadillo>
+
 #include <vector>
 
 namespace DGUtils {
@@ -11,12 +14,18 @@ namespace DGUtils {
   * Calculating polynomials
   **********************************/
 
-  // Calc Nth order Gauss quadature points and weights of Jacobi polynomial
+  // Calculate Nth order Gauss quadature points and weights of Jacobi polynomial
   void jacobiGQ(const double alpha, const double beta, const int n,
-                std::vector<double> &x, std::vector<double> &w);
-  // Calc Nth order Gauss Lobatto quadature points of Jacobi polynomial
-  std::vector<double> jacobiGL(const double alpha, const double beta,
-                               const int N);
+                arma::vec &x, arma::vec &w);
+  // Calculate Nth order Gauss Lobatto quadature points of Jacobi polynomial
+  arma::vec jacobiGL(const double alpha, const double beta, const int N);
+
+  /*********************************
+  * Calculating Vandermonde matrices
+  **********************************/
+
+  // Calculate 1D Vandermonde matrix
+  arma::mat vandermonde1D(const arma::vec &r, const int N);
 
   /*********************************
   * Calculating nodes
@@ -32,7 +41,7 @@ namespace DGUtils {
   * Misc
   **********************************/
 
-  // Calculates number of points, number of face points from order N
+  // Calculate number of points, number of face points from order N
   void basic_constants(const int N, int *Np, int *Nfp);
 }
 
