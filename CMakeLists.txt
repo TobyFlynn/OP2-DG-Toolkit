@@ -45,3 +45,4 @@ install(FILES ${HEADERS} DESTINATION include)
 
 # Invoke subprojects
 add_subdirectory(src)
+add_subdirectory(tests)

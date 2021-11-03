@@ -1,10 +1,15 @@
-#include "dg_constants.h"
+#include "dg_utils.h"
 
 #include <cmath>
 
 // Uses Warp & Blend to get optimal positions of points on the 'model'
 // equilateral triangle element
-void DGConstants::setXY(std::vector<double> &x, std::vector<double> &y) {
+void DGUtils::setXY(std::vector<double> &x, std::vector<double> &y,
+                    const int N) {
+  // Get basic constants
+  int Np, Nfp;
+  basic_constants(N, &Np, &Nfp);
+
   // Optimal values of alpha up to N = 16
   double alphaVals[] = {
     0.0, 0.0, 1.4152, 0.1001, 0.2751, 0.98, 1.0999, 1.2832, 1.3648, 1.4773,
@@ -41,9 +46,9 @@ void DGConstants::setXY(std::vector<double> &x, std::vector<double> &y) {
   }
 
   // Get amount of warp for each node, for each face
-  std::vector<double> warpf1 = warpFactor(warp1Arg);
-  std::vector<double> warpf2 = warpFactor(warp2Arg);
-  std::vector<double> warpf3 = warpFactor(warp3Arg);
+  std::vector<double> warpf1 = warpFactor(warp1Arg, N);
+  std::vector<double> warpf2 = warpFactor(warp2Arg, N);
+  std::vector<double> warpf3 = warpFactor(warp3Arg, N);
 
   for(int i = 0; i < Np; i++) {
     // Combine warp and blend
@@ -57,7 +62,7 @@ void DGConstants::setXY(std::vector<double> &x, std::vector<double> &y) {
 }
 
 // Calculate warp function based on in interpolation nodes
-std::vector<double> DGConstants::warpFactor(std::vector<double> in) {
+std::vector<double> DGUtils::warpFactor(std::vector<double> in, const int N) {
   std::vector<double> lglPts = jacobiGL(0.0, 0.0, N);
   // TODO
 }

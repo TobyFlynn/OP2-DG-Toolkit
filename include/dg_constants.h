@@ -78,19 +78,6 @@ public:
   #ifdef OP2_DG_CUDA
   cublasHandle_t handle;
   #endif
-
-private:
-  const double PI = 3.141592653589793238463;
-  // Uses Warp & Blend to get optimal positions of points on the 'model'
-  // equilateral triangle element
-  void setXY(std::vector<double> &x, std::vector<double> &y);
-  // Calculate warp function based on in interpolation nodes
-  std::vector<double> warpFactor(std::vector<double> in);
-  // Calc Nth order Gauss quadature points and weights of Jacobi polynomial
-  void jacobiGQ(double alpha, double beta, const int n, std::vector<double> &x,
-                std::vector<double> &w);
-  // Calc Nth order Gauss Lobatto quadature points of Jacobi polynomial
-  std::vector<double> jacobiGL(double alpha, double beta, const int n);
 };
 
 #endif
