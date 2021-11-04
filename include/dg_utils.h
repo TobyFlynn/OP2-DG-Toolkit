@@ -15,10 +15,13 @@ namespace DGUtils {
   **********************************/
 
   // Calculate Nth order Gauss quadature points and weights of Jacobi polynomial
-  void jacobiGQ(const double alpha, const double beta, const int n,
+  void jacobiGQ(const double alpha, const double beta, const int N,
                 arma::vec &x, arma::vec &w);
   // Calculate Nth order Gauss Lobatto quadature points of Jacobi polynomial
   arma::vec jacobiGL(const double alpha, const double beta, const int N);
+  // Calculate Jacobi polynomial of order N at points x
+  arma::vec jacobiP(const arma::vec &x, const double alpha, const double beta,
+                    const int N);
 
   /*********************************
   * Calculating Vandermonde matrices
@@ -32,10 +35,10 @@ namespace DGUtils {
   **********************************/
 
   // Calculate warp function based on in interpolation nodes
-  std::vector<double> warpFactor(std::vector<double> in, const int N);
-  // Uses Warp & Blend to get optimal positions of points on the 'model'
-  // equilateral triangle element
-  void setXY(std::vector<double> &x, std::vector<double> &y, const int N);
+  arma::vec warpFactor(const arma::vec &in, const int N);
+  // Uses Warp & Blend to get optimal positions of points on the reference
+  // triangle element
+  void setRefXY(const int N, arma::vec &x, arma::vec &y);
 
   /*********************************
   * Misc

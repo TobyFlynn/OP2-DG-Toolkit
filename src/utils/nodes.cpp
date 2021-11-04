@@ -2,13 +2,16 @@
 
 #include <cmath>
 
-// Uses Warp & Blend to get optimal positions of points on the 'model'
-// equilateral triangle element
-void DGUtils::setXY(std::vector<double> &x, std::vector<double> &y,
-                    const int N) {
+// Uses Warp & Blend to get optimal positions of points on the reference
+// triangle element
+void DGUtils::setRefXY(const int N, arma::vec &x, arma::vec &y) {
   // Get basic constants
   int Np, Nfp;
   basic_constants(N, &Np, &Nfp);
+
+  // Set size of result coord vecs
+  x.reset(); y.reset();
+  x.set_size(Np); y.set_size(Np);
 
   // Optimal values of alpha up to N = 16
   double alphaVals[] = {
@@ -22,49 +25,58 @@ void DGUtils::setXY(std::vector<double> &x, std::vector<double> &y,
     alpha = alphaVals[N - 1];
 
   // Equidistance points on the equilateral triangle
-  std::vector<double> l1(Np), l2(Np), l3(Np);
-  std::vector<double> blend1(Np), blend2(Np), blend3(Np);
-  std::vector<double> warp1Arg(Np), warp2Arg(Np), warp3Arg(Np);
+  arma::vec l1(Np), l2(Np), l3(Np);
+  arma::vec blend1(Np), blend2(Np), blend3(Np);
   int ind = 0;
   for(int n = 0; n < N + 1; n++) {
     for(int m = 0; m < N + 1 - n; m++) {
       l1[ind] = (double)n / (double)N;
       l3[ind] = (double)m / (double)N;
-      l2[ind] = 1.0 - l1[ind] - l3[ind];
-      x[ind] = l3[ind] - l2[ind];
-      y[ind] = (2.0 * l1[ind] - l2[ind] - l3[ind]) / sqrt(3.0);
-      // Blending functions at each node (for each edge)
-      blend1[ind] = 4.0 * l2[ind] * l3[ind];
-      blend2[ind] = 4.0 * l1[ind] * l3[ind];
-      blend3[ind] = 4.0 * l1[ind] * l2[ind];
-      // Arguments needed for calculating amount of warp required
-      warp1Arg[ind] = l3[ind] - l2[ind];
-      warp2Arg[ind] = l1[ind] - l3[ind];
-      warp3Arg[ind] = l2[ind] - l1[ind];
       ind++;
     }
   }
 
-  // Get amount of warp for each node, for each face
-  std::vector<double> warpf1 = warpFactor(warp1Arg, N);
-  std::vector<double> warpf2 = warpFactor(warp2Arg, N);
-  std::vector<double> warpf3 = warpFactor(warp3Arg, N);
+  l2 = 1.0 - l1 - l3;
+  x  = l3 - l2;
+  y  = (2.0 * l1 - l2 - l3) / sqrt(3.0);
 
-  for(int i = 0; i < Np; i++) {
-    // Combine warp and blend
-    double warp1 = blend1[i] * warpf1[i] * (1.0 + (alpha * l1[ind]) * (alpha * l1[ind]));
-    double warp2 = blend2[i] * warpf2[i] * (1.0 + (alpha * l2[ind]) * (alpha * l2[ind]));
-    double warp3 = blend3[i] * warpf3[i] * (1.0 + (alpha * l3[ind]) * (alpha * l3[ind]));
-    // Apply all deformations to equidistance points
-    x[i] += 1.0 * warp1 + cos(2.0 * PI / 3.0) * warp2 + cos(4.0 * PI / 3.0) * warp3;
-    y[i] += 0.0 * warp1 + sin(2.0 * PI / 3.0) * warp2 + sin(4.0 * PI / 3.0) * warp3;
-  }
+  // Blending functions at each node (for each edge)
+  blend1 = 4.0 * l2 % l3;
+  blend2 = 4.0 * l1 % l3;
+  blend3 = 4.0 * l1 % l2;
+
+  // Get amount of warp for each node, for each face
+  arma::vec warpf1 = warpFactor(l3 - l2, N);
+  arma::vec warpf2 = warpFactor(l1 - l3, N);
+  arma::vec warpf3 = warpFactor(l2 - l1, N);
+
+  arma::vec warp1 = blend1 % warpf1 % (1.0 + alpha * alpha * l1 % l1);
+  arma::vec warp2 = blend2 % warpf2 % (1.0 + alpha * alpha * l2 % l2);
+  arma::vec warp3 = blend3 % warpf3 % (1.0 + alpha * alpha * l3 % l3);
+
+  x = x + warp1 + cos(2.0 * PI / 3.0) * warp2 + cos(4.0 * PI / 3.0) * warp3;
+  y = y + sin(2.0 * PI / 3.0) * warp2 + sin(4.0 * PI / 3.0) * warp3;
 }
 
 // Calculate warp function based on in interpolation nodes
-std::vector<double> DGUtils::warpFactor(std::vector<double> in, const int N) {
+arma::vec DGUtils::warpFactor(const arma::vec &in, const int N) {
   arma::vec lglPts = jacobiGL(0.0, 0.0, N);
   arma::vec rEq    = arma::linspace(-1.0, 1.0, N + 1);
   arma::mat v1D    = vandermonde1D(rEq, N);
-  // TODO
+  arma::mat pMat(N + 1, in.n_elem);
+  for(int i = 0; i < N + 1; i++) {
+    pMat.row(i) = jacobiP(in, 0.0, 0.0, i).t();
+  }
+  arma::mat lMat = arma::solve(v1D.t(), pMat);
+
+  arma::vec warp = lMat.t() * (lglPts - rEq);
+
+  arma::vec zeroF(in.n_elem);
+  arma::vec sF(in.n_elem);
+  for(int i = 0; i < in.n_elem; i++) {
+    zeroF[i] = abs(in[i]) < 1.0 - 1e-10 ? 1.0 : 0.0;
+    sF[i]    = 1.0 - (zeroF[i] * in[i]) * (zeroF[i] * in[i]);
+  }
+
+  return warp / sF + warp % (zeroF - 1.0);
 }

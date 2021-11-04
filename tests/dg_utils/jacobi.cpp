@@ -2,129 +2,212 @@
 
 #include "dg_utils.h"
 
-void compare_ans(arma::vec &calc, std::vector<double> &ans) {
-  std::vector<double> calc_vec = arma::conv_to<std::vector<double>>::from(calc);
-  REQUIRE(calc_vec.size() == ans.size());
+#include <string>
 
-  for(int i = 0; i < calc_vec.size(); i++) {
-    REQUIRE(calc_vec[i] == Approx(ans[i]).margin(1e-12));
+static std::string test_data_prefix = "../../tests/dg_utils/data/jacobi/";
+
+static void compare_vec(arma::vec &calc, arma::vec &ans) {
+  REQUIRE(calc.n_elem == ans.n_elem);
+
+  for(int i = 0; i < calc.n_elem; i++) {
+    REQUIRE(calc[i] == Approx(ans[i]).margin(1e-12));
   }
 }
 
 // Testing DGUtils::jacobiGQ
 TEST_CASE("Jacobi Gauss quadature points") {
+  std::string data_prefix = test_data_prefix + "jacobiGQ/";
+
   SECTION("N = 0 alpha = 1 beta = 1") {
     int N = 0; double alpha = 1.0, beta = 1.0;
     arma::vec x, w;
     DGUtils::jacobiGQ(alpha, beta, N, x, w);
-    std::vector<double> x_ans{ 0.0 };
-    std::vector<double> w_ans{ 2.0 };
-    compare_ans(x, x_ans);
-    compare_ans(w, w_ans);
+    arma::vec x_ans, w_ans;
+    x_ans.load(data_prefix + "x-N-0-a-1-b-1.txt");
+    w_ans.load(data_prefix + "w-N-0-a-1-b-1.txt");
+    compare_vec(x, x_ans);
+    compare_vec(w, w_ans);
   }
 
   SECTION("N = 0 alpha = 2 beta = 3") {
     int N = 0; double alpha = 2.0, beta = 3.0;
     arma::vec x, w;
     DGUtils::jacobiGQ(alpha, beta, N, x, w);
-    std::vector<double> x_ans{ 0.142857142857143 };
-    std::vector<double> w_ans{ 2.0 };
-    compare_ans(x, x_ans);
-    compare_ans(w, w_ans);
+    arma::vec x_ans, w_ans;
+    x_ans.load(data_prefix + "x-N-0-a-2-b-3.txt");
+    w_ans.load(data_prefix + "w-N-0-a-2-b-3.txt");
+    compare_vec(x, x_ans);
+    compare_vec(w, w_ans);
   }
 
   SECTION("N = 3 alpha = 1 beta = 1") {
     int N = 3; double alpha = 1.0, beta = 1.0;
     arma::vec x, w;
     DGUtils::jacobiGQ(alpha, beta, N, x, w);
-    std::vector<double> x_ans{ -0.765055323929465, -0.285231516480645, 0.285231516480645, 0.765055323929465 };
-    std::vector<double> w_ans{ 0.156949912595694, 0.509716754070973, 0.509716754070973, 0.156949912595694 };
-    compare_ans(x, x_ans);
-    compare_ans(w, w_ans);
+    arma::vec x_ans, w_ans;
+    x_ans.load(data_prefix + "x-N-3-a-1-b-1.txt");
+    w_ans.load(data_prefix + "w-N-3-a-1-b-1.txt");
+    compare_vec(x, x_ans);
+    compare_vec(w, w_ans);
   }
 
   SECTION("N = 4 alpha = 1 beta = 1") {
     int N = 4; double alpha = 1.0, beta = 1.0;
     arma::vec x, w;
     DGUtils::jacobiGQ(alpha, beta, N, x, w);
-    std::vector<double> x_ans{ -0.830223896278567, -0.468848793470714, 4.40241681984739e-17, 0.468848793470714, 0.830223896278567 };
-    std::vector<double> w_ans{ 0.0860176821228073, 0.336839460734335, 0.487619047619047, 0.336839460734335, 0.0860176821228077 };
-    compare_ans(x, x_ans);
-    compare_ans(w, w_ans);
+    arma::vec x_ans, w_ans;
+    x_ans.load(data_prefix + "x-N-4-a-1-b-1.txt");
+    w_ans.load(data_prefix + "w-N-4-a-1-b-1.txt");
+    compare_vec(x, x_ans);
+    compare_vec(w, w_ans);
   }
 
   SECTION("N = 7 alpha = 1 beta = 1") {
     int N = 7; double alpha = 1.0, beta = 1.0;
     arma::vec x, w;
     DGUtils::jacobiGQ(alpha, beta, N, x, w);
-    std::vector<double> x_ans{ -0.919533908166459, -0.738773865105505, -0.477924949810445, -0.165278957666387, 0.165278957666387, 0.477924949810444, 0.738773865105505, 0.919533908166459 };
-    std::vector<double> w_ans{ 0.020590095649122, 0.102147702360358, 0.225336554969858, 0.318592313687328, 0.318592313687328, 0.225336554969858, 0.102147702360359, 0.0205900956491218 };
-    compare_ans(x, x_ans);
-    compare_ans(w, w_ans);
+    arma::vec x_ans, w_ans;
+    x_ans.load(data_prefix + "x-N-7-a-1-b-1.txt");
+    w_ans.load(data_prefix + "w-N-7-a-1-b-1.txt");
+    compare_vec(x, x_ans);
+    compare_vec(w, w_ans);
   }
 
   SECTION("N = 7 alpha = 0 beta = 0") {
     int N = 7; double alpha = 0.0, beta = 0.0;
     arma::vec x, w;
     DGUtils::jacobiGQ(alpha, beta, N, x, w);
-    std::vector<double> x_ans{ -0.960289856497536, -0.796666477413627, -0.525532409916329, -0.18343464249565, 0.18343464249565, 0.525532409916329, 0.796666477413627, 0.960289856497536 };
-    std::vector<double> w_ans{ 0.101228536290376, 0.222381034453374, 0.313706645877888, 0.362683783378362, 0.362683783378361, 0.313706645877888, 0.222381034453374, 0.101228536290376 };
-    compare_ans(x, x_ans);
-    compare_ans(w, w_ans);
+    arma::vec x_ans, w_ans;
+    x_ans.load(data_prefix + "x-N-7-a-0-b-0.txt");
+    w_ans.load(data_prefix + "w-N-7-a-0-b-0.txt");
+    compare_vec(x, x_ans);
+    compare_vec(w, w_ans);
   }
 
   SECTION("N = 15 alpha = 0 beta = 0") {
     int N = 15; double alpha = 0.0, beta = 0.0;
     arma::vec x, w;
     DGUtils::jacobiGQ(alpha, beta, N, x, w);
-    std::vector<double> x_ans{ -0.98940093499165, -0.944575023073233, -0.865631202387832, -0.755404408355003, -0.617876244402644, -0.458016777657227, -0.281603550779259, -0.0950125098376373, 0.0950125098376375, 0.281603550779259, 0.458016777657227, 0.617876244402644, 0.755404408355003, 0.865631202387831, 0.944575023073232, 0.98940093499165 };
-    std::vector<double> w_ans{ 0.0271524594117538, 0.0622535239386478, 0.0951585116824927, 0.124628971255534, 0.149595988816576, 0.169156519395003, 0.182603415044923, 0.18945061045507, 0.189450610455068, 0.182603415044924, 0.169156519395002, 0.149595988816577, 0.124628971255534, 0.095158511682493, 0.0622535239386468, 0.0271524594117545 };
-    compare_ans(x, x_ans);
-    compare_ans(w, w_ans);
+    arma::vec x_ans, w_ans;
+    x_ans.load(data_prefix + "x-N-15-a-0-b-0.txt");
+    w_ans.load(data_prefix + "w-N-15-a-0-b-0.txt");
+    compare_vec(x, x_ans);
+    compare_vec(w, w_ans);
   }
 }
 
 // Testing DGUtils::jacobiGL
 TEST_CASE("Jacobi Gauss Lobatto quadature points") {
+  std::string data_prefix = test_data_prefix + "jacobiGL/";
+
   SECTION("N = 1 alpha = 0 beta = 0") {
     int N = 1; double alpha = 0.0, beta = 0.0;
     arma::vec x = DGUtils::jacobiGL(alpha, beta, N);
-    std::vector<double> x_ans{ -1.0, 1.0 };
-    compare_ans(x, x_ans);
+    arma::vec x_ans;
+    x_ans.load(data_prefix + "x-N-1-a-0-b-0.txt");
+    compare_vec(x, x_ans);
   }
 
   SECTION("N = 2 alpha = 0 beta = 0") {
     int N = 2; double alpha = 0.0, beta = 0.0;
     arma::vec x = DGUtils::jacobiGL(alpha, beta, N);
-    std::vector<double> x_ans{ -1.0, 0.0, 1.0 };
-    compare_ans(x, x_ans);
+    arma::vec x_ans;
+    x_ans.load(data_prefix + "x-N-2-a-0-b-0.txt");
+    compare_vec(x, x_ans);
   }
 
   SECTION("N = 3 alpha = 0 beta = 0") {
     int N = 3; double alpha = 0.0, beta = 0.0;
     arma::vec x = DGUtils::jacobiGL(alpha, beta, N);
-    std::vector<double> x_ans{ -1.0, -0.447213595499958, 0.447213595499958, 1.0 };
-    compare_ans(x, x_ans);
+    arma::vec x_ans;
+    x_ans.load(data_prefix + "x-N-3-a-0-b-0.txt");
+    compare_vec(x, x_ans);
   }
 
   SECTION("N = 5 alpha = 0 beta = 0") {
     int N = 5; double alpha = 0.0, beta = 0.0;
     arma::vec x = DGUtils::jacobiGL(alpha, beta, N);
-    std::vector<double> x_ans{ -1.0, -0.765055323929465, -0.285231516480645, 0.285231516480645, 0.765055323929465, 1.0 };
-    compare_ans(x, x_ans);
+    arma::vec x_ans;
+    x_ans.load(data_prefix + "x-N-5-a-0-b-0.txt");
+    compare_vec(x, x_ans);
   }
 
   SECTION("N = 8 alpha = 0 beta = 0") {
     int N = 8; double alpha = 0.0, beta = 0.0;
     arma::vec x = DGUtils::jacobiGL(alpha, beta, N);
-    std::vector<double> x_ans{ -1.0, -0.89975799541146, -0.677186279510738, -0.363117463826178, -3.00575901416695e-17, 0.363117463826178, 0.677186279510738, 0.89975799541146, 1.0 };
-    compare_ans(x, x_ans);
+    arma::vec x_ans;
+    x_ans.load(data_prefix + "x-N-8-a-0-b-0.txt");
+    compare_vec(x, x_ans);
   }
 
   SECTION("N = 8 alpha = 2 beta = 1") {
     int N = 8; double alpha = 2.0, beta = 1.0;
     arma::vec x = DGUtils::jacobiGL(alpha, beta, N);
-    std::vector<double> x_ans{ -1.0, -0.867682709669176, -0.657620095997367, -0.382144012218183, -0.0680107502223654, 0.254133137077791, 0.552948698805503, 0.799954679592218, 1.0 };
-    compare_ans(x, x_ans);
+    arma::vec x_ans;
+    x_ans.load(data_prefix + "x-N-8-a-2-b-1.txt");
+    compare_vec(x, x_ans);
+  }
+}
+
+// Testing DGUtils::jacobiP
+TEST_CASE("Jacobi polynomial at specified points") {
+  std::string data_prefix = test_data_prefix + "jacobiP/";
+  arma::vec x;
+  x.load(data_prefix + "in.txt");
+
+  SECTION("N = 0 alpha = 0 beta = 0") {
+    int N = 0; double alpha = 0.0, beta = 0.0;
+    arma::vec res = DGUtils::jacobiP(x, alpha, beta, N);
+    arma::vec ans;
+    ans.load(data_prefix + "out-N-0-a-0-b-0.txt");
+    compare_vec(res, ans);
+  }
+
+  SECTION("N = 0 alpha = 1.5 beta = 1") {
+    int N = 0; double alpha = 1.5, beta = 1.0;
+    arma::vec res = DGUtils::jacobiP(x, alpha, beta, N);
+    arma::vec ans;
+    ans.load(data_prefix + "out-N-0-a-1_5-b-1.txt");
+    compare_vec(res, ans);
+  }
+
+  SECTION("N = 1 alpha = 0 beta = 0") {
+    int N = 1; double alpha = 0.0, beta = 0.0;
+    arma::vec res = DGUtils::jacobiP(x, alpha, beta, N);
+    arma::vec ans;
+    ans.load(data_prefix + "out-N-1-a-0-b-0.txt");
+    compare_vec(res, ans);
+  }
+
+  SECTION("N = 2 alpha = 0 beta = 0") {
+    int N = 2; double alpha = 0.0, beta = 0.0;
+    arma::vec res = DGUtils::jacobiP(x, alpha, beta, N);
+    arma::vec ans;
+    ans.load(data_prefix + "out-N-2-a-0-b-0.txt");
+    compare_vec(res, ans);
+  }
+
+  SECTION("N = 2 alpha = 1.5 beta = 1") {
+    int N = 2; double alpha = 1.5, beta = 1.0;
+    arma::vec res = DGUtils::jacobiP(x, alpha, beta, N);
+    arma::vec ans;
+    ans.load(data_prefix + "out-N-2-a-1_5-b-1.txt");
+    compare_vec(res, ans);
+  }
+
+  SECTION("N = 5 alpha = 0 beta = 0") {
+    int N = 5; double alpha = 0.0, beta = 0.0;
+    arma::vec res = DGUtils::jacobiP(x, alpha, beta, N);
+    arma::vec ans;
+    ans.load(data_prefix + "out-N-5-a-0-b-0.txt");
+    compare_vec(res, ans);
+  }
+
+  SECTION("N = 10 alpha = 0 beta = 0") {
+    int N = 10; double alpha = 0.0, beta = 0.0;
+    arma::vec res = DGUtils::jacobiP(x, alpha, beta, N);
+    arma::vec ans;
+    ans.load(data_prefix + "out-N-10-a-0-b-0.txt");
+    compare_vec(res, ans);
   }
 }

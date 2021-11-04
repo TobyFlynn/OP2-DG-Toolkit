@@ -9,7 +9,6 @@ void DGConstants::setup(const int n) {
   DGUtils::basic_constants(N, &Np, &Nfp);
 
   // Set the coordinates of the points on the 'model' equilateral triangle
-  std::vector<double> x(Np);
-  std::vector<double> y(Np);
-  DGUtils::setXY(x, y, N);
+  arma::vec x, y;
+  DGUtils::setRefXY(N, x, y);
 }
