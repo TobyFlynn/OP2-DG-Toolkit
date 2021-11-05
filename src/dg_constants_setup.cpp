@@ -15,5 +15,7 @@ void DGConstants::setup(const int n) {
 
   // Reference element matrices
   arma::mat V = DGUtils::vandermonde2D(r, s, N);
+  arma::mat invV = arma::inv(V);
+  arma::mat MassMatrix = invV.t() * invV;
   // TODO
 }

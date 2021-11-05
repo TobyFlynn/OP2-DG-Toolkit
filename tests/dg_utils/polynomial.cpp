@@ -215,6 +215,59 @@ TEST_CASE("DGUtils::jacobiP") {
   }
 }
 
+// Testing DGUtils::gradJacobiP
+// Derivative of Jacobi polynomial
+TEST_CASE("DGUtils::gradJacobiP") {
+  std::string data_prefix = test_data_prefix + "gradJacobiP/";
+  arma::vec x;
+  x.load(data_prefix + "x.txt");
+
+  SECTION("N = 0 alpha = 0 beta = 0") {
+    int N = 0;
+    double alpha = 0.0, beta = 0.0;
+    arma::vec p = DGUtils::gradJacobiP(x, alpha, beta, N);
+    arma::vec p_ans;
+    p_ans.load(data_prefix + "N-0-a-0-b-0.txt");
+    compare_vec(p, p_ans);
+  }
+
+  SECTION("N = 1 alpha = 0 beta = 0") {
+    int N = 1;
+    double alpha = 0.0, beta = 0.0;
+    arma::vec p = DGUtils::gradJacobiP(x, alpha, beta, N);
+    arma::vec p_ans;
+    p_ans.load(data_prefix + "N-1-a-0-b-0.txt");
+    compare_vec(p, p_ans);
+  }
+
+  SECTION("N = 1 alpha = 2 beta = 1") {
+    int N = 1;
+    double alpha = 2.0, beta = 1.0;
+    arma::vec p = DGUtils::gradJacobiP(x, alpha, beta, N);
+    arma::vec p_ans;
+    p_ans.load(data_prefix + "N-1-a-2-b-1.txt");
+    compare_vec(p, p_ans);
+  }
+
+  SECTION("N = 3 alpha = 1 beta = 0") {
+    int N = 3;
+    double alpha = 1.0, beta = 0.0;
+    arma::vec p = DGUtils::gradJacobiP(x, alpha, beta, N);
+    arma::vec p_ans;
+    p_ans.load(data_prefix + "N-3-a-1-b-0.txt");
+    compare_vec(p, p_ans);
+  }
+
+  SECTION("N = 4 alpha = 0 beta = 0") {
+    int N = 4;
+    double alpha = 0.0, beta = 0.0;
+    arma::vec p = DGUtils::gradJacobiP(x, alpha, beta, N);
+    arma::vec p_ans;
+    p_ans.load(data_prefix + "N-4-a-0-b-0.txt");
+    compare_vec(p, p_ans);
+  }
+}
+
 // Testing DGUtils::simplex2DP
 // 2D orthonomal polynomial on simplex
 TEST_CASE("DGUtils::simplex2DP") {
@@ -261,5 +314,64 @@ TEST_CASE("DGUtils::simplex2DP") {
     arma::vec p_ans;
     p_ans.load(data_prefix + "i-7-j-2.txt");
     compare_vec(p, p_ans);
+  }
+}
+
+// Testing DGUtils::gradSimplex2DP
+// Derivatives of the modal basis on a simplex
+TEST_CASE("DGUtils::gradSimplex2DP") {
+  std::string data_prefix = test_data_prefix + "gradSimplex2DP/";
+  arma::vec a, b;
+  a.load(data_prefix + "a.txt");
+  b.load(data_prefix + "b.txt");
+
+  SECTION("i = 0 j = 0") {
+    int i = 0, j = 0;
+    arma::vec dr, ds, dr_ans, ds_ans;
+    DGUtils::gradSimplex2DP(a, b, i, j, dr, ds);
+    dr_ans.load(data_prefix + "dr-i-0-j-0.txt");
+    ds_ans.load(data_prefix + "ds-i-0-j-0.txt");
+    compare_vec(dr, dr_ans);
+    compare_vec(ds, ds_ans);
+  }
+
+  SECTION("i = 1 j = 0") {
+    int i = 1, j = 0;
+    arma::vec dr, ds, dr_ans, ds_ans;
+    DGUtils::gradSimplex2DP(a, b, i, j, dr, ds);
+    dr_ans.load(data_prefix + "dr-i-1-j-0.txt");
+    ds_ans.load(data_prefix + "ds-i-1-j-0.txt");
+    compare_vec(dr, dr_ans);
+    compare_vec(ds, ds_ans);
+  }
+
+  SECTION("i = 3 j = 0") {
+    int i = 3, j = 0;
+    arma::vec dr, ds, dr_ans, ds_ans;
+    DGUtils::gradSimplex2DP(a, b, i, j, dr, ds);
+    dr_ans.load(data_prefix + "dr-i-3-j-0.txt");
+    ds_ans.load(data_prefix + "ds-i-3-j-0.txt");
+    compare_vec(dr, dr_ans);
+    compare_vec(ds, ds_ans);
+  }
+
+  SECTION("i = 3 j = 2") {
+    int i = 3, j = 2;
+    arma::vec dr, ds, dr_ans, ds_ans;
+    DGUtils::gradSimplex2DP(a, b, i, j, dr, ds);
+    dr_ans.load(data_prefix + "dr-i-3-j-2.txt");
+    ds_ans.load(data_prefix + "ds-i-3-j-2.txt");
+    compare_vec(dr, dr_ans);
+    compare_vec(ds, ds_ans);
+  }
+
+  SECTION("i = 2 j = 5") {
+    int i = 2, j = 5;
+    arma::vec dr, ds, dr_ans, ds_ans;
+    DGUtils::gradSimplex2DP(a, b, i, j, dr, ds);
+    dr_ans.load(data_prefix + "dr-i-2-j-5.txt");
+    ds_ans.load(data_prefix + "ds-i-2-j-5.txt");
+    compare_vec(dr, dr_ans);
+    compare_vec(ds, ds_ans);
   }
 }

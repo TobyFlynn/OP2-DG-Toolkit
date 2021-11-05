@@ -22,9 +22,15 @@ namespace DGUtils {
   // Calculate Jacobi polynomial of order N at points x
   arma::vec jacobiP(const arma::vec &x, const double alpha, const double beta,
                     const int N);
+  // Calculate derivative of Jacobi polynomial of order N at points x
+  arma::vec gradJacobiP(const arma::vec &x, const double alpha,
+                        const double beta, const int N);
   // Calculate 2D orthonomal poly on simplex of order i,j
   arma::vec simplex2DP(const arma::vec &a, const arma::vec &b, const int i,
                        const int j);
+  // Calculate derivatives of modal basis on simplex
+  void gradSimplex2DP(const arma::vec &a, const arma::vec &b, const int i,
+                      const int j, arma::vec &dr, arma::vec &ds);
 
   /*********************************
   * Calculating Vandermonde matrices
@@ -34,6 +40,16 @@ namespace DGUtils {
   arma::mat vandermonde1D(const arma::vec &r, const int N);
   // Calculate 2D Vandermonde matrix
   arma::mat vandermonde2D(const arma::vec &r, const arma::vec &s, const int N);
+  // Vandermonde matrix for gradient of modal basis
+  void gradVandermonde2D(const arma::vec &r, const arma::vec &s, const int N,
+                         arma::mat &vDr, arma::mat &vDs);
+  /*********************************
+  * Calculating other matrices
+  **********************************/
+
+  // Calculate differentiation matrices
+  void dMatrices2D(const arma::vec &r, const arma::vec &s, const arma::mat &V,
+                   const int N, arma::mat &dr, arma::mat &ds);
 
   /*********************************
   * Calculating nodes

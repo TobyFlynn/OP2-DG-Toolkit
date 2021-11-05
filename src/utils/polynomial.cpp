@@ -107,9 +107,55 @@ arma::vec DGUtils::jacobiP(const arma::vec &x, const double alpha,
   return pl.col(N);
 }
 
+arma::vec DGUtils::gradJacobiP(const arma::vec &x, const double alpha,
+                               const double beta, const int N) {
+  if(N == 0) {
+    return arma::vec(x.n_elem, arma::fill::zeros);
+  } else {
+    double fact = sqrt(N * (N + alpha + beta + 1.0));
+    return fact * jacobiP(x, alpha + 1.0, beta + 1.0, N - 1);
+  }
+}
+
+// Calculate 2D orthonomal poly on simplex of order i,j
 arma::vec DGUtils::simplex2DP(const arma::vec &a, const arma::vec &b,
                               const int i, const int j) {
   arma::vec h1 = jacobiP(a, 0, 0, i);
   arma::vec h2 = jacobiP(b, 2 * i + 1, 0, j);
   return sqrt(2.0) * h1 % h2 % arma::pow(1.0 - b, i);
+}
+
+// Calculate derivatives of modal basis on simplex
+void DGUtils::gradSimplex2DP(const arma::vec &a, const arma::vec &b,
+                             const int i, const int j, arma::vec &dr,
+                             arma::vec &ds) {
+  arma::vec fa  = jacobiP(a, 0.0, 0.0, i);
+  arma::vec gb  = jacobiP(b, 2.0 * i + 1.0, 0.0, j);
+  arma::vec dfa = gradJacobiP(a, 0.0, 0.0, i);
+  arma::vec dgb = gradJacobiP(b, 2.0 * i + 1.0, 0.0, j);
+
+  dr.set_size(arma::size(fa));
+  ds.set_size(arma::size(fa));
+
+  // r derivative
+  dr = dfa % gb;
+  if(i > 0) {
+    dr = dr % arma::pow(0.5 * (1.0 - b), i - 1);
+  }
+
+  // s derivative
+  ds = dfa % (gb % (0.5 * (1.0 + a)));
+  if(i > 0) {
+    ds = ds % arma::pow(0.5 * (1.0 - b), i - 1);
+  }
+
+  arma::vec tmp = dgb % arma::pow(0.5 * (1.0 - b), i);
+  if(i > 0) {
+    tmp = tmp - 0.5 * i * gb % arma::pow(0.5 * (1.0 - b), i - 1);
+  }
+  ds = ds + fa % tmp;
+
+  // Normalise
+  dr = pow(2.0, i + 0.5) * dr;
+  ds = pow(2.0, i + 0.5) * ds;
 }

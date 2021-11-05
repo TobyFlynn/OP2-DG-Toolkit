@@ -95,3 +95,48 @@ TEST_CASE("DGUtils::vandermonde2D") {
     compare_mat(v2D, v2D_ans);
   }
 }
+
+// Testing DGUtils::gradVandermonde2D
+// Vandermonde matrix for gradient of modal basis
+TEST_CASE("DGUtils::gradVandermonde2D") {
+  std::string data_prefix = test_data_prefix + "gradVandermonde2D/";
+
+  SECTION("N = 1") {
+    int N = 1;
+    arma::vec r, s;
+    r.load(data_prefix + "r-N-1.txt");
+    s.load(data_prefix + "s-N-1.txt");
+    arma::mat vDr, vDs, vDr_ans, vDs_ans;
+    DGUtils::gradVandermonde2D(r, s, N, vDr, vDs);
+    vDr_ans.load(data_prefix + "vDr-N-1.txt");
+    vDs_ans.load(data_prefix + "vDs-N-1.txt");
+    compare_mat(vDr, vDr_ans);
+    compare_mat(vDs, vDs_ans);
+  }
+
+  SECTION("N = 4") {
+    int N = 4;
+    arma::vec r, s;
+    r.load(data_prefix + "r-N-4.txt");
+    s.load(data_prefix + "s-N-4.txt");
+    arma::mat vDr, vDs, vDr_ans, vDs_ans;
+    DGUtils::gradVandermonde2D(r, s, N, vDr, vDs);
+    vDr_ans.load(data_prefix + "vDr-N-4.txt");
+    vDs_ans.load(data_prefix + "vDs-N-4.txt");
+    compare_mat(vDr, vDr_ans);
+    compare_mat(vDs, vDs_ans);
+  }
+
+  SECTION("N = 7") {
+    int N = 7;
+    arma::vec r, s;
+    r.load(data_prefix + "r-N-7.txt");
+    s.load(data_prefix + "s-N-7.txt");
+    arma::mat vDr, vDs, vDr_ans, vDs_ans;
+    DGUtils::gradVandermonde2D(r, s, N, vDr, vDs);
+    vDr_ans.load(data_prefix + "vDr-N-7.txt");
+    vDs_ans.load(data_prefix + "vDs-N-7.txt");
+    compare_mat(vDr, vDr_ans);
+    compare_mat(vDs, vDs_ans);
+  }
+}
