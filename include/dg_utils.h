@@ -22,6 +22,9 @@ namespace DGUtils {
   // Calculate Jacobi polynomial of order N at points x
   arma::vec jacobiP(const arma::vec &x, const double alpha, const double beta,
                     const int N);
+  // Calculate 2D orthonomal poly on simplex of order i,j
+  arma::vec simplex2DP(const arma::vec &a, const arma::vec &b, const int i,
+                       const int j);
 
   /*********************************
   * Calculating Vandermonde matrices
@@ -29,6 +32,8 @@ namespace DGUtils {
 
   // Calculate 1D Vandermonde matrix
   arma::mat vandermonde1D(const arma::vec &r, const int N);
+  // Calculate 2D Vandermonde matrix
+  arma::mat vandermonde2D(const arma::vec &r, const arma::vec &s, const int N);
 
   /*********************************
   * Calculating nodes
@@ -36,9 +41,16 @@ namespace DGUtils {
 
   // Calculate warp function based on in interpolation nodes
   arma::vec warpFactor(const arma::vec &in, const int N);
-  // Uses Warp & Blend to get optimal positions of points on the reference
-  // triangle element
+  // Uses Warp & Blend to get optimal positions of points on an equilateral
+  // triangle
   void setRefXY(const int N, arma::vec &x, arma::vec &y);
+  // Convert from x-y coordinates in equilateral triangle to r-s coordinates of
+  // the reference triagnle
+  void xy2rs(const arma::vec &x, const arma::vec &y, arma::vec &r,
+             arma::vec &s);
+  // Convert from r-s coordinates to a-b coordinates
+  void rs2ab(const arma::vec &r, const arma::vec &s, arma::vec &a,
+             arma::vec &b);
 
   /*********************************
   * Misc

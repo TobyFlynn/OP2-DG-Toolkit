@@ -13,7 +13,7 @@ list(APPEND CUBLAS_SRC cuBLAS_op/op2_gemv_batch_op.cu cuBLAS_op/op2_gemm_batch_o
 list(APPEND CUBLAS_SRC cuBLAS_op/init_gauss_op.cu cuBLAS_op/inv_op.cu)
 
 set(COMMON_SRC dg_mesh_op.cpp dg_operators_op.cpp dg_constants_setup.cpp)
-list(APPEND COMMON_SRC utils/misc.cpp utils/nodes.cpp utils/jacobi.cpp utils/vandermonde.cpp)
+list(APPEND COMMON_SRC utils/misc.cpp utils/nodes.cpp utils/polynomial.cpp utils/vandermonde.cpp)
 set(CPU_SRC dg_constants.cpp)
 set(GPU_SRC dg_constants.cu)
 

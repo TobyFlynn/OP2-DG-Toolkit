@@ -106,3 +106,10 @@ arma::vec DGUtils::jacobiP(const arma::vec &x, const double alpha,
 
   return pl.col(N);
 }
+
+arma::vec DGUtils::simplex2DP(const arma::vec &a, const arma::vec &b,
+                              const int i, const int j) {
+  arma::vec h1 = jacobiP(a, 0, 0, i);
+  arma::vec h2 = jacobiP(b, 2 * i + 1, 0, j);
+  return sqrt(2.0) * h1 % h2 % arma::pow(1.0 - b, i);
+}

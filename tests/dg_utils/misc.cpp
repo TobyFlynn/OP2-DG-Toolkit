@@ -3,7 +3,8 @@
 #include "dg_utils.h"
 
 // Testing DGUtils::basic_constants
-TEST_CASE("Basic Constants") {
+// Basic Constants
+TEST_CASE("DGUtils::basic_constants") {
   SECTION("Order 1") {
     int Np, Nfp;
     DGUtils::basic_constants(1, &Np, &Nfp);

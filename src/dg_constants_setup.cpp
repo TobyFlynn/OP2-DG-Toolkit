@@ -8,7 +8,12 @@ void DGConstants::setup(const int n) {
   // Set num points and num face points
   DGUtils::basic_constants(N, &Np, &Nfp);
 
-  // Set the coordinates of the points on the 'model' equilateral triangle
-  arma::vec x, y;
+  // Set the coordinates of the points on the refernece triangle
+  arma::vec x, y, r, s;
   DGUtils::setRefXY(N, x, y);
+  DGUtils::xy2rs(x, y, r, s);
+
+  // Reference element matrices
+  arma::mat V = DGUtils::vandermonde2D(r, s, N);
+  // TODO
 }

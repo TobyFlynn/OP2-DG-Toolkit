@@ -8,3 +8,23 @@ arma::mat DGUtils::vandermonde1D(const arma::vec &r, const int N) {
   }
   return v1D;
 }
+
+// Calculate 2D Vandermonde matrix
+arma::mat DGUtils::vandermonde2D(const arma::vec &r, const arma::vec &s,
+                                 const int N) {
+  // Transfer to a-b coordinates
+  arma::vec a, b;
+  rs2ab(r, s, a, b);
+
+  // Build matrix
+  arma::mat v2D(r.n_elem, (N + 1) * (N + 2) / 2);
+  int col = 0;
+  for(int i = 0; i < N + 1; i++) {
+    for(int j = 0; j < N + 1 - i; j++) {
+      v2D.col(col) = simplex2DP(a, b, i, j);
+      col++;
+    }
+  }
+
+  return v2D;
+}

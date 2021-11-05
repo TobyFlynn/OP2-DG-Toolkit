@@ -18,7 +18,8 @@ static void compare_mat(arma::mat &calc, arma::mat &ans) {
 }
 
 // Testing DGUtils::vandermonde1D
-TEST_CASE("1D Vandermonde matrix used in discretization") {
+// 1D Vandermonde matrix
+TEST_CASE("DGUtils::vandermonde1D") {
   std::string data_prefix = test_data_prefix + "vandermonde1D/";
   arma::vec x;
   x.load(data_prefix + "v1D-in.txt");
@@ -53,5 +54,44 @@ TEST_CASE("1D Vandermonde matrix used in discretization") {
     arma::mat ans;
     ans.load(data_prefix + "v1D-N-10.txt");
     compare_mat(v1D, ans);
+  }
+}
+
+// Testing DGUtils::vandermonde2D
+// 2D Vandermonde matrix
+TEST_CASE("DGUtils::vandermonde2D") {
+  std::string data_prefix = test_data_prefix + "vandermonde2D/";
+
+  SECTION("N = 1") {
+    int N = 1;
+    arma::vec r, s;
+    r.load(data_prefix + "r-N-1.txt");
+    s.load(data_prefix + "s-N-1.txt");
+    arma::mat v2D = DGUtils::vandermonde2D(r, s, N);
+    arma::mat v2D_ans;
+    v2D_ans.load(data_prefix + "v2D-N-1.txt");
+    compare_mat(v2D, v2D_ans);
+  }
+
+  SECTION("N = 4") {
+    int N = 4;
+    arma::vec r, s;
+    r.load(data_prefix + "r-N-4.txt");
+    s.load(data_prefix + "s-N-4.txt");
+    arma::mat v2D = DGUtils::vandermonde2D(r, s, N);
+    arma::mat v2D_ans;
+    v2D_ans.load(data_prefix + "v2D-N-4.txt");
+    compare_mat(v2D, v2D_ans);
+  }
+
+  SECTION("N = 7") {
+    int N = 7;
+    arma::vec r, s;
+    r.load(data_prefix + "r-N-7.txt");
+    s.load(data_prefix + "s-N-7.txt");
+    arma::mat v2D = DGUtils::vandermonde2D(r, s, N);
+    arma::mat v2D_ans;
+    v2D_ans.load(data_prefix + "v2D-N-7.txt");
+    compare_mat(v2D, v2D_ans);
   }
 }

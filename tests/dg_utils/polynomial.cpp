@@ -4,7 +4,7 @@
 
 #include <string>
 
-static std::string test_data_prefix = "../../tests/dg_utils/data/jacobi/";
+static std::string test_data_prefix = "../../tests/dg_utils/data/polynomial/";
 
 static void compare_vec(arma::vec &calc, arma::vec &ans) {
   REQUIRE(calc.n_elem == ans.n_elem);
@@ -15,7 +15,8 @@ static void compare_vec(arma::vec &calc, arma::vec &ans) {
 }
 
 // Testing DGUtils::jacobiGQ
-TEST_CASE("Jacobi Gauss quadature points") {
+// Jacobi Gauss quadature points
+TEST_CASE("DGUtils::jacobiGQ") {
   std::string data_prefix = test_data_prefix + "jacobiGQ/";
 
   SECTION("N = 0 alpha = 1 beta = 1") {
@@ -97,7 +98,8 @@ TEST_CASE("Jacobi Gauss quadature points") {
 }
 
 // Testing DGUtils::jacobiGL
-TEST_CASE("Jacobi Gauss Lobatto quadature points") {
+// Jacobi Gauss Lobatto quadature points
+TEST_CASE("DGUtils::jacobiGL") {
   std::string data_prefix = test_data_prefix + "jacobiGL/";
 
   SECTION("N = 1 alpha = 0 beta = 0") {
@@ -150,7 +152,8 @@ TEST_CASE("Jacobi Gauss Lobatto quadature points") {
 }
 
 // Testing DGUtils::jacobiP
-TEST_CASE("Jacobi polynomial at specified points") {
+// Jacobi polynomial at specified points
+TEST_CASE("DGUtils::jacobiP") {
   std::string data_prefix = test_data_prefix + "jacobiP/";
   arma::vec x;
   x.load(data_prefix + "in.txt");
@@ -209,5 +212,54 @@ TEST_CASE("Jacobi polynomial at specified points") {
     arma::vec ans;
     ans.load(data_prefix + "out-N-10-a-0-b-0.txt");
     compare_vec(res, ans);
+  }
+}
+
+// Testing DGUtils::simplex2DP
+// 2D orthonomal polynomial on simplex
+TEST_CASE("DGUtils::simplex2DP") {
+  std::string data_prefix = test_data_prefix + "simplex2DP/";
+  arma::vec a, b;
+  a.load(data_prefix + "a.txt");
+  b.load(data_prefix + "b.txt");
+
+  SECTION("i = 0 j = 0") {
+    int i = 0, j = 0;
+    arma::vec p = DGUtils::simplex2DP(a, b, i, j);
+    arma::vec p_ans;
+    p_ans.load(data_prefix + "i-0-j-0.txt");
+    compare_vec(p, p_ans);
+  }
+
+  SECTION("i = 1 j = 0") {
+    int i = 1, j = 0;
+    arma::vec p = DGUtils::simplex2DP(a, b, i, j);
+    arma::vec p_ans;
+    p_ans.load(data_prefix + "i-1-j-0.txt");
+    compare_vec(p, p_ans);
+  }
+
+  SECTION("i = 0 j = 1") {
+    int i = 0, j = 1;
+    arma::vec p = DGUtils::simplex2DP(a, b, i, j);
+    arma::vec p_ans;
+    p_ans.load(data_prefix + "i-0-j-1.txt");
+    compare_vec(p, p_ans);
+  }
+
+  SECTION("i = 4 j = 6") {
+    int i = 4, j = 6;
+    arma::vec p = DGUtils::simplex2DP(a, b, i, j);
+    arma::vec p_ans;
+    p_ans.load(data_prefix + "i-4-j-6.txt");
+    compare_vec(p, p_ans);
+  }
+
+  SECTION("i = 7 j = 2") {
+    int i = 7, j = 2;
+    arma::vec p = DGUtils::simplex2DP(a, b, i, j);
+    arma::vec p_ans;
+    p_ans.load(data_prefix + "i-7-j-2.txt");
+    compare_vec(p, p_ans);
   }
 }

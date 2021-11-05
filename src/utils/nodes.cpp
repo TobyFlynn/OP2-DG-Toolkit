@@ -2,8 +2,8 @@
 
 #include <cmath>
 
-// Uses Warp & Blend to get optimal positions of points on the reference
-// triangle element
+// Uses Warp & Blend to get optimal positions of points on an equilateral
+// triangle
 void DGUtils::setRefXY(const int N, arma::vec &x, arma::vec &y) {
   // Get basic constants
   int Np, Nfp;
@@ -79,4 +79,33 @@ arma::vec DGUtils::warpFactor(const arma::vec &in, const int N) {
   }
 
   return warp / sF + warp % (zeroF - 1.0);
+}
+
+// Convert from x-y coordinates in equilateral triangle to r-s coordinates of
+// the reference triagnle
+void DGUtils::xy2rs(const arma::vec &x, const arma::vec &y, arma::vec &r,
+                    arma::vec &s) {
+  arma::vec l1 = (sqrt(3.0) * y + 1.0) / 3.0;
+  arma::vec l2 = (-3.0 * x - sqrt(3.0) * y + 2.0) / 6.0;
+  arma::vec l3 = (3.0 * x - sqrt(3.0) * y + 2.0) / 6.0;
+
+  r.set_size(arma::size(x));
+  s.set_size(arma::size(x));
+  r = l3 - l2 - l1;
+  s = l1 - l2 - l3;
+}
+
+// Convert from r-s coordinates to a-b coordinates
+void DGUtils::rs2ab(const arma::vec &r, const arma::vec &s, arma::vec &a,
+                    arma::vec &b) {
+  a.set_size(arma::size(r));
+  b.set_size(arma::size(r));
+  for(int i = 0; i < r.n_elem; i++) {
+    if(s[i] != 1.0) {
+      a[i] = 2.0 * (1.0 + r[i]) / (1.0 - s[i]) - 1.0;
+    } else {
+      a[i] = -1.0;
+    }
+  }
+  b = s;
 }

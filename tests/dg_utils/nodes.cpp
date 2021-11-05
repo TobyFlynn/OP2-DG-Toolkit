@@ -15,7 +15,8 @@ static void compare_vec(arma::vec &calc, arma::vec &ans) {
 }
 
 // Testing DGUtils::warpFactor
-TEST_CASE("Warp Factor") {
+// Warp Factor
+TEST_CASE("DGUtils::warpFactor") {
   std::string data_prefix = test_data_prefix + "warpFactor/";
 
   SECTION("N = 1") {
@@ -56,7 +57,8 @@ TEST_CASE("Warp Factor") {
 }
 
 // Testing DGUtils::setRefXY
-TEST_CASE("X and Y coordinates of nodes on reference element") {
+// X and Y coordinates of nodes on reference element
+TEST_CASE("DGUtils::setRefXY") {
   std::string data_prefix = test_data_prefix + "setRefXY/";
 
   SECTION("N = 1") {
@@ -98,4 +100,32 @@ TEST_CASE("X and Y coordinates of nodes on reference element") {
     compare_vec(x, x_ans);
     compare_vec(y, y_ans);
   }
+}
+
+// Testing DGUtils::xy2rs
+// Converting from x-y in an equilateral triangle to r-s in ref triagnle
+TEST_CASE("DGUtils::xy2rs") {
+  std::string data_prefix = test_data_prefix + "xy2rs/";
+  arma::vec x, y, r, s, r_ans, s_ans;
+  x.load(data_prefix + "x.txt");
+  y.load(data_prefix + "y.txt");
+  r_ans.load(data_prefix + "r.txt");
+  s_ans.load(data_prefix + "s.txt");
+  DGUtils::xy2rs(x, y, r, s);
+  compare_vec(r, r_ans);
+  compare_vec(s, s_ans);
+}
+
+// Testing DGUtils::rs2ab
+// Converting from r-s to a-b coordinates
+TEST_CASE("DGUtils::rs2ab") {
+  std::string data_prefix = test_data_prefix + "rs2ab/";
+  arma::vec r, s, a, b, a_ans, b_ans;
+  r.load(data_prefix + "r.txt");
+  s.load(data_prefix + "s.txt");
+  a_ans.load(data_prefix + "a.txt");
+  b_ans.load(data_prefix + "b.txt");
+  DGUtils::rs2ab(r, s, a, b);
+  compare_vec(a, a_ans);
+  compare_vec(b, b_ans);
 }
