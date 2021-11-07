@@ -7,7 +7,8 @@
 #include "cublas_v2.h"
 #endif
 
-#include <vector>
+#define ARMA_ALLOW_FAKE_GCC
+#include <armadillo>
 
 class DGConstants {
 public:
@@ -29,6 +30,7 @@ public:
   ~DGConstants();
 
   void setup(const int n);
+  void gauss(const int nGauss);
 
   int N, Nfp, Np;
 
@@ -78,6 +80,11 @@ public:
   #ifdef OP2_DG_CUDA
   cublasHandle_t handle;
   #endif
+
+private:
+  arma::vec x_, y_, r_, s_;
+  arma::uvec fmask1_, fmask2_, fmask3_, fmask_;
+  arma::mat V_, invV_, MassMatrix_, Dr_, Ds_, lift_, Drw_, Dsw_;
 };
 
 #endif
