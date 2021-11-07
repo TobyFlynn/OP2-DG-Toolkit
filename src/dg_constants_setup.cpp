@@ -17,5 +17,15 @@ void DGConstants::setup(const int n) {
   arma::mat V = DGUtils::vandermonde2D(r, s, N);
   arma::mat invV = arma::inv(V);
   arma::mat MassMatrix = invV.t() * invV;
+  arma::mat Dr, Ds;
+  DGUtils::dMatrices2D(r, s, V, N, Dr, Ds);
+
+  // FMask
+  arma::uvec fmask1 = arma::find(arma::abs(s + 1) < 1e-12);
+  arma::uvec fmask2 = arma::find(arma::abs(r + s) < 1e-12);
+  arma::uvec fmask3 = arma::find(arma::abs(r + 1) < 1e-12);
+  fmask3            = arma::reverse(fmask3);
+  arma::uvec fmask  = arma::join_horiz(fmask1, fmask2, fmask3);
+
   // TODO
 }

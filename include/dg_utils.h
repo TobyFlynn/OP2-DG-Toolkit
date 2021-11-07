@@ -50,6 +50,9 @@ namespace DGUtils {
   // Calculate differentiation matrices
   void dMatrices2D(const arma::vec &r, const arma::vec &s, const arma::mat &V,
                    const int N, arma::mat &dr, arma::mat &ds);
+  // Surface to volume lift matrix
+  arma::mat lift2D(const arma::vec &r, const arma::vec &s,
+                   const arma::uvec &fmask, const arma::mat &V, const int N);
 
   /*********************************
   * Calculating nodes

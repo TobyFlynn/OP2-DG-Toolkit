@@ -64,3 +64,61 @@ TEST_CASE("DGUtils::dMatrices2D") {
     compare_mat(ds, ds_ans);
   }
 }
+
+// Testing DGUtils::lift2D
+// Surface to volume lift matrix
+TEST_CASE("DGUtils::lift2D") {
+  std::string data_prefix = test_data_prefix + "lift2D/";
+
+  SECTION("N = 1") {
+    int N = 1;
+    arma::vec r, s; arma::uvec fmask;
+    r.load(data_prefix + "r-N-1.txt");
+    s.load(data_prefix + "s-N-1.txt");
+    fmask.load(data_prefix + "fmask-N-1.txt");
+    arma::mat v, lift_ans;
+    v.load(data_prefix + "V-N-1.txt");
+    arma::mat lift = DGUtils::lift2D(r, s, fmask, v, N);
+    lift_ans.load(data_prefix + "LIFT-N-1.txt");
+    compare_mat(lift, lift_ans);
+  }
+
+  SECTION("N = 2") {
+    int N = 2;
+    arma::vec r, s; arma::uvec fmask;
+    r.load(data_prefix + "r-N-2.txt");
+    s.load(data_prefix + "s-N-2.txt");
+    fmask.load(data_prefix + "fmask-N-2.txt");
+    arma::mat v, lift_ans;
+    v.load(data_prefix + "V-N-2.txt");
+    arma::mat lift = DGUtils::lift2D(r, s, fmask, v, N);
+    lift_ans.load(data_prefix + "LIFT-N-2.txt");
+    compare_mat(lift, lift_ans);
+  }
+
+  SECTION("N = 4") {
+    int N = 4;
+    arma::vec r, s; arma::uvec fmask;
+    r.load(data_prefix + "r-N-4.txt");
+    s.load(data_prefix + "s-N-4.txt");
+    fmask.load(data_prefix + "fmask-N-4.txt");
+    arma::mat v, lift_ans;
+    v.load(data_prefix + "V-N-4.txt");
+    arma::mat lift = DGUtils::lift2D(r, s, fmask, v, N);
+    lift_ans.load(data_prefix + "LIFT-N-4.txt");
+    compare_mat(lift, lift_ans);
+  }
+
+  SECTION("N = 5") {
+    int N = 5;
+    arma::vec r, s; arma::uvec fmask;
+    r.load(data_prefix + "r-N-5.txt");
+    s.load(data_prefix + "s-N-5.txt");
+    fmask.load(data_prefix + "fmask-N-5.txt");
+    arma::mat v, lift_ans;
+    v.load(data_prefix + "V-N-5.txt");
+    arma::mat lift = DGUtils::lift2D(r, s, fmask, v, N);
+    lift_ans.load(data_prefix + "LIFT-N-5.txt");
+    compare_mat(lift, lift_ans);
+  }
+}
