@@ -52,3 +52,13 @@ void DGConstants::gauss(const int nGauss) {
 
   arma::mat interp = arma::join_vert(interp1, interp2, interp3);
 }
+
+void DGConstants::cubature(const int nCub) {
+  arma::vec c_r, c_s, c_w;
+  DGUtils::cubature2D(nCub, c_r, c_s, c_w);
+
+  arma::mat c_V = DGUtils::interpMatrix2D(c_r, c_s, invV_, N);
+
+  arma::mat c_Dr, c_Ds;
+  DGUtils::dMatrices2D(c_r, c_s, V_, N, c_Dr, c_Ds);
+}

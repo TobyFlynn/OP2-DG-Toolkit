@@ -31,6 +31,8 @@ namespace DGUtils {
   // Calculate derivatives of modal basis on simplex
   void gradSimplex2DP(const arma::vec &a, const arma::vec &b, const int i,
                       const int j, arma::vec &dr, arma::vec &ds);
+  // Get cubature rules
+  void cubature2D(const int cOrder, arma::vec &r, arma::vec &s, arma::vec &w);
 
   /*********************************
   * Calculating Vandermonde matrices
@@ -53,6 +55,9 @@ namespace DGUtils {
   // Surface to volume lift matrix
   arma::mat lift2D(const arma::vec &r, const arma::vec &s,
                    const arma::uvec &fmask, const arma::mat &V, const int N);
+  // Interpolation matrix
+  arma::mat interpMatrix2D(const arma::vec &r, const arma::vec &s,
+                           const arma::mat &invV, const int N);
 
   /*********************************
   * Calculating nodes

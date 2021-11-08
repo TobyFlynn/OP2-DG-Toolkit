@@ -31,6 +31,7 @@ public:
 
   void setup(const int n);
   void gauss(const int nGauss);
+  void cubature(const int nCub);
 
   int N, Nfp, Np;
 

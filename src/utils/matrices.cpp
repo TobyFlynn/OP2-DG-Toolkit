@@ -42,3 +42,10 @@ arma::mat DGUtils::lift2D(const arma::vec &r, const arma::vec &s,
 
   return V * (V.t() * eMat);
 }
+
+// Interpolation matrix
+arma::mat DGUtils::interpMatrix2D(const arma::vec &r, const arma::vec &s,
+                         const arma::mat &invV, const int N) {
+  arma::mat newV = vandermonde2D(r, s, N);
+  return newV * invV;
+}

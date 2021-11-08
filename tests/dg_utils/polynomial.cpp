@@ -375,3 +375,33 @@ TEST_CASE("DGUtils::gradSimplex2DP") {
     compare_vec(ds, ds_ans);
   }
 }
+
+// Testing DGUtils::cubature2D
+// Get cubature rules
+TEST_CASE("DGUtils::cubature2D") {
+  std::string data_prefix = test_data_prefix + "cubature2D/";
+
+  SECTION("N = 14") {
+    int N = 14;
+    arma::vec r, s, w, r_ans, s_ans, w_ans;
+    DGUtils::cubature2D(N, r, s, w);
+    r_ans.load(data_prefix + "r-N-14.txt");
+    s_ans.load(data_prefix + "s-N-14.txt");
+    w_ans.load(data_prefix + "w-N-14.txt");
+    compare_vec(r, r_ans);
+    compare_vec(s, s_ans);
+    compare_vec(w, w_ans);
+  }
+
+  SECTION("N = 30") {
+    int N = 30;
+    arma::vec r, s, w, r_ans, s_ans, w_ans;
+    DGUtils::cubature2D(N, r, s, w);
+    r_ans.load(data_prefix + "r-N-30.txt");
+    s_ans.load(data_prefix + "s-N-30.txt");
+    w_ans.load(data_prefix + "w-N-30.txt");
+    compare_vec(r, r_ans);
+    compare_vec(s, s_ans);
+    compare_vec(w, w_ans);
+  }
+}

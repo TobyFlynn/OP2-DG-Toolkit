@@ -1,5 +1,7 @@
 #include "dg_utils.h"
 
+#include "cubature_data.h"
+
 #include <cmath>
 
 void DGUtils::jacobiGQ(const double alpha, const double beta, const int N,
@@ -158,4 +160,169 @@ void DGUtils::gradSimplex2DP(const arma::vec &a, const arma::vec &b,
   // Normalise
   dr = pow(2.0, i + 0.5) * dr;
   ds = pow(2.0, i + 0.5) * ds;
+}
+
+// Get cubature rules
+void DGUtils::cubature2D(const int cOrder, arma::vec &r, arma::vec &s,
+                         arma::vec &w) {
+  if(cOrder <= 28) {
+    switch(cOrder) {
+      case 1:
+        r = cubR_1;
+        s = cubS_1;
+        w = cubW_1;
+        break;
+      case 2:
+        r = cubR_2;
+        s = cubS_2;
+        w = cubW_2;
+        break;
+      case 3:
+        r = cubR_3;
+        s = cubS_3;
+        w = cubW_3;
+        break;
+      case 4:
+        r = cubR_4;
+        s = cubS_4;
+        w = cubW_4;
+        break;
+      case 5:
+        r = cubR_5;
+        s = cubS_5;
+        w = cubW_5;
+        break;
+      case 6:
+        r = cubR_6;
+        s = cubS_6;
+        w = cubW_6;
+        break;
+      case 7:
+        r = cubR_7;
+        s = cubS_7;
+        w = cubW_7;
+        break;
+      case 8:
+        r = cubR_8;
+        s = cubS_8;
+        w = cubW_8;
+        break;
+      case 9:
+        r = cubR_9;
+        s = cubS_9;
+        w = cubW_9;
+        break;
+      case 10:
+        r = cubR_10;
+        s = cubS_10;
+        w = cubW_10;
+        break;
+      case 11:
+        r = cubR_11;
+        s = cubS_11;
+        w = cubW_11;
+        break;
+      case 12:
+        r = cubR_12;
+        s = cubS_12;
+        w = cubW_12;
+        break;
+      case 13:
+        r = cubR_13;
+        s = cubS_13;
+        w = cubW_13;
+        break;
+      case 14:
+        r = cubR_14;
+        s = cubS_14;
+        w = cubW_14;
+        break;
+      case 15:
+        r = cubR_15;
+        s = cubS_15;
+        w = cubW_15;
+        break;
+      case 16:
+        r = cubR_16;
+        s = cubS_16;
+        w = cubW_16;
+        break;
+      case 17:
+        r = cubR_17;
+        s = cubS_17;
+        w = cubW_17;
+        break;
+      case 18:
+        r = cubR_18;
+        s = cubS_18;
+        w = cubW_18;
+        break;
+      case 19:
+        r = cubR_19;
+        s = cubS_19;
+        w = cubW_19;
+        break;
+      case 20:
+        r = cubR_20;
+        s = cubS_20;
+        w = cubW_20;
+        break;
+      case 21:
+        r = cubR_21;
+        s = cubS_21;
+        w = cubW_21;
+        break;
+      case 22:
+        r = cubR_22;
+        s = cubS_22;
+        w = cubW_22;
+        break;
+      case 23:
+        r = cubR_23;
+        s = cubS_23;
+        w = cubW_23;
+        break;
+      case 24:
+        r = cubR_24;
+        s = cubS_24;
+        w = cubW_24;
+        break;
+      case 25:
+        r = cubR_25;
+        s = cubS_25;
+        w = cubW_25;
+        break;
+      case 26:
+        r = cubR_26;
+        s = cubS_26;
+        w = cubW_26;
+        break;
+      case 27:
+        r = cubR_27;
+        s = cubS_27;
+        w = cubW_27;
+        break;
+      case 28:
+        r = cubR_28;
+        s = cubS_28;
+        w = cubW_28;
+        break;
+    }
+  } else {
+    int cubN = ceil((cOrder + 1.0) / 2.0);
+    arma::vec cubA, cubWA, cubB, cubWB;
+    jacobiGQ(0.0, 0.0, cubN - 1, cubA, cubWA);
+    jacobiGQ(1.0, 0.0, cubN - 1, cubB, cubWB);
+
+    arma::mat cubAMat = arma::ones(cubN, 1) * cubA.t();
+    arma::mat cubBMat = cubB * arma::ones(1, cubN);
+
+    arma::mat cubRMat = 0.5 * (1.0 + cubAMat) % (1.0 - cubBMat) - 1.0;
+    arma::mat cubSMat = cubBMat;
+    arma::mat cubWMat = 0.5 * cubWB * cubWA.t();
+
+    r = arma::vectorise(cubRMat);
+    s = arma::vectorise(cubSMat);
+    w = arma::vectorise(cubWMat);
+  }
 }
