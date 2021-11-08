@@ -30,8 +30,8 @@ public:
   ~DGConstants();
 
   void setup(const int n);
-  void gauss(const int nGauss);
   void cubature(const int nCub);
+  void gauss(const int nGauss);
 
   int N, Nfp, Np;
 
@@ -86,6 +86,12 @@ private:
   arma::vec x_, y_, r_, s_;
   arma::uvec fmask1_, fmask2_, fmask3_, fmask_;
   arma::mat V_, invV_, MassMatrix_, Dr_, Ds_, lift_, Drw_, Dsw_;
+
+  arma::vec cub_w_;
+  arma::mat cub_V_, cub_Dr_, cub_Ds_;
+
+  arma::vec gauss_w_;
+  arma::mat gauss_interp_, gauss_interp1_, gauss_interp2_, gauss_interp3_;
 };
 
 #endif

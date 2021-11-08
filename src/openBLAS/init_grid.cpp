@@ -42,10 +42,10 @@ inline void openblas_init_grid(const int numCells, const double *nodeX,
     cblas_daxpy(DG_NP, -0.5 * n0[1], temp, 1, y_c, 1);
   }
 
-  cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, DG_NP, numCells, DG_NP, 1.0, constants->Dr, DG_NP, x, DG_NP, 0.0, xr, DG_NP);
-  cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, DG_NP, numCells, DG_NP, 1.0, constants->Ds, DG_NP, x, DG_NP, 0.0, xs, DG_NP);
-  cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, DG_NP, numCells, DG_NP, 1.0, constants->Dr, DG_NP, y, DG_NP, 0.0, yr, DG_NP);
-  cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, DG_NP, numCells, DG_NP, 1.0, constants->Ds, DG_NP, y, DG_NP, 0.0, ys, DG_NP);
+  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_NP, numCells, DG_NP, 1.0, constants->Dr, DG_NP, x, DG_NP, 0.0, xr, DG_NP);
+  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_NP, numCells, DG_NP, 1.0, constants->Ds, DG_NP, x, DG_NP, 0.0, xs, DG_NP);
+  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_NP, numCells, DG_NP, 1.0, constants->Dr, DG_NP, y, DG_NP, 0.0, yr, DG_NP);
+  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_NP, numCells, DG_NP, 1.0, constants->Ds, DG_NP, y, DG_NP, 0.0, ys, DG_NP);
 }
 
 void init_grid_blas(DGMesh *mesh) {

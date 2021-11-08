@@ -3,7 +3,7 @@
 #include "dg_global_constants.h"
 
 DGConstants::DGConstants() {
-  setup(3);
+  setup(DG_ORDER);
 
   // Cubature constants
   cubDr  = cubDr_g;

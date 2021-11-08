@@ -42,12 +42,12 @@ inline void cublas_init_gauss(cublasHandle_t handle, const int numCells,
 
   double alpha = 1.0;
   double beta = 0.0;
-  cublasDgemm(handle, CUBLAS_OP_T, CUBLAS_OP_T, DG_GF_NP, DG_NP, DG_NP, &alpha, constants->gFInterp0_d, DG_NP, constants->Dr_d, DG_NP, &beta, dVMdr0_d, DG_GF_NP);
-  cublasDgemm(handle, CUBLAS_OP_T, CUBLAS_OP_T, DG_GF_NP, DG_NP, DG_NP, &alpha, constants->gFInterp1_d, DG_NP, constants->Dr_d, DG_NP, &beta, dVMdr1_d, DG_GF_NP);
-  cublasDgemm(handle, CUBLAS_OP_T, CUBLAS_OP_T, DG_GF_NP, DG_NP, DG_NP, &alpha, constants->gFInterp2_d, DG_NP, constants->Dr_d, DG_NP, &beta, dVMdr2_d, DG_GF_NP);
-  cublasDgemm(handle, CUBLAS_OP_T, CUBLAS_OP_T, DG_GF_NP, DG_NP, DG_NP, &alpha, constants->gFInterp0_d, DG_NP, constants->Ds_d, DG_NP, &beta, dVMds0_d, DG_GF_NP);
-  cublasDgemm(handle, CUBLAS_OP_T, CUBLAS_OP_T, DG_GF_NP, DG_NP, DG_NP, &alpha, constants->gFInterp1_d, DG_NP, constants->Ds_d, DG_NP, &beta, dVMds1_d, DG_GF_NP);
-  cublasDgemm(handle, CUBLAS_OP_T, CUBLAS_OP_T, DG_GF_NP, DG_NP, DG_NP, &alpha, constants->gFInterp2_d, DG_NP, constants->Ds_d, DG_NP, &beta, dVMds2_d, DG_GF_NP);
+  cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, DG_GF_NP, DG_NP, DG_NP, &alpha, constants->gFInterp0_d, DG_NP, constants->Dr_d, DG_NP, &beta, dVMdr0_d, DG_GF_NP);
+  cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, DG_GF_NP, DG_NP, DG_NP, &alpha, constants->gFInterp1_d, DG_NP, constants->Dr_d, DG_NP, &beta, dVMdr1_d, DG_GF_NP);
+  cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, DG_GF_NP, DG_NP, DG_NP, &alpha, constants->gFInterp2_d, DG_NP, constants->Dr_d, DG_NP, &beta, dVMdr2_d, DG_GF_NP);
+  cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, DG_GF_NP, DG_NP, DG_NP, &alpha, constants->gFInterp0_d, DG_NP, constants->Ds_d, DG_NP, &beta, dVMds0_d, DG_GF_NP);
+  cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, DG_GF_NP, DG_NP, DG_NP, &alpha, constants->gFInterp1_d, DG_NP, constants->Ds_d, DG_NP, &beta, dVMds1_d, DG_GF_NP);
+  cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, DG_GF_NP, DG_NP, DG_NP, &alpha, constants->gFInterp2_d, DG_NP, constants->Ds_d, DG_NP, &beta, dVMds2_d, DG_GF_NP);
 
   for(int c = 0; c < numCells; c++) {
     const double *x = x_d + c * DG_NP;

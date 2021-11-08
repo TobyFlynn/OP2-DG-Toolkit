@@ -63,9 +63,12 @@ void op_par_loop_init_edges(char const *, op_set,
 #include <string>
 #include <memory>
 
-#include "constants/all_constants.h"
+// #include "constants/all_constants.h"
 #include "dg_blas_calls.h"
 #include "dg_compiler_defs.h"
+#include "dg_constants.h"
+
+DGConstants *constants;
 
 using namespace std;
 
@@ -116,10 +119,10 @@ DGCubatureData::~DGCubatureData() {
 
 void DGCubatureData::init() {
   // Calculate geometric factors for cubature volume nodes
-  op2_gemv(true, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DR), DG_NP, mesh->x, 0.0, rx);
-  op2_gemv(true, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DS), DG_NP, mesh->x, 0.0, sx);
-  op2_gemv(true, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DR), DG_NP, mesh->y, 0.0, ry);
-  op2_gemv(true, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DS), DG_NP, mesh->y, 0.0, sy);
+  op2_gemv(false, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DR), DG_CUB_NP, mesh->x, 0.0, rx);
+  op2_gemv(false, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DS), DG_CUB_NP, mesh->x, 0.0, sx);
+  op2_gemv(false, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DR), DG_CUB_NP, mesh->y, 0.0, ry);
+  op2_gemv(false, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DS), DG_CUB_NP, mesh->y, 0.0, sy);
 
   op_par_loop_init_cubature("init_cubature",mesh->cells,
               op_arg_dat(rx,-1,OP_ID,DG_CUB_NP,"double",OP_RW),
@@ -128,8 +131,8 @@ void DGCubatureData::init() {
               op_arg_dat(sy,-1,OP_ID,DG_CUB_NP,"double",OP_RW),
               op_arg_dat(J,-1,OP_ID,DG_CUB_NP,"double",OP_WRITE),
               op_arg_dat(tmp,-1,OP_ID,DG_CUB_NP * DG_NP,"double",OP_WRITE));
-  // Temp is in row-major at this point
-  op2_gemm(false, true, DG_NP, DG_NP, DG_CUB_NP, 1.0, constants->get_ptr(DGConstants::CUB_V), DG_NP, tmp, DG_NP, 0.0, mm, DG_NP);
+  // Temp is in col-major at this point
+  op2_gemm(true, false, DG_NP, DG_NP, DG_CUB_NP, 1.0, constants->get_ptr(DGConstants::CUB_V), DG_CUB_NP, tmp, DG_CUB_NP, 0.0, mm, DG_NP);
   // mm is in col-major at this point
 }
 
@@ -170,8 +173,8 @@ DGGaussData::~DGGaussData() {
 }
 
 void DGGaussData::init() {
-  op2_gemv(true, DG_G_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::GAUSS_INTERP), DG_NP, mesh->x, 0.0, x);
-  op2_gemv(true, DG_G_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::GAUSS_INTERP), DG_NP, mesh->y, 0.0, y);
+  op2_gemv(false, DG_G_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::GAUSS_INTERP), DG_G_NP, mesh->x, 0.0, x);
+  op2_gemv(false, DG_G_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::GAUSS_INTERP), DG_G_NP, mesh->y, 0.0, y);
 
   // Initialise geometric factors for Gauss nodes
   init_gauss_blas(mesh, this);
@@ -192,6 +195,9 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
                int numNodes_g_a, int numCells_g_a, int numEdges_g_a,
                int numBoundaryEdges_g_a, int numNodes_a, int numCells_a,
                int numEdges_a, int numBoundaryEdges_a) {
+  // Calculate DG constants
+  constants = new DGConstants();
+
   coords_data        = coords_a;
   cells_data         = cells_a;
   edge2node_data     = edge2node_a;
@@ -244,23 +250,23 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   bedge2cells = op_decl_map(bedges, cells, 1, bedge2cell_data, "bedge2cells");
 
   // Declare OP2 datasets
-    // Structure: {x, y}
+  // Structure: {x, y}
   node_coords = op_decl_dat(nodes, 2, "double", coords_data, "node_coords");
-    // Coords of nodes per cell
+  // Coords of nodes per cell
   nodeX = op_decl_dat(cells, 3, "double", nodeX_data, "nodeX");
   nodeY = op_decl_dat(cells, 3, "double", nodeY_data, "nodeY");
-    // The x and y coordinates of all the solution points in a cell
+  // The x and y coordinates of all the solution points in a cell
   x = op_decl_dat(cells, DG_NP, "double", x_data, "x");
   y = op_decl_dat(cells, DG_NP, "double", y_data, "y");
-    // Geometric factors that relate to mapping between global and local (cell) coordinates
+  // Geometric factors that relate to mapping between global and local (cell) coordinates
   rx = op_decl_dat(cells, DG_NP, "double", rx_data, "rx");
   ry = op_decl_dat(cells, DG_NP, "double", ry_data, "ry");
   sx = op_decl_dat(cells, DG_NP, "double", sx_data, "sx");
   sy = op_decl_dat(cells, DG_NP, "double", sy_data, "sy");
-    // Normals for each cell (calculated for each node on each edge, nodes can appear on multiple edges)
+  // Normals for each cell (calculated for each node on each edge, nodes can appear on multiple edges)
   nx = op_decl_dat(cells, 3 * DG_NPF, "double", nx_data, "nx");
   ny = op_decl_dat(cells, 3 * DG_NPF, "double", ny_data, "ny");
-    // surface Jacobian / Jacobian (used when lifting the boundary fluxes)
+  // surface Jacobian / Jacobian (used when lifting the boundary fluxes)
   J          = op_decl_dat(cells, DG_NP, "double", J_data, "J");
   sJ         = op_decl_dat(cells, 3 * DG_NPF, "double", sJ_data, "sJ");
   fscale     = op_decl_dat(cells, 3 * DG_NPF, "double", fscale_data, "fscale");
@@ -366,5 +372,5 @@ void DGMesh::init() {
               op_arg_dat(reverse,-1,OP_ID,1,"bool",OP_WRITE));
 
   cubature->init();
-  gauss->init();
+  // gauss->init();
 }

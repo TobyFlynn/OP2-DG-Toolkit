@@ -3,30 +3,30 @@
 //
 
 // global constants
-extern int FMASK[2];
-extern double cubW_g[2];
-extern double cubV_g[2];
-extern double cubVDr_g[2];
-extern double cubVDs_g[2];
-extern double gF0Dr_g[2];
-extern double gF0Ds_g[2];
-extern double gF1Dr_g[2];
-extern double gF1Ds_g[2];
-extern double gF2Dr_g[2];
-extern double gF2Ds_g[2];
-extern double gaussW_g[2];
-extern double gFInterp0_g[2];
-extern double gFInterp1_g[2];
-extern double gFInterp2_g[2];
-extern double gF0DrR_g[2];
-extern double gF0DsR_g[2];
-extern double gF1DrR_g[2];
-extern double gF1DsR_g[2];
-extern double gF2DrR_g[2];
-extern double gF2DsR_g[2];
-extern double gFInterp0R_g[2];
-extern double gFInterp1R_g[2];
-extern double gFInterp2R_g[2];
+extern int FMASK[MAX_CONST_SIZE];
+extern double cubW_g[MAX_CONST_SIZE];
+extern double cubV_g[MAX_CONST_SIZE];
+extern double cubVDr_g[MAX_CONST_SIZE];
+extern double cubVDs_g[MAX_CONST_SIZE];
+extern double gF0Dr_g[MAX_CONST_SIZE];
+extern double gF0Ds_g[MAX_CONST_SIZE];
+extern double gF1Dr_g[MAX_CONST_SIZE];
+extern double gF1Ds_g[MAX_CONST_SIZE];
+extern double gF2Dr_g[MAX_CONST_SIZE];
+extern double gF2Ds_g[MAX_CONST_SIZE];
+extern double gaussW_g[MAX_CONST_SIZE];
+extern double gFInterp0_g[MAX_CONST_SIZE];
+extern double gFInterp1_g[MAX_CONST_SIZE];
+extern double gFInterp2_g[MAX_CONST_SIZE];
+extern double gF0DrR_g[MAX_CONST_SIZE];
+extern double gF0DsR_g[MAX_CONST_SIZE];
+extern double gF1DrR_g[MAX_CONST_SIZE];
+extern double gF1DsR_g[MAX_CONST_SIZE];
+extern double gF2DrR_g[MAX_CONST_SIZE];
+extern double gF2DsR_g[MAX_CONST_SIZE];
+extern double gFInterp0R_g[MAX_CONST_SIZE];
+extern double gFInterp1R_g[MAX_CONST_SIZE];
+extern double gFInterp2R_g[MAX_CONST_SIZE];
 
 // header
 #include "op_lib_c.h"

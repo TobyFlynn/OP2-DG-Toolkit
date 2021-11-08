@@ -3,7 +3,7 @@
 #include "dg_global_constants.h"
 
 DGConstants::DGConstants() {
-  setup(3);
+  setup(DG_ORDER);
 
   // Cubature constants
   cudaMalloc((void**)&cubDr_d, DG_CUB_NP * DG_NP * sizeof(double));

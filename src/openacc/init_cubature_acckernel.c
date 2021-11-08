@@ -23,10 +23,10 @@ inline void init_cubature_openacc( double *rx, double *sx, double *ry, double *s
     sy[i] = sy_n;
   }
 
-  for(int m = 0; m < DG_CUB_NP; m++) {
-    for(int n = 0; n < DG_NP; n++) {
-      int ind = m * DG_NP + n;
-      temp[ind] = J[m] * cubW_g[m] * cubV_g[ind];
+  for(int i = 0; i < DG_NP; i++) {
+    for(int j = 0; j < DG_CUB_NP; j++) {
+      int ind = i * DG_CUB_NP + j;
+      temp[ind] = J[j] * cubW_g[j] * cubV_g[ind];
     }
   }
 }
