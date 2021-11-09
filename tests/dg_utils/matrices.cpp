@@ -96,6 +96,19 @@ TEST_CASE("DGUtils::lift2D") {
     compare_mat(lift, lift_ans);
   }
 
+  SECTION("N = 3") {
+    int N = 3;
+    arma::vec r, s; arma::uvec fmask;
+    r.load(data_prefix + "r-N-3.txt");
+    s.load(data_prefix + "s-N-3.txt");
+    fmask.load(data_prefix + "fmask-N-3.txt");
+    arma::mat v, lift_ans;
+    v.load(data_prefix + "V-N-3.txt");
+    arma::mat lift = DGUtils::lift2D(r, s, fmask, v, N);
+    lift_ans.load(data_prefix + "LIFT-N-3.txt");
+    compare_mat(lift, lift_ans);
+  }
+
   SECTION("N = 4") {
     int N = 4;
     arma::vec r, s; arma::uvec fmask;

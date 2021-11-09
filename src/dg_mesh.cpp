@@ -255,6 +255,7 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
 }
 
 DGMesh::~DGMesh() {
+  delete constants;
   free(coords_data);
   free(cells_data);
   free(edge2node_data);
