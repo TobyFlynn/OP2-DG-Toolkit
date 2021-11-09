@@ -120,7 +120,8 @@ void DGConstants::setup(const int n) {
   memcpy(Dsw_g, Dsw_.memptr(), Dsw_.n_elem * sizeof(double));
   memcpy(lift_g, lift_.memptr(), lift_.n_elem * sizeof(double));
 
-  memcpy(FMASK, fmask_.memptr(), fmask_.n_elem * sizeof(int));
+  std::vector<int> fmask_int = arma::conv_to<std::vector<int>>::from(fmask_);
+  memcpy(FMASK, fmask_int.data(), fmask_int.size() * sizeof(int));
 
   memcpy(cubW_g, cub_w_.memptr(), cub_w_.n_elem * sizeof(double));
   memcpy(cubV_g, cub_V_.memptr(), cub_V_.n_elem * sizeof(double));
