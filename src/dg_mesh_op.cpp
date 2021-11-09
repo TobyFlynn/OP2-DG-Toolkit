@@ -373,5 +373,5 @@ void DGMesh::init() {
               op_arg_dat(reverse,-1,OP_ID,1,"bool",OP_WRITE));
 
   cubature->init();
-  // gauss->init();
+  gauss->init();
 }

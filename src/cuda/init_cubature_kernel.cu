@@ -21,10 +21,10 @@ __device__ void init_cubature_gpu( double *rx, double *sx, double *ry, double *s
     sy[i] = sy_n;
   }
 
-  for(int i = 0; i < DG_NP; i++) {
-    for(int j = 0; j < DG_CUB_NP; j++) {
-      int ind = i * DG_CUB_NP + j;
-      temp[ind] = J[j] * cubW_g_cuda[j] * cubV_g_cuda[ind];
+  for(int j = 0; j < DG_NP; j++) {
+    for(int i = 0; i < DG_CUB_NP; i++) {
+      int ind = j * DG_CUB_NP + i;
+      temp[ind] = J[i] * cubW_g_cuda[i] * cubV_g_cuda[ind];
     }
   }
 

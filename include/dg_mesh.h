@@ -13,8 +13,7 @@ public:
   ~DGCubatureData();
   void init();
 
-  // mm and OP are stored in column major format
-  // OP is the local stiffness matrix used by the Poisson solver
+  // mm is stored in column major format
   op_dat rx, sx, ry, sy, J, mm;
   op_dat op_tmp[4], tmp;
 

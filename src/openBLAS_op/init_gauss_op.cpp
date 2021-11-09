@@ -33,12 +33,12 @@ inline void openblas_init_gauss(const int numCells, const double *x,
   double *dVMds_f1 = (double *)malloc(DG_GF_NP * DG_NP * sizeof(double));
   double *dVMds_f2 = (double *)malloc(DG_GF_NP * DG_NP * sizeof(double));
 
-  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_GF_NP, DG_NP, DG_NP, 1.0, constants->gFInterp0, DG_NP, constants->Dr, DG_NP, 0.0, dVMdr_f0, DG_GF_NP);
-  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_GF_NP, DG_NP, DG_NP, 1.0, constants->gFInterp1, DG_NP, constants->Dr, DG_NP, 0.0, dVMdr_f1, DG_GF_NP);
-  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_GF_NP, DG_NP, DG_NP, 1.0, constants->gFInterp2, DG_NP, constants->Dr, DG_NP, 0.0, dVMdr_f2, DG_GF_NP);
-  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_GF_NP, DG_NP, DG_NP, 1.0, constants->gFInterp0, DG_NP, constants->Ds, DG_NP, 0.0, dVMds_f0, DG_GF_NP);
-  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_GF_NP, DG_NP, DG_NP, 1.0, constants->gFInterp1, DG_NP, constants->Ds, DG_NP, 0.0, dVMds_f1, DG_GF_NP);
-  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_GF_NP, DG_NP, DG_NP, 1.0, constants->gFInterp2, DG_NP, constants->Ds, DG_NP, 0.0, dVMds_f2, DG_GF_NP);
+  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_GF_NP, DG_NP, DG_NP, 1.0, constants->gFInterp0, DG_GF_NP, constants->Dr, DG_NP, 0.0, dVMdr_f0, DG_GF_NP);
+  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_GF_NP, DG_NP, DG_NP, 1.0, constants->gFInterp1, DG_GF_NP, constants->Dr, DG_NP, 0.0, dVMdr_f1, DG_GF_NP);
+  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_GF_NP, DG_NP, DG_NP, 1.0, constants->gFInterp2, DG_GF_NP, constants->Dr, DG_NP, 0.0, dVMdr_f2, DG_GF_NP);
+  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_GF_NP, DG_NP, DG_NP, 1.0, constants->gFInterp0, DG_GF_NP, constants->Ds, DG_NP, 0.0, dVMds_f0, DG_GF_NP);
+  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_GF_NP, DG_NP, DG_NP, 1.0, constants->gFInterp1, DG_GF_NP, constants->Ds, DG_NP, 0.0, dVMds_f1, DG_GF_NP);
+  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, DG_GF_NP, DG_NP, DG_NP, 1.0, constants->gFInterp2, DG_GF_NP, constants->Ds, DG_NP, 0.0, dVMds_f2, DG_GF_NP);
 
   for(int c = 0; c < numCells; c++) {
     const double *x_c = x + c * DG_NP;
