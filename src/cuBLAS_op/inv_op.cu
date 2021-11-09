@@ -45,9 +45,8 @@ void inv_blas(DGMesh *mesh, op_dat in, op_dat out) {
     arma::mat a(in_c, DG_NP, DG_NP);
     arma::mat b(inv_c, DG_NP, DG_NP, false, true);
 
-    // b = arma::inv(a.t());
-    b = arma::inv_sympd(a.t());
-    b = b.t();
+    // b = arma::inv(a);
+    b = arma::inv_sympd(a);
   }
 
   cudaMemcpy(out->data_d, tempInv, setSize * out->dim * sizeof(double), cudaMemcpyHostToDevice);
