@@ -1,4 +1,0 @@
-#ifndef __CONSTANTS_GF2DRR_H
-#define __CONSTANTS_GF2DRR_H
-double gF2DrR_g[3*3] = {-0.5, 0.5, 0, -0.5, 0.5, 0, -0.49999999999999994, 0.49999999999999994, 0};
-#endif

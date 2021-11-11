@@ -5,7 +5,6 @@
 #include <string>
 #include <memory>
 
-// #include "constants/all_constants.h"
 #include "dg_blas_calls.h"
 #include "dg_compiler_defs.h"
 #include "dg_constants.h"
