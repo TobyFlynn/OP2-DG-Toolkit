@@ -3,10 +3,13 @@
 //
 
 //user function
-__device__ void grad_gpu( const double *div0, const double *div1, const double *rx,
-                 const double *sx, const double *ry, const double *sy,
-                 double *ux, double *uy) {
-  for(int i = 0; i < DG_NP; i++) {
+__device__ void grad_gpu( const int *p, const double *div0, const double *div1,
+                 const double *rx, const double *sx, const double *ry,
+                 const double *sy, double *ux, double *uy) {
+
+  const int dg_np  = DG_CONSTANTS_cuda[(*p - 1) * 5];
+
+  for(int i = 0; i < dg_np; i++) {
     ux[i] = rx[i] * div0[i] + sx[i] * div1[i];
     uy[i] = ry[i] * div0[i] + sy[i] * div1[i];
   }
@@ -15,14 +18,15 @@ __device__ void grad_gpu( const double *div0, const double *div1, const double *
 
 // CUDA kernel function
 __global__ void op_cuda_grad(
-  const double *__restrict arg0,
+  const int *__restrict arg0,
   const double *__restrict arg1,
   const double *__restrict arg2,
   const double *__restrict arg3,
   const double *__restrict arg4,
   const double *__restrict arg5,
-  double *arg6,
+  const double *__restrict arg6,
   double *arg7,
+  double *arg8,
   int   set_size ) {
 
 
@@ -30,14 +34,15 @@ __global__ void op_cuda_grad(
   for ( int n=threadIdx.x+blockIdx.x*blockDim.x; n<set_size; n+=blockDim.x*gridDim.x ){
 
     //user-supplied kernel call
-    grad_gpu(arg0+n*DG_NP,
+    grad_gpu(arg0+n*1,
          arg1+n*DG_NP,
          arg2+n*DG_NP,
          arg3+n*DG_NP,
          arg4+n*DG_NP,
          arg5+n*DG_NP,
          arg6+n*DG_NP,
-         arg7+n*DG_NP);
+         arg7+n*DG_NP,
+         arg8+n*DG_NP);
   }
 }
 
@@ -51,10 +56,11 @@ void op_par_loop_grad(char const *name, op_set set,
   op_arg arg4,
   op_arg arg5,
   op_arg arg6,
-  op_arg arg7){
+  op_arg arg7,
+  op_arg arg8){
 
-  int nargs = 8;
-  op_arg args[8];
+  int nargs = 9;
+  op_arg args[9];
 
   args[0] = arg0;
   args[1] = arg1;
@@ -64,13 +70,14 @@ void op_par_loop_grad(char const *name, op_set set,
   args[5] = arg5;
   args[6] = arg6;
   args[7] = arg7;
+  args[8] = arg8;
 
   // initialise timers
   double cpu_t1, cpu_t2, wall_t1, wall_t2;
-  op_timing_realloc(7);
+  op_timing_realloc(9);
   op_timers_core(&cpu_t1, &wall_t1);
-  OP_kernels[7].name      = name;
-  OP_kernels[7].count    += 1;
+  OP_kernels[9].name      = name;
+  OP_kernels[9].count    += 1;
 
 
   if (OP_diags>2) {
@@ -81,8 +88,8 @@ void op_par_loop_grad(char const *name, op_set set,
   if (set_size > 0) {
 
     //set CUDA execution parameters
-    #ifdef OP_BLOCK_SIZE_7
-      int nthread = OP_BLOCK_SIZE_7;
+    #ifdef OP_BLOCK_SIZE_9
+      int nthread = OP_BLOCK_SIZE_9;
     #else
       int nthread = OP_block_size;
     #endif
@@ -90,7 +97,7 @@ void op_par_loop_grad(char const *name, op_set set,
     int nblocks = 200;
 
     op_cuda_grad<<<nblocks,nthread>>>(
-      (double *) arg0.data_d,
+      (int *) arg0.data_d,
       (double *) arg1.data_d,
       (double *) arg2.data_d,
       (double *) arg3.data_d,
@@ -98,19 +105,21 @@ void op_par_loop_grad(char const *name, op_set set,
       (double *) arg5.data_d,
       (double *) arg6.data_d,
       (double *) arg7.data_d,
+      (double *) arg8.data_d,
       set->size );
   }
   op_mpi_set_dirtybit_cuda(nargs, args);
   cutilSafeCall(cudaDeviceSynchronize());
   //update kernel record
   op_timers_core(&cpu_t2, &wall_t2);
-  OP_kernels[7].time     += wall_t2 - wall_t1;
-  OP_kernels[7].transfer += (float)set->size * arg0.size;
-  OP_kernels[7].transfer += (float)set->size * arg1.size;
-  OP_kernels[7].transfer += (float)set->size * arg2.size;
-  OP_kernels[7].transfer += (float)set->size * arg3.size;
-  OP_kernels[7].transfer += (float)set->size * arg4.size;
-  OP_kernels[7].transfer += (float)set->size * arg5.size;
-  OP_kernels[7].transfer += (float)set->size * arg6.size * 2.0f;
-  OP_kernels[7].transfer += (float)set->size * arg7.size * 2.0f;
+  OP_kernels[9].time     += wall_t2 - wall_t1;
+  OP_kernels[9].transfer += (float)set->size * arg0.size;
+  OP_kernels[9].transfer += (float)set->size * arg1.size;
+  OP_kernels[9].transfer += (float)set->size * arg2.size;
+  OP_kernels[9].transfer += (float)set->size * arg3.size;
+  OP_kernels[9].transfer += (float)set->size * arg4.size;
+  OP_kernels[9].transfer += (float)set->size * arg5.size;
+  OP_kernels[9].transfer += (float)set->size * arg6.size;
+  OP_kernels[9].transfer += (float)set->size * arg7.size * 2.0f;
+  OP_kernels[9].transfer += (float)set->size * arg8.size * 2.0f;
 }

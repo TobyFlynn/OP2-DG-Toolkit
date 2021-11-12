@@ -8,8 +8,9 @@
 #include "dg_blas_calls.h"
 #include "dg_compiler_defs.h"
 #include "dg_constants.h"
+#include "dg_op2_blas.h"
 
-DGConstants *constants;
+DGConstants *constants[DG_ORDER + 1];
 
 using namespace std;
 
@@ -59,22 +60,30 @@ DGCubatureData::~DGCubatureData() {
 }
 
 void DGCubatureData::init() {
-  // Calculate geometric factors for cubature volume nodes
-  op2_gemv(false, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DR), DG_CUB_NP, mesh->x, 0.0, rx);
-  op2_gemv(false, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DS), DG_CUB_NP, mesh->x, 0.0, sx);
-  op2_gemv(false, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DR), DG_CUB_NP, mesh->y, 0.0, ry);
-  op2_gemv(false, DG_CUB_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::CUB_DS), DG_CUB_NP, mesh->y, 0.0, sy);
+  update_mesh_constants();
+}
+
+void DGCubatureData::update_mesh_constants() {
+  op2_gemv(mesh, false, 1.0, DGConstants::CUB_DR, mesh->x, 0.0, rx);
+  op2_gemv(mesh, false, 1.0, DGConstants::CUB_DS, mesh->x, 0.0, sx);
+  op2_gemv(mesh, false, 1.0, DGConstants::CUB_DR, mesh->y, 0.0, ry);
+  op2_gemv(mesh, false, 1.0, DGConstants::CUB_DS, mesh->y, 0.0, sy);
 
   op_par_loop(init_cubature, "init_cubature", mesh->cells,
-              op_arg_dat(rx,   -1, OP_ID, DG_CUB_NP, "double", OP_RW),
-              op_arg_dat(sx,   -1, OP_ID, DG_CUB_NP, "double", OP_RW),
-              op_arg_dat(ry,   -1, OP_ID, DG_CUB_NP, "double", OP_RW),
-              op_arg_dat(sy,   -1, OP_ID, DG_CUB_NP, "double", OP_RW),
-              op_arg_dat(J,    -1, OP_ID, DG_CUB_NP, "double", OP_WRITE),
-              op_arg_dat(tmp,  -1, OP_ID, DG_CUB_NP * DG_NP, "double", OP_WRITE));
-  // Temp is in col-major at this point
-  op2_gemm(true, false, DG_NP, DG_NP, DG_CUB_NP, 1.0, constants->get_ptr(DGConstants::CUB_V), DG_CUB_NP, tmp, DG_CUB_NP, 0.0, mm, DG_NP);
-  // mm is in col-major at this point
+              op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+              op_arg_gbl(cubV_g, DG_ORDER * DG_CUB_NP * DG_NP, "double", OP_READ),
+              op_arg_dat(rx,    -1, OP_ID, DG_CUB_NP, "double", OP_RW),
+              op_arg_dat(sx,    -1, OP_ID, DG_CUB_NP, "double", OP_RW),
+              op_arg_dat(ry,    -1, OP_ID, DG_CUB_NP, "double", OP_RW),
+              op_arg_dat(sy,    -1, OP_ID, DG_CUB_NP, "double", OP_RW),
+              op_arg_dat(J,     -1, OP_ID, DG_CUB_NP, "double", OP_WRITE),
+              op_arg_dat(tmp,   -1, OP_ID, DG_CUB_NP * DG_NP, "double", OP_WRITE));
+
+  op_par_loop(cub_mm_init, "cub_mm_init", mesh->cells,
+              op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+              op_arg_gbl(cubV_g, DG_ORDER * DG_CUB_NP * DG_NP, "double", OP_READ),
+              op_arg_dat(tmp,   -1, OP_ID, DG_CUB_NP * DG_NP, "double", OP_READ),
+              op_arg_dat(mm,    -1, OP_ID, DG_CUB_NP * DG_NP, "double", OP_WRITE));
 }
 
 DGGaussData::DGGaussData(DGMesh *m) {
@@ -114,20 +123,24 @@ DGGaussData::~DGGaussData() {
 }
 
 void DGGaussData::init() {
-  op2_gemv(false, DG_G_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::GAUSS_INTERP), DG_G_NP, mesh->x, 0.0, x);
-  op2_gemv(false, DG_G_NP, DG_NP, 1.0, constants->get_ptr(DGConstants::GAUSS_INTERP), DG_G_NP, mesh->y, 0.0, y);
+  update_mesh_constants();
+}
 
-  // Initialise geometric factors for Gauss nodes
+void DGGaussData::update_mesh_constants() {
+  op2_gemv(mesh, false, 1.0, DGConstants::GAUSS_INTERP, mesh->x, 0.0, x);
+  op2_gemv(mesh, false, 1.0, DGConstants::GAUSS_INTERP, mesh->y, 0.0, y);
+
   init_gauss_blas(mesh, this);
 
   op_par_loop(init_gauss, "init_gauss", mesh->cells,
-              op_arg_dat(rx, -1, OP_ID, DG_G_NP, "double", OP_RW),
-              op_arg_dat(sx, -1, OP_ID, DG_G_NP, "double", OP_RW),
-              op_arg_dat(ry, -1, OP_ID, DG_G_NP, "double", OP_RW),
-              op_arg_dat(sy, -1, OP_ID, DG_G_NP, "double", OP_RW),
-              op_arg_dat(nx, -1, OP_ID, DG_G_NP, "double", OP_WRITE),
-              op_arg_dat(ny, -1, OP_ID, DG_G_NP, "double", OP_WRITE),
-              op_arg_dat(sJ, -1, OP_ID, DG_G_NP, "double", OP_WRITE));
+              op_arg_dat(mesh->order,  -1, OP_ID, 1, "int", OP_READ),
+              op_arg_dat(rx,     -1, OP_ID, DG_G_NP, "double", OP_RW),
+              op_arg_dat(sx,     -1, OP_ID, DG_G_NP, "double", OP_RW),
+              op_arg_dat(ry,     -1, OP_ID, DG_G_NP, "double", OP_RW),
+              op_arg_dat(sy,     -1, OP_ID, DG_G_NP, "double", OP_RW),
+              op_arg_dat(nx,     -1, OP_ID, DG_G_NP, "double", OP_WRITE),
+              op_arg_dat(ny,     -1, OP_ID, DG_G_NP, "double", OP_WRITE),
+              op_arg_dat(sJ,     -1, OP_ID, DG_G_NP, "double", OP_WRITE));
 }
 
 DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
@@ -136,8 +149,13 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
                int numNodes_g_a, int numCells_g_a, int numEdges_g_a,
                int numBoundaryEdges_g_a, int numNodes_a, int numCells_a,
                int numEdges_a, int numBoundaryEdges_a) {
+  init_blas();
   // Calculate DG constants
-  constants = new DGConstants();
+  // Not currently considering 0th order
+  constants[0] = nullptr;
+  for(int p = 1; p <= DG_ORDER; p++) {
+    constants[p] = new DGConstants(p);
+  }
 
   coords_data        = coords_a;
   cells_data         = cells_a;
@@ -172,6 +190,7 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   sJ_data      = (double *)calloc(3 * DG_NPF * numCells, sizeof(double));
   fscale_data  = (double *)calloc(3 * DG_NPF * numCells, sizeof(double));
   reverse_data = (bool *)calloc(numEdges, sizeof(bool));
+  order_data   = (int *)calloc(numCells, sizeof(int));
   for(int i = 0; i < 4; i++) {
     op_tmp_data[i] = (double *)calloc(DG_NP * numCells, sizeof(double));
   }
@@ -215,6 +234,7 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   edgeNum    = op_decl_dat(edges, 2, "int", edgeNum_data, "edgeNum");
   bedgeNum   = op_decl_dat(bedges, 1, "int", bedgeNum_data, "bedgeNum");
   reverse    = op_decl_dat(edges, 1, "bool", reverse_data, "reverse");
+  order      = op_decl_dat(cells, 1, "int", order_data, "order");
   for(int i = 0; i < 4; i++) {
     string tmpname = "op_tmp" + to_string(i);
     op_tmp[i] = op_decl_dat(cells, DG_NP, "double", op_tmp_data[i], tmpname.c_str());
@@ -223,30 +243,10 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   #ifdef OP2_DG_CUDA
   set_cuda_const();
   #else
-  op_decl_const(DG_NPF * 3, "int", FMASK);
-  op_decl_const(DG_CUB_NP, "double", cubW_g);
-  op_decl_const(DG_CUB_NP * DG_NP, "double", cubV_g);
-  op_decl_const(DG_CUB_NP * DG_NP, "double", cubVDr_g);
-  op_decl_const(DG_CUB_NP * DG_NP, "double", cubVDs_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF0Dr_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF0Ds_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF1Dr_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF1Ds_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF2Dr_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF2Ds_g);
-  op_decl_const(DG_GF_NP, "double", gaussW_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gFInterp0_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gFInterp1_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gFInterp2_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF0DrR_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF0DsR_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF1DrR_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF1DsR_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF2DrR_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF2DsR_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gFInterp0R_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gFInterp1R_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gFInterp2R_g);
+  op_decl_const(DG_ORDER * 5, "int", DG_CONSTANTS);
+  op_decl_const(DG_ORDER * DG_NPF * 3, "int", FMASK);
+  op_decl_const(DG_ORDER * DG_CUB_NP, "double", cubW_g);
+  op_decl_const(DG_ORDER * DG_GF_NP, "double", gaussW_g);
   #endif
 
   cubature = new DGCubatureData(this);
@@ -254,7 +254,9 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
 }
 
 DGMesh::~DGMesh() {
-  delete constants;
+  for(int p = 1; p <= DG_ORDER; p++) {
+    delete constants[p];
+  }
   free(coords_data);
   free(cells_data);
   free(edge2node_data);
@@ -285,9 +287,14 @@ DGMesh::~DGMesh() {
 
   delete cubature;
   delete gauss;
+  destroy_blas();
 }
 
 void DGMesh::init() {
+  // Initialise the order to the max order to start with
+  op_par_loop(init_order, "init_order", cells,
+              op_arg_dat(order, -1, OP_ID, 1, "int", OP_WRITE));
+
   op_par_loop(init_nodes, "init_nodes", cells,
               op_arg_dat(node_coords, -3, cell2nodes, 2, "double", OP_READ),
               op_arg_dat(nodeX, -1, OP_ID, 3, "double", OP_WRITE),
@@ -297,14 +304,15 @@ void DGMesh::init() {
   init_grid_blas(this);
 
   op_par_loop(init_grid, "init_grid", cells,
-              op_arg_dat(rx, -1, OP_ID, DG_NP, "double", OP_RW),
-              op_arg_dat(ry, -1, OP_ID, DG_NP, "double", OP_RW),
-              op_arg_dat(sx, -1, OP_ID, DG_NP, "double", OP_RW),
-              op_arg_dat(sy, -1, OP_ID, DG_NP, "double", OP_RW),
-              op_arg_dat(nx, -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
-              op_arg_dat(ny, -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
-              op_arg_dat(J,  -1, OP_ID, DG_NP, "double", OP_WRITE),
-              op_arg_dat(sJ, -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
+              op_arg_dat(order,  -1, OP_ID, 1, "int", OP_READ),
+              op_arg_dat(rx,     -1, OP_ID, DG_NP, "double", OP_RW),
+              op_arg_dat(ry,     -1, OP_ID, DG_NP, "double", OP_RW),
+              op_arg_dat(sx,     -1, OP_ID, DG_NP, "double", OP_RW),
+              op_arg_dat(sy,     -1, OP_ID, DG_NP, "double", OP_RW),
+              op_arg_dat(nx,     -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
+              op_arg_dat(ny,     -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
+              op_arg_dat(J,      -1, OP_ID, DG_NP, "double", OP_WRITE),
+              op_arg_dat(sJ,     -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
               op_arg_dat(fscale, -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE));
 
   op_par_loop(init_edges, "init_edges", edges,
@@ -315,4 +323,23 @@ void DGMesh::init() {
 
   cubature->init();
   gauss->init();
+}
+
+void DGMesh::update_mesh_constants() {
+  init_grid_blas(this);
+
+  op_par_loop(init_grid, "init_grid", cells,
+              op_arg_dat(order,  -1, OP_ID, 1, "int", OP_READ),
+              op_arg_dat(rx,     -1, OP_ID, DG_NP, "double", OP_RW),
+              op_arg_dat(ry,     -1, OP_ID, DG_NP, "double", OP_RW),
+              op_arg_dat(sx,     -1, OP_ID, DG_NP, "double", OP_RW),
+              op_arg_dat(sy,     -1, OP_ID, DG_NP, "double", OP_RW),
+              op_arg_dat(nx,     -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
+              op_arg_dat(ny,     -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
+              op_arg_dat(J,      -1, OP_ID, DG_NP, "double", OP_WRITE),
+              op_arg_dat(sJ,     -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
+              op_arg_dat(fscale, -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE));
+
+  cubature->update_mesh_constants();
+  gauss->update_mesh_constants();
 }

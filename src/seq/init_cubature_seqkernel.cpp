@@ -12,10 +12,12 @@ void op_par_loop_init_cubature(char const *name, op_set set,
   op_arg arg2,
   op_arg arg3,
   op_arg arg4,
-  op_arg arg5){
+  op_arg arg5,
+  op_arg arg6,
+  op_arg arg7){
 
-  int nargs = 6;
-  op_arg args[6];
+  int nargs = 8;
+  op_arg args[8];
 
   args[0] = arg0;
   args[1] = arg1;
@@ -23,6 +25,8 @@ void op_par_loop_init_cubature(char const *name, op_set set,
   args[3] = arg3;
   args[4] = arg4;
   args[5] = arg5;
+  args[6] = arg6;
+  args[7] = arg7;
 
   // initialise timers
   double cpu_t1, cpu_t2, wall_t1, wall_t2;
@@ -34,18 +38,20 @@ void op_par_loop_init_cubature(char const *name, op_set set,
     printf(" kernel routine w/o indirection:  init_cubature");
   }
 
-  int set_size = op_mpi_halo_exchanges_grouped(set, nargs, args, 1);
+  int set_size = op_mpi_halo_exchanges(set, nargs, args);
 
   if (set_size > 0) {
 
     for ( int n=0; n<set_size; n++ ){
       init_cubature(
-        &((double*)arg0.data)[DG_CUB_NP*n],
-        &((double*)arg1.data)[DG_CUB_NP*n],
+        &((int*)arg0.data)[1*n],
+        (double*)arg1.data,
         &((double*)arg2.data)[DG_CUB_NP*n],
         &((double*)arg3.data)[DG_CUB_NP*n],
         &((double*)arg4.data)[DG_CUB_NP*n],
-        &((double*)arg5.data)[DG_CUB_NP * DG_NP*n]);
+        &((double*)arg5.data)[DG_CUB_NP*n],
+        &((double*)arg6.data)[DG_CUB_NP*n],
+        &((double*)arg7.data)[DG_CUB_NP * DG_NP*n]);
     }
   }
 
@@ -57,10 +63,11 @@ void op_par_loop_init_cubature(char const *name, op_set set,
   OP_kernels[0].name      = name;
   OP_kernels[0].count    += 1;
   OP_kernels[0].time     += wall_t2 - wall_t1;
-  OP_kernels[0].transfer += (float)set->size * arg0.size * 2.0f;
-  OP_kernels[0].transfer += (float)set->size * arg1.size * 2.0f;
+  OP_kernels[0].transfer += (float)set->size * arg0.size;
   OP_kernels[0].transfer += (float)set->size * arg2.size * 2.0f;
   OP_kernels[0].transfer += (float)set->size * arg3.size * 2.0f;
   OP_kernels[0].transfer += (float)set->size * arg4.size * 2.0f;
   OP_kernels[0].transfer += (float)set->size * arg5.size * 2.0f;
+  OP_kernels[0].transfer += (float)set->size * arg6.size * 2.0f;
+  OP_kernels[0].transfer += (float)set->size * arg7.size * 2.0f;
 }

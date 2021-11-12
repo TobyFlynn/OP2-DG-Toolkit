@@ -12,6 +12,7 @@ public:
   DGCubatureData(DGMesh *m);
   ~DGCubatureData();
   void init();
+  void update_mesh_constants();
 
   // mm is stored in column major format
   op_dat rx, sx, ry, sy, J, mm;
@@ -29,6 +30,7 @@ public:
   DGGaussData(DGMesh *m);
   ~DGGaussData();
   void init();
+  void update_mesh_constants();
 
   op_dat x, y;
   op_dat rx, sx, ry, sy, sJ, nx, ny;
@@ -48,6 +50,7 @@ public:
          int numCells_a, int numEdges_a, int numBoundaryEdges_a);
   ~DGMesh();
   void init();
+  void update_mesh_constants();
   // Pointers used when loading data
   double *coords_data;
   int *cells_data;
@@ -64,7 +67,7 @@ public:
   op_set nodes, cells, edges, bedges;
   op_map cell2nodes, edge2nodes, edge2cells, bedge2nodes, bedge2cells;
   op_dat node_coords, nodeX, nodeY, x, y, rx, ry, sx, sy, nx,
-         ny, J, sJ, fscale, bedge_type, edgeNum, bedgeNum, reverse;
+         ny, J, sJ, fscale, bedge_type, edgeNum, bedgeNum, reverse, order;
   op_dat op_tmp[4];
 
   DGCubatureData *cubature;
@@ -75,6 +78,7 @@ private:
   double *rx_data, *ry_data, *sx_data, *sy_data, *nx_data, *ny_data;
   double *J_data, *sJ_data, *fscale_data, *op_tmp_data[4];
   bool *reverse_data;
+  int *order_data;
 };
 
 #endif

@@ -4,15 +4,11 @@ list(APPEND KERNEL_HEADERS kernels/init_cubature.h kernels/init_gauss.h)
 list(APPEND KERNEL_HEADERS kernels/cub_grad.h kernels/cub_div.h kernels/cub_grad_weak.h)
 list(APPEND KERNEL_HEADERS kernels/cub_div_weak.h kernels/inv_J.h)
 
-set(OPENBLAS_SRC openBLAS_op/init_grid_op.cpp openBLAS_op/op2_gemv_op.cpp openBLAS_op/op2_gemm_op.cpp)
-list(APPEND OPENBLAS_SRC openBLAS_op/op2_gemv_batch_op.cpp openBLAS_op/op2_gemm_batch_op.cpp)
-list(APPEND OPENBLAS_SRC openBLAS_op/init_gauss_op.cpp openBLAS_op/inv_op.cpp)
+set(OPENBLAS_SRC openBLAS_op/init_grid_op.cpp openBLAS_op/init_gauss_op.cpp openBLAS_op/inv_op.cpp)
 
-set(CUBLAS_SRC cuBLAS_op/init_grid_op.cu cuBLAS_op/op2_gemv_op.cu cuBLAS_op/op2_gemm_op.cu)
-list(APPEND CUBLAS_SRC cuBLAS_op/op2_gemv_batch_op.cu cuBLAS_op/op2_gemm_batch_op.cu)
-list(APPEND CUBLAS_SRC cuBLAS_op/init_gauss_op.cu cuBLAS_op/inv_op.cu)
+set(CUBLAS_SRC cuBLAS_op/init_grid_op.cu cuBLAS_op/init_gauss_op.cu cuBLAS_op/inv_op.cu)
 
-set(COMMON_SRC dg_mesh_op.cpp dg_operators_op.cpp dg_constants_setup.cpp)
+set(COMMON_SRC dg_mesh_op.cpp dg_operators_op.cpp dg_op2_blas_op.cpp dg_constants_setup.cpp)
 list(APPEND COMMON_SRC utils/misc.cpp utils/nodes.cpp utils/polynomial.cpp utils/vandermonde.cpp utils/matrices.cpp)
 set(CPU_SRC dg_constants.cpp)
 set(GPU_SRC dg_constants.cu)

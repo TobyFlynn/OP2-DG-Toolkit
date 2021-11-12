@@ -1,30 +1,34 @@
-inline void init_grid(double *rx, double *ry, double *sx, double *sy,
-                      double *nx, double *ny, double *J, double *sJ,
+inline void init_grid(const int *p, double *rx, double *ry, double *sx,
+                      double *sy, double *nx, double *ny, double *J, double *sJ,
                       double *fscale) {
+  // Get constants for this element's order
+  const int *fmask = &FMASK[(*p - 1) * 3 * DG_NPF];
+  const int dg_np  = DG_CONSTANTS[(*p - 1) * 5];
+  const int dg_nfp = DG_CONSTANTS[(*p - 1) * 5 + 1];
   // Calculate normals
   // Face 0
-  for(int i = 0; i < DG_NPF; i++) {
-    nx[i] = ry[FMASK[i]];
-    ny[i] = -rx[FMASK[i]];
+  for(int i = 0; i < dg_nfp; i++) {
+    nx[i] = ry[fmask[i]];
+    ny[i] = -rx[fmask[i]];
   }
   // Face 1
-  for(int i = 0; i < DG_NPF; i++) {
-    nx[DG_NPF + i] = sy[FMASK[DG_NPF + i]] - ry[FMASK[DG_NPF + i]];
-    ny[DG_NPF + i] = rx[FMASK[DG_NPF + i]] - sx[FMASK[DG_NPF + i]];
+  for(int i = 0; i < dg_nfp; i++) {
+    nx[dg_nfp + i] = sy[fmask[dg_nfp + i]] - ry[fmask[dg_nfp + i]];
+    ny[dg_nfp + i] = rx[fmask[dg_nfp + i]] - sx[fmask[dg_nfp + i]];
   }
   // Face 2
-  for(int i = 0; i < DG_NPF; i++) {
-    nx[2 * DG_NPF + i] = -sy[FMASK[2 * DG_NPF + i]];
-    ny[2 * DG_NPF + i] = sx[FMASK[2 * DG_NPF + i]];
+  for(int i = 0; i < dg_nfp; i++) {
+    nx[2 * dg_nfp + i] = -sy[fmask[2 * dg_nfp + i]];
+    ny[2 * dg_nfp + i] = sx[fmask[2 * dg_nfp + i]];
   }
 
   // J = -xs.*yr + xr.*ys
-  for(int i = 0; i < DG_NP; i++) {
+  for(int i = 0; i < dg_np; i++) {
     J[i] = -sx[i] * ry[i] + rx[i] * sy[i];
   }
 
   // rx = ys./J; sx =-yr./J; ry =-xs./J; sy = xr./J;
-  for(int i = 0; i < DG_NP; i++) {
+  for(int i = 0; i < dg_np; i++) {
     double rx_n = sy[i] / J[i];
     double sx_n = -ry[i] / J[i];
     double ry_n = -sx[i] / J[i];
@@ -36,10 +40,10 @@ inline void init_grid(double *rx, double *ry, double *sx, double *sy,
   }
 
   // Normalise
-  for(int i = 0; i < 3 * DG_NPF; i++) {
+  for(int i = 0; i < 3 * dg_nfp; i++) {
     sJ[i] = sqrt(nx[i] * nx[i] + ny[i] * ny[i]);
     nx[i] = nx[i] / sJ[i];
     ny[i] = ny[i] / sJ[i];
-    fscale[i] = sJ[i] / J[FMASK[i]];
+    fscale[i] = sJ[i] / J[fmask[i]];
   }
 }

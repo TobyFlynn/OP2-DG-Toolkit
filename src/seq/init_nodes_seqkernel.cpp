@@ -25,20 +25,22 @@ void op_par_loop_init_nodes(char const *name, op_set set,
 
   // initialise timers
   double cpu_t1, cpu_t2, wall_t1, wall_t2;
-  op_timing_realloc(2);
+  op_timing_realloc(4);
   op_timers_core(&cpu_t1, &wall_t1);
 
   if (OP_diags>2) {
     printf(" kernel routine with indirection: init_nodes\n");
   }
 
-  int set_size = op_mpi_halo_exchanges_grouped(set, nargs, args, 1);
+  int set_size = op_mpi_halo_exchanges(set, nargs, args);
 
   if (set_size > 0) {
 
     for ( int n=0; n<set_size; n++ ){
+      if (n<set->core_size && n>0 && n % OP_mpi_test_frequency == 0)
+        op_mpi_test_all(nargs,args);
       if (n==set->core_size) {
-        op_mpi_wait_all_grouped(nargs, args, 1);
+        op_mpi_wait_all(nargs, args);
       }
       int map0idx;
       int map1idx;
@@ -67,11 +69,11 @@ void op_par_loop_init_nodes(char const *name, op_set set,
 
   // update kernel record
   op_timers_core(&cpu_t2, &wall_t2);
-  OP_kernels[2].name      = name;
-  OP_kernels[2].count    += 1;
-  OP_kernels[2].time     += wall_t2 - wall_t1;
-  OP_kernels[2].transfer += (float)set->size * arg0.size;
-  OP_kernels[2].transfer += (float)set->size * arg3.size;
-  OP_kernels[2].transfer += (float)set->size * arg4.size;
-  OP_kernels[2].transfer += (float)set->size * arg0.map->dim * 4.0f;
+  OP_kernels[4].name      = name;
+  OP_kernels[4].count    += 1;
+  OP_kernels[4].time     += wall_t2 - wall_t1;
+  OP_kernels[4].transfer += (float)set->size * arg0.size;
+  OP_kernels[4].transfer += (float)set->size * arg3.size;
+  OP_kernels[4].transfer += (float)set->size * arg4.size;
+  OP_kernels[4].transfer += (float)set->size * arg0.map->dim * 4.0f;
 }

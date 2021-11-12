@@ -5,37 +5,19 @@
 #include "dg_compiler_defs.h"
 
 // global constants
-extern int FMASK[DG_NPF * 3];
-extern double cubW_g[DG_CUB_NP];
-extern double cubV_g[DG_CUB_NP * DG_NP];
-extern double cubVDr_g[DG_CUB_NP * DG_NP];
-extern double cubVDs_g[DG_CUB_NP * DG_NP];
-extern double gF0Dr_g[DG_GF_NP * DG_NP];
-extern double gF0Ds_g[DG_GF_NP * DG_NP];
-extern double gF1Dr_g[DG_GF_NP * DG_NP];
-extern double gF1Ds_g[DG_GF_NP * DG_NP];
-extern double gF2Dr_g[DG_GF_NP * DG_NP];
-extern double gF2Ds_g[DG_GF_NP * DG_NP];
-extern double gaussW_g[DG_GF_NP];
-extern double gFInterp0_g[DG_GF_NP * DG_NP];
-extern double gFInterp1_g[DG_GF_NP * DG_NP];
-extern double gFInterp2_g[DG_GF_NP * DG_NP];
-extern double gF0DrR_g[DG_GF_NP * DG_NP];
-extern double gF0DsR_g[DG_GF_NP * DG_NP];
-extern double gF1DrR_g[DG_GF_NP * DG_NP];
-extern double gF1DsR_g[DG_GF_NP * DG_NP];
-extern double gF2DrR_g[DG_GF_NP * DG_NP];
-extern double gF2DsR_g[DG_GF_NP * DG_NP];
-extern double gFInterp0R_g[DG_GF_NP * DG_NP];
-extern double gFInterp1R_g[DG_GF_NP * DG_NP];
-extern double gFInterp2R_g[DG_GF_NP * DG_NP];
+extern int DG_CONSTANTS[DG_ORDER * 5];
+extern int FMASK[DG_ORDER * DG_NPF * 3];
+extern double cubW_g[DG_ORDER * DG_CUB_NP];
+extern double gaussW_g[DG_ORDER * DG_GF_NP];
 
 // header
 #include "op_lib_cpp.h"
 
 // user kernel files
 #include "init_cubature_seqkernel.cpp"
+#include "cub_mm_init_seqkernel.cpp"
 #include "init_gauss_seqkernel.cpp"
+#include "init_order_seqkernel.cpp"
 #include "init_nodes_seqkernel.cpp"
 #include "init_grid_seqkernel.cpp"
 #include "init_edges_seqkernel.cpp"
@@ -47,3 +29,10 @@ extern double gFInterp2R_g[DG_GF_NP * DG_NP];
 #include "cub_grad_weak_seqkernel.cpp"
 #include "cub_div_weak_seqkernel.cpp"
 #include "inv_J_seqkernel.cpp"
+#include "gemv_gauss_interp_seqkernel.cpp"
+#include "gemv_cub_dr_seqkernel.cpp"
+#include "gemv_cub_ds_seqkernel.cpp"
+#include "gemv_dr_seqkernel.cpp"
+#include "gemv_ds_seqkernel.cpp"
+#include "gemv_cub_v_seqkernel.cpp"
+#include "gemv_inv_mass_seqkernel.cpp"

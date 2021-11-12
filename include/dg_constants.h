@@ -3,10 +3,6 @@
 
 #include "dg_global_constants.h"
 
-#ifdef OP2_DG_CUDA
-#include "cublas_v2.h"
-#endif
-
 #define ARMA_ALLOW_FAKE_GCC
 #include <armadillo>
 
@@ -26,14 +22,14 @@ public:
     INV_MASS, LIFT, MASS, INV_V, V, R, S, ONES
   };
 
-  DGConstants();
+  DGConstants(const int n);
   ~DGConstants();
 
   void setup(const int n);
   void cubature(const int nCub);
   void gauss(const int nGauss);
 
-  int N, Nfp, Np;
+  int N, Nfp, Np, cNp, gNp, gNfp;
 
   double* get_ptr(Constant_Matrix mat);
 
@@ -78,9 +74,6 @@ public:
   double *r, *r_d;
   double *s, *s_d;
   double *ones, *ones_d;
-  #ifdef OP2_DG_CUDA
-  cublasHandle_t handle;
-  #endif
 
 private:
   arma::vec x_, y_, r_, s_;

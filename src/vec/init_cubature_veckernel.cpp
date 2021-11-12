@@ -3,15 +3,22 @@
 //
 
 //user function
-inline void init_cubature(double *rx, double *sx, double *ry, double *sy,
-                          double *J, double *temp) {
+inline void init_cubature(const int *p, const double *matrix, double *rx,
+                          double *sx, double *ry, double *sy, double *J,
+                          double *temp) {
+  // Get constants for this element's order
+  const int dg_np      = DG_CONSTANTS[(*p - 1) * 5];
+  const int dg_cub_np  = DG_CONSTANTS[(*p - 1) * 5 + 2];
+  const double *cubW = &cubW_g[(*p - 1) * DG_CUB_NP];
+  const double *cubV = &matrix[(*p - 1) * DG_CUB_NP * DG_NP];
+
   // J = -xs.*yr + xr.*ys
-  for(int i = 0; i < DG_CUB_NP; i++) {
+  for(int i = 0; i < dg_cub_np; i++) {
     J[i] = -sx[i] * ry[i] + rx[i] * sy[i];
   }
 
   // rx = ys./J; sx =-yr./J; ry =-xs./J; sy = xr./J;
-  for(int i = 0; i < DG_CUB_NP; i++) {
+  for(int i = 0; i < dg_cub_np; i++) {
     double rx_n = sy[i] / J[i];
     double sx_n = -ry[i] / J[i];
     double ry_n = -sx[i] / J[i];
@@ -22,10 +29,10 @@ inline void init_cubature(double *rx, double *sx, double *ry, double *sy,
     sy[i] = sy_n;
   }
 
-  for(int j = 0; j < DG_NP; j++) {
-    for(int i = 0; i < DG_CUB_NP; i++) {
-      int ind = j * DG_CUB_NP + i;
-      temp[ind] = J[i] * cubW_g[i] * cubV_g[ind];
+  for(int j = 0; j < dg_np; j++) {
+    for(int i = 0; i < dg_cub_np; i++) {
+      int ind = j * dg_cub_np + i;
+      temp[ind] = J[i] * cubW[i] * cubV[ind];
     }
   }
 }
@@ -37,10 +44,12 @@ void op_par_loop_init_cubature(char const *name, op_set set,
   op_arg arg2,
   op_arg arg3,
   op_arg arg4,
-  op_arg arg5){
+  op_arg arg5,
+  op_arg arg6,
+  op_arg arg7){
 
-  int nargs = 6;
-  op_arg args[6];
+  int nargs = 8;
+  op_arg args[8];
 
   args[0] = arg0;
   args[1] = arg1;
@@ -48,11 +57,11 @@ void op_par_loop_init_cubature(char const *name, op_set set,
   args[3] = arg3;
   args[4] = arg4;
   args[5] = arg5;
+  args[6] = arg6;
+  args[7] = arg7;
   //create aligned pointers for dats
-  ALIGNED_double       double * __restrict__ ptr0 = (double *) arg0.data;
-  DECLARE_PTR_ALIGNED(ptr0,double_ALIGN);
-  ALIGNED_double       double * __restrict__ ptr1 = (double *) arg1.data;
-  DECLARE_PTR_ALIGNED(ptr1,double_ALIGN);
+  ALIGNED_int const int * __restrict__ ptr0 = (int *) arg0.data;
+  DECLARE_PTR_ALIGNED(ptr0,int_ALIGN);
   ALIGNED_double       double * __restrict__ ptr2 = (double *) arg2.data;
   DECLARE_PTR_ALIGNED(ptr2,double_ALIGN);
   ALIGNED_double       double * __restrict__ ptr3 = (double *) arg3.data;
@@ -61,6 +70,10 @@ void op_par_loop_init_cubature(char const *name, op_set set,
   DECLARE_PTR_ALIGNED(ptr4,double_ALIGN);
   ALIGNED_double       double * __restrict__ ptr5 = (double *) arg5.data;
   DECLARE_PTR_ALIGNED(ptr5,double_ALIGN);
+  ALIGNED_double       double * __restrict__ ptr6 = (double *) arg6.data;
+  DECLARE_PTR_ALIGNED(ptr6,double_ALIGN);
+  ALIGNED_double       double * __restrict__ ptr7 = (double *) arg7.data;
+  DECLARE_PTR_ALIGNED(ptr7,double_ALIGN);
 
   // initialise timers
   double cpu_t1, cpu_t2, wall_t1, wall_t2;
@@ -79,15 +92,23 @@ void op_par_loop_init_cubature(char const *name, op_set set,
     #ifdef VECTORIZE
     #pragma novector
     for ( int n=0; n<(exec_size/SIMD_VEC)*SIMD_VEC; n+=SIMD_VEC ){
+      double dat1[SIMD_VEC];
+      for ( int i=0; i<SIMD_VEC; i++ ){
+        dat1[i] = *((double*)arg1.data);
+      }
       #pragma omp simd simdlen(SIMD_VEC)
       for ( int i=0; i<SIMD_VEC; i++ ){
         init_cubature(
-          &(ptr0)[DG_CUB_NP * (n+i)],
-          &(ptr1)[DG_CUB_NP * (n+i)],
+          &(ptr0)[1 * (n+i)],
+          &dat1[i],
           &(ptr2)[DG_CUB_NP * (n+i)],
           &(ptr3)[DG_CUB_NP * (n+i)],
           &(ptr4)[DG_CUB_NP * (n+i)],
-          &(ptr5)[DG_CUB_NP * DG_NP * (n+i)]);
+          &(ptr5)[DG_CUB_NP * (n+i)],
+          &(ptr6)[DG_CUB_NP * (n+i)],
+          &(ptr7)[DG_CUB_NP * DG_NP * (n+i)]);
+      }
+      for ( int i=0; i<SIMD_VEC; i++ ){
       }
     }
     //remainder
@@ -96,12 +117,14 @@ void op_par_loop_init_cubature(char const *name, op_set set,
     for ( int n=0; n<exec_size; n++ ){
     #endif
       init_cubature(
-        &(ptr0)[DG_CUB_NP*n],
-        &(ptr1)[DG_CUB_NP*n],
+        &(ptr0)[1*n],
+        (double*)arg1.data,
         &(ptr2)[DG_CUB_NP*n],
         &(ptr3)[DG_CUB_NP*n],
         &(ptr4)[DG_CUB_NP*n],
-        &(ptr5)[DG_CUB_NP * DG_NP*n]);
+        &(ptr5)[DG_CUB_NP*n],
+        &(ptr6)[DG_CUB_NP*n],
+        &(ptr7)[DG_CUB_NP * DG_NP*n]);
     }
   }
 
@@ -113,10 +136,11 @@ void op_par_loop_init_cubature(char const *name, op_set set,
   OP_kernels[0].name      = name;
   OP_kernels[0].count    += 1;
   OP_kernels[0].time     += wall_t2 - wall_t1;
-  OP_kernels[0].transfer += (float)set->size * arg0.size * 2.0f;
-  OP_kernels[0].transfer += (float)set->size * arg1.size * 2.0f;
+  OP_kernels[0].transfer += (float)set->size * arg0.size;
   OP_kernels[0].transfer += (float)set->size * arg2.size * 2.0f;
   OP_kernels[0].transfer += (float)set->size * arg3.size * 2.0f;
   OP_kernels[0].transfer += (float)set->size * arg4.size * 2.0f;
   OP_kernels[0].transfer += (float)set->size * arg5.size * 2.0f;
+  OP_kernels[0].transfer += (float)set->size * arg6.size * 2.0f;
+  OP_kernels[0].transfer += (float)set->size * arg7.size * 2.0f;
 }

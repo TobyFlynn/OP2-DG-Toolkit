@@ -3,29 +3,35 @@
 //
 
 //user function
-__device__ void cub_grad_weak_gpu( double *temp0, const double *rx, const double *sx,
-                          const double *ry, const double *sy, const double *J,
-                          double *temp1, double *temp2, double *temp3) {
-  for(int i = 0; i < DG_CUB_NP; i++) {
-    temp1[i] = cubW_g_cuda[i] * J[i] * sx[i] * temp0[i];
-    temp2[i] = cubW_g_cuda[i] * J[i] * ry[i] * temp0[i];
-    temp3[i] = cubW_g_cuda[i] * J[i] * sy[i] * temp0[i];
-    temp0[i] = cubW_g_cuda[i] * J[i] * rx[i] * temp0[i];
+__device__ void cub_grad_weak_gpu( const int *p, double *temp0, const double *rx,
+                          const double *sx, const double *ry, const double *sy,
+                          const double *J, double *temp1, double *temp2,
+                          double *temp3) {
+
+  const int dg_cub_np = DG_CONSTANTS_cuda[(*p - 1) * 5 + 2];
+  const double *cubW  = &cubW_g_cuda[(*p - 1) * DG_CUB_NP];
+
+  for(int i = 0; i < dg_cub_np; i++) {
+    temp1[i] = cubW[i] * J[i] * sx[i] * temp0[i];
+    temp2[i] = cubW[i] * J[i] * ry[i] * temp0[i];
+    temp3[i] = cubW[i] * J[i] * sy[i] * temp0[i];
+    temp0[i] = cubW[i] * J[i] * rx[i] * temp0[i];
   }
 
 }
 
 // CUDA kernel function
 __global__ void op_cuda_cub_grad_weak(
-  double *arg0,
-  const double *__restrict arg1,
+  const int *__restrict arg0,
+  double *arg1,
   const double *__restrict arg2,
   const double *__restrict arg3,
   const double *__restrict arg4,
   const double *__restrict arg5,
-  double *arg6,
+  const double *__restrict arg6,
   double *arg7,
   double *arg8,
+  double *arg9,
   int   set_size ) {
 
 
@@ -33,7 +39,7 @@ __global__ void op_cuda_cub_grad_weak(
   for ( int n=threadIdx.x+blockIdx.x*blockDim.x; n<set_size; n+=blockDim.x*gridDim.x ){
 
     //user-supplied kernel call
-    cub_grad_weak_gpu(arg0+n*DG_CUB_NP,
+    cub_grad_weak_gpu(arg0+n*1,
                   arg1+n*DG_CUB_NP,
                   arg2+n*DG_CUB_NP,
                   arg3+n*DG_CUB_NP,
@@ -41,7 +47,8 @@ __global__ void op_cuda_cub_grad_weak(
                   arg5+n*DG_CUB_NP,
                   arg6+n*DG_CUB_NP,
                   arg7+n*DG_CUB_NP,
-                  arg8+n*DG_CUB_NP);
+                  arg8+n*DG_CUB_NP,
+                  arg9+n*DG_CUB_NP);
   }
 }
 
@@ -56,10 +63,11 @@ void op_par_loop_cub_grad_weak(char const *name, op_set set,
   op_arg arg5,
   op_arg arg6,
   op_arg arg7,
-  op_arg arg8){
+  op_arg arg8,
+  op_arg arg9){
 
-  int nargs = 9;
-  op_arg args[9];
+  int nargs = 10;
+  op_arg args[10];
 
   args[0] = arg0;
   args[1] = arg1;
@@ -70,13 +78,14 @@ void op_par_loop_cub_grad_weak(char const *name, op_set set,
   args[6] = arg6;
   args[7] = arg7;
   args[8] = arg8;
+  args[9] = arg9;
 
   // initialise timers
   double cpu_t1, cpu_t2, wall_t1, wall_t2;
-  op_timing_realloc(10);
+  op_timing_realloc(12);
   op_timers_core(&cpu_t1, &wall_t1);
-  OP_kernels[10].name      = name;
-  OP_kernels[10].count    += 1;
+  OP_kernels[12].name      = name;
+  OP_kernels[12].count    += 1;
 
 
   if (OP_diags>2) {
@@ -87,8 +96,8 @@ void op_par_loop_cub_grad_weak(char const *name, op_set set,
   if (set_size > 0) {
 
     //set CUDA execution parameters
-    #ifdef OP_BLOCK_SIZE_10
-      int nthread = OP_BLOCK_SIZE_10;
+    #ifdef OP_BLOCK_SIZE_12
+      int nthread = OP_BLOCK_SIZE_12;
     #else
       int nthread = OP_block_size;
     #endif
@@ -96,7 +105,7 @@ void op_par_loop_cub_grad_weak(char const *name, op_set set,
     int nblocks = 200;
 
     op_cuda_cub_grad_weak<<<nblocks,nthread>>>(
-      (double *) arg0.data_d,
+      (int *) arg0.data_d,
       (double *) arg1.data_d,
       (double *) arg2.data_d,
       (double *) arg3.data_d,
@@ -105,20 +114,22 @@ void op_par_loop_cub_grad_weak(char const *name, op_set set,
       (double *) arg6.data_d,
       (double *) arg7.data_d,
       (double *) arg8.data_d,
+      (double *) arg9.data_d,
       set->size );
   }
   op_mpi_set_dirtybit_cuda(nargs, args);
   cutilSafeCall(cudaDeviceSynchronize());
   //update kernel record
   op_timers_core(&cpu_t2, &wall_t2);
-  OP_kernels[10].time     += wall_t2 - wall_t1;
-  OP_kernels[10].transfer += (float)set->size * arg0.size * 2.0f;
-  OP_kernels[10].transfer += (float)set->size * arg1.size;
-  OP_kernels[10].transfer += (float)set->size * arg2.size;
-  OP_kernels[10].transfer += (float)set->size * arg3.size;
-  OP_kernels[10].transfer += (float)set->size * arg4.size;
-  OP_kernels[10].transfer += (float)set->size * arg5.size;
-  OP_kernels[10].transfer += (float)set->size * arg6.size * 2.0f;
-  OP_kernels[10].transfer += (float)set->size * arg7.size * 2.0f;
-  OP_kernels[10].transfer += (float)set->size * arg8.size * 2.0f;
+  OP_kernels[12].time     += wall_t2 - wall_t1;
+  OP_kernels[12].transfer += (float)set->size * arg0.size;
+  OP_kernels[12].transfer += (float)set->size * arg1.size * 2.0f;
+  OP_kernels[12].transfer += (float)set->size * arg2.size;
+  OP_kernels[12].transfer += (float)set->size * arg3.size;
+  OP_kernels[12].transfer += (float)set->size * arg4.size;
+  OP_kernels[12].transfer += (float)set->size * arg5.size;
+  OP_kernels[12].transfer += (float)set->size * arg6.size;
+  OP_kernels[12].transfer += (float)set->size * arg7.size * 2.0f;
+  OP_kernels[12].transfer += (float)set->size * arg8.size * 2.0f;
+  OP_kernels[12].transfer += (float)set->size * arg9.size * 2.0f;
 }
