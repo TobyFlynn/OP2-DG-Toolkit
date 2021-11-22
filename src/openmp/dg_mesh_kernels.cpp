@@ -24,15 +24,6 @@ extern double gaussW_g[DG_GF_NP];
 extern double gFInterp0_g[DG_GF_NP * DG_NP];
 extern double gFInterp1_g[DG_GF_NP * DG_NP];
 extern double gFInterp2_g[DG_GF_NP * DG_NP];
-extern double gF0DrR_g[DG_GF_NP * DG_NP];
-extern double gF0DsR_g[DG_GF_NP * DG_NP];
-extern double gF1DrR_g[DG_GF_NP * DG_NP];
-extern double gF1DsR_g[DG_GF_NP * DG_NP];
-extern double gF2DrR_g[DG_GF_NP * DG_NP];
-extern double gF2DsR_g[DG_GF_NP * DG_NP];
-extern double gFInterp0R_g[DG_GF_NP * DG_NP];
-extern double gFInterp1R_g[DG_GF_NP * DG_NP];
-extern double gFInterp2R_g[DG_GF_NP * DG_NP];
 
 // header
 #include "op_lib_cpp.h"

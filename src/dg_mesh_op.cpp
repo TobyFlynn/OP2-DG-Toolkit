@@ -297,15 +297,6 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   op_decl_const2("gFInterp0_g",DG_GF_NP * DG_NP,"double",gFInterp0_g);
   op_decl_const2("gFInterp1_g",DG_GF_NP * DG_NP,"double",gFInterp1_g);
   op_decl_const2("gFInterp2_g",DG_GF_NP * DG_NP,"double",gFInterp2_g);
-  op_decl_const2("gF0DrR_g",DG_GF_NP * DG_NP,"double",gF0DrR_g);
-  op_decl_const2("gF0DsR_g",DG_GF_NP * DG_NP,"double",gF0DsR_g);
-  op_decl_const2("gF1DrR_g",DG_GF_NP * DG_NP,"double",gF1DrR_g);
-  op_decl_const2("gF1DsR_g",DG_GF_NP * DG_NP,"double",gF1DsR_g);
-  op_decl_const2("gF2DrR_g",DG_GF_NP * DG_NP,"double",gF2DrR_g);
-  op_decl_const2("gF2DsR_g",DG_GF_NP * DG_NP,"double",gF2DsR_g);
-  op_decl_const2("gFInterp0R_g",DG_GF_NP * DG_NP,"double",gFInterp0R_g);
-  op_decl_const2("gFInterp1R_g",DG_GF_NP * DG_NP,"double",gFInterp1R_g);
-  op_decl_const2("gFInterp2R_g",DG_GF_NP * DG_NP,"double",gFInterp2R_g);
   #endif
 
   cubature = new DGCubatureData(this);

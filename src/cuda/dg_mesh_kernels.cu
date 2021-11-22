@@ -24,15 +24,6 @@ __constant__ double gaussW_g_cuda[DG_GF_NP];
 __constant__ double gFInterp0_g_cuda[DG_GF_NP * DG_NP];
 __constant__ double gFInterp1_g_cuda[DG_GF_NP * DG_NP];
 __constant__ double gFInterp2_g_cuda[DG_GF_NP * DG_NP];
-__constant__ double gF0DrR_g_cuda[DG_GF_NP * DG_NP];
-__constant__ double gF0DsR_g_cuda[DG_GF_NP * DG_NP];
-__constant__ double gF1DrR_g_cuda[DG_GF_NP * DG_NP];
-__constant__ double gF1DsR_g_cuda[DG_GF_NP * DG_NP];
-__constant__ double gF2DrR_g_cuda[DG_GF_NP * DG_NP];
-__constant__ double gF2DsR_g_cuda[DG_GF_NP * DG_NP];
-__constant__ double gFInterp0R_g_cuda[DG_GF_NP * DG_NP];
-__constant__ double gFInterp1R_g_cuda[DG_GF_NP * DG_NP];
-__constant__ double gFInterp2R_g_cuda[DG_GF_NP * DG_NP];
 
 //header
 #include "op_lib_cpp.h"
@@ -57,15 +48,6 @@ void set_cuda_const() {
   cutilSafeCall(cudaMemcpyToSymbol(gFInterp0_g_cuda, gFInterp0_g, DG_GF_NP * DG_NP * sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(gFInterp1_g_cuda, gFInterp1_g, DG_GF_NP * DG_NP * sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(gFInterp2_g_cuda, gFInterp2_g, DG_GF_NP * DG_NP * sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(gF0DrR_g_cuda, gF0DrR_g, DG_GF_NP * DG_NP * sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(gF0DsR_g_cuda, gF0DsR_g, DG_GF_NP * DG_NP * sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(gF1DrR_g_cuda, gF1DrR_g, DG_GF_NP * DG_NP * sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(gF1DsR_g_cuda, gF1DsR_g, DG_GF_NP * DG_NP * sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(gF2DrR_g_cuda, gF2DrR_g, DG_GF_NP * DG_NP * sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(gF2DsR_g_cuda, gF2DsR_g, DG_GF_NP * DG_NP * sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(gFInterp0R_g_cuda, gFInterp0R_g, DG_GF_NP * DG_NP * sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(gFInterp1R_g_cuda, gFInterp1R_g, DG_GF_NP * DG_NP * sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(gFInterp2R_g_cuda, gFInterp2R_g, DG_GF_NP * DG_NP * sizeof(double)));
 }
 
 //user kernel files

@@ -36,7 +36,7 @@ void op_par_loop_cub_grad(char const *name, op_set set,
     printf(" kernel routine w/o indirection:  cub_grad");
   }
 
-  int set_size = op_mpi_halo_exchanges_grouped(set, nargs, args, 1);
+  int set_size = op_mpi_halo_exchanges(set, nargs, args);
 
   if (set_size > 0) {
 

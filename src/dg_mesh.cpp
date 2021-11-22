@@ -239,15 +239,6 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   op_decl_const(DG_GF_NP * DG_NP, "double", gFInterp0_g);
   op_decl_const(DG_GF_NP * DG_NP, "double", gFInterp1_g);
   op_decl_const(DG_GF_NP * DG_NP, "double", gFInterp2_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF0DrR_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF0DsR_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF1DrR_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF1DsR_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF2DrR_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gF2DsR_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gFInterp0R_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gFInterp1R_g);
-  op_decl_const(DG_GF_NP * DG_NP, "double", gFInterp2R_g);
   #endif
 
   cubature = new DGCubatureData(this);
