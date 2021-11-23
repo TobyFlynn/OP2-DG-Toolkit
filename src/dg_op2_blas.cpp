@@ -132,6 +132,41 @@ void op2_gemv_inv_mass(DGMesh *mesh, bool transpose, const double alpha,
               op_arg_dat(y, -1, OP_ID, DG_NP, "double", OP_RW));
 }
 
+void op2_gemv_lift(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
+                   const double beta, op_dat y) {
+  if(transpose) {
+    op_par_loop(gemv_lift, "gemv_lift", mesh->cells,
+                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_gbl(&transpose, 1, "bool", OP_READ),
+                op_arg_gbl(&alpha, 1, "double", OP_READ),
+                op_arg_gbl(&beta,  1, "double", OP_READ),
+                op_arg_gbl(lift_g, DG_ORDER * 3 * DG_NPF * DG_NP, "double", OP_READ),
+                op_arg_dat(x, -1, OP_ID, DG_NP, "double", OP_READ),
+                op_arg_dat(y, -1, OP_ID, 3 * DG_NPF, "double", OP_RW));
+  } else {
+    op_par_loop(gemv_lift, "gemv_lift", mesh->cells,
+                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_gbl(&transpose, 1, "bool", OP_READ),
+                op_arg_gbl(&alpha, 1, "double", OP_READ),
+                op_arg_gbl(&beta,  1, "double", OP_READ),
+                op_arg_gbl(lift_g, DG_ORDER * 3 * DG_NPF * DG_NP, "double", OP_READ),
+                op_arg_dat(x, -1, OP_ID, 3 * DG_NPF, "double", OP_READ),
+                op_arg_dat(y, -1, OP_ID, DG_NP, "double", OP_RW));
+  }
+}
+
+void op2_gemv_mass(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
+                   const double beta, op_dat y) {
+  op_par_loop(gemv_mass, "gemv_mass", mesh->cells,
+              op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+              op_arg_gbl(&transpose, 1, "bool", OP_READ),
+              op_arg_gbl(&alpha, 1, "double", OP_READ),
+              op_arg_gbl(&beta,  1, "double", OP_READ),
+              op_arg_gbl(mass_g, DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
+              op_arg_dat(x, -1, OP_ID, DG_NP, "double", OP_READ),
+              op_arg_dat(y, -1, OP_ID, DG_NP, "double", OP_RW));
+}
+
 void op2_gemv(DGMesh *mesh, bool transpose, const double alpha,
               DGConstants::Constant_Matrix matrix, op_dat x, const double beta,
               op_dat y) {
@@ -156,6 +191,12 @@ void op2_gemv(DGMesh *mesh, bool transpose, const double alpha,
       break;
     case DGConstants::INV_MASS:
       op2_gemv_inv_mass(mesh, transpose, alpha, x, beta, y);
+      break;
+    case DGConstants::LIFT:
+      op2_gemv_lift(mesh, transpose, alpha, x, beta, y);
+      break;
+    case DGConstants::MASS:
+      op2_gemv_mass(mesh, transpose, alpha, x, beta, y);
       break;
     default:
       std::cerr << "op2_gemv call not implemented for this matrix ... exiting" << std::endl;

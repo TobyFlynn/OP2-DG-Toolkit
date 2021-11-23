@@ -34,21 +34,12 @@ double gInterp_g[DG_ORDER * DG_G_NP * DG_NP];
 double gFInterp0_g[DG_ORDER * DG_GF_NP * DG_NP];
 double gFInterp1_g[DG_ORDER * DG_GF_NP * DG_NP];
 double gFInterp2_g[DG_ORDER * DG_GF_NP * DG_NP];
-double gFInterp0R_g[DG_ORDER * DG_GF_NP * DG_NP];
-double gFInterp1R_g[DG_ORDER * DG_GF_NP * DG_NP];
-double gFInterp2R_g[DG_ORDER * DG_GF_NP * DG_NP];
 double gF0Dr_g[DG_ORDER * DG_GF_NP * DG_NP];
 double gF0Ds_g[DG_ORDER * DG_GF_NP * DG_NP];
 double gF1Dr_g[DG_ORDER * DG_GF_NP * DG_NP];
 double gF1Ds_g[DG_ORDER * DG_GF_NP * DG_NP];
 double gF2Dr_g[DG_ORDER * DG_GF_NP * DG_NP];
 double gF2Ds_g[DG_ORDER * DG_GF_NP * DG_NP];
-double gF0DrR_g[DG_ORDER * DG_GF_NP * DG_NP];
-double gF0DsR_g[DG_ORDER * DG_GF_NP * DG_NP];
-double gF1DrR_g[DG_ORDER * DG_GF_NP * DG_NP];
-double gF1DsR_g[DG_ORDER * DG_GF_NP * DG_NP];
-double gF2DrR_g[DG_ORDER * DG_GF_NP * DG_NP];
-double gF2DsR_g[DG_ORDER * DG_GF_NP * DG_NP];
 
 void DGConstants::setup(const int n) {
   // Set order
@@ -90,21 +81,12 @@ void DGConstants::setup(const int n) {
   arma::mat invMass = arma::inv(MassMatrix_);
   arma::mat cub_V_Dr = cub_V_ * Dr_;
   arma::mat cub_V_Ds = cub_V_ * Ds_;
-  arma::mat gauss_i1_r = arma::reverse(gauss_interp1_);
-  arma::mat gauss_i2_r = arma::reverse(gauss_interp2_);
-  arma::mat gauss_i3_r = arma::reverse(gauss_interp3_);
   arma::mat gauss_i1_Dr = gauss_interp1_ * Dr_;
   arma::mat gauss_i1_Ds = gauss_interp1_ * Ds_;
   arma::mat gauss_i2_Dr = gauss_interp2_ * Dr_;
   arma::mat gauss_i2_Ds = gauss_interp2_ * Ds_;
   arma::mat gauss_i3_Dr = gauss_interp3_ * Dr_;
   arma::mat gauss_i3_Ds = gauss_interp3_ * Ds_;
-  arma::mat gauss_i1_Dr_r = gauss_i1_r * Dr_;
-  arma::mat gauss_i1_Ds_r = gauss_i1_r * Ds_;
-  arma::mat gauss_i2_Dr_r = gauss_i2_r * Dr_;
-  arma::mat gauss_i2_Ds_r = gauss_i2_r * Ds_;
-  arma::mat gauss_i3_Dr_r = gauss_i3_r * Dr_;
-  arma::mat gauss_i3_Ds_r = gauss_i3_r * Ds_;
 
   // Copy armadillo vecs and mats to global memory
 
@@ -149,21 +131,12 @@ void DGConstants::setup(const int n) {
   memcpy(&gFInterp0_g[(N - 1) * DG_GF_NP * DG_NP], gauss_interp1_.memptr(), gauss_interp1_.n_elem * sizeof(double));
   memcpy(&gFInterp1_g[(N - 1) * DG_GF_NP * DG_NP], gauss_interp2_.memptr(), gauss_interp2_.n_elem * sizeof(double));
   memcpy(&gFInterp2_g[(N - 1) * DG_GF_NP * DG_NP], gauss_interp3_.memptr(), gauss_interp3_.n_elem * sizeof(double));
-  memcpy(&gFInterp0R_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i1_r.memptr(), gauss_i1_r.n_elem * sizeof(double));
-  memcpy(&gFInterp1R_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i2_r.memptr(), gauss_i2_r.n_elem * sizeof(double));
-  memcpy(&gFInterp2R_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i3_r.memptr(), gauss_i3_r.n_elem * sizeof(double));
   memcpy(&gF0Dr_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i1_Dr.memptr(), gauss_i1_Dr.n_elem * sizeof(double));
   memcpy(&gF0Ds_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i1_Ds.memptr(), gauss_i1_Ds.n_elem * sizeof(double));
   memcpy(&gF1Dr_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i2_Dr.memptr(), gauss_i2_Dr.n_elem * sizeof(double));
   memcpy(&gF1Ds_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i2_Ds.memptr(), gauss_i2_Ds.n_elem * sizeof(double));
   memcpy(&gF2Dr_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i3_Dr.memptr(), gauss_i3_Dr.n_elem * sizeof(double));
   memcpy(&gF2Ds_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i3_Ds.memptr(), gauss_i3_Ds.n_elem * sizeof(double));
-  memcpy(&gF0DrR_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i1_Dr_r.memptr(), gauss_i1_Dr_r.n_elem * sizeof(double));
-  memcpy(&gF0DsR_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i1_Ds_r.memptr(), gauss_i1_Ds_r.n_elem * sizeof(double));
-  memcpy(&gF1DrR_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i2_Dr_r.memptr(), gauss_i2_Dr_r.n_elem * sizeof(double));
-  memcpy(&gF1DsR_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i2_Ds_r.memptr(), gauss_i2_Ds_r.n_elem * sizeof(double));
-  memcpy(&gF2DrR_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i3_Dr_r.memptr(), gauss_i3_Dr_r.n_elem * sizeof(double));
-  memcpy(&gF2DsR_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i3_Ds_r.memptr(), gauss_i3_Ds_r.n_elem * sizeof(double));
 }
 
 void DGConstants::cubature(const int nCub) {

@@ -32,40 +32,22 @@ DGConstants::DGConstants(const int n) {
   cudaMemcpy(gaussW_d, &gaussW_g[(N - 1) * DG_GF_NP], DG_GF_NP * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&gF0Dr_d, DG_GF_NP * DG_NP * sizeof(double));
   cudaMemcpy(gF0Dr_d, &gF0Dr_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
-  cudaMalloc((void**)&gF0DrR_d, DG_GF_NP * DG_NP * sizeof(double));
-  cudaMemcpy(gF0DrR_d, &gF0DrR_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&gF0Ds_d, DG_GF_NP * DG_NP * sizeof(double));
   cudaMemcpy(gF0Ds_d, &gF0Ds_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
-  cudaMalloc((void**)&gF0DsR_d, DG_GF_NP * DG_NP * sizeof(double));
-  cudaMemcpy(gF0DsR_d, &gF0DsR_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&gF1Dr_d, DG_GF_NP * DG_NP * sizeof(double));
   cudaMemcpy(gF1Dr_d, &gF1Dr_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
-  cudaMalloc((void**)&gF1DrR_d, DG_GF_NP * DG_NP * sizeof(double));
-  cudaMemcpy(gF1DrR_d, &gF1DrR_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&gF1Ds_d, DG_GF_NP * DG_NP * sizeof(double));
   cudaMemcpy(gF1Ds_d, &gF1Ds_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
-  cudaMalloc((void**)&gF1DsR_d, DG_GF_NP * DG_NP * sizeof(double));
-  cudaMemcpy(gF1DsR_d, &gF1DsR_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&gF2Dr_d, DG_GF_NP * DG_NP * sizeof(double));
   cudaMemcpy(gF2Dr_d, &gF2Dr_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
-  cudaMalloc((void**)&gF2DrR_d, DG_GF_NP * DG_NP * sizeof(double));
-  cudaMemcpy(gF2DrR_d, &gF2DrR_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&gF2Ds_d, DG_GF_NP * DG_NP * sizeof(double));
   cudaMemcpy(gF2Ds_d, &gF2Ds_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
-  cudaMalloc((void**)&gF2DsR_d, DG_GF_NP * DG_NP * sizeof(double));
-  cudaMemcpy(gF2DsR_d, &gF2DsR_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&gFInterp0_d, DG_GF_NP * DG_NP * sizeof(double));
   cudaMemcpy(gFInterp0_d, &gFInterp0_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
-  cudaMalloc((void**)&gFInterp0R_d, DG_GF_NP * DG_NP * sizeof(double));
-  cudaMemcpy(gFInterp0R_d, &gFInterp0R_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&gFInterp1_d, DG_GF_NP * DG_NP * sizeof(double));
   cudaMemcpy(gFInterp1_d, &gFInterp1_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
-  cudaMalloc((void**)&gFInterp1R_d, DG_GF_NP * DG_NP * sizeof(double));
-  cudaMemcpy(gFInterp1R_d, &gFInterp1R_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&gFInterp2_d, DG_GF_NP * DG_NP * sizeof(double));
   cudaMemcpy(gFInterp2_d, &gFInterp2_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
-  cudaMalloc((void**)&gFInterp2R_d, DG_GF_NP * DG_NP * sizeof(double));
-  cudaMemcpy(gFInterp2R_d, &gFInterp2R_g[(N - 1) * DG_GF_NP * DG_NP], DG_GF_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
   cudaMalloc((void**)&gInterp_d, DG_G_NP * DG_NP * sizeof(double));
   cudaMemcpy(gInterp_d, &gInterp_g[(N - 1) * DG_G_NP * DG_NP], DG_G_NP * DG_NP * sizeof(double), cudaMemcpyHostToDevice);
   // Other constants
@@ -103,23 +85,14 @@ DGConstants::~DGConstants() {
   // Gauss constants
   cudaFree(gaussW_d);
   cudaFree(gF0Dr_d);
-  cudaFree(gF0DrR_d);
   cudaFree(gF0Ds_d);
-  cudaFree(gF0DsR_d);
   cudaFree(gF1Dr_d);
-  cudaFree(gF1DrR_d);
   cudaFree(gF1Ds_d);
-  cudaFree(gF1DsR_d);
   cudaFree(gF2Dr_d);
-  cudaFree(gF2DrR_d);
   cudaFree(gF2Ds_d);
-  cudaFree(gF2DsR_d);
   cudaFree(gFInterp0_d);
-  cudaFree(gFInterp0R_d);
   cudaFree(gFInterp1_d);
-  cudaFree(gFInterp1R_d);
   cudaFree(gFInterp2_d);
-  cudaFree(gFInterp2R_d);
   cudaFree(gInterp_d);
   // Other constants
   cudaFree(invMass_d);
@@ -158,40 +131,22 @@ double* DGConstants::get_ptr(Constant_Matrix mat) {
       return gaussW_d;
     case GAUSS_F0DR:
       return gF0Dr_d;
-    case GAUSS_F0DR_R:
-      return gF0DrR_d;
     case GAUSS_F0DS:
       return gF0Ds_d;
-    case GAUSS_F0DS_R:
-      return gF0DsR_d;
     case GAUSS_F1DR:
       return gF1Dr_d;
-    case GAUSS_F1DR_R:
-      return gF1DrR_d;
     case GAUSS_F1DS:
       return gF1Ds_d;
-    case GAUSS_F1DS_R:
-      return gF1DsR_d;
     case GAUSS_F2DR:
       return gF2Dr_d;
-    case GAUSS_F2DR_R:
-      return gF2DrR_d;
     case GAUSS_F2DS:
       return gF2Ds_d;
-    case GAUSS_F2DS_R:
-      return gF2DsR_d;
     case GAUSS_FINTERP0:
       return gFInterp0_d;
-    case GAUSS_FINTERP0_R:
-      return gFInterp0R_d;
     case GAUSS_FINTERP1:
       return gFInterp1_d;
-    case GAUSS_FINTERP1_R:
-      return gFInterp1R_d;
     case GAUSS_FINTERP2:
       return gFInterp2_d;
-    case GAUSS_FINTERP2_R:
-      return gFInterp2R_d;
     case GAUSS_INTERP:
       return gInterp_d;
     case INV_MASS:

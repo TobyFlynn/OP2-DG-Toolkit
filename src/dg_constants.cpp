@@ -20,23 +20,14 @@ DGConstants::DGConstants(const int n) {
   // Gauss constants
   gaussW     = &gaussW_g[(N - 1) * DG_GF_NP];
   gF0Dr      = &gF0Dr_g[(N - 1) * DG_GF_NP * DG_NP];
-  gF0DrR     = &gF0DrR_g[(N - 1) * DG_GF_NP * DG_NP];
   gF0Ds      = &gF0Ds_g[(N - 1) * DG_GF_NP * DG_NP];
-  gF0DsR     = &gF0DsR_g[(N - 1) * DG_GF_NP * DG_NP];
   gF1Dr      = &gF1Dr_g[(N - 1) * DG_GF_NP * DG_NP];
-  gF1DrR     = &gF1DrR_g[(N - 1) * DG_GF_NP * DG_NP];
   gF1Ds      = &gF1Ds_g[(N - 1) * DG_GF_NP * DG_NP];
-  gF1DsR     = &gF1DsR_g[(N - 1) * DG_GF_NP * DG_NP];
   gF2Dr      = &gF2Dr_g[(N - 1) * DG_GF_NP * DG_NP];
-  gF2DrR     = &gF2DrR_g[(N - 1) * DG_GF_NP * DG_NP];
   gF2Ds      = &gF2Ds_g[(N - 1) * DG_GF_NP * DG_NP];
-  gF2DsR     = &gF2DsR_g[(N - 1) * DG_GF_NP * DG_NP];
   gFInterp0  = &gFInterp0_g[(N - 1) * DG_GF_NP * DG_NP];
-  gFInterp0R = &gFInterp0R_g[(N - 1) * DG_GF_NP * DG_NP];
   gFInterp1  = &gFInterp1_g[(N - 1) * DG_GF_NP * DG_NP];
-  gFInterp1R = &gFInterp1R_g[(N - 1) * DG_GF_NP * DG_NP];
   gFInterp2  = &gFInterp2_g[(N - 1) * DG_GF_NP * DG_NP];
-  gFInterp2R = &gFInterp2R_g[(N - 1) * DG_GF_NP * DG_NP];
   gInterp    = &gInterp_g[(N - 1) * DG_G_NP * DG_NP];
 
   // Other constants
@@ -80,40 +71,22 @@ double* DGConstants::get_ptr(Constant_Matrix mat) {
       return gaussW;
     case GAUSS_F0DR:
       return gF0Dr;
-    case GAUSS_F0DR_R:
-      return gF0DrR;
     case GAUSS_F0DS:
       return gF0Ds;
-    case GAUSS_F0DS_R:
-      return gF0DsR;
     case GAUSS_F1DR:
       return gF1Dr;
-    case GAUSS_F1DR_R:
-      return gF1DrR;
     case GAUSS_F1DS:
       return gF1Ds;
-    case GAUSS_F1DS_R:
-      return gF1DsR;
     case GAUSS_F2DR:
       return gF2Dr;
-    case GAUSS_F2DR_R:
-      return gF2DrR;
     case GAUSS_F2DS:
       return gF2Ds;
-    case GAUSS_F2DS_R:
-      return gF2DsR;
     case GAUSS_FINTERP0:
       return gFInterp0;
-    case GAUSS_FINTERP0_R:
-      return gFInterp0R;
     case GAUSS_FINTERP1:
       return gFInterp1;
-    case GAUSS_FINTERP1_R:
-      return gFInterp1R;
     case GAUSS_FINTERP2:
       return gFInterp2;
-    case GAUSS_FINTERP2_R:
-      return gFInterp2R;
     case GAUSS_INTERP:
       return gInterp;
     case INV_MASS:

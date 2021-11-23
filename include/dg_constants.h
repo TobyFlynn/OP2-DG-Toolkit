@@ -13,11 +13,9 @@ public:
 
     DR, DRW, DS, DSW,
 
-    GAUSS_W, GAUSS_F0DR, GAUSS_F0DR_R, GAUSS_F0DS, GAUSS_F0DS_R,
-    GAUSS_F1DR, GAUSS_F1DR_R, GAUSS_F1DS, GAUSS_F1DS_R,
-    GAUSS_F2DR, GAUSS_F2DR_R, GAUSS_F2DS, GAUSS_F2DS_R,
-    GAUSS_FINTERP0, GAUSS_FINTERP0_R, GAUSS_FINTERP1, GAUSS_FINTERP1_R,
-    GAUSS_FINTERP2, GAUSS_FINTERP2_R, GAUSS_INTERP,
+    GAUSS_W, GAUSS_F0DR, GAUSS_F0DS, GAUSS_F1DR, GAUSS_F1DS,
+    GAUSS_F2DR, GAUSS_F2DS, GAUSS_FINTERP0, GAUSS_FINTERP1,
+    GAUSS_FINTERP2, GAUSS_INTERP,
 
     INV_MASS, LIFT, MASS, INV_V, V, R, S, ONES
   };
@@ -47,23 +45,14 @@ public:
 
   double *gaussW, *gaussW_d;
   double *gF0Dr, *gF0Dr_d;
-  double *gF0DrR, *gF0DrR_d;
   double *gF0Ds, *gF0Ds_d;
-  double *gF0DsR, *gF0DsR_d;
   double *gF1Dr, *gF1Dr_d;
-  double *gF1DrR, *gF1DrR_d;
   double *gF1Ds, *gF1Ds_d;
-  double *gF1DsR, *gF1DsR_d;
   double *gF2Dr, *gF2Dr_d;
-  double *gF2DrR, *gF2DrR_d;
   double *gF2Ds, *gF2Ds_d;
-  double *gF2DsR, *gF2DsR_d;
   double *gFInterp0, *gFInterp0_d;
-  double *gFInterp0R, *gFInterp0R_d;
   double *gFInterp1, *gFInterp1_d;
-  double *gFInterp1R, *gFInterp1R_d;
   double *gFInterp2, *gFInterp2_d;
-  double *gFInterp2R, *gFInterp2R_d;
   double *gInterp, *gInterp_d;
 
   double *invMass, *invMass_d;

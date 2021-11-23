@@ -9,14 +9,16 @@
 void op_par_loop_inv_J(char const *name, op_set set,
   op_arg arg0,
   op_arg arg1,
-  op_arg arg2){
+  op_arg arg2,
+  op_arg arg3){
 
-  int nargs = 3;
-  op_arg args[3];
+  int nargs = 4;
+  op_arg args[4];
 
   args[0] = arg0;
   args[1] = arg1;
   args[2] = arg2;
+  args[3] = arg3;
 
   // initialise timers
   double cpu_t1, cpu_t2, wall_t1, wall_t2;
@@ -34,9 +36,10 @@ void op_par_loop_inv_J(char const *name, op_set set,
 
     for ( int n=0; n<set_size; n++ ){
       inv_J(
-        &((double*)arg0.data)[DG_NP*n],
+        &((int*)arg0.data)[1*n],
         &((double*)arg1.data)[DG_NP*n],
-        &((double*)arg2.data)[DG_NP*n]);
+        &((double*)arg2.data)[DG_NP*n],
+        &((double*)arg3.data)[DG_NP*n]);
     }
   }
 
@@ -50,5 +53,6 @@ void op_par_loop_inv_J(char const *name, op_set set,
   OP_kernels[14].time     += wall_t2 - wall_t1;
   OP_kernels[14].transfer += (float)set->size * arg0.size;
   OP_kernels[14].transfer += (float)set->size * arg1.size;
-  OP_kernels[14].transfer += (float)set->size * arg2.size * 2.0f;
+  OP_kernels[14].transfer += (float)set->size * arg2.size;
+  OP_kernels[14].transfer += (float)set->size * arg3.size * 2.0f;
 }

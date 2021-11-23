@@ -3,33 +3,39 @@
 //
 
 //user function
-#include "../kernels/inv_J.h"
+#include "../kernels/gemv_mass.h"
 
 // host stub function
-void op_par_loop_inv_J(char const *name, op_set set,
+void op_par_loop_gemv_mass(char const *name, op_set set,
   op_arg arg0,
   op_arg arg1,
   op_arg arg2,
-  op_arg arg3){
+  op_arg arg3,
+  op_arg arg4,
+  op_arg arg5,
+  op_arg arg6){
 
-  int nargs = 4;
-  op_arg args[4];
+  int nargs = 7;
+  op_arg args[7];
 
   args[0] = arg0;
   args[1] = arg1;
   args[2] = arg2;
   args[3] = arg3;
+  args[4] = arg4;
+  args[5] = arg5;
+  args[6] = arg6;
 
   // initialise timers
   double cpu_t1, cpu_t2, wall_t1, wall_t2;
-  op_timing_realloc(14);
-  OP_kernels[14].name      = name;
-  OP_kernels[14].count    += 1;
+  op_timing_realloc(28);
+  OP_kernels[28].name      = name;
+  OP_kernels[28].count    += 1;
   op_timers_core(&cpu_t1, &wall_t1);
 
 
   if (OP_diags>2) {
-    printf(" kernel routine w/o indirection:  inv_J");
+    printf(" kernel routine w/o indirection:  gemv_mass");
   }
 
   int set_size = op_mpi_halo_exchanges(set, nargs, args);
@@ -48,11 +54,14 @@ void op_par_loop_inv_J(char const *name, op_set set,
       int start  = (set->size* thr)/nthreads;
       int finish = (set->size*(thr+1))/nthreads;
       for ( int n=start; n<finish; n++ ){
-        inv_J(
+        gemv_mass(
           &((int*)arg0.data)[1*n],
-          &((double*)arg1.data)[DG_NP*n],
-          &((double*)arg2.data)[DG_NP*n],
-          &((double*)arg3.data)[DG_NP*n]);
+          (bool*)arg1.data,
+          (double*)arg2.data,
+          (double*)arg3.data,
+          (double*)arg4.data,
+          &((double*)arg5.data)[DG_NP*n],
+          &((double*)arg6.data)[DG_NP*n]);
       }
     }
   }
@@ -62,9 +71,8 @@ void op_par_loop_inv_J(char const *name, op_set set,
 
   // update kernel record
   op_timers_core(&cpu_t2, &wall_t2);
-  OP_kernels[14].time     += wall_t2 - wall_t1;
-  OP_kernels[14].transfer += (float)set->size * arg0.size;
-  OP_kernels[14].transfer += (float)set->size * arg1.size;
-  OP_kernels[14].transfer += (float)set->size * arg2.size;
-  OP_kernels[14].transfer += (float)set->size * arg3.size * 2.0f;
+  OP_kernels[28].time     += wall_t2 - wall_t1;
+  OP_kernels[28].transfer += (float)set->size * arg0.size;
+  OP_kernels[28].transfer += (float)set->size * arg5.size;
+  OP_kernels[28].transfer += (float)set->size * arg6.size * 2.0f;
 }

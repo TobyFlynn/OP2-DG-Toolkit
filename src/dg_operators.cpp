@@ -147,6 +147,7 @@ void inv_mass(DGMesh *mesh, op_dat u) {
   op2_gemv(mesh, false, 1.0, DGConstants::INV_MASS, u, 0.0, mesh->op_tmp[0]);
 
   op_par_loop(inv_J, "inv_J", mesh->cells,
+              op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
               op_arg_dat(mesh->J, -1, OP_ID, DG_NP, "double", OP_READ),
               op_arg_dat(mesh->op_tmp[0], -1, OP_ID, DG_NP, "double", OP_READ),
               op_arg_dat(u, -1, OP_ID, DG_NP, "double", OP_WRITE));

@@ -40,3 +40,5 @@ extern double gaussW_g[DG_ORDER * DG_GF_NP];
 #include "gemv_ds_kernel.cpp"
 #include "gemv_cub_v_kernel.cpp"
 #include "gemv_inv_mass_kernel.cpp"
+#include "gemv_lift_kernel.cpp"
+#include "gemv_mass_kernel.cpp"

@@ -51,3 +51,5 @@ void set_cuda_const() {
 #include "gemv_gauss_interp_kernel.cu"
 #include "gemv_inv_mass_kernel.cu"
 #include "init_order_kernel.cu"
+#include "gemv_lift_kernel.cu"
+#include "gemv_mass_kernel.cu"
