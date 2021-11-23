@@ -31,20 +31,11 @@ extern double gInterp_g[DG_ORDER * DG_G_NP * DG_NP];
 extern double gFInterp0_g[DG_ORDER * DG_GF_NP * DG_NP];
 extern double gFInterp1_g[DG_ORDER * DG_GF_NP * DG_NP];
 extern double gFInterp2_g[DG_ORDER * DG_GF_NP * DG_NP];
-extern double gFInterp0R_g[DG_ORDER * DG_GF_NP * DG_NP];
-extern double gFInterp1R_g[DG_ORDER * DG_GF_NP * DG_NP];
-extern double gFInterp2R_g[DG_ORDER * DG_GF_NP * DG_NP];
 extern double gF0Dr_g[DG_ORDER * DG_GF_NP * DG_NP];
 extern double gF0Ds_g[DG_ORDER * DG_GF_NP * DG_NP];
 extern double gF1Dr_g[DG_ORDER * DG_GF_NP * DG_NP];
 extern double gF1Ds_g[DG_ORDER * DG_GF_NP * DG_NP];
 extern double gF2Dr_g[DG_ORDER * DG_GF_NP * DG_NP];
 extern double gF2Ds_g[DG_ORDER * DG_GF_NP * DG_NP];
-extern double gF0DrR_g[DG_ORDER * DG_GF_NP * DG_NP];
-extern double gF0DsR_g[DG_ORDER * DG_GF_NP * DG_NP];
-extern double gF1DrR_g[DG_ORDER * DG_GF_NP * DG_NP];
-extern double gF1DsR_g[DG_ORDER * DG_GF_NP * DG_NP];
-extern double gF2DrR_g[DG_ORDER * DG_GF_NP * DG_NP];
-extern double gF2DsR_g[DG_ORDER * DG_GF_NP * DG_NP];
 
 #endif

@@ -33,7 +33,7 @@ void op_par_loop_gemv_gauss_interp(char const *, op_set,
   op_arg,
   op_arg );
 
-void op_par_loop_gemv_cub_dr(char const *, op_set,
+void op_par_loop_gemv_cub_np_np(char const *, op_set,
   op_arg,
   op_arg,
   op_arg,
@@ -42,7 +42,7 @@ void op_par_loop_gemv_cub_dr(char const *, op_set,
   op_arg,
   op_arg );
 
-void op_par_loop_gemv_cub_dr(char const *, op_set,
+void op_par_loop_gemv_cub_np_np(char const *, op_set,
   op_arg,
   op_arg,
   op_arg,
@@ -51,7 +51,7 @@ void op_par_loop_gemv_cub_dr(char const *, op_set,
   op_arg,
   op_arg );
 
-void op_par_loop_gemv_cub_ds(char const *, op_set,
+void op_par_loop_gemv_cub_np_np(char const *, op_set,
   op_arg,
   op_arg,
   op_arg,
@@ -60,7 +60,7 @@ void op_par_loop_gemv_cub_ds(char const *, op_set,
   op_arg,
   op_arg );
 
-void op_par_loop_gemv_cub_ds(char const *, op_set,
+void op_par_loop_gemv_np_np(char const *, op_set,
   op_arg,
   op_arg,
   op_arg,
@@ -69,43 +69,7 @@ void op_par_loop_gemv_cub_ds(char const *, op_set,
   op_arg,
   op_arg );
 
-void op_par_loop_gemv_dr(char const *, op_set,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg );
-
-void op_par_loop_gemv_ds(char const *, op_set,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg );
-
-void op_par_loop_gemv_cub_v(char const *, op_set,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg );
-
-void op_par_loop_gemv_cub_v(char const *, op_set,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg,
-  op_arg );
-
-void op_par_loop_gemv_inv_mass(char const *, op_set,
+void op_par_loop_gemv_cub_np_np(char const *, op_set,
   op_arg,
   op_arg,
   op_arg,
@@ -132,7 +96,16 @@ void op_par_loop_gemv_lift(char const *, op_set,
   op_arg,
   op_arg );
 
-void op_par_loop_gemv_mass(char const *, op_set,
+void op_par_loop_gemv_cub_np_np(char const *, op_set,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg );
+
+void op_par_loop_gemv_cub_np_np(char const *, op_set,
   op_arg,
   op_arg,
   op_arg,
@@ -175,7 +148,7 @@ void op2_gemv_gauss_interp(DGMesh *mesh, bool transpose, const double alpha,
 void op2_gemv_cub_dr(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
                      const double beta, op_dat y) {
   if(transpose) {
-    op_par_loop_gemv_cub_dr("gemv_cub_dr",mesh->cells,
+    op_par_loop_gemv_cub_np_np("gemv_cub_np_np",mesh->cells,
                 op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
                 op_arg_gbl(&transpose,1,"bool",OP_READ),
                 op_arg_gbl(&alpha,1,"double",OP_READ),
@@ -184,7 +157,7 @@ void op2_gemv_cub_dr(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
                 op_arg_dat(x,-1,OP_ID,DG_CUB_NP,"double",OP_READ),
                 op_arg_dat(y,-1,OP_ID,DG_NP,"double",OP_RW));
   } else {
-    op_par_loop_gemv_cub_dr("gemv_cub_dr",mesh->cells,
+    op_par_loop_gemv_cub_np_np("gemv_cub_np_np",mesh->cells,
                 op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
                 op_arg_gbl(&transpose,1,"bool",OP_READ),
                 op_arg_gbl(&alpha,1,"double",OP_READ),
@@ -198,7 +171,7 @@ void op2_gemv_cub_dr(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
 void op2_gemv_cub_ds(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
                      const double beta, op_dat y) {
   if(transpose) {
-    op_par_loop_gemv_cub_ds("gemv_cub_ds",mesh->cells,
+    op_par_loop_gemv_cub_np_np("gemv_cub_np_np",mesh->cells,
                 op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
                 op_arg_gbl(&transpose,1,"bool",OP_READ),
                 op_arg_gbl(&alpha,1,"double",OP_READ),
@@ -207,7 +180,7 @@ void op2_gemv_cub_ds(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
                 op_arg_dat(x,-1,OP_ID,DG_CUB_NP,"double",OP_READ),
                 op_arg_dat(y,-1,OP_ID,DG_NP,"double",OP_RW));
   } else {
-    op_par_loop_gemv_cub_ds("gemv_cub_ds",mesh->cells,
+    op_par_loop_gemv_cub_np_np("gemv_cub_np_np",mesh->cells,
                 op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
                 op_arg_gbl(&transpose,1,"bool",OP_READ),
                 op_arg_gbl(&alpha,1,"double",OP_READ),
@@ -220,7 +193,7 @@ void op2_gemv_cub_ds(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
 
 void op2_gemv_dr(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
                  const double beta, op_dat y) {
-  op_par_loop_gemv_dr("gemv_dr",mesh->cells,
+  op_par_loop_gemv_np_np("gemv_np_np",mesh->cells,
               op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
               op_arg_gbl(&transpose,1,"bool",OP_READ),
               op_arg_gbl(&alpha,1,"double",OP_READ),
@@ -232,7 +205,7 @@ void op2_gemv_dr(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
 
 void op2_gemv_ds(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
                  const double beta, op_dat y) {
-  op_par_loop_gemv_ds("gemv_ds",mesh->cells,
+  op_par_loop_gemv_np_np("gemv_np_np",mesh->cells,
               op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
               op_arg_gbl(&transpose,1,"bool",OP_READ),
               op_arg_gbl(&alpha,1,"double",OP_READ),
@@ -242,10 +215,34 @@ void op2_gemv_ds(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
               op_arg_dat(y,-1,OP_ID,DG_NP,"double",OP_RW));
 }
 
+void op2_gemv_drw(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
+                 const double beta, op_dat y) {
+  op_par_loop_gemv_np_np("gemv_np_np",mesh->cells,
+              op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
+              op_arg_gbl(&transpose,1,"bool",OP_READ),
+              op_arg_gbl(&alpha,1,"double",OP_READ),
+              op_arg_gbl(&beta,1,"double",OP_READ),
+              op_arg_gbl(Drw_g,DG_ORDER * DG_NP * DG_NP,"double",OP_READ),
+              op_arg_dat(x,-1,OP_ID,DG_NP,"double",OP_READ),
+              op_arg_dat(y,-1,OP_ID,DG_NP,"double",OP_RW));
+}
+
+void op2_gemv_dsw(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
+                 const double beta, op_dat y) {
+  op_par_loop_gemv_np_np("gemv_np_np",mesh->cells,
+              op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
+              op_arg_gbl(&transpose,1,"bool",OP_READ),
+              op_arg_gbl(&alpha,1,"double",OP_READ),
+              op_arg_gbl(&beta,1,"double",OP_READ),
+              op_arg_gbl(Dsw_g,DG_ORDER * DG_NP * DG_NP,"double",OP_READ),
+              op_arg_dat(x,-1,OP_ID,DG_NP,"double",OP_READ),
+              op_arg_dat(y,-1,OP_ID,DG_NP,"double",OP_RW));
+}
+
 void op2_gemv_cub_v(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
                     const double beta, op_dat y) {
   if(transpose) {
-    op_par_loop_gemv_cub_v("gemv_cub_v",mesh->cells,
+    op_par_loop_gemv_cub_np_np("gemv_cub_np_np",mesh->cells,
                 op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
                 op_arg_gbl(&transpose,1,"bool",OP_READ),
                 op_arg_gbl(&alpha,1,"double",OP_READ),
@@ -254,7 +251,7 @@ void op2_gemv_cub_v(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
                 op_arg_dat(x,-1,OP_ID,DG_CUB_NP,"double",OP_READ),
                 op_arg_dat(y,-1,OP_ID,DG_NP,"double",OP_RW));
   } else {
-    op_par_loop_gemv_cub_v("gemv_cub_v",mesh->cells,
+    op_par_loop_gemv_cub_np_np("gemv_cub_np_np",mesh->cells,
                 op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
                 op_arg_gbl(&transpose,1,"bool",OP_READ),
                 op_arg_gbl(&alpha,1,"double",OP_READ),
@@ -267,7 +264,7 @@ void op2_gemv_cub_v(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
 
 void op2_gemv_inv_mass(DGMesh *mesh, bool transpose, const double alpha,
                        op_dat x, const double beta, op_dat y) {
-  op_par_loop_gemv_inv_mass("gemv_inv_mass",mesh->cells,
+  op_par_loop_gemv_np_np("gemv_np_np",mesh->cells,
               op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
               op_arg_gbl(&transpose,1,"bool",OP_READ),
               op_arg_gbl(&alpha,1,"double",OP_READ),
@@ -302,7 +299,7 @@ void op2_gemv_lift(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
 
 void op2_gemv_mass(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
                    const double beta, op_dat y) {
-  op_par_loop_gemv_mass("gemv_mass",mesh->cells,
+  op_par_loop_gemv_np_np("gemv_np_np",mesh->cells,
               op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
               op_arg_gbl(&transpose,1,"bool",OP_READ),
               op_arg_gbl(&alpha,1,"double",OP_READ),
@@ -310,6 +307,64 @@ void op2_gemv_mass(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
               op_arg_gbl(mass_g,DG_ORDER * DG_NP * DG_NP,"double",OP_READ),
               op_arg_dat(x,-1,OP_ID,DG_NP,"double",OP_READ),
               op_arg_dat(y,-1,OP_ID,DG_NP,"double",OP_RW));
+}
+
+void op2_gemv_inv_v(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
+                    const double beta, op_dat y) {
+  op_par_loop_gemv_np_np("gemv_np_np",mesh->cells,
+              op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
+              op_arg_gbl(&transpose,1,"bool",OP_READ),
+              op_arg_gbl(&alpha,1,"double",OP_READ),
+              op_arg_gbl(&beta,1,"double",OP_READ),
+              op_arg_gbl(invV_g,DG_ORDER * DG_NP * DG_NP,"double",OP_READ),
+              op_arg_dat(x,-1,OP_ID,DG_NP,"double",OP_READ),
+              op_arg_dat(y,-1,OP_ID,DG_NP,"double",OP_RW));
+}
+
+void op2_gemv_cub_vdr(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
+                      const double beta, op_dat y) {
+  if(transpose) {
+    op_par_loop_gemv_cub_np_np("gemv_cub_np_np",mesh->cells,
+                op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
+                op_arg_gbl(&transpose,1,"bool",OP_READ),
+                op_arg_gbl(&alpha,1,"double",OP_READ),
+                op_arg_gbl(&beta,1,"double",OP_READ),
+                op_arg_gbl(cubVDr_g,DG_ORDER * DG_CUB_NP * DG_NP,"double",OP_READ),
+                op_arg_dat(x,-1,OP_ID,DG_CUB_NP,"double",OP_READ),
+                op_arg_dat(y,-1,OP_ID,DG_NP,"double",OP_RW));
+  } else {
+    op_par_loop_gemv_cub_np_np("gemv_cub_np_np",mesh->cells,
+                op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
+                op_arg_gbl(&transpose,1,"bool",OP_READ),
+                op_arg_gbl(&alpha,1,"double",OP_READ),
+                op_arg_gbl(&beta,1,"double",OP_READ),
+                op_arg_gbl(cubVDr_g,DG_ORDER * DG_CUB_NP * DG_NP,"double",OP_READ),
+                op_arg_dat(x,-1,OP_ID,DG_NP,"double",OP_READ),
+                op_arg_dat(y,-1,OP_ID,DG_CUB_NP,"double",OP_RW));
+  }
+}
+
+void op2_gemv_cub_vds(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
+                      const double beta, op_dat y) {
+  if(transpose) {
+    op_par_loop_gemv_cub_np_np("gemv_cub_np_np",mesh->cells,
+                op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
+                op_arg_gbl(&transpose,1,"bool",OP_READ),
+                op_arg_gbl(&alpha,1,"double",OP_READ),
+                op_arg_gbl(&beta,1,"double",OP_READ),
+                op_arg_gbl(cubVDs_g,DG_ORDER * DG_CUB_NP * DG_NP,"double",OP_READ),
+                op_arg_dat(x,-1,OP_ID,DG_CUB_NP,"double",OP_READ),
+                op_arg_dat(y,-1,OP_ID,DG_NP,"double",OP_RW));
+  } else {
+    op_par_loop_gemv_cub_np_np("gemv_cub_np_np",mesh->cells,
+                op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
+                op_arg_gbl(&transpose,1,"bool",OP_READ),
+                op_arg_gbl(&alpha,1,"double",OP_READ),
+                op_arg_gbl(&beta,1,"double",OP_READ),
+                op_arg_gbl(cubVDs_g,DG_ORDER * DG_CUB_NP * DG_NP,"double",OP_READ),
+                op_arg_dat(x,-1,OP_ID,DG_NP,"double",OP_READ),
+                op_arg_dat(y,-1,OP_ID,DG_CUB_NP,"double",OP_RW));
+  }
 }
 
 void op2_gemv(DGMesh *mesh, bool transpose, const double alpha,
@@ -331,6 +386,12 @@ void op2_gemv(DGMesh *mesh, bool transpose, const double alpha,
     case DGConstants::DS:
       op2_gemv_ds(mesh, transpose, alpha, x, beta, y);
       break;
+    case DGConstants::DRW:
+      op2_gemv_drw(mesh, transpose, alpha, x, beta, y);
+      break;
+    case DGConstants::DSW:
+      op2_gemv_dsw(mesh, transpose, alpha, x, beta, y);
+      break;
     case DGConstants::CUB_V:
       op2_gemv_cub_v(mesh, transpose, alpha, x, beta, y);
       break;
@@ -342,6 +403,15 @@ void op2_gemv(DGMesh *mesh, bool transpose, const double alpha,
       break;
     case DGConstants::MASS:
       op2_gemv_mass(mesh, transpose, alpha, x, beta, y);
+      break;
+    case DGConstants::INV_V:
+      op2_gemv_inv_v(mesh, transpose, alpha, x, beta, y);
+      break;
+    case DGConstants::CUB_VDR:
+      op2_gemv_cub_vdr(mesh, transpose, alpha, x, beta, y);
+      break;
+    case DGConstants::CUB_VDS:
+      op2_gemv_cub_vds(mesh, transpose, alpha, x, beta, y);
       break;
     default:
       std::cerr << "op2_gemv call not implemented for this matrix ... exiting" << std::endl;

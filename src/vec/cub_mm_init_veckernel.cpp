@@ -13,7 +13,7 @@ inline void cub_mm_init(const int *p, const double *matrix, const double *tmp,
   for(int i = 0; i < dg_np; i++) {
     for(int j = 0; j < dg_np; j++) {
       int mmInd = i + j * dg_np;
-      mm[mmInd]  = 0.0;
+      mm[mmInd] = 0.0;
       for(int k = 0; k < dg_cub_np; k++) {
         int aInd = i * dg_cub_np + k;
         int bInd = j * dg_cub_np + k;
@@ -72,7 +72,7 @@ void op_par_loop_cub_mm_init(char const *name, op_set set,
           &(ptr0)[1 * (n+i)],
           &dat1[i],
           &(ptr2)[DG_CUB_NP * DG_NP * (n+i)],
-          &(ptr3)[DG_CUB_NP * DG_NP * (n+i)]);
+          &(ptr3)[DG_NP * DG_NP * (n+i)]);
       }
       for ( int i=0; i<SIMD_VEC; i++ ){
       }
@@ -86,7 +86,7 @@ void op_par_loop_cub_mm_init(char const *name, op_set set,
         &(ptr0)[1*n],
         (double*)arg1.data,
         &(ptr2)[DG_CUB_NP * DG_NP*n],
-        &(ptr3)[DG_CUB_NP * DG_NP*n]);
+        &(ptr3)[DG_NP * DG_NP*n]);
     }
   }
 

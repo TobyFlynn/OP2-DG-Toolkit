@@ -39,7 +39,7 @@ void op_par_loop_cub_mm_init(char const *name, op_set set,
         &((int*)arg0.data)[1*n],
         (double*)arg1.data,
         &((double*)arg2.data)[DG_CUB_NP * DG_NP*n],
-        &((double*)arg3.data)[DG_CUB_NP * DG_NP*n]);
+        &((double*)arg3.data)[DG_NP * DG_NP*n]);
     }
   }
 

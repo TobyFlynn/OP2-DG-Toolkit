@@ -154,7 +154,7 @@ void DGCubatureData::update_mesh_constants() {
               op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
               op_arg_gbl(cubV_g,DG_ORDER * DG_CUB_NP * DG_NP,"double",OP_READ),
               op_arg_dat(tmp,-1,OP_ID,DG_CUB_NP * DG_NP,"double",OP_READ),
-              op_arg_dat(mm,-1,OP_ID,DG_CUB_NP * DG_NP,"double",OP_WRITE));
+              op_arg_dat(mm,-1,OP_ID,DG_NP * DG_NP,"double",OP_WRITE));
 }
 
 DGGaussData::DGGaussData(DGMesh *m) {

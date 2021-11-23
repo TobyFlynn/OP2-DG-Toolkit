@@ -12,7 +12,7 @@
 __constant__ int FMASK_cuda[DG_ORDER * DG_NPF * 3];
 __constant__ double cubW_g_cuda[DG_ORDER * DG_CUB_NP];
 __constant__ double gaussW_g_cuda[DG_ORDER * DG_GF_NP];
-__constant__ double DG_CONSTANTS_cuda[DG_ORDER * 5];
+__constant__ int DG_CONSTANTS_cuda[DG_ORDER * 5];
 
 //header
 #include "op_lib_cpp.h"
@@ -25,7 +25,7 @@ void set_cuda_const() {
   cutilSafeCall(cudaMemcpyToSymbol(FMASK_cuda, FMASK, DG_ORDER * DG_NPF * 3 * sizeof(int)));
   cutilSafeCall(cudaMemcpyToSymbol(cubW_g_cuda, cubW_g, DG_ORDER * DG_CUB_NP * sizeof(double)));
   cutilSafeCall(cudaMemcpyToSymbol(gaussW_g_cuda, gaussW_g, DG_ORDER * DG_GF_NP * sizeof(double)));
-  cutilSafeCall(cudaMemcpyToSymbol(DG_CONSTANTS_cuda, DG_CONSTANTS, DG_ORDER * 5 * sizeof(double)));
+  cutilSafeCall(cudaMemcpyToSymbol(DG_CONSTANTS_cuda, DG_CONSTANTS, DG_ORDER * 5 * sizeof(int)));
 }
 
 //user kernel files
@@ -43,13 +43,8 @@ void set_cuda_const() {
 #include "cub_div_weak_kernel.cu"
 #include "inv_J_kernel.cu"
 #include "cub_mm_init_kernel.cu"
-#include "gemv_cub_dr_kernel.cu"
-#include "gemv_cub_ds_kernel.cu"
-#include "gemv_cub_v_kernel.cu"
-#include "gemv_dr_kernel.cu"
-#include "gemv_ds_kernel.cu"
 #include "gemv_gauss_interp_kernel.cu"
-#include "gemv_inv_mass_kernel.cu"
 #include "init_order_kernel.cu"
 #include "gemv_lift_kernel.cu"
-#include "gemv_mass_kernel.cu"
+#include "gemv_np_np_kernel.cu"
+#include "gemv_cub_np_np_kernel.cu"

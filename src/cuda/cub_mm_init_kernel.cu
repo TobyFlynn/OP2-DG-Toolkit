@@ -13,7 +13,7 @@ __device__ void cub_mm_init_gpu( const int *p, const double *matrix, const doubl
   for(int i = 0; i < dg_np; i++) {
     for(int j = 0; j < dg_np; j++) {
       int mmInd = i + j * dg_np;
-      mm[mmInd]  = 0.0;
+      mm[mmInd] = 0.0;
       for(int k = 0; k < dg_cub_np; k++) {
         int aInd = i * dg_cub_np + k;
         int bInd = j * dg_cub_np + k;
@@ -40,7 +40,7 @@ __global__ void op_cuda_cub_mm_init(
     cub_mm_init_gpu(arg0+n*1,
                 arg1,
                 arg2+n*DG_CUB_NP * DG_NP,
-                arg3+n*DG_CUB_NP * DG_NP);
+                arg3+n*DG_NP * DG_NP);
   }
 }
 
