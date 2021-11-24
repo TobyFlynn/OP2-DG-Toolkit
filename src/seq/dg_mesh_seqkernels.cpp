@@ -29,6 +29,7 @@ extern double gaussW_g[DG_ORDER * DG_GF_NP];
 #include "cub_grad_weak_seqkernel.cpp"
 #include "cub_div_weak_seqkernel.cpp"
 #include "inv_J_seqkernel.cpp"
+#include "gemv_inv_mass_gauss_interpT_seqkernel.cpp"
 #include "gemv_gauss_interpT_seqkernel.cpp"
 #include "gemv_gauss_interp_seqkernel.cpp"
 #include "gemv_cub_np_npT_seqkernel.cpp"

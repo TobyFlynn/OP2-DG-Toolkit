@@ -38,4 +38,6 @@ extern double gF1Ds_g[DG_ORDER * DG_GF_NP * DG_NP];
 extern double gF2Dr_g[DG_ORDER * DG_GF_NP * DG_NP];
 extern double gF2Ds_g[DG_ORDER * DG_GF_NP * DG_NP];
 
+extern double invMass_gInterpT_g[DG_ORDER * DG_G_NP * DG_NP];
+
 #endif

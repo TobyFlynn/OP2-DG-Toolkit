@@ -15,6 +15,14 @@ extern "C" {
 #endif
 #endif
 
+void op_par_loop_gemv_inv_mass_gauss_interpT(char const *, op_set,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg );
+
 void op_par_loop_gemv_gauss_interpT(char const *, op_set,
   op_arg,
   op_arg,
@@ -86,6 +94,22 @@ void op_par_loop_gemv_lift(char const *, op_set,
 
 
 #include <iostream>
+
+void op2_gemv_inv_mass_gass_interpT(DGMesh *mesh, bool transpose,
+                                    const double alpha, op_dat x,
+                                    const double beta, op_dat y) {
+  if(transpose) {
+    std::cerr << "op2_gemv_inv_mass_gass_interpT not implemented for transpose ... exiting" << std::endl;
+  } else {
+    op_par_loop_gemv_inv_mass_gauss_interpT("gemv_inv_mass_gauss_interpT",mesh->cells,
+                op_arg_dat(mesh->order,-1,OP_ID,1,"int",OP_READ),
+                op_arg_gbl(&alpha,1,"double",OP_READ),
+                op_arg_gbl(&beta,1,"double",OP_READ),
+                op_arg_gbl(invMass_gInterpT_g,DG_ORDER * DG_G_NP * DG_NP,"double",OP_READ),
+                op_arg_dat(x,-1,OP_ID,DG_G_NP,"double",OP_READ),
+                op_arg_dat(y,-1,OP_ID,DG_NP,"double",OP_RW));
+  }
+}
 
 void op2_gemv_gauss_interp(DGMesh *mesh, bool transpose, const double alpha,
                            op_dat x, const double beta, op_dat y) {
@@ -385,6 +409,9 @@ void op2_gemv(DGMesh *mesh, bool transpose, const double alpha,
               DGConstants::Constant_Matrix matrix, op_dat x, const double beta,
               op_dat y) {
   switch(matrix) {
+    case DGConstants::INV_MASS_GAUSS_INTERP_T:
+      op2_gemv_inv_mass_gass_interpT(mesh, transpose, alpha, x, beta, y);
+      break;
     case DGConstants::GAUSS_INTERP:
       op2_gemv_gauss_interp(mesh, transpose, alpha, x, beta, y);
       break;

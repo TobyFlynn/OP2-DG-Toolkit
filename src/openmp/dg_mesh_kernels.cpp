@@ -33,6 +33,7 @@ extern double gaussW_g[DG_ORDER * DG_GF_NP];
 #include "cub_grad_weak_kernel.cpp"
 #include "cub_div_weak_kernel.cpp"
 #include "inv_J_kernel.cpp"
+#include "gemv_inv_mass_gauss_interpT_kernel.cpp"
 #include "gemv_gauss_interpT_kernel.cpp"
 #include "gemv_gauss_interp_kernel.cpp"
 #include "gemv_cub_np_npT_kernel.cpp"

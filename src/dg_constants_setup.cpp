@@ -41,6 +41,8 @@ double gF1Ds_g[DG_ORDER * DG_GF_NP * DG_NP];
 double gF2Dr_g[DG_ORDER * DG_GF_NP * DG_NP];
 double gF2Ds_g[DG_ORDER * DG_GF_NP * DG_NP];
 
+double invMass_gInterpT_g[DG_ORDER * DG_G_NP * DG_NP];
+
 void DGConstants::setup(const int n) {
   // Set order
   N = n;
@@ -87,6 +89,7 @@ void DGConstants::setup(const int n) {
   arma::mat gauss_i2_Ds = gauss_interp2_ * Ds_;
   arma::mat gauss_i3_Dr = gauss_interp3_ * Dr_;
   arma::mat gauss_i3_Ds = gauss_interp3_ * Ds_;
+  arma::mat invMass_gauss_interpT = invMass * gauss_interp_.t();
 
   // Copy armadillo vecs and mats to global memory
 
@@ -137,6 +140,8 @@ void DGConstants::setup(const int n) {
   memcpy(&gF1Ds_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i2_Ds.memptr(), gauss_i2_Ds.n_elem * sizeof(double));
   memcpy(&gF2Dr_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i3_Dr.memptr(), gauss_i3_Dr.n_elem * sizeof(double));
   memcpy(&gF2Ds_g[(N - 1) * DG_GF_NP * DG_NP], gauss_i3_Ds.memptr(), gauss_i3_Ds.n_elem * sizeof(double));
+
+  memcpy(&invMass_gInterpT_g[(N - 1) * DG_G_NP * DG_NP], invMass_gauss_interpT.memptr(), invMass_gauss_interpT.n_elem * sizeof(double));
 }
 
 void DGConstants::cubature(const int nCub) {
