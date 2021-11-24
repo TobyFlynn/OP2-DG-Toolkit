@@ -3,16 +3,18 @@
 //
 
 //user function
-__device__ void gemv_np_np_gpu( const int *p, const double *alpha, const double *beta,
-                       const double *matrix, const double *x, double *y) {
+__device__ void gemv_cub_np_npT_gpu( const int *p, const double *alpha,
+                            const double *beta, const double *matrix,
+                            const double *x, double *y) {
 
-  const int dg_np   = DG_CONSTANTS_cuda[(*p - 1) * 5];
-  const double *mat = &matrix[(*p - 1) * DG_NP * DG_NP];
+  const int dg_np     = DG_CONSTANTS_cuda[(*p - 1) * 5];
+  const int dg_cub_np = DG_CONSTANTS_cuda[(*p - 1) * 5 + 2];
+  const double *mat   = &matrix[(*p - 1) * DG_CUB_NP * DG_NP];
 
   for(int i = 0; i < dg_np; i++) {
     y[i] *= *beta;
-    for(int j = 0; j < dg_np; j++) {
-      int ind = i + j * dg_np;
+    for(int j = 0; j < dg_cub_np; j++) {
+      int ind = i * dg_cub_np + j;
       y[i] += *alpha * mat[ind] * x[j];
     }
   }
@@ -20,7 +22,7 @@ __device__ void gemv_np_np_gpu( const int *p, const double *alpha, const double 
 }
 
 // CUDA kernel function
-__global__ void op_cuda_gemv_np_np(
+__global__ void op_cuda_gemv_cub_np_npT(
   const int *__restrict arg0,
   const double *arg1,
   const double *arg2,
@@ -34,18 +36,18 @@ __global__ void op_cuda_gemv_np_np(
   for ( int n=threadIdx.x+blockIdx.x*blockDim.x; n<set_size; n+=blockDim.x*gridDim.x ){
 
     //user-supplied kernel call
-    gemv_np_np_gpu(arg0+n*1,
-               arg1,
-               arg2,
-               arg3,
-               arg4+n*DG_NP,
-               arg5+n*DG_NP);
+    gemv_cub_np_npT_gpu(arg0+n*1,
+                    arg1,
+                    arg2,
+                    arg3,
+                    arg4+n*DG_CUB_NP,
+                    arg5+n*DG_NP);
   }
 }
 
 
 //host stub function
-void op_par_loop_gemv_np_np(char const *name, op_set set,
+void op_par_loop_gemv_cub_np_npT(char const *name, op_set set,
   op_arg arg0,
   op_arg arg1,
   op_arg arg2,
@@ -68,14 +70,14 @@ void op_par_loop_gemv_np_np(char const *name, op_set set,
 
   // initialise timers
   double cpu_t1, cpu_t2, wall_t1, wall_t2;
-  op_timing_realloc(20);
+  op_timing_realloc(17);
   op_timers_core(&cpu_t1, &wall_t1);
-  OP_kernels[20].name      = name;
-  OP_kernels[20].count    += 1;
+  OP_kernels[17].name      = name;
+  OP_kernels[17].count    += 1;
 
 
   if (OP_diags>2) {
-    printf(" kernel routine w/o indirection:  gemv_np_np");
+    printf(" kernel routine w/o indirection:  gemv_cub_np_npT");
   }
 
   int set_size = op_mpi_halo_exchanges_grouped(set, nargs, args, 2);
@@ -85,7 +87,7 @@ void op_par_loop_gemv_np_np(char const *name, op_set set,
     int consts_bytes = 0;
     consts_bytes += ROUND_UP(1*sizeof(double));
     consts_bytes += ROUND_UP(1*sizeof(double));
-    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(double));
+    consts_bytes += ROUND_UP(DG_ORDER * DG_CUB_NP * DG_NP*sizeof(double));
     reallocConstArrays(consts_bytes);
     consts_bytes = 0;
     arg1.data   = OP_consts_h + consts_bytes;
@@ -102,22 +104,22 @@ void op_par_loop_gemv_np_np(char const *name, op_set set,
     consts_bytes += ROUND_UP(1*sizeof(double));
     arg3.data   = OP_consts_h + consts_bytes;
     arg3.data_d = OP_consts_d + consts_bytes;
-    for ( int d=0; d<DG_ORDER * DG_NP * DG_NP; d++ ){
+    for ( int d=0; d<DG_ORDER * DG_CUB_NP * DG_NP; d++ ){
       ((double *)arg3.data)[d] = arg3h[d];
     }
-    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(double));
+    consts_bytes += ROUND_UP(DG_ORDER * DG_CUB_NP * DG_NP*sizeof(double));
     mvConstArraysToDevice(consts_bytes);
 
     //set CUDA execution parameters
-    #ifdef OP_BLOCK_SIZE_20
-      int nthread = OP_BLOCK_SIZE_20;
+    #ifdef OP_BLOCK_SIZE_17
+      int nthread = OP_BLOCK_SIZE_17;
     #else
       int nthread = OP_block_size;
     #endif
 
     int nblocks = 200;
 
-    op_cuda_gemv_np_np<<<nblocks,nthread>>>(
+    op_cuda_gemv_cub_np_npT<<<nblocks,nthread>>>(
       (int *) arg0.data_d,
       (double *) arg1.data_d,
       (double *) arg2.data_d,
@@ -130,8 +132,8 @@ void op_par_loop_gemv_np_np(char const *name, op_set set,
   cutilSafeCall(cudaDeviceSynchronize());
   //update kernel record
   op_timers_core(&cpu_t2, &wall_t2);
-  OP_kernels[20].time     += wall_t2 - wall_t1;
-  OP_kernels[20].transfer += (float)set->size * arg0.size;
-  OP_kernels[20].transfer += (float)set->size * arg4.size;
-  OP_kernels[20].transfer += (float)set->size * arg5.size * 2.0f;
+  OP_kernels[17].time     += wall_t2 - wall_t1;
+  OP_kernels[17].transfer += (float)set->size * arg0.size;
+  OP_kernels[17].transfer += (float)set->size * arg4.size;
+  OP_kernels[17].transfer += (float)set->size * arg5.size * 2.0f;
 }

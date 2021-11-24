@@ -12,11 +12,10 @@ void op_par_loop_gemv_cub_np_np(char const *name, op_set set,
   op_arg arg2,
   op_arg arg3,
   op_arg arg4,
-  op_arg arg5,
-  op_arg arg6){
+  op_arg arg5){
 
-  int nargs = 7;
-  op_arg args[7];
+  int nargs = 6;
+  op_arg args[6];
 
   args[0] = arg0;
   args[1] = arg1;
@@ -24,11 +23,10 @@ void op_par_loop_gemv_cub_np_np(char const *name, op_set set,
   args[3] = arg3;
   args[4] = arg4;
   args[5] = arg5;
-  args[6] = arg6;
 
   // initialise timers
   double cpu_t1, cpu_t2, wall_t1, wall_t2;
-  op_timing_realloc(25);
+  op_timing_realloc(18);
   op_timers_core(&cpu_t1, &wall_t1);
 
 
@@ -43,12 +41,11 @@ void op_par_loop_gemv_cub_np_np(char const *name, op_set set,
     for ( int n=0; n<set_size; n++ ){
       gemv_cub_np_np(
         &((int*)arg0.data)[1*n],
-        (bool*)arg1.data,
+        (double*)arg1.data,
         (double*)arg2.data,
         (double*)arg3.data,
-        (double*)arg4.data,
-        &((double*)arg5.data)[DG_NP*n],
-        &((double*)arg6.data)[DG_CUB_NP*n]);
+        &((double*)arg4.data)[DG_NP*n],
+        &((double*)arg5.data)[DG_CUB_NP*n]);
     }
   }
 
@@ -57,10 +54,10 @@ void op_par_loop_gemv_cub_np_np(char const *name, op_set set,
 
   // update kernel record
   op_timers_core(&cpu_t2, &wall_t2);
-  OP_kernels[25].name      = name;
-  OP_kernels[25].count    += 1;
-  OP_kernels[25].time     += wall_t2 - wall_t1;
-  OP_kernels[25].transfer += (float)set->size * arg0.size;
-  OP_kernels[25].transfer += (float)set->size * arg5.size;
-  OP_kernels[25].transfer += (float)set->size * arg6.size * 2.0f;
+  OP_kernels[18].name      = name;
+  OP_kernels[18].count    += 1;
+  OP_kernels[18].time     += wall_t2 - wall_t1;
+  OP_kernels[18].transfer += (float)set->size * arg0.size;
+  OP_kernels[18].transfer += (float)set->size * arg4.size;
+  OP_kernels[18].transfer += (float)set->size * arg5.size * 2.0f;
 }
