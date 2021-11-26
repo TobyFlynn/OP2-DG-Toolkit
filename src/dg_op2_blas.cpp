@@ -15,6 +15,7 @@ void op2_gemv_inv_mass_gass_interpT(DGMesh *mesh, bool transpose,
                 op_arg_gbl(&alpha, 1, "double", OP_READ),
                 op_arg_gbl(&beta,  1, "double", OP_READ),
                 op_arg_gbl(invMass_gInterpT_g, DG_ORDER * DG_G_NP * DG_NP, "double", OP_READ),
+                op_arg_dat(mesh->J, -1, OP_ID, DG_NP, "double", OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_G_NP, "double", OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NP, "double", OP_RW));
   }

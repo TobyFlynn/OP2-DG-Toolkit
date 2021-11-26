@@ -5,18 +5,19 @@
 //user function
 __device__ void gemv_inv_mass_gauss_interpT_gpu( const int *p, const double *alpha,
                                         const double *beta, const double *matrix,
-                                        const double *x, double *y) {
+                                        const double *J, const double *x, double *y) {
 
   const int dg_np   = DG_CONSTANTS_cuda[(*p - 1) * 5];
   const int dg_g_np = DG_CONSTANTS_cuda[(*p - 1) * 5 + 3];
   const double *inv_mass_gauss_interp = &matrix[(*p - 1) * DG_G_NP * DG_NP];
 
   for(int i = 0; i < dg_np; i++) {
-    y[i] *= *beta;
+    double tmp = 0.0;
     for(int j = 0; j < dg_g_np; j++) {
       int ind = i + j * dg_np;
-      y[i] += *alpha * inv_mass_gauss_interp[ind] * x[j];
+      tmp += *alpha * inv_mass_gauss_interp[ind] * x[j];
     }
+    y[i] = *beta * y[i] + tmp / J[i];
   }
 
 }
@@ -28,7 +29,8 @@ __global__ void op_cuda_gemv_inv_mass_gauss_interpT(
   const double *arg2,
   const double *arg3,
   const double *__restrict arg4,
-  double *arg5,
+  const double *__restrict arg5,
+  double *arg6,
   int   set_size ) {
 
 
@@ -40,8 +42,9 @@ __global__ void op_cuda_gemv_inv_mass_gauss_interpT(
                                 arg1,
                                 arg2,
                                 arg3,
-                                arg4+n*DG_G_NP,
-                                arg5+n*DG_NP);
+                                arg4+n*DG_NP,
+                                arg5+n*DG_G_NP,
+                                arg6+n*DG_NP);
   }
 }
 
@@ -53,13 +56,14 @@ void op_par_loop_gemv_inv_mass_gauss_interpT(char const *name, op_set set,
   op_arg arg2,
   op_arg arg3,
   op_arg arg4,
-  op_arg arg5){
+  op_arg arg5,
+  op_arg arg6){
 
   double*arg1h = (double *)arg1.data;
   double*arg2h = (double *)arg2.data;
   double*arg3h = (double *)arg3.data;
-  int nargs = 6;
-  op_arg args[6];
+  int nargs = 7;
+  op_arg args[7];
 
   args[0] = arg0;
   args[1] = arg1;
@@ -67,6 +71,7 @@ void op_par_loop_gemv_inv_mass_gauss_interpT(char const *name, op_set set,
   args[3] = arg3;
   args[4] = arg4;
   args[5] = arg5;
+  args[6] = arg6;
 
   // initialise timers
   double cpu_t1, cpu_t2, wall_t1, wall_t2;
@@ -126,6 +131,7 @@ void op_par_loop_gemv_inv_mass_gauss_interpT(char const *name, op_set set,
       (double *) arg3.data_d,
       (double *) arg4.data_d,
       (double *) arg5.data_d,
+      (double *) arg6.data_d,
       set->size );
   }
   op_mpi_set_dirtybit_cuda(nargs, args);
@@ -135,5 +141,6 @@ void op_par_loop_gemv_inv_mass_gauss_interpT(char const *name, op_set set,
   OP_kernels[17].time     += wall_t2 - wall_t1;
   OP_kernels[17].transfer += (float)set->size * arg0.size;
   OP_kernels[17].transfer += (float)set->size * arg4.size;
-  OP_kernels[17].transfer += (float)set->size * arg5.size * 2.0f;
+  OP_kernels[17].transfer += (float)set->size * arg5.size;
+  OP_kernels[17].transfer += (float)set->size * arg6.size * 2.0f;
 }
