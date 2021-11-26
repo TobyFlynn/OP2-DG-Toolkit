@@ -66,6 +66,16 @@ void op_par_loop_init_edges(char const *, op_set,
   op_arg,
   op_arg,
   op_arg );
+
+void op_par_loop_interp_dat_to_new_order(char const *, op_set,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg );
+
+void op_par_loop_copy_new_orders(char const *, op_set,
+  op_arg,
+  op_arg );
 #ifdef OPENACC
 #ifdef __cplusplus
 }
@@ -75,6 +85,7 @@ void op_par_loop_init_edges(char const *, op_set,
 
 #include <string>
 #include <memory>
+#include <iostream>
 
 #include "dg_blas_calls.h"
 #include "dg_compiler_defs.h"
@@ -226,6 +237,11 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   constants[0] = nullptr;
   for(int p = 1; p <= DG_ORDER; p++) {
     constants[p] = new DGConstants(p);
+  }
+  // Now that all constants have been calculated,
+  // calc interpolation matrices between different orders
+  for(int p = 1; p <= DG_ORDER; p++) {
+    constants[p]->calc_interp_mats();
   }
 
   coords_data        = coords_a;
@@ -413,4 +429,27 @@ void DGMesh::update_mesh_constants() {
 
   cubature->update_mesh_constants();
   gauss->update_mesh_constants();
+}
+
+void DGMesh::update_order(op_dat new_orders, std::vector<op_dat> &dats_to_interpolate) {
+  // Interpolate dats first (assumes all these dats are of size DG_NP)
+  for(int i = 0; i < dats_to_interpolate.size(); i++) {
+    if(dats_to_interpolate[i]->dim != DG_NP) {
+      std::cerr << "Interpolating between orders for non DG_NP dim dats is not implemented ...  exiting" << std::endl;
+      exit(-1);
+    }
+    op_par_loop_interp_dat_to_new_order("interp_dat_to_new_order",cells,
+                op_arg_gbl(order_interp_g,DG_ORDER * DG_ORDER * DG_NP * DG_NP,"double",OP_READ),
+                op_arg_dat(order,-1,OP_ID,1,"int",OP_READ),
+                op_arg_dat(new_orders,-1,OP_ID,1,"int",OP_READ),
+                op_arg_dat(dats_to_interpolate[i],-1,OP_ID,DG_NP,"double",OP_RW));
+  }
+
+  // Copy across new orders
+  op_par_loop_copy_new_orders("copy_new_orders",cells,
+              op_arg_dat(new_orders,-1,OP_ID,1,"int",OP_READ),
+              op_arg_dat(order,-1,OP_ID,1,"int",OP_WRITE));
+
+  // Update mesh constants for new orders
+  update_mesh_constants();
 }

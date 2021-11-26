@@ -4,6 +4,7 @@
 #include "op_seq.h"
 
 #include <string>
+#include <vector>
 
 class DGMesh;
 
@@ -50,7 +51,8 @@ public:
          int numCells_a, int numEdges_a, int numBoundaryEdges_a);
   ~DGMesh();
   void init();
-  void update_mesh_constants();
+  void update_order(op_dat new_orders, std::vector<op_dat> &dats_to_interpolate);
+
   // Pointers used when loading data
   double *coords_data;
   int *cells_data;
@@ -73,6 +75,8 @@ public:
   DGCubatureData *cubature;
   DGGaussData *gauss;
 private:
+  void update_mesh_constants();
+
   // Pointers to private memory
   double *nodeX_data, *nodeY_data, *x_data, *y_data;
   double *rx_data, *ry_data, *sx_data, *sy_data, *nx_data, *ny_data;

@@ -21,6 +21,8 @@ extern double gaussW_g[DG_ORDER * DG_GF_NP];
 #include "init_nodes_seqkernel.cpp"
 #include "init_grid_seqkernel.cpp"
 #include "init_edges_seqkernel.cpp"
+#include "interp_dat_to_new_order_seqkernel.cpp"
+#include "copy_new_orders_seqkernel.cpp"
 #include "div_seqkernel.cpp"
 #include "curl_seqkernel.cpp"
 #include "grad_seqkernel.cpp"

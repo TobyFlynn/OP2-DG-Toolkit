@@ -25,13 +25,10 @@ public:
   DGConstants(const int n);
   ~DGConstants();
 
-  void setup(const int n);
-  void cubature(const int nCub);
-  void gauss(const int nGauss);
+  void calc_interp_mats();
+  double* get_ptr(Constant_Matrix mat);
 
   int N, Nfp, Np, cNp, gNp, gNfp;
-
-  double* get_ptr(Constant_Matrix mat);
 
   double *cubDr, *cubDr_d;
   double *cubDs, *cubDs_d;
@@ -66,8 +63,14 @@ public:
   double *s, *s_d;
   double *ones, *ones_d;
 
+  arma::vec r_, s_;
+
 private:
-  arma::vec x_, y_, r_, s_;
+  void setup(const int n);
+  void cubature(const int nCub);
+  void gauss(const int nGauss);
+
+  arma::vec x_, y_;
   arma::uvec fmask1_, fmask2_, fmask3_, fmask_;
   arma::mat V_, invV_, MassMatrix_, Dr_, Ds_, lift_, Drw_, Dsw_;
 
@@ -76,6 +79,7 @@ private:
 
   arma::vec gauss_w_;
   arma::mat gauss_interp_, gauss_interp1_, gauss_interp2_, gauss_interp3_;
+  arma::mat interp_[DG_ORDER];
 };
 
 #endif

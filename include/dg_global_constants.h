@@ -40,4 +40,9 @@ extern double gF2Ds_g[DG_ORDER * DG_GF_NP * DG_NP];
 
 extern double invMass_gInterpT_g[DG_ORDER * DG_G_NP * DG_NP];
 
+// Effectively a 2D array of interp matrices. Size [DG_ORDER][DG_ORDER]
+// To get an interp array:
+// int ind = ((order_from - 1) * DG_ORDER + (order_to - 1)) * DG_NP * DG_NP
+extern double order_interp_g[DG_ORDER * DG_ORDER * DG_NP * DG_NP];
+
 #endif

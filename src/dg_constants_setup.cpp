@@ -43,6 +43,13 @@ double gF2Ds_g[DG_ORDER * DG_GF_NP * DG_NP];
 
 double invMass_gInterpT_g[DG_ORDER * DG_G_NP * DG_NP];
 
+// Effectively a 2D array of interp matrices. Size [DG_ORDER][DG_ORDER]
+// To get an interp array:
+// int ind = ((order_from - 1) * DG_ORDER + (order_to - 1)) * DG_NP * DG_NP
+double order_interp_g[DG_ORDER * DG_ORDER * DG_NP * DG_NP];
+
+extern DGConstants *constants[DG_ORDER + 1];
+
 void DGConstants::setup(const int n) {
   // Set order
   N = n;
@@ -77,6 +84,9 @@ void DGConstants::setup(const int n) {
 
   int intN = ceil(3.0 * N / 2.0);
   cubature(2 * (intN + 1));
+  // gauss(intN + 1);
+  // Use same Gauss points for every order (makes p-adaptivity much more simple)
+  intN = ceil(3.0 * DG_ORDER / 2.0);
   gauss(intN + 1);
 
   arma::vec ones = arma::ones<arma::vec>(r_.n_elem);
@@ -169,4 +179,13 @@ void DGConstants::gauss(const int nGauss) {
   gauss_interp3_ = DGUtils::vandermonde2D(face3r, face3s, N) * invV_;
 
   gauss_interp_ = arma::join_vert(gauss_interp1_, gauss_interp2_, gauss_interp3_);
+}
+
+void DGConstants::calc_interp_mats() {
+  for(int n = 1; n <= DG_ORDER; n++) {
+    if(n != N) {
+      interp_[n - 1] = DGUtils::interpMatrix2D(constants[n]->r_, constants[n]->s_, invV_, N);
+      memcpy(&order_interp_g[((N - 1) * DG_ORDER + (n - 1)) * DG_NP * DG_NP], interp_[n - 1].memptr(), interp_[n - 1].n_elem * sizeof(double));
+    }
+  }
 }
