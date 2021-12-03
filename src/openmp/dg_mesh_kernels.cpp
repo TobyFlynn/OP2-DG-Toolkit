@@ -27,6 +27,7 @@ extern double gaussW_g[DG_ORDER * DG_GF_NP];
 #include "init_edges_kernel.cpp"
 #include "interp_dat_to_new_order_kernel.cpp"
 #include "copy_new_orders_kernel.cpp"
+#include "interp_dat_to_max_order_kernel.cpp"
 #include "div_kernel.cpp"
 #include "curl_kernel.cpp"
 #include "grad_kernel.cpp"

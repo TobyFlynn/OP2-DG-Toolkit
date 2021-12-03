@@ -55,3 +55,4 @@ void set_cuda_const() {
 #include "gemv_cub_np_npT_kernel.cu"
 #include "copy_new_orders_kernel.cu"
 #include "interp_dat_to_new_order_kernel.cu"
+#include "interp_dat_to_max_order_kernel.cu"

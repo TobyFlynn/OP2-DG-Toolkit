@@ -99,7 +99,8 @@ void DGConstants::setup(const int n) {
   arma::mat gauss_i2_Ds = gauss_interp2_ * Ds_;
   arma::mat gauss_i3_Dr = gauss_interp3_ * Dr_;
   arma::mat gauss_i3_Ds = gauss_interp3_ * Ds_;
-  arma::mat invMass_gauss_interpT = invMass * gauss_interp_.t();
+  // arma::mat invMass_gauss_interpT = invMass * gauss_interp_.t();
+  arma::mat invMass_gauss_interpT = V_ * V_.t() * gauss_interp_.t();
 
   // Copy armadillo vecs and mats to global memory
 

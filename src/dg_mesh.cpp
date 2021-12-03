@@ -350,7 +350,8 @@ void DGMesh::update_mesh_constants() {
   gauss->update_mesh_constants();
 }
 
-void DGMesh::update_order(op_dat new_orders, std::vector<op_dat> &dats_to_interpolate) {
+void DGMesh::update_order(op_dat new_orders,
+                          std::vector<op_dat> &dats_to_interpolate) {
   // Interpolate dats first (assumes all these dats are of size DG_NP)
   for(int i = 0; i < dats_to_interpolate.size(); i++) {
     if(dats_to_interpolate[i]->dim != DG_NP) {
@@ -371,4 +372,25 @@ void DGMesh::update_order(op_dat new_orders, std::vector<op_dat> &dats_to_interp
 
   // Update mesh constants for new orders
   update_mesh_constants();
+}
+
+void DGMesh::interp_to_max_order(std::vector<op_dat> &dats_in,
+                                 std::vector<op_dat> &dats_out) {
+  if(dats_in.size() != dats_out.size()) {
+    std::cerr << "Error must specify an output dat for each input when interpolating to max order ...  exiting" << std::endl;
+    exit(-1);
+  }
+
+  // Interpolate each dat to order DG_ORDER
+  for(int i = 0; i < dats_in.size(); i++) {
+    if(dats_in[i]->dim != DG_NP) {
+      std::cerr << "Interpolating between orders for non DG_NP dim dats is not implemented ...  exiting" << std::endl;
+      exit(-1);
+    }
+    op_par_loop(interp_dat_to_max_order, "interp_dat_to_max_order", cells,
+                op_arg_gbl(order_interp_g, DG_ORDER * DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
+                op_arg_dat(order,       -1, OP_ID, 1, "int", OP_READ),
+                op_arg_dat(dats_in[i],  -1, OP_ID, DG_NP, "double", OP_READ),
+                op_arg_dat(dats_out[i], -1, OP_ID, DG_NP, "double", OP_WRITE));
+  }
 }
