@@ -18,8 +18,6 @@ include_directories(${OP2_DIR}/include)
 find_package(OpenBLAS)
 include_directories(${OpenBLAS_INCLUDE_DIRS})
 
-include_directories(${PARMETIS_DIR}/include)
-
 if(NOT ARMA_DIR)
   set(ARMA_DIR "/gpfs/users/tsf79-sxa03/armadillo-10.6.1/build")
 endif()
