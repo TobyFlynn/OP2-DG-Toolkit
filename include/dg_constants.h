@@ -3,10 +3,6 @@
 
 #include "dg_global_constants.h"
 
-#ifdef OP2_DG_CUDA
-#include "cublas_v2.h"
-#endif
-
 #define ARMA_ALLOW_FAKE_GCC
 #include <armadillo>
 
@@ -18,22 +14,21 @@ public:
     DR, DRW, DS, DSW,
 
     GAUSS_W, GAUSS_F0DR, GAUSS_F0DS, GAUSS_F1DR, GAUSS_F1DS,
-    GAUSS_F2DR, GAUSS_F2DS, GAUSS_FINTERP0,  GAUSS_FINTERP1,
-    GAUSS_FINTERP2,  GAUSS_INTERP,
+    GAUSS_F2DR, GAUSS_F2DS, GAUSS_FINTERP0, GAUSS_FINTERP1,
+    GAUSS_FINTERP2, GAUSS_INTERP,
+
+    INV_MASS_GAUSS_INTERP_T,
 
     INV_MASS, LIFT, MASS, INV_V, V, R, S, ONES
   };
 
-  DGConstants();
+  DGConstants(const int n);
   ~DGConstants();
 
-  void setup(const int n);
-  void cubature(const int nCub);
-  void gauss(const int nGauss);
-
-  int N, Nfp, Np;
-
+  void calc_interp_mats();
   double* get_ptr(Constant_Matrix mat);
+
+  int N, Nfp, Np, cNp, gNp, gNfp;
 
   double *cubDr, *cubDr_d;
   double *cubDs, *cubDs_d;
@@ -67,12 +62,15 @@ public:
   double *r, *r_d;
   double *s, *s_d;
   double *ones, *ones_d;
-  #ifdef OP2_DG_CUDA
-  cublasHandle_t handle;
-  #endif
+
+  arma::vec r_, s_;
 
 private:
-  arma::vec x_, y_, r_, s_;
+  void setup(const int n);
+  void cubature(const int nCub);
+  void gauss(const int nGauss);
+
+  arma::vec x_, y_;
   arma::uvec fmask1_, fmask2_, fmask3_, fmask_;
   arma::mat V_, invV_, MassMatrix_, Dr_, Ds_, lift_, Drw_, Dsw_;
 
@@ -81,6 +79,7 @@ private:
 
   arma::vec gauss_w_;
   arma::mat gauss_interp_, gauss_interp1_, gauss_interp2_, gauss_interp3_;
+  arma::mat interp_[DG_ORDER];
 };
 
 #endif

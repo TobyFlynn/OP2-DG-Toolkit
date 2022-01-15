@@ -3,31 +3,35 @@
 //
 
 //user function
-__device__ void init_grid_gpu( double *rx, double *ry, double *sx, double *sy,
-                      double *nx, double *ny, double *J, double *sJ,
+__device__ void init_grid_gpu( const int *p, double *rx, double *ry, double *sx,
+                      double *sy, double *nx, double *ny, double *J, double *sJ,
                       double *fscale) {
 
+  const int *fmask = &FMASK_cuda[(*p - 1) * 3 * DG_NPF];
+  const int dg_np  = DG_CONSTANTS_cuda[(*p - 1) * 5];
+  const int dg_nfp = DG_CONSTANTS_cuda[(*p - 1) * 5 + 1];
 
-  for(int i = 0; i < DG_NPF; i++) {
-    nx[i] = ry[FMASK_cuda[i]];
-    ny[i] = -rx[FMASK_cuda[i]];
+
+  for(int i = 0; i < dg_nfp; i++) {
+    nx[i] = ry[fmask[i]];
+    ny[i] = -rx[fmask[i]];
   }
 
-  for(int i = 0; i < DG_NPF; i++) {
-    nx[DG_NPF + i] = sy[FMASK_cuda[DG_NPF + i]] - ry[FMASK_cuda[DG_NPF + i]];
-    ny[DG_NPF + i] = rx[FMASK_cuda[DG_NPF + i]] - sx[FMASK_cuda[DG_NPF + i]];
+  for(int i = 0; i < dg_nfp; i++) {
+    nx[dg_nfp + i] = sy[fmask[dg_nfp + i]] - ry[fmask[dg_nfp + i]];
+    ny[dg_nfp + i] = rx[fmask[dg_nfp + i]] - sx[fmask[dg_nfp + i]];
   }
 
-  for(int i = 0; i < DG_NPF; i++) {
-    nx[2 * DG_NPF + i] = -sy[FMASK_cuda[2 * DG_NPF + i]];
-    ny[2 * DG_NPF + i] = sx[FMASK_cuda[2 * DG_NPF + i]];
+  for(int i = 0; i < dg_nfp; i++) {
+    nx[2 * dg_nfp + i] = -sy[fmask[2 * dg_nfp + i]];
+    ny[2 * dg_nfp + i] = sx[fmask[2 * dg_nfp + i]];
   }
 
-  for(int i = 0; i < DG_NP; i++) {
+  for(int i = 0; i < dg_np; i++) {
     J[i] = -sx[i] * ry[i] + rx[i] * sy[i];
   }
 
-  for(int i = 0; i < DG_NP; i++) {
+  for(int i = 0; i < dg_np; i++) {
     double rx_n = sy[i] / J[i];
     double sx_n = -ry[i] / J[i];
     double ry_n = -sx[i] / J[i];
@@ -38,18 +42,18 @@ __device__ void init_grid_gpu( double *rx, double *ry, double *sx, double *sy,
     sy[i] = sy_n;
   }
 
-  for(int i = 0; i < 3 * DG_NPF; i++) {
+  for(int i = 0; i < 3 * dg_nfp; i++) {
     sJ[i] = sqrt(nx[i] * nx[i] + ny[i] * ny[i]);
     nx[i] = nx[i] / sJ[i];
     ny[i] = ny[i] / sJ[i];
-    fscale[i] = sJ[i] / J[FMASK_cuda[i]];
+    fscale[i] = sJ[i] / J[fmask[i]];
   }
 
 }
 
 // CUDA kernel function
 __global__ void op_cuda_init_grid(
-  double *arg0,
+  const int *__restrict arg0,
   double *arg1,
   double *arg2,
   double *arg3,
@@ -58,6 +62,7 @@ __global__ void op_cuda_init_grid(
   double *arg6,
   double *arg7,
   double *arg8,
+  double *arg9,
   int   set_size ) {
 
 
@@ -65,15 +70,16 @@ __global__ void op_cuda_init_grid(
   for ( int n=threadIdx.x+blockIdx.x*blockDim.x; n<set_size; n+=blockDim.x*gridDim.x ){
 
     //user-supplied kernel call
-    init_grid_gpu(arg0+n*DG_NP,
+    init_grid_gpu(arg0+n*1,
               arg1+n*DG_NP,
               arg2+n*DG_NP,
               arg3+n*DG_NP,
-              arg4+n*3 * DG_NPF,
+              arg4+n*DG_NP,
               arg5+n*3 * DG_NPF,
-              arg6+n*DG_NP,
-              arg7+n*3 * DG_NPF,
-              arg8+n*3 * DG_NPF);
+              arg6+n*3 * DG_NPF,
+              arg7+n*DG_NP,
+              arg8+n*3 * DG_NPF,
+              arg9+n*3 * DG_NPF);
   }
 }
 
@@ -88,10 +94,11 @@ void op_par_loop_init_grid(char const *name, op_set set,
   op_arg arg5,
   op_arg arg6,
   op_arg arg7,
-  op_arg arg8){
+  op_arg arg8,
+  op_arg arg9){
 
-  int nargs = 9;
-  op_arg args[9];
+  int nargs = 10;
+  op_arg args[10];
 
   args[0] = arg0;
   args[1] = arg1;
@@ -102,13 +109,14 @@ void op_par_loop_init_grid(char const *name, op_set set,
   args[6] = arg6;
   args[7] = arg7;
   args[8] = arg8;
+  args[9] = arg9;
 
   // initialise timers
   double cpu_t1, cpu_t2, wall_t1, wall_t2;
-  op_timing_realloc(3);
+  op_timing_realloc(5);
   op_timers_core(&cpu_t1, &wall_t1);
-  OP_kernels[3].name      = name;
-  OP_kernels[3].count    += 1;
+  OP_kernels[5].name      = name;
+  OP_kernels[5].count    += 1;
 
 
   if (OP_diags>2) {
@@ -119,8 +127,8 @@ void op_par_loop_init_grid(char const *name, op_set set,
   if (set_size > 0) {
 
     //set CUDA execution parameters
-    #ifdef OP_BLOCK_SIZE_3
-      int nthread = OP_BLOCK_SIZE_3;
+    #ifdef OP_BLOCK_SIZE_5
+      int nthread = OP_BLOCK_SIZE_5;
     #else
       int nthread = OP_block_size;
     #endif
@@ -128,7 +136,7 @@ void op_par_loop_init_grid(char const *name, op_set set,
     int nblocks = 200;
 
     op_cuda_init_grid<<<nblocks,nthread>>>(
-      (double *) arg0.data_d,
+      (int *) arg0.data_d,
       (double *) arg1.data_d,
       (double *) arg2.data_d,
       (double *) arg3.data_d,
@@ -137,20 +145,22 @@ void op_par_loop_init_grid(char const *name, op_set set,
       (double *) arg6.data_d,
       (double *) arg7.data_d,
       (double *) arg8.data_d,
+      (double *) arg9.data_d,
       set->size );
   }
   op_mpi_set_dirtybit_cuda(nargs, args);
   cutilSafeCall(cudaDeviceSynchronize());
   //update kernel record
   op_timers_core(&cpu_t2, &wall_t2);
-  OP_kernels[3].time     += wall_t2 - wall_t1;
-  OP_kernels[3].transfer += (float)set->size * arg0.size * 2.0f;
-  OP_kernels[3].transfer += (float)set->size * arg1.size * 2.0f;
-  OP_kernels[3].transfer += (float)set->size * arg2.size * 2.0f;
-  OP_kernels[3].transfer += (float)set->size * arg3.size * 2.0f;
-  OP_kernels[3].transfer += (float)set->size * arg4.size * 2.0f;
-  OP_kernels[3].transfer += (float)set->size * arg5.size * 2.0f;
-  OP_kernels[3].transfer += (float)set->size * arg6.size * 2.0f;
-  OP_kernels[3].transfer += (float)set->size * arg7.size * 2.0f;
-  OP_kernels[3].transfer += (float)set->size * arg8.size * 2.0f;
+  OP_kernels[5].time     += wall_t2 - wall_t1;
+  OP_kernels[5].transfer += (float)set->size * arg0.size;
+  OP_kernels[5].transfer += (float)set->size * arg1.size * 2.0f;
+  OP_kernels[5].transfer += (float)set->size * arg2.size * 2.0f;
+  OP_kernels[5].transfer += (float)set->size * arg3.size * 2.0f;
+  OP_kernels[5].transfer += (float)set->size * arg4.size * 2.0f;
+  OP_kernels[5].transfer += (float)set->size * arg5.size * 2.0f;
+  OP_kernels[5].transfer += (float)set->size * arg6.size * 2.0f;
+  OP_kernels[5].transfer += (float)set->size * arg7.size * 2.0f;
+  OP_kernels[5].transfer += (float)set->size * arg8.size * 2.0f;
+  OP_kernels[5].transfer += (float)set->size * arg9.size * 2.0f;
 }

@@ -2,43 +2,43 @@
 
 #include "dg_global_constants.h"
 
-DGConstants::DGConstants() {
-  setup(DG_ORDER);
+DGConstants::DGConstants(const int n) {
+  setup(n);
 
   // Cubature constants
-  cubDr  = cubDr_g;
-  cubDs  = cubDs_g;
-  cubV   = cubV_g;
-  cubVDr = cubVDr_g;
-  cubVDs = cubVDs_g;
-  cubW   = cubW_g;
+  cubDr  = &cubDr_g[(N - 1) * DG_CUB_NP * DG_NP];
+  cubDs  = &cubDs_g[(N - 1) * DG_CUB_NP * DG_NP];
+  cubV   = &cubV_g[(N - 1) * DG_CUB_NP * DG_NP];
+  cubVDr = &cubVDr_g[(N - 1) * DG_CUB_NP * DG_NP];
+  cubVDs = &cubVDs_g[(N - 1) * DG_CUB_NP * DG_NP];
+  cubW   = &cubW_g[(N - 1) * DG_CUB_NP];
   // Grad constants
-  Dr  = Dr_g;
-  Drw = Drw_g;
-  Ds  = Ds_g;
-  Dsw = Dsw_g;
+  Dr  = &Dr_g[(N - 1) * DG_NP * DG_NP];
+  Drw = &Drw_g[(N - 1) * DG_NP * DG_NP];
+  Ds  = &Ds_g[(N - 1) * DG_NP * DG_NP];
+  Dsw = &Dsw_g[(N - 1) * DG_NP * DG_NP];
   // Gauss constants
-  gaussW     = gaussW_g;
-  gF0Dr      = gF0Dr_g;
-  gF0Ds      = gF0Ds_g;
-  gF1Dr      = gF1Dr_g;
-  gF1Ds      = gF1Ds_g;
-  gF2Dr      = gF2Dr_g;
-  gF2Ds      = gF2Ds_g;
-  gFInterp0  = gFInterp0_g;
-  gFInterp1  = gFInterp1_g;
-  gFInterp2  = gFInterp2_g;
-  gInterp    = gInterp_g;
+  gaussW     = &gaussW_g[(N - 1) * DG_GF_NP];
+  gF0Dr      = &gF0Dr_g[(N - 1) * DG_GF_NP * DG_NP];
+  gF0Ds      = &gF0Ds_g[(N - 1) * DG_GF_NP * DG_NP];
+  gF1Dr      = &gF1Dr_g[(N - 1) * DG_GF_NP * DG_NP];
+  gF1Ds      = &gF1Ds_g[(N - 1) * DG_GF_NP * DG_NP];
+  gF2Dr      = &gF2Dr_g[(N - 1) * DG_GF_NP * DG_NP];
+  gF2Ds      = &gF2Ds_g[(N - 1) * DG_GF_NP * DG_NP];
+  gFInterp0  = &gFInterp0_g[(N - 1) * DG_GF_NP * DG_NP];
+  gFInterp1  = &gFInterp1_g[(N - 1) * DG_GF_NP * DG_NP];
+  gFInterp2  = &gFInterp2_g[(N - 1) * DG_GF_NP * DG_NP];
+  gInterp    = &gInterp_g[(N - 1) * DG_G_NP * DG_NP];
 
   // Other constants
-  invMass = invMass_g;
-  lift    = lift_g;
-  mass    = mass_g;
-  v       = v_g;
-  invV    = invV_g;
-  r       = r_g;
-  s       = s_g;
-  ones    = ones_g;
+  invMass = &invMass_g[(N - 1) * DG_NP * DG_NP];
+  lift    = &lift_g[(N - 1) * DG_NP * 3 * DG_NPF];
+  mass    = &mass_g[(N - 1) * DG_NP * DG_NP];
+  v       = &v_g[(N - 1) * DG_NP * DG_NP];
+  invV    = &invV_g[(N - 1) * DG_NP * DG_NP];
+  r       = &r_g[(N - 1) * DG_NP];
+  s       = &s_g[(N - 1) * DG_NP];
+  ones    = &ones_g[(N - 1) * DG_NP];
 }
 
 DGConstants::~DGConstants() {
