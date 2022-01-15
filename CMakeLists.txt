@@ -4,27 +4,26 @@ project(libop2dgtoolkit CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Load OP2 configuration (Set OP2_DIR to the directory containing OP2Config.cmake)
-find_package(OP2 REQUIRED PATHS
-  ${OP2-APPS_SOURCE_DIR}/../../op2/c/build
-  ${PROJECT_SOURCE_DIR}/../../../op2/c/build
-  ${CMAKE_INSTALL_PREFIX}/lib/op2)
-
 # Import compiler flags for all build types
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OP2_CXX_FLAGS}")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OP2_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fopenmp")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 set(CUDA_NVCC_FLAGS "-arch=sm_70 -Xcompiler -mno-float128")
 
-include_directories(${OP2_INCLUDE_DIRS})
-add_definitions(${OP2_USER_DEFINITIONS})
-
-include(OP2Application)
+# Default OP2 location for me
+if(NOT OP2_DIR)
+  set(OP2_DIR "/home/u1717021/Code/PhD/OP2-Common/op2")
+endif()
+include_directories(${OP2_DIR}/include)
 
 find_package(OpenBLAS)
+include_directories(${OpenBLAS_INCLUDE_DIRS})
+
+include_directories(${PARMETIS_DIR}/include)
 
 if(NOT ARMA_DIR)
   set(ARMA_DIR "/gpfs/users/tsf79-sxa03/armadillo-10.6.1/build")
 endif()
+include_directories(${ARMA_DIR}/include)
 
 enable_language(CUDA)
 find_package(CUDAToolkit)
@@ -35,5 +34,8 @@ set(CMAKE_CUDA_COMPILER ${CUDAToolkit_NVCC_EXECUTABLE})
 file(GLOB HEADERS include/*.h)
 install(FILES ${HEADERS} DESTINATION include)
 
+include_directories(${PROJECT_SOURCE_DIR}/include)
+
 # Invoke subprojects
 add_subdirectory(src)
+add_subdirectory(tests)

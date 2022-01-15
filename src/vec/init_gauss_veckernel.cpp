@@ -3,17 +3,19 @@
 //
 
 //user function
-inline void init_gauss(double *rx, double *sx, double *ry, double *sy,
-                       double *nx, double *ny, double *sJ) {
-
+inline void init_gauss(const int *p, double *rx, double *sx, double *ry,
+                       double *sy, double *nx, double *ny, double *sJ) {
+  // Get constants for this element's order
+  const int dg_gnp  = DG_CONSTANTS[(*p - 1) * 5 + 3];
+  const int dg_gnfp = DG_CONSTANTS[(*p - 1) * 5 + 4];
   // J = -xs.*yr + xr.*ys
   double J[DG_G_NP];
-  for(int i = 0; i < DG_G_NP; i++) {
+  for(int i = 0; i < dg_gnp; i++) {
     J[i] = -sx[i] * ry[i] + rx[i] * sy[i];
   }
 
   // rx = ys./J; sx =-yr./J; ry =-xs./J; sy = xr./J;
-  for(int i = 0; i < DG_G_NP; i++) {
+  for(int i = 0; i < dg_gnp; i++) {
     double rx_n = sy[i] / J[i];
     double sx_n = -ry[i] / J[i];
     double ry_n = -sx[i] / J[i];
@@ -26,23 +28,23 @@ inline void init_gauss(double *rx, double *sx, double *ry, double *sy,
 
   // Calculate normals
   // Face 0
-  for(int i = 0; i < DG_GF_NP; i++) {
+  for(int i = 0; i < dg_gnfp; i++) {
     nx[i] = -sx[i];
     ny[i] = -sy[i];
   }
   // Face 1
-  for(int i = DG_GF_NP; i < 2 * DG_GF_NP; i++) {
+  for(int i = dg_gnfp; i < 2 * dg_gnfp; i++) {
     nx[i] = rx[i] + sx[i];
     ny[i] = ry[i] + sy[i];
   }
   // Face 2
-  for(int i = 2 * DG_GF_NP; i < DG_G_NP; i++) {
+  for(int i = 2 * dg_gnfp; i < dg_gnp; i++) {
     nx[i] = -rx[i];
     ny[i] = -ry[i];
   }
 
   // Normalise
-  for(int i = 0; i < DG_G_NP; i++) {
+  for(int i = 0; i < dg_gnp; i++) {
     sJ[i] = sqrt(nx[i] * nx[i] + ny[i] * ny[i]);
     nx[i] = nx[i] / sJ[i];
     ny[i] = ny[i] / sJ[i];
@@ -58,10 +60,11 @@ void op_par_loop_init_gauss(char const *name, op_set set,
   op_arg arg3,
   op_arg arg4,
   op_arg arg5,
-  op_arg arg6){
+  op_arg arg6,
+  op_arg arg7){
 
-  int nargs = 7;
-  op_arg args[7];
+  int nargs = 8;
+  op_arg args[8];
 
   args[0] = arg0;
   args[1] = arg1;
@@ -70,9 +73,10 @@ void op_par_loop_init_gauss(char const *name, op_set set,
   args[4] = arg4;
   args[5] = arg5;
   args[6] = arg6;
+  args[7] = arg7;
   //create aligned pointers for dats
-  ALIGNED_double       double * __restrict__ ptr0 = (double *) arg0.data;
-  DECLARE_PTR_ALIGNED(ptr0,double_ALIGN);
+  ALIGNED_int const int * __restrict__ ptr0 = (int *) arg0.data;
+  DECLARE_PTR_ALIGNED(ptr0,int_ALIGN);
   ALIGNED_double       double * __restrict__ ptr1 = (double *) arg1.data;
   DECLARE_PTR_ALIGNED(ptr1,double_ALIGN);
   ALIGNED_double       double * __restrict__ ptr2 = (double *) arg2.data;
@@ -85,10 +89,12 @@ void op_par_loop_init_gauss(char const *name, op_set set,
   DECLARE_PTR_ALIGNED(ptr5,double_ALIGN);
   ALIGNED_double       double * __restrict__ ptr6 = (double *) arg6.data;
   DECLARE_PTR_ALIGNED(ptr6,double_ALIGN);
+  ALIGNED_double       double * __restrict__ ptr7 = (double *) arg7.data;
+  DECLARE_PTR_ALIGNED(ptr7,double_ALIGN);
 
   // initialise timers
   double cpu_t1, cpu_t2, wall_t1, wall_t2;
-  op_timing_realloc(1);
+  op_timing_realloc(2);
   op_timers_core(&cpu_t1, &wall_t1);
 
 
@@ -106,13 +112,14 @@ void op_par_loop_init_gauss(char const *name, op_set set,
       #pragma omp simd simdlen(SIMD_VEC)
       for ( int i=0; i<SIMD_VEC; i++ ){
         init_gauss(
-          &(ptr0)[DG_G_NP * (n+i)],
+          &(ptr0)[1 * (n+i)],
           &(ptr1)[DG_G_NP * (n+i)],
           &(ptr2)[DG_G_NP * (n+i)],
           &(ptr3)[DG_G_NP * (n+i)],
           &(ptr4)[DG_G_NP * (n+i)],
           &(ptr5)[DG_G_NP * (n+i)],
-          &(ptr6)[DG_G_NP * (n+i)]);
+          &(ptr6)[DG_G_NP * (n+i)],
+          &(ptr7)[DG_G_NP * (n+i)]);
       }
     }
     //remainder
@@ -121,13 +128,14 @@ void op_par_loop_init_gauss(char const *name, op_set set,
     for ( int n=0; n<exec_size; n++ ){
     #endif
       init_gauss(
-        &(ptr0)[DG_G_NP*n],
+        &(ptr0)[1*n],
         &(ptr1)[DG_G_NP*n],
         &(ptr2)[DG_G_NP*n],
         &(ptr3)[DG_G_NP*n],
         &(ptr4)[DG_G_NP*n],
         &(ptr5)[DG_G_NP*n],
-        &(ptr6)[DG_G_NP*n]);
+        &(ptr6)[DG_G_NP*n],
+        &(ptr7)[DG_G_NP*n]);
     }
   }
 
@@ -136,14 +144,15 @@ void op_par_loop_init_gauss(char const *name, op_set set,
 
   // update kernel record
   op_timers_core(&cpu_t2, &wall_t2);
-  OP_kernels[1].name      = name;
-  OP_kernels[1].count    += 1;
-  OP_kernels[1].time     += wall_t2 - wall_t1;
-  OP_kernels[1].transfer += (float)set->size * arg0.size * 2.0f;
-  OP_kernels[1].transfer += (float)set->size * arg1.size * 2.0f;
-  OP_kernels[1].transfer += (float)set->size * arg2.size * 2.0f;
-  OP_kernels[1].transfer += (float)set->size * arg3.size * 2.0f;
-  OP_kernels[1].transfer += (float)set->size * arg4.size * 2.0f;
-  OP_kernels[1].transfer += (float)set->size * arg5.size * 2.0f;
-  OP_kernels[1].transfer += (float)set->size * arg6.size * 2.0f;
+  OP_kernels[2].name      = name;
+  OP_kernels[2].count    += 1;
+  OP_kernels[2].time     += wall_t2 - wall_t1;
+  OP_kernels[2].transfer += (float)set->size * arg0.size;
+  OP_kernels[2].transfer += (float)set->size * arg1.size * 2.0f;
+  OP_kernels[2].transfer += (float)set->size * arg2.size * 2.0f;
+  OP_kernels[2].transfer += (float)set->size * arg3.size * 2.0f;
+  OP_kernels[2].transfer += (float)set->size * arg4.size * 2.0f;
+  OP_kernels[2].transfer += (float)set->size * arg5.size * 2.0f;
+  OP_kernels[2].transfer += (float)set->size * arg6.size * 2.0f;
+  OP_kernels[2].transfer += (float)set->size * arg7.size * 2.0f;
 }

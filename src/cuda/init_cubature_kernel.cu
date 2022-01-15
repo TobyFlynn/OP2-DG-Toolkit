@@ -3,14 +3,20 @@
 //
 
 //user function
-__device__ void init_cubature_gpu( double *rx, double *sx, double *ry, double *sy,
-                          double *J, double *temp) {
+__device__ void init_cubature_gpu( const int *p, const double *matrix, double *rx,
+                          double *sx, double *ry, double *sy, double *J,
+                          double *temp) {
 
-  for(int i = 0; i < DG_CUB_NP; i++) {
+  const int dg_np      = DG_CONSTANTS_cuda[(*p - 1) * 5];
+  const int dg_cub_np  = DG_CONSTANTS_cuda[(*p - 1) * 5 + 2];
+  const double *cubW = &cubW_g_cuda[(*p - 1) * DG_CUB_NP];
+  const double *cubV = &matrix[(*p - 1) * DG_CUB_NP * DG_NP];
+
+  for(int i = 0; i < dg_cub_np; i++) {
     J[i] = -sx[i] * ry[i] + rx[i] * sy[i];
   }
 
-  for(int i = 0; i < DG_CUB_NP; i++) {
+  for(int i = 0; i < dg_cub_np; i++) {
     double rx_n = sy[i] / J[i];
     double sx_n = -ry[i] / J[i];
     double ry_n = -sx[i] / J[i];
@@ -21,10 +27,10 @@ __device__ void init_cubature_gpu( double *rx, double *sx, double *ry, double *s
     sy[i] = sy_n;
   }
 
-  for(int m = 0; m < DG_CUB_NP; m++) {
-    for(int n = 0; n < DG_NP; n++) {
-      int ind = m * DG_NP + n;
-      temp[ind] = J[m] * cubW_g_cuda[m] * cubV_g_cuda[ind];
+  for(int j = 0; j < dg_np; j++) {
+    for(int i = 0; i < dg_cub_np; i++) {
+      int ind = j * dg_cub_np + i;
+      temp[ind] = J[i] * cubW[i] * cubV[ind];
     }
   }
 
@@ -32,12 +38,14 @@ __device__ void init_cubature_gpu( double *rx, double *sx, double *ry, double *s
 
 // CUDA kernel function
 __global__ void op_cuda_init_cubature(
-  double *arg0,
-  double *arg1,
+  const int *__restrict arg0,
+  const double *arg1,
   double *arg2,
   double *arg3,
   double *arg4,
   double *arg5,
+  double *arg6,
+  double *arg7,
   int   set_size ) {
 
 
@@ -45,12 +53,14 @@ __global__ void op_cuda_init_cubature(
   for ( int n=threadIdx.x+blockIdx.x*blockDim.x; n<set_size; n+=blockDim.x*gridDim.x ){
 
     //user-supplied kernel call
-    init_cubature_gpu(arg0+n*DG_CUB_NP,
-                  arg1+n*DG_CUB_NP,
+    init_cubature_gpu(arg0+n*1,
+                  arg1,
                   arg2+n*DG_CUB_NP,
                   arg3+n*DG_CUB_NP,
                   arg4+n*DG_CUB_NP,
-                  arg5+n*DG_CUB_NP * DG_NP);
+                  arg5+n*DG_CUB_NP,
+                  arg6+n*DG_CUB_NP,
+                  arg7+n*DG_CUB_NP * DG_NP);
   }
 }
 
@@ -62,10 +72,13 @@ void op_par_loop_init_cubature(char const *name, op_set set,
   op_arg arg2,
   op_arg arg3,
   op_arg arg4,
-  op_arg arg5){
+  op_arg arg5,
+  op_arg arg6,
+  op_arg arg7){
 
-  int nargs = 6;
-  op_arg args[6];
+  double*arg1h = (double *)arg1.data;
+  int nargs = 8;
+  op_arg args[8];
 
   args[0] = arg0;
   args[1] = arg1;
@@ -73,6 +86,8 @@ void op_par_loop_init_cubature(char const *name, op_set set,
   args[3] = arg3;
   args[4] = arg4;
   args[5] = arg5;
+  args[6] = arg6;
+  args[7] = arg7;
 
   // initialise timers
   double cpu_t1, cpu_t2, wall_t1, wall_t2;
@@ -89,6 +104,19 @@ void op_par_loop_init_cubature(char const *name, op_set set,
   int set_size = op_mpi_halo_exchanges_grouped(set, nargs, args, 2);
   if (set_size > 0) {
 
+    //transfer constants to GPU
+    int consts_bytes = 0;
+    consts_bytes += ROUND_UP(DG_ORDER * DG_CUB_NP * DG_NP*sizeof(double));
+    reallocConstArrays(consts_bytes);
+    consts_bytes = 0;
+    arg1.data   = OP_consts_h + consts_bytes;
+    arg1.data_d = OP_consts_d + consts_bytes;
+    for ( int d=0; d<DG_ORDER * DG_CUB_NP * DG_NP; d++ ){
+      ((double *)arg1.data)[d] = arg1h[d];
+    }
+    consts_bytes += ROUND_UP(DG_ORDER * DG_CUB_NP * DG_NP*sizeof(double));
+    mvConstArraysToDevice(consts_bytes);
+
     //set CUDA execution parameters
     #ifdef OP_BLOCK_SIZE_0
       int nthread = OP_BLOCK_SIZE_0;
@@ -99,12 +127,14 @@ void op_par_loop_init_cubature(char const *name, op_set set,
     int nblocks = 200;
 
     op_cuda_init_cubature<<<nblocks,nthread>>>(
-      (double *) arg0.data_d,
+      (int *) arg0.data_d,
       (double *) arg1.data_d,
       (double *) arg2.data_d,
       (double *) arg3.data_d,
       (double *) arg4.data_d,
       (double *) arg5.data_d,
+      (double *) arg6.data_d,
+      (double *) arg7.data_d,
       set->size );
   }
   op_mpi_set_dirtybit_cuda(nargs, args);
@@ -112,10 +142,11 @@ void op_par_loop_init_cubature(char const *name, op_set set,
   //update kernel record
   op_timers_core(&cpu_t2, &wall_t2);
   OP_kernels[0].time     += wall_t2 - wall_t1;
-  OP_kernels[0].transfer += (float)set->size * arg0.size * 2.0f;
-  OP_kernels[0].transfer += (float)set->size * arg1.size * 2.0f;
+  OP_kernels[0].transfer += (float)set->size * arg0.size;
   OP_kernels[0].transfer += (float)set->size * arg2.size * 2.0f;
   OP_kernels[0].transfer += (float)set->size * arg3.size * 2.0f;
   OP_kernels[0].transfer += (float)set->size * arg4.size * 2.0f;
   OP_kernels[0].transfer += (float)set->size * arg5.size * 2.0f;
+  OP_kernels[0].transfer += (float)set->size * arg6.size * 2.0f;
+  OP_kernels[0].transfer += (float)set->size * arg7.size * 2.0f;
 }
