@@ -4,8 +4,6 @@ project(libop2dgtoolkit CXX)
 # Import compiler flags for all build types
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=sm_75")
-#set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=sm_75 -rdc=true")
 
 # Default OP2 location for me
 if(NOT OP2_DIR)
@@ -35,6 +33,7 @@ enable_language(CUDA)
 find_package(CUDAToolkit)
 include_directories(${CUDAToolkit_INCLUDE_DIRS})
 set(CMAKE_CUDA_COMPILER ${CUDAToolkit_NVCC_EXECUTABLE})
+set(CMAKE_CUDA_ARCHITECTURES 75)
 
 # Install headers
 file(GLOB HEADERS include/*.h)

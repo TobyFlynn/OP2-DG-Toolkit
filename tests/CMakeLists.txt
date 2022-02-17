@@ -2,5 +2,4 @@
 set(TEST_SRC dg_utils_tests.cpp dg_utils/misc.cpp dg_utils/polynomial.cpp dg_utils/vandermonde.cpp dg_utils/nodes.cpp dg_utils/matrices.cpp)
 
 add_executable(dg_utils_tests ${TEST_SRC})
-target_link_libraries(dg_utils_tests op2dgtoolkit_openmp -L${OP2_DIR}/lib -lop2_openmp -L${ARMA_DIR}/lib -larmadillo -L${OPENBLAS_DIR}/lib -lopenblas)
-target_compile_definitions(dg_utils_tests PRIVATE DG_ORDER=3)
+target_link_libraries(dg_utils_tests dgtoolkit -L${ARMA_DIR}/lib -larmadillo -L${OPENBLAS_DIR}/lib -lopenblas)
