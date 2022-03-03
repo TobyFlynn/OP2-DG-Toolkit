@@ -3,35 +3,37 @@
 //
 
 //user function
-__device__ void interp_dat_to_max_order_gpu( const double *mats, const int *order,
-                                    const double *in, double *out) {
+__device__ void interp_dat_to_new_order_int_gpu( const double *mats, const int *old_order,
+                                        const int *new_order, double *dat) {
 
-  const int dg_np_old = DG_CONSTANTS_cuda[(*order - 1) * 5];
-  const int dg_np_new = DG_CONSTANTS_cuda[(DG_ORDER - 1) * 5];
-  const double *mat = &mats[((*order - 1) * DG_ORDER + (DG_ORDER - 1)) * DG_NP * DG_NP];
-
-  if(*order == DG_ORDER) {
-    for(int i = 0; i < dg_np_new; i++) {
-      out[i] = in[i];
-    }
+  if(*old_order == *new_order)
     return;
+
+  const int dg_np_old = DG_CONSTANTS_cuda[(*old_order - 1) * 5];
+  const int dg_np_new = DG_CONSTANTS_cuda[(*new_order - 1) * 5];
+  const double *mat = &mats[((*old_order - 1) * DG_ORDER + (*new_order - 1)) * DG_NP * DG_NP];
+
+  double res[DG_NP];
+
+  for(int i = 0; i < dg_np_new; i++) {
+    res[i] = 0.0;
+    for(int j = 0; j < dg_np_old; j++) {
+      int ind = i + j * dg_np_new;
+      res[i] += mat[ind] * dat[j];
+    }
   }
 
   for(int i = 0; i < dg_np_new; i++) {
-    out[i] = 0.0;
-    for(int j = 0; j < dg_np_old; j++) {
-      int ind = i + j * dg_np_new;
-      out[i] += mat[ind] * in[j];
-    }
+    dat[i] = res[i];
   }
 
 }
 
 // CUDA kernel function
-__global__ void op_cuda_interp_dat_to_max_order(
+__global__ void op_cuda_interp_dat_to_new_order_int(
   const double *arg0,
   const int *__restrict arg1,
-  const double *__restrict arg2,
+  const int *arg2,
   double *arg3,
   int   set_size ) {
 
@@ -40,22 +42,23 @@ __global__ void op_cuda_interp_dat_to_max_order(
   for ( int n=threadIdx.x+blockIdx.x*blockDim.x; n<set_size; n+=blockDim.x*gridDim.x ){
 
     //user-supplied kernel call
-    interp_dat_to_max_order_gpu(arg0,
-                            arg1+n*1,
-                            arg2+n*DG_NP,
-                            arg3+n*DG_NP);
+    interp_dat_to_new_order_int_gpu(arg0,
+                                arg1+n*1,
+                                arg2,
+                                arg3+n*DG_NP);
   }
 }
 
 
 //host stub function
-void op_par_loop_interp_dat_to_max_order(char const *name, op_set set,
+void op_par_loop_interp_dat_to_new_order_int(char const *name, op_set set,
   op_arg arg0,
   op_arg arg1,
   op_arg arg2,
   op_arg arg3){
 
   double*arg0h = (double *)arg0.data;
+  int*arg2h = (int *)arg2.data;
   int nargs = 4;
   op_arg args[4];
 
@@ -66,14 +69,14 @@ void op_par_loop_interp_dat_to_max_order(char const *name, op_set set,
 
   // initialise timers
   double cpu_t1, cpu_t2, wall_t1, wall_t2;
-  op_timing_realloc(11);
+  op_timing_realloc(9);
   op_timers_core(&cpu_t1, &wall_t1);
-  OP_kernels[11].name      = name;
-  OP_kernels[11].count    += 1;
+  OP_kernels[9].name      = name;
+  OP_kernels[9].count    += 1;
 
 
   if (OP_diags>2) {
-    printf(" kernel routine w/o indirection:  interp_dat_to_max_order");
+    printf(" kernel routine w/o indirection:  interp_dat_to_new_order_int");
   }
 
   int set_size = op_mpi_halo_exchanges_grouped(set, nargs, args, 2);
@@ -82,6 +85,7 @@ void op_par_loop_interp_dat_to_max_order(char const *name, op_set set,
     //transfer constants to GPU
     int consts_bytes = 0;
     consts_bytes += ROUND_UP(DG_ORDER * DG_ORDER * DG_NP * DG_NP*sizeof(double));
+    consts_bytes += ROUND_UP(1*sizeof(int));
     reallocConstArrays(consts_bytes);
     consts_bytes = 0;
     arg0.data   = OP_consts_h + consts_bytes;
@@ -90,21 +94,27 @@ void op_par_loop_interp_dat_to_max_order(char const *name, op_set set,
       ((double *)arg0.data)[d] = arg0h[d];
     }
     consts_bytes += ROUND_UP(DG_ORDER * DG_ORDER * DG_NP * DG_NP*sizeof(double));
+    arg2.data   = OP_consts_h + consts_bytes;
+    arg2.data_d = OP_consts_d + consts_bytes;
+    for ( int d=0; d<1; d++ ){
+      ((int *)arg2.data)[d] = arg2h[d];
+    }
+    consts_bytes += ROUND_UP(1*sizeof(int));
     mvConstArraysToDevice(consts_bytes);
 
     //set CUDA execution parameters
-    #ifdef OP_BLOCK_SIZE_11
-      int nthread = OP_BLOCK_SIZE_11;
+    #ifdef OP_BLOCK_SIZE_9
+      int nthread = OP_BLOCK_SIZE_9;
     #else
       int nthread = OP_block_size;
     #endif
 
     int nblocks = 200;
 
-    op_cuda_interp_dat_to_max_order<<<nblocks,nthread>>>(
+    op_cuda_interp_dat_to_new_order_int<<<nblocks,nthread>>>(
       (double *) arg0.data_d,
       (int *) arg1.data_d,
-      (double *) arg2.data_d,
+      (int *) arg2.data_d,
       (double *) arg3.data_d,
       set->size );
   }
@@ -112,8 +122,7 @@ void op_par_loop_interp_dat_to_max_order(char const *name, op_set set,
   cutilSafeCall(cudaDeviceSynchronize());
   //update kernel record
   op_timers_core(&cpu_t2, &wall_t2);
-  OP_kernels[11].time     += wall_t2 - wall_t1;
-  OP_kernels[11].transfer += (float)set->size * arg1.size;
-  OP_kernels[11].transfer += (float)set->size * arg2.size;
-  OP_kernels[11].transfer += (float)set->size * arg3.size * 2.0f;
+  OP_kernels[9].time     += wall_t2 - wall_t1;
+  OP_kernels[9].transfer += (float)set->size * arg1.size;
+  OP_kernels[9].transfer += (float)set->size * arg3.size * 2.0f;
 }

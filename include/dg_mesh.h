@@ -52,6 +52,7 @@ public:
   ~DGMesh();
   void init();
   void update_order(op_dat new_orders, std::vector<op_dat> &dats_to_interpolate);
+  void update_order(int new_order, std::vector<op_dat> &dats_to_interpolate);
   void interp_to_max_order(std::vector<op_dat> &dats_in, std::vector<op_dat> &dats_out);
 
   // Pointers used when loading data
