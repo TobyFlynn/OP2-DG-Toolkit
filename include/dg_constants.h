@@ -64,6 +64,7 @@ public:
   double *ones, *ones_d;
 
   arma::vec r_, s_;
+  arma::mat invV_, MassMatrix_, V_;
 
 private:
   void setup(const int n);
@@ -72,7 +73,7 @@ private:
 
   arma::vec x_, y_;
   arma::uvec fmask1_, fmask2_, fmask3_, fmask_;
-  arma::mat V_, invV_, MassMatrix_, Dr_, Ds_, lift_, Drw_, Dsw_;
+  arma::mat Dr_, Ds_, lift_, Drw_, Dsw_;
 
   arma::vec cub_w_;
   arma::mat cub_V_, cub_Dr_, cub_Ds_;
