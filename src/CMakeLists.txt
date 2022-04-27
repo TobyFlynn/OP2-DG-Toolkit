@@ -3,8 +3,8 @@ set(CUBLAS_SRC cuBLAS_op/init_grid_op.cu cuBLAS_op/init_gauss_op.cu cuBLAS_op/in
 
 set(TOOLKIT_SRC utils/misc.cpp utils/nodes.cpp utils/polynomial.cpp utils/vandermonde.cpp utils/matrices.cpp)
 set(COMMON_SRC dg_mesh_op.cpp dg_operators_op.cpp dg_op2_blas_op.cpp dg_constants_setup.cpp)
-set(CPU_SRC dg_constants.cpp)
-set(GPU_SRC dg_constants.cu)
+set(CPU_SRC dg_constants.cpp dg_mesh_cpu.cpp)
+set(GPU_SRC dg_constants.cu dg_mesh_gpu.cu)
 
 add_library(dgtoolkit SHARED ${TOOLKIT_SRC})
 target_link_libraries(dgtoolkit -L${ARMA_DIR}/lib -larmadillo -L${OPENBLAS_DIR}/lib -lopenblas)

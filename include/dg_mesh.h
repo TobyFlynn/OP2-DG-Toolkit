@@ -55,6 +55,8 @@ public:
   void update_order(int new_order, std::vector<op_dat> &dats_to_interpolate);
   void interp_to_max_order(std::vector<op_dat> &dats_in, std::vector<op_dat> &dats_out);
 
+  int get_local_vec_unknowns();
+
   // Pointers used when loading data
   double *coords_data;
   int *cells_data;
