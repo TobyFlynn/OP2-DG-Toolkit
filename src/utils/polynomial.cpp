@@ -119,6 +119,18 @@ arma::vec DGUtils::gradJacobiP(const arma::vec &x, const double alpha,
   }
 }
 
+arma::vec DGUtils::grad2JacobiP(const arma::vec &x, const double alpha,
+                               const double beta, const int N) {
+  if(N == 0 || N == 1) {
+    return arma::vec(x.n_elem, arma::fill::zeros);
+  } else {
+    // double fact = sqrt(N * (N + alpha + beta + 1.0) * (N - 1) * (N - 1 + alpha + beta + 3.0));
+    // return fact * jacobiP(x, alpha + 2.0, beta + 2.0, N - 2);
+    double fact = sqrt(N * (N + alpha + beta + 1.0));
+    return fact * gradJacobiP(x, alpha + 1.0, beta + 1.0, N - 1);
+  }
+}
+
 // Calculate 2D orthonomal poly on simplex of order i,j
 arma::vec DGUtils::simplex2DP(const arma::vec &a, const arma::vec &b,
                               const int i, const int j) {
@@ -142,26 +154,99 @@ void DGUtils::gradSimplex2DP(const arma::vec &a, const arma::vec &b,
   // r derivative
   dr = dfa % gb;
   if(i > 0) {
-    dr = dr % arma::pow(0.5 * (1.0 - b), i - 1);
+    dr = 2.0 * dr % arma::pow(1.0 - b, i - 1);
   }
 
   // s derivative
-  ds = dfa % (gb % (0.5 * (1.0 + a)));
+  ds = dfa % (gb % (1.0 + a));
   if(i > 0) {
-    ds = ds % arma::pow(0.5 * (1.0 - b), i - 1);
+    ds = ds % arma::pow(1.0 - b, i - 1);
   }
 
-  arma::vec tmp = dgb % arma::pow(0.5 * (1.0 - b), i);
+  arma::vec tmp = dgb % arma::pow(1.0 - b, i);
   if(i > 0) {
-    tmp = tmp - 0.5 * i * gb % arma::pow(0.5 * (1.0 - b), i - 1);
+    tmp = tmp - i * gb % arma::pow(1.0 - b, i - 1);
   }
   ds = ds + fa % tmp;
 
   // Normalise
-  dr = pow(2.0, i + 0.5) * dr;
-  ds = pow(2.0, i + 0.5) * ds;
+  dr = pow(2.0, 0.5) * dr;
+  ds = pow(2.0, 0.5) * ds;
 }
 
+// Calculate simplexes for Hessian
+void DGUtils::hessianSimplex2DP(const arma::vec &a, const arma::vec &b,
+                                const int i, const int j, arma::vec &dr2,
+                                arma::vec &drs, arma::vec &ds2) {
+  arma::vec fa   = jacobiP(a, 0.0, 0.0, i);
+  arma::vec gb   = jacobiP(b, 2.0 * i + 1.0, 0.0, j);
+  arma::vec dfa  = gradJacobiP(a, 0.0, 0.0, i);
+  arma::vec dgb  = gradJacobiP(b, 2.0 * i + 1.0, 0.0, j);
+  arma::vec dfa2 = grad2JacobiP(a, 0.0, 0.0, i);
+  arma::vec dgb2 = grad2JacobiP(b, 2.0 * i + 1.0, 0.0, j);
+
+  // dr2
+  dr2 = dfa2 % gb;
+  if(i > 1) {
+    dr2 = 4.0 * dr2 % arma::pow(1.0 - b, i - 2);
+  }
+
+  // dsr
+  // dsr = dfa % gb;
+  // if(i > 1) {
+  //   dsr = 2.0 * dsr % arma::pow(1.0 - b, i - 2);
+  // }
+  //
+  // arma::vec tmp = arma::vec(a.n_elem, arma::fill::zeros);
+  // if(i > 0) {
+  //   tmp = dgb % arma::pow(1.0 - b, i - 1);
+  // }
+  // if(i > 1) {
+  //   tmp = tmp - i * gb % arma::pow(1.0 - b, i - 2);
+  // }
+  // tmp = tmp % dfa * 2.0;
+  // dsr = dsr + tmp;
+
+  drs = 2.0 * (1.0 + a) % dfa2 % gb;
+  if(i > 1) {
+    drs = drs % arma::pow(1.0 - b, i - 2);
+  }
+  arma::vec tmp = dfa % gb * 2.0;
+  if(i > 1) {
+    tmp = tmp % arma::pow(1.0 - b, i - 2);
+  }
+  drs = drs + tmp;
+  tmp = dgb;
+  if(i > 0) {
+    tmp = tmp % arma::pow(1.0 - b, i - 1);
+    if(i > 1) {
+      tmp = tmp - i * gb % arma::pow(1.0 - b, i - 2);
+    } else {
+      tmp = tmp - i * gb;
+    }
+  }
+  tmp = tmp % dfa * 2.0;
+  drs = drs + tmp;
+
+  // ds2
+  ds2 = dfa2 % gb % arma::pow(1.0 + a, 2);
+  if(i > 1) {
+    ds2 = ds2 % arma::pow(1.0 - b, i - 2);
+  }
+
+  arma::vec tmp2 = dgb2 % arma::pow(1.0 - b, i);
+  if(i > 0) {
+    tmp2 = tmp2 - 2.0 * i * dgb % arma::pow(1.0 - b, i - 1);
+  }
+  if(i > 1) {
+    tmp2 = tmp2 + i * (i - 1) * gb % arma::pow(1.0 - b, i - 2);
+  }
+  ds2 = ds2 + fa % tmp2;
+
+  dr2 = pow(2.0, 0.5) * dr2;
+  drs = pow(2.0, 0.5) * drs;
+  ds2 = pow(2.0, 0.5) * ds2;
+}
 // Get cubature rules
 void DGUtils::cubature2D(const int cOrder, arma::vec &r, arma::vec &s,
                          arma::vec &w) {

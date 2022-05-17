@@ -25,12 +25,19 @@ namespace DGUtils {
   // Calculate derivative of Jacobi polynomial of order N at points x
   arma::vec gradJacobiP(const arma::vec &x, const double alpha,
                         const double beta, const int N);
+  // Calculate second derivative of Jacobi polynomial of order N at points x
+  arma::vec grad2JacobiP(const arma::vec &x, const double alpha,
+                         const double beta, const int N);
   // Calculate 2D orthonomal poly on simplex of order i,j
   arma::vec simplex2DP(const arma::vec &a, const arma::vec &b, const int i,
                        const int j);
   // Calculate derivatives of modal basis on simplex
   void gradSimplex2DP(const arma::vec &a, const arma::vec &b, const int i,
                       const int j, arma::vec &dr, arma::vec &ds);
+  // Calculate simplexes for Hessian
+  void hessianSimplex2DP(const arma::vec &a, const arma::vec &b, const int i,
+                         const int j, arma::vec &dr2, arma::vec &drs,
+                         arma::vec &ds2);
   // Get cubature rules
   void cubature2D(const int cOrder, arma::vec &r, arma::vec &s, arma::vec &w);
 
