@@ -27,6 +27,7 @@ enable_language(CUDA)
 find_package(CUDAToolkit)
 include_directories(${CUDAToolkit_INCLUDE_DIRS})
 set(CMAKE_CUDA_COMPILER ${CUDAToolkit_NVCC_EXECUTABLE})
+set(CMAKE_CUDA_ARCHITECTURES 75)
 
 # Install headers
 file(GLOB HEADERS include/*.h)

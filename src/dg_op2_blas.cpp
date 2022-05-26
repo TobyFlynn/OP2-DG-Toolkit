@@ -252,6 +252,27 @@ void op2_gemv_mass(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
   }
 }
 
+void op2_gemv_v(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
+                    const double beta, op_dat y) {
+  if(transpose) {
+    op_par_loop(gemv_np_npT, "gemv_np_npT", mesh->cells,
+                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_gbl(&alpha, 1, "double", OP_READ),
+                op_arg_gbl(&beta,  1, "double", OP_READ),
+                op_arg_gbl(v_g, DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
+                op_arg_dat(x, -1, OP_ID, DG_NP, "double", OP_READ),
+                op_arg_dat(y, -1, OP_ID, DG_NP, "double", OP_RW));
+  } else {
+    op_par_loop(gemv_np_np, "gemv_np_np", mesh->cells,
+                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_gbl(&alpha, 1, "double", OP_READ),
+                op_arg_gbl(&beta,  1, "double", OP_READ),
+                op_arg_gbl(v_g, DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
+                op_arg_dat(x, -1, OP_ID, DG_NP, "double", OP_READ),
+                op_arg_dat(y, -1, OP_ID, DG_NP, "double", OP_RW));
+  }
+}
+
 void op2_gemv_inv_v(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
                     const double beta, op_dat y) {
   if(transpose) {
@@ -354,6 +375,9 @@ void op2_gemv(DGMesh *mesh, bool transpose, const double alpha,
       break;
     case DGConstants::MASS:
       op2_gemv_mass(mesh, transpose, alpha, x, beta, y);
+      break;
+    case DGConstants::V:
+      op2_gemv_v(mesh, transpose, alpha, x, beta, y);
       break;
     case DGConstants::INV_V:
       op2_gemv_inv_v(mesh, transpose, alpha, x, beta, y);

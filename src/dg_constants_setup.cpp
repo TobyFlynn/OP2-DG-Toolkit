@@ -185,7 +185,16 @@ void DGConstants::gauss(const int nGauss) {
 void DGConstants::calc_interp_mats() {
   for(int n = 1; n <= DG_ORDER; n++) {
     if(n != N) {
-      interp_[n - 1] = DGUtils::interpMatrix2D(constants[n]->r_, constants[n]->s_, invV_, N);
+      if(n > N) {
+        interp_[n - 1] = DGUtils::interpMatrix2D(constants[n]->r_, constants[n]->s_, invV_, N);
+      } else {
+        interp_[n - 1] = DGUtils::interpMatrix2D(r_, s_, constants[n]->invV_, constants[n]->N).t();
+      }
+      // arma::mat newV = DGUtils::vandermonde2D(constants[n]->r_, constants[n]->s_, N);
+      // interp_[n - 1] = newV * invV_;
+      // interp_[n - 1] = arma::inv(constants[n]->MassMatrix_) * (V_ * newV.t());
+
+      // interp_[n - 1] = DGUtils::interpMatrix2D(constants[n]->r_, constants[n]->s_, invV_, N);
       memcpy(&order_interp_g[((N - 1) * DG_ORDER + (n - 1)) * DG_NP * DG_NP], interp_[n - 1].memptr(), interp_[n - 1].n_elem * sizeof(double));
     }
   }

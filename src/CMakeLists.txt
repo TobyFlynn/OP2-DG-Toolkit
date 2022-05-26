@@ -1,10 +1,13 @@
 set(OPENBLAS_SRC openBLAS_op/init_grid_op.cpp openBLAS_op/init_gauss_op.cpp openBLAS_op/inv_op.cpp)
 set(CUBLAS_SRC cuBLAS_op/init_grid_op.cu cuBLAS_op/init_gauss_op.cu cuBLAS_op/inv_op.cu)
 
+set(TOOLKIT_SRC utils/misc.cpp utils/nodes.cpp utils/polynomial.cpp utils/vandermonde.cpp utils/matrices.cpp utils/interpolate.cpp)
 set(COMMON_SRC dg_mesh_op.cpp dg_operators_op.cpp dg_op2_blas_op.cpp dg_constants_setup.cpp)
-list(APPEND COMMON_SRC utils/misc.cpp utils/nodes.cpp utils/polynomial.cpp utils/vandermonde.cpp utils/matrices.cpp)
-set(CPU_SRC dg_constants.cpp)
-set(GPU_SRC dg_constants.cu)
+set(CPU_SRC dg_constants.cpp dg_mesh_cpu.cpp)
+set(GPU_SRC dg_constants.cu dg_mesh_gpu.cu)
+
+add_library(dgtoolkit SHARED ${TOOLKIT_SRC})
+target_link_libraries(dgtoolkit -L${ARMA_DIR}/lib -larmadillo -L${OPENBLAS_DIR}/lib -lopenblas)
 
 add_library(op2dgtoolkit_seq SHARED ${COMMON_SRC} ${CPU_SRC} ${OPENBLAS_SRC} seq/dg_mesh_seqkernels.cpp)
 target_link_libraries(op2dgtoolkit_seq -L${OP2_DIR}/lib -lop2_seq libhdf5.so -L${ARMA_DIR}/lib64 -larmadillo ${OpenBLAS_LIBRARIES})
@@ -32,6 +35,6 @@ target_link_libraries(op2dgtoolkit_mpi_cuda -L${OP2_DIR}/lib -lop2_mpi_cuda libh
 set_property(TARGET op2dgtoolkit_mpi_cuda PROPERTY CUDA_ARCHITECTURES OFF)
 target_compile_definitions(op2dgtoolkit_mpi_cuda PRIVATE OP2_DG_CUDA DG_ORDER=3)
 
-set(DG_LIBS op2dgtoolkit_seq op2dgtoolkit_openmp op2dgtoolkit_cuda op2dgtoolkit_mpi op2dgtoolkit_mpi_openmp op2dgtoolkit_mpi_cuda)
+set(DG_LIBS dgtoolkit op2dgtoolkit_seq op2dgtoolkit_openmp op2dgtoolkit_cuda op2dgtoolkit_mpi op2dgtoolkit_mpi_openmp op2dgtoolkit_mpi_cuda)
 
 install(TARGETS ${DG_LIBS} DESTINATION lib)
