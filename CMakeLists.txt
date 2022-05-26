@@ -18,16 +18,14 @@ include_directories(${OP2_DIR}/include)
 find_package(OpenBLAS)
 include_directories(${OpenBLAS_INCLUDE_DIRS})
 
-if(NOT ARMA_DIR)
-  set(ARMA_DIR "/gpfs/users/tsf79-sxa03/armadillo-10.6.1/build")
-endif()
+set(ARMA_DIR $ENV{ARMA_DIR})
 include_directories(${ARMA_DIR}/include)
 
 enable_language(CUDA)
 find_package(CUDAToolkit)
 include_directories(${CUDAToolkit_INCLUDE_DIRS})
 set(CMAKE_CUDA_COMPILER ${CUDAToolkit_NVCC_EXECUTABLE})
-set(CMAKE_CUDA_ARCHITECTURES 75)
+set(CMAKE_CUDA_ARCHITECTURES 70)
 
 # Install headers
 file(GLOB HEADERS include/*.h)

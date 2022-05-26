@@ -4,5 +4,4 @@ set(TEST_SRC dg_utils_tests.cpp dg_utils/misc.cpp dg_utils/polynomial.cpp dg_uti
 set(GFORT_LIB /gpfs/users/shared/apps/core/gcc/7.3.0/lib64/libgfortran.so.4)
 
 add_executable(dg_utils_tests ${TEST_SRC})
-target_link_libraries(dg_utils_tests op2dgtoolkit_openmp -L${OP2_DIR}/lib -lop2_openmp libhdf5.so -L${ARMA_DIR}/lib64 -larmadillo ${OpenBLAS_LIBRARIES} ${GFORT_LIB})
-target_compile_definitions(dg_utils_tests PRIVATE DG_ORDER=3)
+target_link_libraries(dg_utils_tests dgtoolkit libhdf5.so -L${ARMA_DIR}/lib64 -larmadillo ${OpenBLAS_LIBRARIES} ${GFORT_LIB})
