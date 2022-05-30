@@ -245,6 +245,7 @@ void DGUtils::hessianSimplex2DP(const arma::vec &a, const arma::vec &b,
   drs = pow(2.0, 0.5) * drs;
   ds2 = pow(2.0, 0.5) * ds2;
 }
+
 // Get cubature rules
 void DGUtils::cubature2D(const int cOrder, arma::vec &r, arma::vec &s,
                          arma::vec &w) {
