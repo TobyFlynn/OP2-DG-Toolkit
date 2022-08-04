@@ -22,33 +22,15 @@ namespace DGUtils {
   // Calculate Jacobi polynomial of order N at points x
   arma::vec jacobiP(const arma::vec &x, const double alpha, const double beta,
                     const int N);
-  double jacobiP(const double x, const double alpha, const double beta,
-                 const int N);
   // Calculate derivative of Jacobi polynomial of order N at points x
   arma::vec gradJacobiP(const arma::vec &x, const double alpha,
                         const double beta, const int N);
-  double gradJacobiP(const double x, const double alpha, const double beta,
-                     const int N);
-  // Calculate second derivative of Jacobi polynomial of order N at points x
-  arma::vec grad2JacobiP(const arma::vec &x, const double alpha,
-                         const double beta, const int N);
-  double grad2JacobiP(const double x, const double alpha, const double beta,
-                      const int N);
   // Calculate 2D orthonomal poly on simplex of order i,j
   arma::vec simplex2DP(const arma::vec &a, const arma::vec &b, const int i,
                        const int j);
-  double simplex2DP(const double a, const double b, const int i, const int j);
   // Calculate derivatives of modal basis on simplex
   void gradSimplex2DP(const arma::vec &a, const arma::vec &b, const int i,
                       const int j, arma::vec &dr, arma::vec &ds);
-  void gradSimplex2DP(const double a, const double b, const int i, const int j,
-                      double &dr, double &ds);
-  // Calculate simplexes for Hessian
-  void hessianSimplex2DP(const arma::vec &a, const arma::vec &b, const int i,
-                         const int j, arma::vec &dr2, arma::vec &drs,
-                         arma::vec &ds2);
-  void hessianSimplex2DP(const double a, const double b, const int i,
-                         const int j, double &dr2, double &drs, double &ds2);
   // Get cubature rules
   void cubature2D(const int cOrder, arma::vec &r, arma::vec &s, arma::vec &w);
 
@@ -106,19 +88,6 @@ namespace DGUtils {
   // Convert from r-s coords to global x-y coords
   void rs_to_global_xy(const double r, const double s, double &x, double &y,
                        const double *cellX, const double *cellY);
-
-  /*********************************
-  * Interpolating values within a cell
-  **********************************/
-
-  // Get the value at a point within a cell from modal values
-  double val_at_pt(const double r, const double s, const double *modal);
-  // Get the gradient at a point within a cell from modal values
-  void grad_at_pt(const double r, const double s, const double *modal,
-                  double &dr, double &ds);
-  // Get the Hessian at a point within a cell from modal values
-  void hessian_at_pt(const double r, const double s, const double *modal,
-                     double &dr2, double &drs, double &ds2);
 }
 
 #endif
