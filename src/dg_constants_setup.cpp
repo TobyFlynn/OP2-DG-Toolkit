@@ -185,16 +185,52 @@ void DGConstants::gauss(const int nGauss) {
 void DGConstants::calc_interp_mats() {
   for(int n = 1; n <= DG_ORDER; n++) {
     if(n != N) {
-      if(n > N) {
-        interp_[n - 1] = DGUtils::interpMatrix2D(constants[n]->r_, constants[n]->s_, invV_, N);
+      /*
+      if(n < N) {
+        interp_[n - 1] = DGUtils::interpMatrix2D(r_, s_, constants[n]->invV_, n).t();
+        // interp_[n - 1] = DGUtils::interpMatrix2D(constants[n]->r_, constants[n]->s_, invV_, N);
       } else {
-        interp_[n - 1] = DGUtils::interpMatrix2D(r_, s_, constants[n]->invV_, constants[n]->N).t();
+        interp_[n - 1] = DGUtils::interpMatrix2D(constants[n]->r_, constants[n]->s_, invV_, N);
+        // interp_[n - 1] = DGUtils::interpMatrix2D(r_, s_, constants[n]->invV_, n).t();
       }
       // arma::mat newV = DGUtils::vandermonde2D(constants[n]->r_, constants[n]->s_, N);
       // interp_[n - 1] = newV * invV_;
       // interp_[n - 1] = arma::inv(constants[n]->MassMatrix_) * (V_ * newV.t());
-
-      // interp_[n - 1] = DGUtils::interpMatrix2D(constants[n]->r_, constants[n]->s_, invV_, N);
+      */
+      interp_[n - 1] = DGUtils::interpMatrix2D(constants[n]->r_, constants[n]->s_, invV_, N);
+      /*
+      if(n < N) {
+        int Np_q, Np_p, tmp;
+        DGUtils::basic_constants(n, &Np_q, &tmp);
+        DGUtils::basic_constants(N, &Np_p, &tmp);
+        arma::mat vt_q_inv = arma::inv(constants[n]->V_.t());
+        arma::mat vt_p_inv = arma::inv(V_.t());
+        arma::mat m_qp(Np_q, Np_p, arma::fill::zeros);
+        for(int i = 0; i < Np_q; i++) {
+          for(int j = 0; j < Np_p; j++) {
+            for(int n = 0; n < Np_q; n++) {
+              m_qp(i,j) += vt_q_inv(i,n) * vt_p_inv(j,n);
+            }
+          }
+        }
+        interp_[n - 1] = (arma::inv(constants[n]->MassMatrix_) * m_qp).t();
+      } else {
+        int Np_q, Np_p, tmp;
+        DGUtils::basic_constants(N, &Np_q, &tmp);
+        DGUtils::basic_constants(n, &Np_p, &tmp);
+        arma::mat vt_q_inv = arma::inv(V_.t());
+        arma::mat vt_p_inv = arma::inv(constants[n]->V_.t());
+        arma::mat m_qp(Np_q, Np_p, arma::fill::zeros);
+        for(int i = 0; i < Np_q; i++) {
+          for(int j = 0; j < Np_p; j++) {
+            for(int n = 0; n < Np_q; n++) {
+              m_qp(i,j) += vt_q_inv(i,n) * vt_p_inv(j,n);
+            }
+          }
+        }
+        interp_[n - 1] = (arma::inv(MassMatrix_) * m_qp);
+      }
+      */
       memcpy(&order_interp_g[((N - 1) * DG_ORDER + (n - 1)) * DG_NP * DG_NP], interp_[n - 1].memptr(), interp_[n - 1].n_elem * sizeof(double));
     }
   }
