@@ -197,6 +197,10 @@ DGGaussData::DGGaussData(DGMesh *m) {
   nx_data = (double *)calloc(DG_G_NP * mesh->numCells, sizeof(double));
   ny_data = (double *)calloc(DG_G_NP * mesh->numCells, sizeof(double));
 
+  for(int i = 0; i < 3; i++) {
+    op_tmp_data[i] = (double *)calloc(DG_G_NP * mesh->numCells, sizeof(double));
+  }
+
   x  = op_decl_dat(mesh->cells, DG_G_NP, "double", x_data, "gauss-x");
   y  = op_decl_dat(mesh->cells, DG_G_NP, "double", y_data, "gauss-y");
   rx = op_decl_dat(mesh->cells, DG_G_NP, "double", rx_data, "gauss-rx");
@@ -206,6 +210,11 @@ DGGaussData::DGGaussData(DGMesh *m) {
   sJ = op_decl_dat(mesh->cells, DG_G_NP, "double", sJ_data, "gauss-sJ");
   nx = op_decl_dat(mesh->cells, DG_G_NP, "double", nx_data, "gauss-nx");
   ny = op_decl_dat(mesh->cells, DG_G_NP, "double", ny_data, "gauss-ny");
+
+  for(int i = 0; i < 3; i++) {
+    string tmpname = "gauss-op_tmp" + to_string(i);
+    op_tmp[i] = op_decl_dat(mesh->cells, DG_G_NP, "double", op_tmp_data[i], tmpname.c_str());
+  }
 }
 
 DGGaussData::~DGGaussData() {
@@ -218,6 +227,9 @@ DGGaussData::~DGGaussData() {
   free(sJ_data);
   free(nx_data);
   free(ny_data);
+  for(int i = 0; i < 3; i++) {
+    free(op_tmp_data[i]);
+  }
 }
 
 void DGGaussData::init() {

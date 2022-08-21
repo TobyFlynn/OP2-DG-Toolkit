@@ -35,11 +35,12 @@ public:
 
   op_dat x, y;
   op_dat rx, sx, ry, sy, sJ, nx, ny;
+  op_dat op_tmp[3];
 private:
   DGMesh *mesh;
 
   double *x_data, *y_data, *rx_data, *sx_data, *ry_data, *sy_data;
-  double *sJ_data, *nx_data, *ny_data;
+  double *sJ_data, *nx_data, *ny_data, *op_tmp_data[3];
 };
 
 class DGMesh {

@@ -59,7 +59,7 @@ install(FILES ${HEADERS} DESTINATION include)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Invoke subprojects
-add_subdirectory(src)
+add_subdirectory(gen)
 if(BUILD_TESTS)
   add_subdirectory(tests)
 endif()

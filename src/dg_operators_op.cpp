@@ -27,6 +27,19 @@ void op_par_loop_div(char const *, op_set,
   op_arg,
   op_arg );
 
+void op_par_loop_zero_g_np(char const *, op_set,
+  op_arg );
+
+void op_par_loop_div_central_flux(char const *, op_set,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg );
+
 void op_par_loop_curl(char const *, op_set,
   op_arg,
   op_arg,
@@ -41,6 +54,20 @@ void op_par_loop_curl(char const *, op_set,
 
 void op_par_loop_grad(char const *, op_set,
   op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg );
+
+void op_par_loop_zero_g_np_2(char const *, op_set,
+  op_arg,
+  op_arg );
+
+void op_par_loop_grad_central_flux(char const *, op_set,
   op_arg,
   op_arg,
   op_arg,
@@ -84,9 +111,29 @@ void op_par_loop_cub_grad_weak(char const *, op_set,
   op_arg,
   op_arg );
 
+void op_par_loop_grad_weak_central_flux(char const *, op_set,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg );
+
 void op_par_loop_cub_div_weak(char const *, op_set,
   op_arg,
   op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg,
+  op_arg );
+
+void op_par_loop_div_weak_central_flux(char const *, op_set,
   op_arg,
   op_arg,
   op_arg,
@@ -131,6 +178,29 @@ void div(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
               op_arg_dat(res,-1,OP_ID,DG_NP,"double",OP_WRITE));
 }
 
+void div_with_central_flux(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
+  div(mesh, u, v, res);
+
+  // Central flux
+  op2_gemv(mesh, false, 1.0, DGConstants::GAUSS_INTERP, u, 0.0, mesh->gauss->op_tmp[0]);
+  op2_gemv(mesh, false, 1.0, DGConstants::GAUSS_INTERP, v, 0.0, mesh->gauss->op_tmp[1]);
+
+  op_par_loop_zero_g_np("zero_g_np",mesh->cells,
+              op_arg_dat(mesh->gauss->op_tmp[2],-1,OP_ID,DG_G_NP,"double",OP_WRITE));
+  
+  op_par_loop_div_central_flux("div_central_flux",mesh->edges,
+              op_arg_dat(mesh->edgeNum,-1,OP_ID,2,"int",OP_READ),
+              op_arg_dat(mesh->reverse,-1,OP_ID,1,"bool",OP_READ),
+              op_arg_dat(mesh->gauss->nx,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->ny,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->sJ,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[0],-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[1],-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[2],-2,mesh->edge2cells,DG_G_NP,"double",OP_INC));
+  
+  op2_gemv(mesh, false, -1.0, DGConstants::INV_MASS_GAUSS_INTERP_T, mesh->gauss->op_tmp[2], 1.0, res);
+}
+
 void curl(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
   // Same matrix multiplications as div
   op2_gemv(mesh, false, 1.0, DGConstants::DR, u, 0.0, mesh->op_tmp[0]);
@@ -167,6 +237,30 @@ void grad(DGMesh *mesh, op_dat u, op_dat ux, op_dat uy) {
               op_arg_dat(uy,-1,OP_ID,DG_NP,"double",OP_WRITE));
 }
 
+void grad_with_central_flux(DGMesh *mesh, op_dat u, op_dat ux, op_dat uy) {
+  grad(mesh, u, ux, uy);
+
+  // Central flux
+  op2_gemv(mesh, false, 1.0, DGConstants::GAUSS_INTERP, u, 0.0, mesh->gauss->op_tmp[0]);
+
+  op_par_loop_zero_g_np_2("zero_g_np_2",mesh->cells,
+              op_arg_dat(mesh->gauss->op_tmp[1],-1,OP_ID,DG_G_NP,"double",OP_WRITE),
+              op_arg_dat(mesh->gauss->op_tmp[2],-1,OP_ID,DG_G_NP,"double",OP_WRITE));
+  
+  op_par_loop_grad_central_flux("grad_central_flux",mesh->edges,
+              op_arg_dat(mesh->edgeNum,-1,OP_ID,2,"int",OP_READ),
+              op_arg_dat(mesh->reverse,-1,OP_ID,1,"bool",OP_READ),
+              op_arg_dat(mesh->gauss->nx,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->ny,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->sJ,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[0],-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[1],-2,mesh->edge2cells,DG_G_NP,"double",OP_INC),
+              op_arg_dat(mesh->gauss->op_tmp[2],-2,mesh->edge2cells,DG_G_NP,"double",OP_INC));
+  
+  op2_gemv(mesh, false, -1.0, DGConstants::INV_MASS_GAUSS_INTERP_T, mesh->gauss->op_tmp[1], 1.0, ux);
+  op2_gemv(mesh, false, -1.0, DGConstants::INV_MASS_GAUSS_INTERP_T, mesh->gauss->op_tmp[2], 1.0, uy);
+}
+
 void cub_grad(DGMesh *mesh, op_dat u, op_dat ux, op_dat uy) {
   op2_gemv(mesh, false, 1.0, DGConstants::CUB_DR, u, 0.0, mesh->cubature->op_tmp[0]);
   op2_gemv(mesh, false, 1.0, DGConstants::CUB_DS, u, 0.0, mesh->cubature->op_tmp[1]);
@@ -183,6 +277,33 @@ void cub_grad(DGMesh *mesh, op_dat u, op_dat ux, op_dat uy) {
 
   op2_gemv(mesh, true, 1.0, DGConstants::CUB_V, mesh->cubature->op_tmp[0], 0.0, ux);
   op2_gemv(mesh, true, 1.0, DGConstants::CUB_V, mesh->cubature->op_tmp[1], 0.0, uy);
+}
+
+void cub_grad_with_central_flux(DGMesh *mesh, op_dat u, op_dat ux, op_dat uy) {
+  cub_grad(mesh, u, ux, uy);
+
+  // Central flux
+  op2_gemv(mesh, false, 1.0, DGConstants::GAUSS_INTERP, u, 0.0, mesh->gauss->op_tmp[0]);
+
+  op_par_loop_zero_g_np_2("zero_g_np_2",mesh->cells,
+              op_arg_dat(mesh->gauss->op_tmp[1],-1,OP_ID,DG_G_NP,"double",OP_WRITE),
+              op_arg_dat(mesh->gauss->op_tmp[2],-1,OP_ID,DG_G_NP,"double",OP_WRITE));
+  
+  op_par_loop_grad_central_flux("grad_central_flux",mesh->edges,
+              op_arg_dat(mesh->edgeNum,-1,OP_ID,2,"int",OP_READ),
+              op_arg_dat(mesh->reverse,-1,OP_ID,1,"bool",OP_READ),
+              op_arg_dat(mesh->gauss->nx,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->ny,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->sJ,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[0],-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[1],-2,mesh->edge2cells,DG_G_NP,"double",OP_INC),
+              op_arg_dat(mesh->gauss->op_tmp[2],-2,mesh->edge2cells,DG_G_NP,"double",OP_INC));
+  
+  op2_gemv(mesh, true, -1.0, DGConstants::GAUSS_INTERP, mesh->gauss->op_tmp[1], 1.0, ux);
+  op2_gemv(mesh, true, -1.0, DGConstants::GAUSS_INTERP, mesh->gauss->op_tmp[2], 1.0, uy);
+
+  inv_mass(mesh, ux);
+  inv_mass(mesh, uy);
 }
 
 void cub_div(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
@@ -206,6 +327,31 @@ void cub_div(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
   op2_gemv(mesh, true, 1.0, DGConstants::CUB_V, mesh->cubature->op_tmp[0], 0.0, res);
 }
 
+void cub_div_with_central_flux(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
+  cub_div(mesh, u, v, res);
+
+  // Central flux
+  op2_gemv(mesh, false, 1.0, DGConstants::GAUSS_INTERP, u, 0.0, mesh->gauss->op_tmp[0]);
+  op2_gemv(mesh, false, 1.0, DGConstants::GAUSS_INTERP, v, 0.0, mesh->gauss->op_tmp[1]);
+
+  op_par_loop_zero_g_np("zero_g_np",mesh->cells,
+              op_arg_dat(mesh->gauss->op_tmp[2],-1,OP_ID,DG_G_NP,"double",OP_WRITE));
+  
+  op_par_loop_div_central_flux("div_central_flux",mesh->edges,
+              op_arg_dat(mesh->edgeNum,-1,OP_ID,2,"int",OP_READ),
+              op_arg_dat(mesh->reverse,-1,OP_ID,1,"bool",OP_READ),
+              op_arg_dat(mesh->gauss->nx,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->ny,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->sJ,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[0],-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[1],-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[2],-2,mesh->edge2cells,DG_G_NP,"double",OP_INC));
+  
+  op2_gemv(mesh, true, -1.0, DGConstants::GAUSS_INTERP, mesh->gauss->op_tmp[2], 1.0, res);
+
+  inv_mass(mesh, res);
+}
+
 void cub_grad_weak(DGMesh *mesh, op_dat u, op_dat ux, op_dat uy) {
   op2_gemv(mesh, false, 1.0, DGConstants::CUB_V, u, 0.0, mesh->cubature->op_tmp[0]);
 
@@ -225,6 +371,33 @@ void cub_grad_weak(DGMesh *mesh, op_dat u, op_dat ux, op_dat uy) {
   op2_gemv(mesh, true, 1.0, DGConstants::CUB_DS, mesh->cubature->op_tmp[1], 1.0, ux);
   op2_gemv(mesh, true, 1.0, DGConstants::CUB_DR, mesh->cubature->op_tmp[2], 0.0, uy);
   op2_gemv(mesh, true, 1.0, DGConstants::CUB_DS, mesh->cubature->op_tmp[3], 1.0, uy);
+}
+
+void cub_grad_weak_with_central_flux(DGMesh *mesh, op_dat u, op_dat ux, op_dat uy) {
+  cub_grad_weak(mesh, u, ux, uy);
+
+  // Central flux
+  op2_gemv(mesh, false, 1.0, DGConstants::GAUSS_INTERP, u, 0.0, mesh->gauss->op_tmp[0]);
+
+  op_par_loop_zero_g_np_2("zero_g_np_2",mesh->cells,
+              op_arg_dat(mesh->gauss->op_tmp[1],-1,OP_ID,DG_G_NP,"double",OP_WRITE),
+              op_arg_dat(mesh->gauss->op_tmp[2],-1,OP_ID,DG_G_NP,"double",OP_WRITE));
+  
+  op_par_loop_grad_weak_central_flux("grad_weak_central_flux",mesh->edges,
+              op_arg_dat(mesh->edgeNum,-1,OP_ID,2,"int",OP_READ),
+              op_arg_dat(mesh->reverse,-1,OP_ID,1,"bool",OP_READ),
+              op_arg_dat(mesh->gauss->nx,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->ny,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->sJ,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[0],-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[1],-2,mesh->edge2cells,DG_G_NP,"double",OP_INC),
+              op_arg_dat(mesh->gauss->op_tmp[2],-2,mesh->edge2cells,DG_G_NP,"double",OP_INC));
+
+  op2_gemv(mesh, true, 1.0, DGConstants::GAUSS_INTERP, mesh->gauss->op_tmp[1], -1.0, ux);
+  op2_gemv(mesh, true, 1.0, DGConstants::GAUSS_INTERP, mesh->gauss->op_tmp[2], -1.0, uy);
+
+  inv_mass(mesh, ux);
+  inv_mass(mesh, uy);
 }
 
 void cub_div_weak(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
@@ -247,6 +420,31 @@ void cub_div_weak(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
   op2_gemv(mesh, true, 1.0, DGConstants::CUB_DS, mesh->cubature->op_tmp[1], 1.0, res);
   op2_gemv(mesh, true, 1.0, DGConstants::CUB_DR, mesh->cubature->op_tmp[2], 1.0, res);
   op2_gemv(mesh, true, 1.0, DGConstants::CUB_DS, mesh->cubature->op_tmp[3], 1.0, res);
+}
+
+void cub_div_weak_with_central_flux(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
+  cub_div_weak(mesh, u, v, res);
+
+  // Central flux
+  op2_gemv(mesh, false, 1.0, DGConstants::GAUSS_INTERP, u, 0.0, mesh->gauss->op_tmp[0]);
+  op2_gemv(mesh, false, 1.0, DGConstants::GAUSS_INTERP, v, 0.0, mesh->gauss->op_tmp[1]);
+
+  op_par_loop_zero_g_np("zero_g_np",mesh->cells,
+              op_arg_dat(mesh->gauss->op_tmp[2],-1,OP_ID,DG_G_NP,"double",OP_WRITE));
+  
+  op_par_loop_div_weak_central_flux("div_weak_central_flux",mesh->edges,
+              op_arg_dat(mesh->edgeNum,-1,OP_ID,2,"int",OP_READ),
+              op_arg_dat(mesh->reverse,-1,OP_ID,1,"bool",OP_READ),
+              op_arg_dat(mesh->gauss->nx,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->ny,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->sJ,-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[0],-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[1],-2,mesh->edge2cells,DG_G_NP,"double",OP_READ),
+              op_arg_dat(mesh->gauss->op_tmp[2],-2,mesh->edge2cells,DG_G_NP,"double",OP_INC));
+  
+  op2_gemv(mesh, true, 1.0, DGConstants::GAUSS_INTERP, mesh->gauss->op_tmp[2], -1.0, res);
+
+  inv_mass(mesh, res);
 }
 
 void inv_mass(DGMesh *mesh, op_dat u) {

@@ -5,18 +5,24 @@
 #include "dg_mesh.h"
 
 void div(DGMesh *mesh, op_dat u, op_dat v, op_dat res);
+void div_with_central_flux(DGMesh *mesh, op_dat u, op_dat v, op_dat res);
 
 void curl(DGMesh *mesh, op_dat u, op_dat v, op_dat res);
 
 void grad(DGMesh *mesh, op_dat u, op_dat ux, op_dat uy);
+void grad_with_central_flux(DGMesh *mesh, op_dat u, op_dat ux, op_dat uy);
 
 void cub_grad(DGMesh *mesh, op_dat u, op_dat ux, op_dat uy);
+void cub_grad_with_central_flux(DGMesh *mesh, op_dat u, op_dat ux, op_dat uy);
 
 void cub_div(DGMesh *mesh, op_dat u, op_dat v, op_dat res);
+void cub_div_with_central_flux(DGMesh *mesh, op_dat u, op_dat v, op_dat res);
 
 void cub_grad_weak(DGMesh *mesh, op_dat u, op_dat ux, op_dat uy);
+void cub_grad_weak_with_central_flux(DGMesh *mesh, op_dat u, op_dat ux, op_dat uy);
 
 void cub_div_weak(DGMesh *mesh, op_dat u, op_dat v, op_dat res);
+void cub_div_weak_with_central_flux(DGMesh *mesh, op_dat u, op_dat v, op_dat res);
 
 void inv_mass(DGMesh *mesh, op_dat u);
 
