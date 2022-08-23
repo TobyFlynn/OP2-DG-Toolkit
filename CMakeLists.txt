@@ -50,6 +50,7 @@ if(BUILD_GPU)
   include_directories(${CUDAToolkit_INCLUDE_DIRS})
   set(CMAKE_CUDA_COMPILER ${CUDAToolkit_NVCC_EXECUTABLE})
   set(CMAKE_CUDA_ARCHITECTURES 70 75)
+  set(CMAKE_CUDA_FLAGS "-Xcompiler -mno-float128")
 endif()
 
 # Install headers
