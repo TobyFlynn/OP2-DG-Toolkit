@@ -12,8 +12,6 @@ extern cublasHandle_t handle;
 
 extern DGConstants *constants[DG_ORDER + 1];
 
-void init_grid_blas(DGMesh *mesh);
-
 void init_gauss_blas(DGMesh *mesh, DGGaussData *gaussData);
 
 void inv_blas(DGMesh *mesh, op_dat in, op_dat out);

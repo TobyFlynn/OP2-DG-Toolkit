@@ -322,7 +322,19 @@ void DGMesh::init() {
               op_arg_dat(nodeY, -1, OP_ID, 3, "double", OP_WRITE));
 
   // Calculate geometric factors
-  init_grid_blas(this);
+  op_par_loop(calc_geom, "calc_geom", cells,
+              op_arg_dat(order,  -1, OP_ID, 1, "int", OP_READ),
+              op_arg_gbl(r_g, DG_ORDER * DG_NP, "double", OP_READ),
+              op_arg_gbl(s_g, DG_ORDER * DG_NP, "double", OP_READ),
+              op_arg_dat(nodeX, -1, OP_ID, 3, "double", OP_READ),
+              op_arg_dat(nodeY, -1, OP_ID, 3, "double", OP_READ),
+              op_arg_dat(x, -1, OP_ID, DG_NP, "double", OP_WRITE),
+              op_arg_dat(y, -1, OP_ID, DG_NP, "double", OP_WRITE));
+  
+  op2_gemv(this, false, 1.0, DGConstants::DR, x, 0.0, rx);
+  op2_gemv(this, false, 1.0, DGConstants::DS, x, 0.0, sx);
+  op2_gemv(this, false, 1.0, DGConstants::DR, y, 0.0, ry);
+  op2_gemv(this, false, 1.0, DGConstants::DS, y, 0.0, sy);
 
   op_par_loop(init_grid, "init_grid", cells,
               op_arg_dat(order,  -1, OP_ID, 1, "int", OP_READ),
@@ -347,7 +359,19 @@ void DGMesh::init() {
 }
 
 void DGMesh::update_mesh_constants() {
-  init_grid_blas(this);
+  op_par_loop(calc_geom, "calc_geom", cells,
+              op_arg_dat(order,  -1, OP_ID, 1, "int", OP_READ),
+              op_arg_gbl(r_g, DG_ORDER * DG_NP, "double", OP_READ),
+              op_arg_gbl(s_g, DG_ORDER * DG_NP, "double", OP_READ),
+              op_arg_dat(nodeX, -1, OP_ID, 3, "double", OP_READ),
+              op_arg_dat(nodeY, -1, OP_ID, 3, "double", OP_READ),
+              op_arg_dat(x, -1, OP_ID, DG_NP, "double", OP_WRITE),
+              op_arg_dat(y, -1, OP_ID, DG_NP, "double", OP_WRITE));
+  
+  op2_gemv(this, false, 1.0, DGConstants::DR, x, 0.0, rx);
+  op2_gemv(this, false, 1.0, DGConstants::DS, x, 0.0, sx);
+  op2_gemv(this, false, 1.0, DGConstants::DR, y, 0.0, ry);
+  op2_gemv(this, false, 1.0, DGConstants::DS, y, 0.0, sy);
 
   op_par_loop(init_grid, "init_grid", cells,
               op_arg_dat(order,  -1, OP_ID, 1, "int", OP_READ),

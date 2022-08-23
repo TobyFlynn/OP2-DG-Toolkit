@@ -1,5 +1,5 @@
-set(OPENBLAS_SRC openBLAS_op/init_grid_op.cpp openBLAS_op/init_gauss_op.cpp openBLAS_op/inv_op.cpp)
-set(CUBLAS_SRC cuBLAS_op/init_grid_op.cu cuBLAS_op/init_gauss_op.cu cuBLAS_op/inv_op.cu)
+set(OPENBLAS_SRC openBLAS_op/init_gauss_op.cpp openBLAS_op/inv_op.cpp)
+set(CUBLAS_SRC cuBLAS_op/init_gauss_op.cu cuBLAS_op/inv_op.cu)
 
 set(TOOLKIT_SRC utils/misc.cpp utils/nodes.cpp utils/polynomial.cpp utils/vandermonde.cpp utils/matrices.cpp)
 set(COMMON_SRC dg_mesh_op.cpp dg_operators_op.cpp dg_op2_blas_op.cpp dg_constants_setup.cpp)
