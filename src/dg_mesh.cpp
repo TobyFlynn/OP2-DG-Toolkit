@@ -146,7 +146,20 @@ void DGGaussData::update_mesh_constants() {
   op2_gemv(mesh, false, 1.0, DGConstants::GAUSS_INTERP, mesh->x, 0.0, x);
   op2_gemv(mesh, false, 1.0, DGConstants::GAUSS_INTERP, mesh->y, 0.0, y);
 
-  init_gauss_blas(mesh, this);
+  op_par_loop(pre_init_gauss, "pre_init_gauss", mesh->cells,
+              op_arg_dat(mesh->order,  -1, OP_ID, 1, "int", OP_READ),
+              op_arg_dat(mesh->x, -1, OP_ID, DG_NP, "double", OP_READ),
+              op_arg_dat(mesh->y, -1, OP_ID, DG_NP, "double", OP_READ),
+              op_arg_gbl(gF0Dr_g, DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
+              op_arg_gbl(gF0Ds_g, DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
+              op_arg_gbl(gF1Dr_g, DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
+              op_arg_gbl(gF1Ds_g, DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
+              op_arg_gbl(gF2Dr_g, DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
+              op_arg_gbl(gF2Ds_g, DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
+              op_arg_dat(rx, -1, OP_ID, DG_G_NP, "double", OP_WRITE),
+              op_arg_dat(sx, -1, OP_ID, DG_G_NP, "double", OP_WRITE),
+              op_arg_dat(ry, -1, OP_ID, DG_G_NP, "double", OP_WRITE),
+              op_arg_dat(sy, -1, OP_ID, DG_G_NP, "double", OP_WRITE));
 
   op_par_loop(init_gauss, "init_gauss", mesh->cells,
               op_arg_dat(mesh->order,  -1, OP_ID, 1, "int", OP_READ),
