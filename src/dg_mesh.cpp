@@ -16,6 +16,10 @@ DGConstants *constants[DG_ORDER + 1];
 
 using namespace std;
 
+#ifdef OP2_DG_CUDA
+void set_cuda_constants_OP2_DG_CUDA();
+#endif
+
 DGCubatureData::DGCubatureData(DGMesh *m) {
   mesh = m;
 
@@ -257,11 +261,15 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
     op_tmp[i] = op_decl_dat(cells, DG_NP, "double", op_tmp_data[i], tmpname.c_str());
   }
 
+  #ifdef OP2_DG_CUDA
+  set_cuda_constants_OP2_DG_CUDA();
+  #else
   op_decl_const(DG_ORDER * 5, "int", DG_CONSTANTS);
   op_decl_const(DG_ORDER * DG_NPF * 3, "int", FMASK);
   op_decl_const(DG_ORDER * DG_CUB_NP, "double", cubW_g);
   op_decl_const(DG_ORDER * DG_GF_NP, "double", gaussW_g);
-
+  #endif
+ 
   cubature = new DGCubatureData(this);
   gauss = new DGGaussData(this);
 }
