@@ -26,4 +26,6 @@ void cub_div_weak_with_central_flux(DGMesh *mesh, op_dat u, op_dat v, op_dat res
 
 void inv_mass(DGMesh *mesh, op_dat u);
 
+void filter(DGMesh *mesh, op_dat u);
+
 #endif

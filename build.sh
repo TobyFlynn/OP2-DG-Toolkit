@@ -10,7 +10,7 @@ mkdir -p gen/openBLAS
 mkdir -p gen/cuBLAS
 mkdir -p gen/utils
 
-python3 preprocessor.py 2
+python3 preprocessor.py 3
 
 cd gen
 
