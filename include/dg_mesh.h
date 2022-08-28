@@ -73,8 +73,8 @@ public:
   // OP2 stuff
   op_set nodes, cells, edges, bedges;
   op_map cell2nodes, edge2nodes, edge2cells, bedge2nodes, bedge2cells;
-  op_dat node_coords, nodeX, nodeY, x, y, rx, ry, sx, sy, nx,
-         ny, J, sJ, fscale, bedge_type, edgeNum, bedgeNum, reverse, order;
+  op_dat node_coords, nodeX, nodeY, x, y, rx, ry, sx, sy, nx, ny, J, sJ, 
+         fscale, bedge_type, edgeNum, bedgeNum, reverse, order, shock;
   op_dat op_tmp[4];
 
   DGCubatureData *cubature;
@@ -83,7 +83,7 @@ private:
   void update_mesh_constants();
 
   // Pointers to private memory
-  double *nodeX_data, *nodeY_data, *x_data, *y_data;
+  double *nodeX_data, *nodeY_data, *x_data, *y_data, *shock_data;
   double *rx_data, *ry_data, *sx_data, *sy_data, *nx_data, *ny_data;
   double *J_data, *sJ_data, *fscale_data, *op_tmp_data[4];
   bool *reverse_data;

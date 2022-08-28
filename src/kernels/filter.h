@@ -1,8 +1,11 @@
-inline void filter(const int *p, double *modal) {
+inline void filter(const int *p, double *modal, double *shock) {
+  if(*p < 2)
+    return;
   const double PI = 3.141592653589793238463;
-  const int cutoff_N = 1;
+  const int cutoff_N = 0;
   const double alpha = 36.0;
   const double s = 8.0;
+  const int dg_np = DG_CONSTANTS[(*p - 1) * 5];
   
   double q[DG_ORDER + 1];
   for(int i = 0; i < DG_ORDER + 1; i++) {
@@ -17,7 +20,7 @@ inline void filter(const int *p, double *modal) {
     }
   }
 
-  for(int i = 0; i < DG_ORDER + 1; i++) {
+  for(int i = 0; i < dg_np + 1; i++) {
     q[i] = sqrt(q[i]);
   }
 
@@ -30,7 +33,7 @@ inline void filter(const int *p, double *modal) {
   double sum2 = 0.0;
   double sum3 = 0.0;
   double sum4 = 0.0;
-  for(int i = 1; i < DG_ORDER + 1; i++) {
+  for(int i = 1; i < dg_np + 1; i++) {
     double logx = logf(i);
     double logq = logf(q[i]);
     sum1 += logq * logx;
@@ -38,8 +41,8 @@ inline void filter(const int *p, double *modal) {
     sum3 += logx;
     sum4 += logx * logx;
   }
-  double b = (DG_ORDER * sum1 - sum2 * sum3) / (DG_ORDER * sum4 - sum3 * sum3);
-  double a = (sum2 - b * sum3) / (double)DG_ORDER;
+  double b = (dg_np * sum1 - sum2 * sum3) / (dg_np * sum4 - sum3 * sum3);
+  double a = (sum2 - b * sum3) / (double)dg_np;
   double decay_exponent = -b;
 
   double filter_strength = 0.0;
@@ -55,6 +58,7 @@ inline void filter(const int *p, double *modal) {
       if(i + j >= cutoff_N) {
         const double n = (double)(i + j - cutoff_N) / (double)(*p - cutoff_N);
         modal[ind] *= exp(-filter_strength * alpha * pow(n, s));
+        shock[ind] = filter_strength;
       }
       ind++;
     }

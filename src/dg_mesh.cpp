@@ -225,6 +225,7 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   fscale_data  = (double *)calloc(3 * DG_NPF * numCells, sizeof(double));
   reverse_data = (bool *)calloc(numEdges, sizeof(bool));
   order_data   = (int *)calloc(numCells, sizeof(int));
+  shock_data   = (double *)calloc(DG_NP * numCells, sizeof(double));
   for(int i = 0; i < 4; i++) {
     op_tmp_data[i] = (double *)calloc(DG_NP * numCells, sizeof(double));
   }
@@ -269,6 +270,7 @@ DGMesh::DGMesh(double *coords_a, int *cells_a, int *edge2node_a,
   bedgeNum   = op_decl_dat(bedges, 1, "int", bedgeNum_data, "bedgeNum");
   reverse    = op_decl_dat(edges, 1, "bool", reverse_data, "reverse");
   order      = op_decl_dat(cells, 1, "int", order_data, "order");
+  shock      = op_decl_dat(cells, DG_NP, "double", shock_data, "shock");
   for(int i = 0; i < 4; i++) {
     string tmpname = "op_tmp" + to_string(i);
     op_tmp[i] = op_decl_dat(cells, DG_NP, "double", op_tmp_data[i], tmpname.c_str());
@@ -315,6 +317,7 @@ DGMesh::~DGMesh() {
   free(sJ_data);
   free(fscale_data);
   free(reverse_data);
+  free(shock_data);
   for(int i = 0; i < 4; i++) {
     free(op_tmp_data[i]);
   }
