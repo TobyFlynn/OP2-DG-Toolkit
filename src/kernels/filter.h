@@ -1,4 +1,5 @@
-inline void filter(const int *p, double *modal, double *shock) {
+inline void filter(const int *p, const double *v_g, const double *mass_g, 
+                   const double *J, const double *u, double *modal, double *shock) {
   if(*p < 2)
     return;
   const double PI = 3.141592653589793238463;
@@ -6,50 +7,66 @@ inline void filter(const int *p, double *modal, double *shock) {
   const double alpha = 36.0;
   const double s = 8.0;
   const int dg_np = DG_CONSTANTS[(*p - 1) * 5];
+  const double *v_mat = &v_g[(*p - 1) * DG_NP * DG_NP];
+  const double *m_mat = &mass_g[(*p - 1) * DG_NP * DG_NP];
   
-  double q[DG_ORDER + 1];
-  for(int i = 0; i < DG_ORDER + 1; i++) {
-    q[i] = 0.0;
-  }
-
   int ind = 0;
+  double p_modal[dg_np];
   for(int i = 0; i <= *p; i++) {
     for(int j = 0; j <= *p - i; j++) {
-      q[i + j] += modal[ind] * modal[ind];
+      if(i + j == *p) {
+        p_modal[ind] = modal[ind];
+      } else {
+        p_modal[ind] = 0.0;
+      }
       ind++;
     }
   }
 
-  for(int i = 0; i < dg_np + 1; i++) {
-    q[i] = sqrt(q[i]);
+  double p_u[dg_np];
+  for(int i = 0; i < dg_np; i++) {
+    p_u[i] = 0.0;
+    for(int j = 0; j < dg_np; j++) {
+      int ind_mat = i + j * dg_np;
+      p_u[i] += v_mat[ind_mat] * p_modal[j];
+    }
   }
 
-  q[*p] = fmax(q[*p], q[*p - 1]);
-  for(int i = *p - 1; i > 0; i--) {
-    q[i] = fmax(q[i], q[i + 1]);
+  double mass_u = 0.0;
+  double mass_p_u = 0.0;
+  for(int i = 0; i < dg_np; i++) {
+    double mass_w = 0.0;
+    double u_c = 0.0;
+    double p_u_c = 0.0;
+    for(int j = 0; j < dg_np; j++) {
+      int ind_mat = i + j * dg_np;
+      // int ind_mat = i * dg_np + j;
+      // mass_w += m_mat[ind_mat];
+      // mass_u[i] += m_mat[ind_mat] * u[j];
+      // mass_p_u[i] += m_mat[ind_mat] * p_u[j];
+      u_c += m_mat[ind_mat] * J[j] * u[j];
+      p_u_c += m_mat[ind_mat] * J[j] * p_u[j];
+    }
+    // mass_u += J[i] * u[i] * u[i] * mass_w;
+    // mass_p_u += J[i] * p_u[i] * p_u[i] * mass_w;
+    mass_u += u[i] * u_c;
+    mass_p_u += p_u[i] * p_u_c;
   }
 
-  double sum1 = 0.0;
-  double sum2 = 0.0;
-  double sum3 = 0.0;
-  double sum4 = 0.0;
-  for(int i = 1; i < dg_np + 1; i++) {
-    double logx = logf(i);
-    double logq = logf(q[i]);
-    sum1 += logq * logx;
-    sum2 += logq;
-    sum3 += logx;
-    sum4 += logx * logx;
-  }
-  double b = (dg_np * sum1 - sum2 * sum3) / (dg_np * sum4 - sum3 * sum3);
-  double a = (sum2 - b * sum3) / (double)dg_np;
-  double decay_exponent = -b;
-
-  double filter_strength = 0.0;
-  if(decay_exponent < 1.0) {
-    filter_strength = 1.0;
-  } else if(decay_exponent <= 3.0) {
-    filter_strength = 0.5 * (1.0 + sin(- PI * (decay_exponent - 2.0) / 2.0));
+  double filter_strength[dg_np];
+  double s_ref = -4.0 * log((double)*p);
+  double max_filter = 1.0;
+  double k = 1.0;
+  double total = 0.0;
+  for(int i = 0; i < dg_np; i++) {
+    double s = log(mass_p_u / mass_u);
+    if(s < s_ref - max_filter) {
+      filter_strength[i] = 0.0;
+    } else if(s < s_ref + max_filter) {
+      filter_strength[i] = (max_filter / 2.0) * (1.0 + sin(PI * (s - s_ref) / (2.0 * k)));
+    } else {
+      filter_strength[i] = max_filter;
+    }
   }
 
   ind = 0;
@@ -57,8 +74,9 @@ inline void filter(const int *p, double *modal, double *shock) {
     for(int j = 0; j <= *p - i; j++) {
       if(i + j >= cutoff_N) {
         const double n = (double)(i + j - cutoff_N) / (double)(*p - cutoff_N);
-        modal[ind] *= exp(-filter_strength * alpha * pow(n, s));
-        shock[ind] = filter_strength;
+        modal[ind] *= exp(-filter_strength[i] * alpha * pow(n, s));
+        // modal[ind] *= exp(-alpha * pow(n, s));
+        shock[ind] = filter_strength[i];
       }
       ind++;
     }

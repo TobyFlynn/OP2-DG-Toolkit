@@ -309,6 +309,10 @@ void filter(DGMesh *mesh, op_dat u) {
 
   op_par_loop(filter, "filter", mesh->cells,
               op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+              op_arg_gbl(v_g, DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
+              op_arg_gbl(mass_g, DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
+              op_arg_dat(mesh->J, -1, OP_ID, DG_NP, "double", OP_READ),
+              op_arg_dat(u, -1, OP_ID, DG_NP, "double", OP_READ),
               op_arg_dat(mesh->op_tmp[0], -1, OP_ID, DG_NP, "double", OP_RW),
               op_arg_dat(mesh->shock, -1, OP_ID, DG_NP, "double", OP_WRITE));
 
