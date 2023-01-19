@@ -10,7 +10,7 @@ mkdir -p gen/openBLAS
 mkdir -p gen/cuBLAS
 mkdir -p gen/utils
 
-python3 preprocessor.py 2
+python3 preprocessor.py 3
 
 cd gen
 
@@ -43,6 +43,9 @@ cmake .. \
   -DHDF5_DIR=/usr/local/module-software/hdf5-1.12.0-parallel \
   -DBUILD_CPU=ON \
   -DBUILD_SN=ON \
+  -DBUILD_MPI=ON \
+  -DBUILD_GPU=ON \
+  -DORDER=3 \
   -DCMAKE_INSTALL_PREFIX=$(pwd)
 
 make -j
