@@ -40,6 +40,7 @@ cmake .. \
   -DPART_LIB_NAME=PARMETIS \
   -DPARMETIS_DIR=/dcs/pg20/u1717021/PhD/apps \
   -DARMA_DIR=/dcs/pg20/u1717021/PhD/apps \
+  -DHDF5_DIR=/usr/local/module-software/hdf5-1.12.0-parallel \
   -DBUILD_CPU=ON \
   -DBUILD_SN=ON \
   -DCMAKE_INSTALL_PREFIX=$(pwd)

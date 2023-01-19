@@ -38,6 +38,12 @@ if(BUILD_MPI)
   endif()
 endif()
 
+if(NOT HDF5_DIR)
+  message(FATAL_ERROR "HDF5_DIR is not specified")
+endif()
+include_directories(${HDF5_DIR}/include)
+set(HDF5_LIB "-L${HDF5_DIR}/lib -lhdf5")
+
 if(NOT ARMA_DIR)
   message(FATAL_ERROR "ARMA_DIR is not specified")
 endif()
@@ -50,7 +56,6 @@ if(BUILD_GPU)
   include_directories(${CUDAToolkit_INCLUDE_DIRS})
   set(CMAKE_CUDA_COMPILER ${CUDAToolkit_NVCC_EXECUTABLE})
   set(CMAKE_CUDA_ARCHITECTURES 70 75)
-  set(CMAKE_CUDA_FLAGS "-Xcompiler -mno-float128")
 endif()
 
 # Install headers
@@ -61,6 +66,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Invoke subprojects
 add_subdirectory(gen)
+add_subdirectory(tools)
 if(BUILD_TESTS)
   add_subdirectory(tests)
 endif()
