@@ -61,7 +61,9 @@ int getBoundaryEdgeNum(const string &type, double x0, double y0, double x1, doub
     } else {
       return -1;
     }
-  }  else {
+  } else if(type == "euler_vortex") {
+    return -1;
+  } else {
     cerr << "***ERROR*** Unrecognised boundary type specified" << endl;
   }
   return -1;
@@ -223,8 +225,8 @@ int main(int argc, char **argv) {
   }
 
   // Do periodic boundary
-  map<pair<double,double>,pair<int,int>,cmpCoords> periodic_map;
   if(bcType == "cylinder_p") {
+    map<pair<double,double>,pair<int,int>,cmpCoords> periodic_map;
     cout << "Doing periodic boundary conditions" << endl;
     for(auto const &edge : internalEdgeMap) {
       if(edge.second->cells[1] == -1) {
@@ -249,6 +251,47 @@ int main(int argc, char **argv) {
       }
     }
     cout << "Number of periodic edges that do not match up: " << periodic_map.size() << endl;
+  } else if(bcType == "euler_vortex") {
+    map<pair<double,double>,pair<int,int>,cmpCoords> periodic_map_x, periodic_map_y;
+    cout << "Doing periodic boundary conditions" << endl;
+    for(auto const &edge : internalEdgeMap) {
+      if(edge.second->cells[1] == -1) {
+        double x0 = x[edge.second->points[0]];
+        double y0 = y[edge.second->points[0]];
+        double x1 = x[edge.second->points[1]];
+        double y1 = y[edge.second->points[1]];
+        if(y0 != y1) {
+          double y_k0 = y0 < y1 ? y0 : y1;
+          double y_k1 = y0 > y1 ? y0 : y1;
+
+          if(periodic_map_y.count({y_k0, y_k1}) == 0) {
+            periodic_map_y.insert({{y_k0, y_k1}, edge.first});
+          } else {
+            // Update one of the edges
+            edge.second->cells[1] = internalEdgeMap.at(periodic_map_y.at({y_k0, y_k1}))->cells[0];
+            edge.second->num[1] = internalEdgeMap.at(periodic_map_y.at({y_k0, y_k1}))->num[0];
+            // Remove the other edge
+            internalEdgeMap.erase(periodic_map_y.at({y_k0, y_k1}));
+            periodic_map_y.erase({y_k0, y_k1});
+          }
+        } else {
+          double x_k0 = x0 < x1 ? x0 : x1;
+          double x_k1 = x0 > x1 ? x0 : x1;
+
+          if(periodic_map_x.count({x_k0, x_k1}) == 0) {
+            periodic_map_x.insert({{x_k0, x_k1}, edge.first});
+          } else {
+            // Update one of the edges
+            edge.second->cells[1] = internalEdgeMap.at(periodic_map_x.at({x_k0, x_k1}))->cells[0];
+            edge.second->num[1] = internalEdgeMap.at(periodic_map_x.at({x_k0, x_k1}))->num[0];
+            // Remove the other edge
+            internalEdgeMap.erase(periodic_map_x.at({x_k0, x_k1}));
+            periodic_map_x.erase({x_k0, x_k1});
+          }
+        }
+      }
+    }
+    cout << "Number of periodic edges that do not match up: " << periodic_map_x.size() + periodic_map_y.size() << endl;
   }
 
   vector<int> edge2node_vec, edge2cell_vec, edgeNum_vec;
