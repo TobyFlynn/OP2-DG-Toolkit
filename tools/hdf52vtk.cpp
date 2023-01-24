@@ -25,35 +25,39 @@ using HighFive::File;
 void add_2d_vec_solution(File *file, const std::string &nameX, const std::string &nameY, 
                          const std::string &nameVec, const int numCells,
                          vtkUnstructuredGrid *vtkGrid) {
-  std::vector<std::vector<double>> u_vec, v_vec;
-  file->getDataSet(nameX).read(u_vec);
-  file->getDataSet(nameY).read(v_vec);
-  vtkNew<vtkDoubleArray> sol_vector;
-  sol_vector->SetName(nameVec.c_str());
-  sol_vector->SetNumberOfComponents(2);
-  sol_vector->SetNumberOfTuples(numCells * DG_NP);
-  for(int i = 0; i < numCells; i++) {
-    for(int j = 0; j < DG_NP; j++) {
-      sol_vector->SetTuple2(i * DG_NP + j, u_vec[i][j], v_vec[i][j]);
+  if(file->exist(nameX) && file->exist(nameY)) {
+    std::vector<std::vector<double>> u_vec, v_vec;
+    file->getDataSet(nameX).read(u_vec);
+    file->getDataSet(nameY).read(v_vec);
+    vtkNew<vtkDoubleArray> sol_vector;
+    sol_vector->SetName(nameVec.c_str());
+    sol_vector->SetNumberOfComponents(2);
+    sol_vector->SetNumberOfTuples(numCells * DG_NP);
+    for(int i = 0; i < numCells; i++) {
+      for(int j = 0; j < DG_NP; j++) {
+        sol_vector->SetTuple2(i * DG_NP + j, u_vec[i][j], v_vec[i][j]);
+      }
     }
+    vtkGrid->GetPointData()->AddArray(sol_vector);
   }
-  vtkGrid->GetPointData()->AddArray(sol_vector);
 }
 
 void add_1d_vec_solution(File *file, const std::string &name, const std::string &nameVec, 
                          const int numCells, vtkUnstructuredGrid *vtkGrid) {
-  std::vector<std::vector<double>> u_vec;
-  file->getDataSet(name).read(u_vec);
-  vtkNew<vtkDoubleArray> sol_vector;
-  sol_vector->SetName(nameVec.c_str());
-  sol_vector->SetNumberOfComponents(1);
-  sol_vector->SetNumberOfTuples(numCells * DG_NP);
-  for(int i = 0; i < numCells; i++) {
-    for(int j = 0; j < DG_NP; j++) {
-      sol_vector->SetTuple1(i * DG_NP + j, u_vec[i][j]);
+  if(file->exist(name)) {
+    std::vector<std::vector<double>> u_vec;
+    file->getDataSet(name).read(u_vec);
+    vtkNew<vtkDoubleArray> sol_vector;
+    sol_vector->SetName(nameVec.c_str());
+    sol_vector->SetNumberOfComponents(1);
+    sol_vector->SetNumberOfTuples(numCells * DG_NP);
+    for(int i = 0; i < numCells; i++) {
+      for(int j = 0; j < DG_NP; j++) {
+        sol_vector->SetTuple1(i * DG_NP + j, u_vec[i][j]);
+      }
     }
+    vtkGrid->GetPointData()->AddArray(sol_vector);
   }
-  vtkGrid->GetPointData()->AddArray(sol_vector);
 }
 
 int main(int argc, char **argv) {
@@ -145,6 +149,11 @@ int main(int argc, char **argv) {
     add_1d_vec_solution(&file, "rho", "rho", numCells, vtkGrid);
     add_1d_vec_solution(&file, "mu", "mu", numCells, vtkGrid);
     add_1d_vec_solution(&file, "s", "s", numCells, vtkGrid);
+
+    add_1d_vec_solution(&file, "Q0", "Q0", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "Q1", "Q1", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "Q2", "Q2", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "Q3", "Q3", numCells, vtkGrid);
 
     vtkNew<vtkUnstructuredGridWriter> writer;
     std::string outfile = filename.substr(0,filename.size() - 3) + ".vtk";

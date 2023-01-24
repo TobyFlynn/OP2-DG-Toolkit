@@ -25,6 +25,25 @@ void div(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
               op_arg_dat(res, -1, OP_ID, DG_NP, "double", OP_WRITE));
 }
 
+void div_weak(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
+  op2_gemv(mesh, false, 1.0, DGConstants::DRW, u, 0.0, mesh->op_tmp[0]);
+  op2_gemv(mesh, false, 1.0, DGConstants::DSW, u, 0.0, mesh->op_tmp[1]);
+  op2_gemv(mesh, false, 1.0, DGConstants::DRW, v, 0.0, mesh->op_tmp[2]);
+  op2_gemv(mesh, false, 1.0, DGConstants::DSW, v, 0.0, mesh->op_tmp[3]);
+
+  op_par_loop(div, "div", mesh->cells,
+              op_arg_dat(mesh->order,     -1, OP_ID, 1, "int", OP_READ),
+              op_arg_dat(mesh->op_tmp[0], -1, OP_ID, DG_NP, "double", OP_READ),
+              op_arg_dat(mesh->op_tmp[1], -1, OP_ID, DG_NP, "double", OP_READ),
+              op_arg_dat(mesh->op_tmp[2], -1, OP_ID, DG_NP, "double", OP_READ),
+              op_arg_dat(mesh->op_tmp[3], -1, OP_ID, DG_NP, "double", OP_READ),
+              op_arg_dat(mesh->rx, -1, OP_ID, DG_NP, "double", OP_READ),
+              op_arg_dat(mesh->sx, -1, OP_ID, DG_NP, "double", OP_READ),
+              op_arg_dat(mesh->ry, -1, OP_ID, DG_NP, "double", OP_READ),
+              op_arg_dat(mesh->sy, -1, OP_ID, DG_NP, "double", OP_READ),
+              op_arg_dat(res, -1, OP_ID, DG_NP, "double", OP_WRITE));
+}
+
 void div_with_central_flux(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
   div(mesh, u, v, res);
 
@@ -174,7 +193,7 @@ void cub_div(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
   op2_gemv(mesh, true, 1.0, DGConstants::CUB_V, mesh->cubature->op_tmp[0], 0.0, res);
 }
 
-void cub_div_with_central_flux(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
+void cub_div_with_central_flux_no_inv_mass(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
   cub_div(mesh, u, v, res);
 
   // Central flux
@@ -195,6 +214,10 @@ void cub_div_with_central_flux(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
               op_arg_dat(mesh->gauss->op_tmp[2], -2, mesh->edge2cells, DG_G_NP, "double", OP_INC));
   
   op2_gemv(mesh, true, -1.0, DGConstants::GAUSS_INTERP, mesh->gauss->op_tmp[2], 1.0, res);
+}
+
+void cub_div_with_central_flux(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
+  cub_div_with_central_flux_no_inv_mass(mesh, u, v, res);
 
   inv_mass(mesh, res);
 }
