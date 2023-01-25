@@ -1,7 +1,7 @@
 set(OPENBLAS_SRC openBLAS_op/inv_op.cpp)
 set(CUBLAS_SRC cuBLAS_op/inv_op.cu)
 
-set(TOOLKIT_SRC utils/misc.cpp utils/nodes.cpp utils/polynomial.cpp utils/vandermonde.cpp utils/matrices.cpp)
+set(TOOLKIT_SRC utils/misc.cpp utils/nodes.cpp utils/polynomial.cpp utils/vandermonde.cpp utils/matrices.cpp utils/interpolate.cpp)
 set(COMMON_SRC dg_mesh_op.cpp dg_operators_op.cpp dg_op2_blas_op.cpp dg_constants_setup.cpp)
 set(CPU_SRC dg_constants.cpp dg_mesh_cpu.cpp)
 set(GPU_SRC dg_constants.cu dg_mesh_gpu.cu)

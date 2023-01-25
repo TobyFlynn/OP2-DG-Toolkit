@@ -127,6 +127,16 @@ arma::vec DGUtils::simplex2DP(const arma::vec &a, const arma::vec &b,
   return sqrt(2.0) * h1 % h2 % arma::pow(1.0 - b, i);
 }
 
+// Calculate 3D orthonomal poly on simplex of order i,j,k
+arma::vec DGUtils::simplex3DP(const arma::vec &a, const arma::vec &b,
+                              const arma::vec &c, const int i, const int j,
+                              const int k) {
+  arma::vec h1 = jacobiP(a, 0, 0, i);
+  arma::vec h2 = jacobiP(b, 2 * i + 1, 0, j);
+  arma::vec h3 = jacobiP(c, 2 * (i + j) + 2, 0, k);
+  return 2.0 * sqrt(2.0) * h1 % h2 % arma::pow(1.0 - b, i) % h3 % arma::pow(1.0 - c, i + j);
+}
+
 // Calculate derivatives of modal basis on simplex
 void DGUtils::gradSimplex2DP(const arma::vec &a, const arma::vec &b,
                              const int i, const int j, arma::vec &dr,
@@ -160,6 +170,50 @@ void DGUtils::gradSimplex2DP(const arma::vec &a, const arma::vec &b,
   // Normalise
   dr = pow(2.0, i + 0.5) * dr;
   ds = pow(2.0, i + 0.5) * ds;
+}
+
+// Calculate the gradient of the 3D orthonomal poly on simplex of order i,j,k
+void DGUtils::gradSimplex3DP(const arma::vec &a, const arma::vec &b,
+                             const arma::vec &c, const int i, const int j,
+                             const int k, arma::vec &dr, arma::vec &ds,
+                             arma::vec &dt) {
+  arma::vec fa  = jacobiP(a, 0, 0, i);
+  arma::vec gb  = jacobiP(b, 2 * i + 1, 0, j);
+  arma::vec hc  = jacobiP(c, 2 * (i + j) + 2, 0, k);
+  arma::vec dfa = gradJacobiP(a, 0, 0, i);
+  arma::vec dgb = gradJacobiP(b, 2 * i + 1, 0, j);
+  arma::vec dhc = gradJacobiP(c, 2 * (i + j) + 2, 0, k);
+
+  // r derivative
+  dr = dfa % gb % hc;
+  if(i > 0)
+    dr = dr % arma::pow(0.5 * (1.0 - b), i - 1);
+  if(i + j > 0)
+    dr = dr % arma::pow(0.5 * (1.0 - c), i + j - 1);
+
+  // s derivative
+  ds = 0.5 * (1.0 + a) % dr;
+  arma::vec tmp = dgb % arma::pow(0.5 * (1.0 - b), i);
+  if(i > 0)
+    tmp = tmp + (-0.5 * i) * (gb % arma::pow(0.5 * (1.0 - b), i - 1));
+  if(i + j > 0)
+    tmp = tmp % arma::pow(0.5 * (1.0 - c), i + j - 1);
+  tmp = fa % (tmp % hc);
+  ds = ds + tmp;
+
+  // t derivative
+  dt = 0.5 * (1.0 + a) % dr + 0.5 * (1.0 + b) % tmp;
+  tmp = dhc % arma::pow(0.5 * (1.0 - c), i + j);
+  if(i + j > 0)
+    tmp = tmp - 0.5 * (i + j) * (hc % arma::pow(0.5 * (1.0 - c), i + j - 1));
+  tmp = fa % (gb % tmp);
+  tmp = tmp % arma::pow(0.5 * (1.0 - b), i);
+  dt = dt + tmp;
+
+  // normalise
+  dr = dr * pow(2.0, 2 * i + j + 1.5);
+  ds = ds * pow(2.0, 2 * i + j + 1.5);
+  dt = dt * pow(2.0, 2 * i + j + 1.5);
 }
 
 // Get cubature rules

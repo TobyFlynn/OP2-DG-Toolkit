@@ -12,7 +12,7 @@ int DGMesh::get_local_vec_unknowns() {
   int local_unkowns = 0;
   for(int i = 0; i < setSize; i++) {
     int Np, Nfp;
-    DGUtils::basic_constants(p[i], &Np, &Nfp);
+    DGUtils::numNodes2D(p[i], &Np, &Nfp);
     local_unkowns += Np;
   }
   op_mpi_set_dirtybit(1, op2_args);

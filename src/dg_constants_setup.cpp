@@ -54,7 +54,7 @@ void DGConstants::setup(const int n) {
   // Set order
   N = n;
   // Set num points and num face points
-  DGUtils::basic_constants(N, &Np, &Nfp);
+  DGUtils::numNodes2D(N, &Np, &Nfp);
 
   // Set the coordinates of the points on the refernece triangle
   DGUtils::setRefXY(N, x_, y_);
@@ -201,8 +201,8 @@ void DGConstants::calc_interp_mats() {
       /*
       if(n < N) {
         int Np_q, Np_p, tmp;
-        DGUtils::basic_constants(n, &Np_q, &tmp);
-        DGUtils::basic_constants(N, &Np_p, &tmp);
+        DGUtils::numNodes2D(n, &Np_q, &tmp);
+        DGUtils::numNodes2D(N, &Np_p, &tmp);
         arma::mat vt_q_inv = arma::inv(constants[n]->V_.t());
         arma::mat vt_p_inv = arma::inv(V_.t());
         arma::mat m_qp(Np_q, Np_p, arma::fill::zeros);
@@ -216,8 +216,8 @@ void DGConstants::calc_interp_mats() {
         interp_[n - 1] = (arma::inv(constants[n]->MassMatrix_) * m_qp).t();
       } else {
         int Np_q, Np_p, tmp;
-        DGUtils::basic_constants(N, &Np_q, &tmp);
-        DGUtils::basic_constants(n, &Np_p, &tmp);
+        DGUtils::numNodes2D(N, &Np_q, &tmp);
+        DGUtils::numNodes2D(n, &Np_p, &tmp);
         arma::mat vt_q_inv = arma::inv(V_.t());
         arma::mat vt_p_inv = arma::inv(constants[n]->V_.t());
         arma::mat m_qp(Np_q, Np_p, arma::fill::zeros);

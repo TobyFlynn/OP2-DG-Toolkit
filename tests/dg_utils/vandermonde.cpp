@@ -96,6 +96,36 @@ TEST_CASE("DGUtils::vandermonde2D") {
   }
 }
 
+// Testing DGUtils::vandermonde3D
+// 3D Vandermonde matrix
+TEST_CASE("DGUtils::vandermonde3D") {
+  std::string data_prefix = test_data_prefix + "vandermonde3D/";
+
+  SECTION("N = 1") {
+    int N = 1;
+    arma::vec r, s, t;
+    r.load(data_prefix + "r-N-1.txt");
+    s.load(data_prefix + "s-N-1.txt");
+    t.load(data_prefix + "t-N-1.txt");
+    arma::mat v3D = DGUtils::vandermonde3D(r, s, t, N);
+    arma::mat v3D_ans;
+    v3D_ans.load(data_prefix + "v3D-N-1.txt");
+    compare_mat(v3D, v3D_ans);
+  }
+
+  SECTION("N = 4") {
+    int N = 4;
+    arma::vec r, s, t;
+    r.load(data_prefix + "r-N-4.txt");
+    s.load(data_prefix + "s-N-4.txt");
+    t.load(data_prefix + "t-N-4.txt");
+    arma::mat v3D = DGUtils::vandermonde3D(r, s, t, N);
+    arma::mat v3D_ans;
+    v3D_ans.load(data_prefix + "v3D-N-4.txt");
+    compare_mat(v3D, v3D_ans);
+  }
+}
+
 // Testing DGUtils::gradVandermonde2D
 // Vandermonde matrix for gradient of modal basis
 TEST_CASE("DGUtils::gradVandermonde2D") {
@@ -138,5 +168,44 @@ TEST_CASE("DGUtils::gradVandermonde2D") {
     vDs_ans.load(data_prefix + "vDs-N-7.txt");
     compare_mat(vDr, vDr_ans);
     compare_mat(vDs, vDs_ans);
+  }
+}
+
+// 3D gradient Vandermonde matrice
+TEST_CASE("DGUtils::gradVandermonde3D") {
+  std::string data_prefix = test_data_prefix + "gradVandermonde3D/";
+
+  SECTION("N = 1") {
+    int N = 1;
+    arma::vec r, s, t;
+    r.load(data_prefix + "r-N-1.txt");
+    s.load(data_prefix + "s-N-1.txt");
+    t.load(data_prefix + "t-N-1.txt");
+    arma::mat dr, ds, dt;
+    DGUtils::gradVandermonde3D(r, s, t, N, dr, ds, dt);
+    arma::mat dr_ans, ds_ans, dt_ans;
+    dr_ans.load(data_prefix + "dr-N-1.txt");
+    ds_ans.load(data_prefix + "ds-N-1.txt");
+    dt_ans.load(data_prefix + "dt-N-1.txt");
+    compare_mat(dr, dr_ans);
+    compare_mat(ds, ds_ans);
+    compare_mat(dt, dt_ans);
+  }
+
+  SECTION("N = 4") {
+    int N = 4;
+    arma::vec r, s, t;
+    r.load(data_prefix + "r-N-4.txt");
+    s.load(data_prefix + "s-N-4.txt");
+    t.load(data_prefix + "t-N-4.txt");
+    arma::mat dr, ds, dt;
+    DGUtils::gradVandermonde3D(r, s, t, N, dr, ds, dt);
+    arma::mat dr_ans, ds_ans, dt_ans;
+    dr_ans.load(data_prefix + "dr-N-4.txt");
+    ds_ans.load(data_prefix + "ds-N-4.txt");
+    dt_ans.load(data_prefix + "dt-N-4.txt");
+    compare_mat(dr, dr_ans);
+    compare_mat(ds, ds_ans);
+    compare_mat(dt, dt_ans);
   }
 }

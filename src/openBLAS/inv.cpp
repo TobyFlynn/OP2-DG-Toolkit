@@ -23,7 +23,7 @@ void inv_blas(DGMesh *mesh, op_dat in, op_dat out) {
     double *inv_c      = (double *)out->data + i * out->dim;
     const int N        = p[i];
     int Np, Nfp;
-    DGUtils::basic_constants(N, &Np, &Nfp);
+    DGUtils::numNodes2D(N, &Np, &Nfp);
 
     arma::mat a(in_c, Np, Np);
     arma::mat b(inv_c, Np, Np, false, true);
