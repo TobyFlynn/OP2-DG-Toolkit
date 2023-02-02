@@ -9,6 +9,7 @@ mkdir -p gen/kernels
 mkdir -p gen/openBLAS
 mkdir -p gen/cuBLAS
 mkdir -p gen/utils
+mkdir -p gen/dg_constants
 
 python3 preprocessor.py 3
 
@@ -47,6 +48,7 @@ cmake .. \
   -DBUILD_MPI=ON \
   -DBUILD_GPU=ON \
   -DORDER=3 \
+  -DDIM=3 \
   -DCMAKE_INSTALL_PREFIX=$(pwd)
 
 make -j

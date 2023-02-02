@@ -10,8 +10,6 @@
 extern cublasHandle_t handle;
 #endif
 
-extern DGConstants *constants[DG_ORDER + 1];
-
 void inv_blas(DGMesh *mesh, op_dat in, op_dat out);
 
 void init_blas();

@@ -5,6 +5,7 @@
 #include "dg_blas_calls.h"
 #include "dg_compiler_defs.h"
 #include "dg_op2_blas.h"
+#include "dg_constants.h"
 
 void div(DGMesh *mesh, op_dat u, op_dat v, op_dat res) {
   op2_gemv(mesh, false, 1.0, DGConstants::DR, u, 0.0, mesh->op_tmp[0]);

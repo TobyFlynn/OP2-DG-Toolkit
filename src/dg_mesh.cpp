@@ -8,11 +8,17 @@
 
 #include "dg_blas_calls.h"
 #include "dg_compiler_defs.h"
-#include "dg_constants.h"
 #include "dg_op2_blas.h"
-#include "dg_global_constants.h"
+#include "dg_constants.h"
+#if DG_DIM == 2
+#include "2d/dg_constants.h"
+#include "2d/dg_global_constants.h"
+#elif DG_DIM == 3
+#include "3d/dg_constants.h"
+#include "3d/dg_global_constants.h"
+#endif
 
-DGConstants *constants[DG_ORDER + 1];
+DGConstants *constants;
 
 using namespace std;
 
@@ -55,7 +61,7 @@ void DGCubatureData::update_mesh_constants() {
 
   op_par_loop(init_cubature, "init_cubature", mesh->cells,
               op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
-              op_arg_gbl(cubV_g, DG_ORDER * DG_CUB_NP * DG_NP, "double", OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::CUB_V), DG_ORDER * DG_CUB_NP * DG_NP, "double", OP_READ),
               op_arg_dat(rx,    -1, OP_ID, DG_CUB_NP, "double", OP_RW),
               op_arg_dat(sx,    -1, OP_ID, DG_CUB_NP, "double", OP_RW),
               op_arg_dat(ry,    -1, OP_ID, DG_CUB_NP, "double", OP_RW),
@@ -65,7 +71,7 @@ void DGCubatureData::update_mesh_constants() {
 
   op_par_loop(cub_mm_init, "cub_mm_init", mesh->cells,
               op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
-              op_arg_gbl(cubV_g, DG_ORDER * DG_CUB_NP * DG_NP, "double", OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::CUB_V), DG_ORDER * DG_CUB_NP * DG_NP, "double", OP_READ),
               op_arg_dat(tmp,   -1, OP_ID, DG_CUB_NP * DG_NP, "double", OP_READ),
               op_arg_dat(mm,    -1, OP_ID, DG_NP * DG_NP, "double", OP_WRITE));
 }
@@ -103,12 +109,12 @@ void DGGaussData::update_mesh_constants() {
               op_arg_dat(mesh->order,  -1, OP_ID, 1, "int", OP_READ),
               op_arg_dat(mesh->x, -1, OP_ID, DG_NP, "double", OP_READ),
               op_arg_dat(mesh->y, -1, OP_ID, DG_NP, "double", OP_READ),
-              op_arg_gbl(gF0Dr_g, DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
-              op_arg_gbl(gF0Ds_g, DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
-              op_arg_gbl(gF1Dr_g, DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
-              op_arg_gbl(gF1Ds_g, DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
-              op_arg_gbl(gF2Dr_g, DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
-              op_arg_gbl(gF2Ds_g, DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F0DR), DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F0DS), DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F1DR), DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F1DS), DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F2DR), DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F2DS), DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
               op_arg_dat(rx, -1, OP_ID, DG_G_NP, "double", OP_WRITE),
               op_arg_dat(sx, -1, OP_ID, DG_G_NP, "double", OP_WRITE),
               op_arg_dat(ry, -1, OP_ID, DG_G_NP, "double", OP_WRITE),
@@ -128,16 +134,13 @@ void DGGaussData::update_mesh_constants() {
 DGMesh::DGMesh(std::string &meshFile) {
   init_blas();
   // Calculate DG constants
-  // Not currently considering 0th order
-  constants[0] = nullptr;
-  for(int p = 1; p <= DG_ORDER; p++) {
-    constants[p] = new DGConstants(p);
-  }
-  // Now that all constants have been calculated,
-  // calc interpolation matrices between different orders
-  for(int p = 1; p <= DG_ORDER; p++) {
-    constants[p]->calc_interp_mats();
-  }
+  #if DG_DIM == 2
+  constants = new DGConstants2D(DG_ORDER);
+  #elif DG_DIM == 3
+  constants = new DGConstants3D(DG_ORDER);
+  #endif
+
+  constants->calc_interp_mats();
 
   // Initialise OP2
   // Declare OP2 sets
@@ -211,10 +214,7 @@ DGMesh::DGMesh(std::string &meshFile) {
 }
 
 DGMesh::~DGMesh() {
-  for(int p = 1; p <= DG_ORDER; p++) {
-    delete constants[p];
-  }
-
+  delete constants;
   delete cubature;
   delete gauss;
   destroy_blas();
@@ -233,8 +233,8 @@ void DGMesh::init() {
   // Calculate geometric factors
   op_par_loop(calc_geom, "calc_geom", cells,
               op_arg_dat(order,  -1, OP_ID, 1, "int", OP_READ),
-              op_arg_gbl(r_g, DG_ORDER * DG_NP, "double", OP_READ),
-              op_arg_gbl(s_g, DG_ORDER * DG_NP, "double", OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::R), DG_ORDER * DG_NP, "double", OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::S), DG_ORDER * DG_NP, "double", OP_READ),
               op_arg_dat(nodeX, -1, OP_ID, 3, "double", OP_READ),
               op_arg_dat(nodeY, -1, OP_ID, 3, "double", OP_READ),
               op_arg_dat(x, -1, OP_ID, DG_NP, "double", OP_WRITE),
@@ -270,8 +270,8 @@ void DGMesh::init() {
 void DGMesh::update_mesh_constants() {
   op_par_loop(calc_geom, "calc_geom", cells,
               op_arg_dat(order,  -1, OP_ID, 1, "int", OP_READ),
-              op_arg_gbl(r_g, DG_ORDER * DG_NP, "double", OP_READ),
-              op_arg_gbl(s_g, DG_ORDER * DG_NP, "double", OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::R), DG_ORDER * DG_NP, "double", OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::S), DG_ORDER * DG_NP, "double", OP_READ),
               op_arg_dat(nodeX, -1, OP_ID, 3, "double", OP_READ),
               op_arg_dat(nodeY, -1, OP_ID, 3, "double", OP_READ),
               op_arg_dat(x, -1, OP_ID, DG_NP, "double", OP_WRITE),
@@ -307,7 +307,7 @@ void DGMesh::update_order(op_dat new_orders,
       exit(-1);
     }
     op_par_loop(interp_dat_to_new_order, "interp_dat_to_new_order", cells,
-                op_arg_gbl(order_interp_g, DG_ORDER * DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
                 op_arg_dat(order,      -1, OP_ID, 1, "int", OP_READ),
                 op_arg_dat(new_orders, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_dat(dats_to_interpolate[i], -1, OP_ID, DG_NP, "double", OP_RW));
@@ -331,7 +331,7 @@ void DGMesh::update_order(int new_order,
       exit(-1);
     }
     op_par_loop(interp_dat_to_new_order_int, "interp_dat_to_new_order_int", cells,
-                op_arg_gbl(order_interp_g, DG_ORDER * DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
                 op_arg_dat(order,    -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&new_order, 1, "int", OP_READ),
                 op_arg_dat(dats_to_interpolate[i], -1, OP_ID, DG_NP, "double", OP_RW));
@@ -360,7 +360,7 @@ void DGMesh::interp_to_max_order(std::vector<op_dat> &dats_in,
       exit(-1);
     }
     op_par_loop(interp_dat_to_max_order, "interp_dat_to_max_order", cells,
-                op_arg_gbl(order_interp_g, DG_ORDER * DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
                 op_arg_dat(order,       -1, OP_ID, 1, "int", OP_READ),
                 op_arg_dat(dats_in[i],  -1, OP_ID, DG_NP, "double", OP_READ),
                 op_arg_dat(dats_out[i], -1, OP_ID, DG_NP, "double", OP_WRITE));
