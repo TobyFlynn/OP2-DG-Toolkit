@@ -18,6 +18,9 @@ DGConstants3D::DGConstants3D(const int n_) {
   // Set num points and num face points
   DGUtils::numNodes3D(N_max, &Np_max, &Nfp_max);
 
+  r_ptr   = (double *)calloc(N_max * Np_max, sizeof(double));
+  s_ptr   = (double *)calloc(N_max * Np_max, sizeof(double));
+  t_ptr   = (double *)calloc(N_max * Np_max, sizeof(double));
   Dr_ptr  = (double *)calloc(N_max * Np_max * Np_max, sizeof(double));
   Ds_ptr  = (double *)calloc(N_max * Np_max * Np_max, sizeof(double));
   Dt_ptr  = (double *)calloc(N_max * Np_max * Np_max, sizeof(double));
@@ -65,6 +68,9 @@ DGConstants3D::DGConstants3D(const int n_) {
     arma::mat dsw_ = (v_ * vs.t()) * arma::inv(v_ * v_.t());
     arma::mat dtw_ = (v_ * vt.t()) * arma::inv(v_ * v_.t());
 
+    memcpy(&r_ptr[(N - 1) * Np_max], r_.memptr(), r_.n_elem * sizeof(double));
+    memcpy(&s_ptr[(N - 1) * Np_max], s_.memptr(), s_.n_elem * sizeof(double));
+    memcpy(&t_ptr[(N - 1) * Np_max], t_.memptr(), t_.n_elem * sizeof(double));
     memcpy(&Dr_ptr[(N - 1) * Np_max * Np_max], dr_.memptr(), dr_.n_elem * sizeof(double));
     memcpy(&Ds_ptr[(N - 1) * Np_max * Np_max], ds_.memptr(), ds_.n_elem * sizeof(double));
     memcpy(&Dt_ptr[(N - 1) * Np_max * Np_max], dt_.memptr(), dt_.n_elem * sizeof(double));
@@ -119,6 +125,12 @@ void DGConstants3D::calc_interp_mats() {
 
 double* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
   switch(matrix) {
+    case R:
+      return r_ptr;
+    case S:
+      return s_ptr;
+    case T:
+      return t_ptr;
     case DR:
       return Dr_ptr;
     case DS:
@@ -156,6 +168,9 @@ double* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
 }
 
 DGConstants3D::~DGConstants3D() {
+  delete r_ptr;
+  delete s_ptr;
+  delete t_ptr;
   delete Dr_ptr;
   delete Ds_ptr;
   delete Dt_ptr;

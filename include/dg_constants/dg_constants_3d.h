@@ -14,9 +14,8 @@ public:
   void calc_interp_mats() override;
   double* get_mat_ptr(Constant_Matrix matrix) override;
 
-  int N_max, Np_max, Nfp_max;
-
 private:
+  double *r_ptr, *s_ptr, *t_ptr;
   double *Dr_ptr, *Ds_ptr, *Dt_ptr, *Drw_ptr, *Dsw_ptr, *Dtw_ptr;
   double *mass_ptr, *invMass_ptr, *invV_ptr, *lift_ptr;
   double *mmF0_ptr, *mmF1_ptr, *mmF2_ptr, *mmF3_ptr;

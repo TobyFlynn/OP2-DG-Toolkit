@@ -12,14 +12,19 @@ mkdir -p gen/utils
 mkdir -p gen/dg_constants
 mkdir -p gen/dg_mesh
 
-python3 preprocessor.py 3
+# python3 preprocessor.py 3
+python3 preprocessor_3d.py 3
 
 cd gen
 
+# python3 $OP2_TRANSLATOR \
+#   dg_tookit.cpp dg_mesh/dg_mesh_2d.cpp \
+#   dg_op2_blas.cpp \
+#   dg_operators.cpp openBLAS/* \
+#   cuBLAS/* kernels/
 python3 $OP2_TRANSLATOR \
-  dg_tookit.cpp dg_mesh/dg_mesh_2d.cpp dg_op2_blas.cpp \
-  dg_operators.cpp openBLAS/* \
-  cuBLAS/* kernels/
+  dg_tookit.cpp \
+  dg_mesh/dg_mesh_3d.cpp kernels/
 
 cd ..
 
@@ -49,7 +54,7 @@ cmake .. \
   -DBUILD_MPI=ON \
   -DBUILD_GPU=ON \
   -DORDER=3 \
-  -DDIM=2 \
+  -DDIM=3 \
   -DCMAKE_INSTALL_PREFIX=$(pwd)
 
 make -j

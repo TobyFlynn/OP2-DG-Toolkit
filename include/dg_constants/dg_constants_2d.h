@@ -14,7 +14,7 @@ public:
   void calc_interp_mats() override;
   double* get_mat_ptr(Constant_Matrix matrix) override;
 
-  int N_max, Nfp_max, Np_max, cNp_max, gNp_max, gNfp_max;
+  int cNp_max, gNp_max, gNfp_max;
 
 private:
   void cubature(const int nCub, const int N, arma::mat &V_, arma::mat &invV_, arma::mat &Dr_, arma::mat &Ds_);

@@ -17,7 +17,7 @@ public:
 
     INV_MASS_GAUSS_INTERP_T,
 
-    INV_MASS, MASS, V, R, S,
+    INV_MASS, MASS, V, R, S, T,
 
     MM_F0, MM_F1, MM_F2, MM_F3,
 
@@ -26,6 +26,8 @@ public:
 
   virtual void calc_interp_mats() = 0;
   virtual double* get_mat_ptr(Constant_Matrix matrix) = 0;
+
+  int N_max, Np_max, Nfp_max;
 };
 
 #endif
