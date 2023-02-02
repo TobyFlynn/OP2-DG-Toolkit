@@ -1,16 +1,18 @@
-#ifndef __DG_MESH_H
-#define __DG_MESH_H
+#ifndef __DG_MESH_2D_H
+#define __DG_MESH_2D_H
+
+#include "dg_mesh.h"
 
 #include "op_seq.h"
 
 #include <string>
 #include <vector>
 
-class DGMesh;
+class DGMesh2D;
 
 class DGCubatureData {
 public:
-  DGCubatureData(DGMesh *m);
+  DGCubatureData(DGMesh2D *m);
   void init();
   void update_mesh_constants();
 
@@ -19,12 +21,12 @@ public:
   op_dat op_tmp[4], tmp;
 
 private:
-  DGMesh *mesh;
+  DGMesh2D *mesh;
 };
 
 class DGGaussData {
 public:
-  DGGaussData(DGMesh *m);
+  DGGaussData(DGMesh2D *m);
   void init();
   void update_mesh_constants();
 
@@ -32,14 +34,14 @@ public:
   op_dat rx, sx, ry, sy, sJ, nx, ny;
   op_dat op_tmp[3];
 private:
-  DGMesh *mesh;
+  DGMesh2D *mesh;
 };
 
-class DGMesh {
+class DGMesh2D : public DGMesh {
 public:
-  DGMesh(std::string &meshFile);
-  ~DGMesh();
-  void init();
+  DGMesh2D(std::string &meshFile);
+  ~DGMesh2D();
+  void init() override;
   void update_order(op_dat new_orders, std::vector<op_dat> &dats_to_interpolate);
   void update_order(int new_order, std::vector<op_dat> &dats_to_interpolate);
   void interp_to_max_order(std::vector<op_dat> &dats_in, std::vector<op_dat> &dats_out);

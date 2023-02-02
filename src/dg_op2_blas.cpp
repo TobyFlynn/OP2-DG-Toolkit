@@ -5,14 +5,14 @@
 #include <iostream>
 
 #if DG_DIM == 2
-#include "2d/dg_global_constants.h"
+#include "dg_global_constants/dg_global_constants_2d.h"
 #elif DG_DIM == 3
-#include "3d/dg_global_constants.h"
+#include "dg_global_constants/dg_global_constants_3d.h"
 #endif
 
 extern DGConstants *constants;
 
-void op2_gemv_inv_mass_gass_interpT(DGMesh *mesh, bool transpose,
+void op2_gemv_inv_mass_gass_interpT(DGMesh2D *mesh, bool transpose,
                                     const double alpha, op_dat x,
                                     const double beta, op_dat y) {
   if(transpose) {
@@ -29,7 +29,7 @@ void op2_gemv_inv_mass_gass_interpT(DGMesh *mesh, bool transpose,
   }
 }
 
-void op2_gemv_gauss_interp(DGMesh *mesh, bool transpose, const double alpha,
+void op2_gemv_gauss_interp(DGMesh2D *mesh, bool transpose, const double alpha,
                            op_dat x, const double beta, op_dat y) {
   if(transpose) {
     op_par_loop(gemv_gauss_interpT, "gemv_gauss_interpT", mesh->cells,
@@ -50,7 +50,7 @@ void op2_gemv_gauss_interp(DGMesh *mesh, bool transpose, const double alpha,
   }
 }
 
-void op2_gemv_lift(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
+void op2_gemv_lift(DGMesh2D *mesh, bool transpose, const double alpha, op_dat x,
                    const double beta, op_dat y) {
   if(transpose) {
     op_par_loop(gemv_liftT, "gemv_liftT", mesh->cells,
@@ -71,7 +71,7 @@ void op2_gemv_lift(DGMesh *mesh, bool transpose, const double alpha, op_dat x,
   }
 }
 
-void op2_gemv_np_np(DGMesh *mesh, bool transpose, const double alpha, 
+void op2_gemv_np_np(DGMesh2D *mesh, bool transpose, const double alpha, 
                     const double *matrix, op_dat x, const double beta, 
                     op_dat y) {
   if(transpose) {
@@ -93,7 +93,7 @@ void op2_gemv_np_np(DGMesh *mesh, bool transpose, const double alpha,
   }
 }
 
-void op2_gemv_cub_np_np(DGMesh *mesh, bool transpose, const double alpha, 
+void op2_gemv_cub_np_np(DGMesh2D *mesh, bool transpose, const double alpha, 
                         const double *matrix, op_dat x, const double beta, 
                         op_dat y) {
   if(transpose) {
@@ -115,7 +115,7 @@ void op2_gemv_cub_np_np(DGMesh *mesh, bool transpose, const double alpha,
   }
 }
 
-void op2_gemv(DGMesh *mesh, bool transpose, const double alpha,
+void op2_gemv(DGMesh2D *mesh, bool transpose, const double alpha,
               DGConstants::Constant_Matrix matrix, op_dat x, const double beta,
               op_dat y) {
   switch(matrix) {

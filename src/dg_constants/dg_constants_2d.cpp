@@ -1,4 +1,4 @@
-#include "2d/dg_constants.h"
+#include "dg_constants/dg_constants_2d.h"
 
 #include <stdexcept>
 

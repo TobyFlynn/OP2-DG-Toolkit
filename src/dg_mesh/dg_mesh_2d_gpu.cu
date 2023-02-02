@@ -1,8 +1,8 @@
-#include "dg_mesh.h"
+#include "dg_mesh/dg_mesh_2d.h"
 
 #include "dg_utils.h"
 
-int DGMesh::get_local_vec_unknowns() {
+int DGMesh2D::get_local_vec_unknowns() {
   op_arg op2_args[] = {
     op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ)
   };

@@ -8,7 +8,7 @@
 
 cublasHandle_t handle;
 
-void inv_blas(DGMesh *mesh, op_dat in, op_dat out) {
+void inv_blas(DGMesh2D *mesh, op_dat in, op_dat out) {
   op_arg inv_args[] = {
     op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
     op_arg_dat(in, -1, OP_ID, in->dim, "double", OP_READ),

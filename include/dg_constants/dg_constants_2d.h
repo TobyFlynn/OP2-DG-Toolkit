@@ -4,7 +4,7 @@
 #define ARMA_ALLOW_FAKE_GCC
 #include <armadillo>
 
-#include "../dg_constants.h"
+#include "dg_constants.h"
 
 class DGConstants2D : public DGConstants {
 public:

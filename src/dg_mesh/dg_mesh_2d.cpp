@@ -1,4 +1,4 @@
-#include "dg_mesh.h"
+#include "dg_mesh/dg_mesh_2d.h"
 
 #include "op_seq.h"
 
@@ -9,14 +9,9 @@
 #include "dg_blas_calls.h"
 #include "dg_compiler_defs.h"
 #include "dg_op2_blas.h"
-#include "dg_constants.h"
-#if DG_DIM == 2
-#include "2d/dg_constants.h"
-#include "2d/dg_global_constants.h"
-#elif DG_DIM == 3
-#include "3d/dg_constants.h"
-#include "3d/dg_global_constants.h"
-#endif
+
+#include "dg_constants/dg_constants_2d.h"
+#include "dg_global_constants/dg_global_constants_2d.h"
 
 DGConstants *constants;
 
@@ -26,7 +21,7 @@ using namespace std;
 void set_cuda_constants_OP2_DG_CUDA();
 #endif
 
-DGCubatureData::DGCubatureData(DGMesh *m) {
+DGCubatureData::DGCubatureData(DGMesh2D *m) {
   mesh = m;
 
   double *tmp_cub_np = (double *)calloc(DG_CUB_NP * mesh->cells->size, sizeof(double));
@@ -76,7 +71,7 @@ void DGCubatureData::update_mesh_constants() {
               op_arg_dat(mm,    -1, OP_ID, DG_NP * DG_NP, "double", OP_WRITE));
 }
 
-DGGaussData::DGGaussData(DGMesh *m) {
+DGGaussData::DGGaussData(DGMesh2D *m) {
   mesh = m;
 
   double *tmp_g_np = (double *)calloc(DG_G_NP * mesh->cells->size, sizeof(double));
@@ -131,14 +126,10 @@ void DGGaussData::update_mesh_constants() {
               op_arg_dat(sJ,     -1, OP_ID, DG_G_NP, "double", OP_WRITE));
 }
 
-DGMesh::DGMesh(std::string &meshFile) {
+DGMesh2D::DGMesh2D(std::string &meshFile) {
   init_blas();
   // Calculate DG constants
-  #if DG_DIM == 2
   constants = new DGConstants2D(DG_ORDER);
-  #elif DG_DIM == 3
-  constants = new DGConstants3D(DG_ORDER);
-  #endif
 
   constants->calc_interp_mats();
 
@@ -171,7 +162,7 @@ DGMesh::DGMesh(std::string &meshFile) {
   free(tmp_3_data);
 
   double *tmp_np  = (double *)calloc(DG_NP * cells->size, sizeof(double));
-  double *tmp_npf = (double *)calloc(3 * DG_NPF * cells->size, sizeof(double));
+  double *tmp_npf = (double *)calloc(DG_NUM_FACES * DG_NPF * cells->size, sizeof(double));
   // The x and y coordinates of all the solution points in a cell
   x = op_decl_dat(cells, DG_NP, "double", tmp_np, "x");
   y = op_decl_dat(cells, DG_NP, "double", tmp_np, "y");
@@ -213,14 +204,14 @@ DGMesh::DGMesh(std::string &meshFile) {
   gauss = new DGGaussData(this);
 }
 
-DGMesh::~DGMesh() {
+DGMesh2D::~DGMesh2D() {
   delete constants;
   delete cubature;
   delete gauss;
   destroy_blas();
 }
 
-void DGMesh::init() {
+void DGMesh2D::init() {
   // Initialise the order to the max order to start with
   op_par_loop(init_order, "init_order", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_WRITE));
@@ -267,7 +258,7 @@ void DGMesh::init() {
   gauss->init();
 }
 
-void DGMesh::update_mesh_constants() {
+void DGMesh2D::update_mesh_constants() {
   op_par_loop(calc_geom, "calc_geom", cells,
               op_arg_dat(order,  -1, OP_ID, 1, "int", OP_READ),
               op_arg_gbl(constants->get_mat_ptr(DGConstants::R), DG_ORDER * DG_NP, "double", OP_READ),
@@ -298,7 +289,7 @@ void DGMesh::update_mesh_constants() {
   gauss->update_mesh_constants();
 }
 
-void DGMesh::update_order(op_dat new_orders,
+void DGMesh2D::update_order(op_dat new_orders,
                           std::vector<op_dat> &dats_to_interpolate) {
   // Interpolate dats first (assumes all these dats are of size DG_NP)
   for(int i = 0; i < dats_to_interpolate.size(); i++) {
@@ -322,7 +313,7 @@ void DGMesh::update_order(op_dat new_orders,
   update_mesh_constants();
 }
 
-void DGMesh::update_order(int new_order,
+void DGMesh2D::update_order(int new_order,
                           std::vector<op_dat> &dats_to_interpolate) {
   // Interpolate dats first (assumes all these dats are of size DG_NP)
   for(int i = 0; i < dats_to_interpolate.size(); i++) {
@@ -346,7 +337,7 @@ void DGMesh::update_order(int new_order,
   update_mesh_constants();
 }
 
-void DGMesh::interp_to_max_order(std::vector<op_dat> &dats_in,
+void DGMesh2D::interp_to_max_order(std::vector<op_dat> &dats_in,
                                  std::vector<op_dat> &dats_out) {
   if(dats_in.size() != dats_out.size()) {
     std::cerr << "Error must specify an output dat for each input when interpolating to max order ...  exiting" << std::endl;
