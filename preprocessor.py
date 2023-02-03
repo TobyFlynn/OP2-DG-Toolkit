@@ -66,5 +66,9 @@ for f in inputfiles:
         newdata = newdata.replace("DG_G_NP", dg_g_np)
         newdata = newdata.replace("DG_GF_NP", dg_gf_np)
 
-    with open("gen/" + f, "w") as file:
-        file.write(newdata)
+    if dim == "2":
+        with open("gen_2d/" + f, "w") as file:
+            file.write(newdata)
+    elif dim == "3":
+        with open("gen_3d/" + f, "w") as file:
+            file.write(newdata)

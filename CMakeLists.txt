@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.18)
 project(libop2dgtoolkit CXX)
 
 # Import compiler flags for all build types
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fPIC")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fPIC -fopenmp")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -fopenmp")
 
 if(NOT OP2_DIR)
   message(FATAL_ERROR "OP2_DIR is not specified")
@@ -67,7 +67,11 @@ install(FILES ${HEADERS} DESTINATION include)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Invoke subprojects
-add_subdirectory(gen)
+set(DIM 2)
+add_subdirectory(gen_2d)
+set(DIM 3)
+add_subdirectory(gen_3d)
+set(DIM 2)
 add_subdirectory(tools)
 if(BUILD_TESTS)
   add_subdirectory(tests)
