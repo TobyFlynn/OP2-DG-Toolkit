@@ -13,19 +13,19 @@ mkdir -p gen/dg_constants
 mkdir -p gen/dg_mesh
 mkdir -p gen/dg_operators
 
-python3 preprocessor.py 3
-# python3 preprocessor_3d.py 3
+# python3 preprocessor.py 3
+python3 preprocessor_3d.py 3
 
 cd gen
 
-python3 $OP2_TRANSLATOR \
-  dg_tookit.cpp dg_mesh/dg_mesh_2d.cpp \
-  dg_op2_blas.cpp \
-  dg_operators/dg_operators_2d.cpp openBLAS/* \
-  cuBLAS/* kernels/
 # python3 $OP2_TRANSLATOR \
-#   dg_tookit.cpp \
-#   dg_mesh/dg_mesh_3d.cpp kernels/
+#   dg_tookit.cpp dg_mesh/dg_mesh_2d.cpp \
+#   dg_op2_blas.cpp \
+#   dg_operators/dg_operators_2d.cpp openBLAS/* \
+#   cuBLAS/* kernels/
+python3 $OP2_TRANSLATOR \
+  dg_tookit.cpp dg_mesh/dg_mesh_3d.cpp \
+  dg_op2_blas.cpp kernels/
 
 cd ..
 
@@ -37,6 +37,10 @@ sed -i "23i cutilSafeCall(cudaMemcpyToSymbol(cubW_g_cuda, cubW_g, DG_ORDER * DG_
 sed -i "24i cutilSafeCall(cudaMemcpyToSymbol(gaussW_g_cuda, gaussW_g, DG_ORDER * DG_GF_NP * sizeof(double)));" gen/cuda/dg_tookit_kernels.cu
 sed -i "25i cutilSafeCall(cudaMemcpyToSymbol(DG_CONSTANTS_cuda, DG_CONSTANTS, DG_ORDER * 5 * sizeof(int)));" gen/cuda/dg_tookit_kernels.cu
 sed -i "26i }" gen/cuda/dg_tookit_kernels.cu
+
+# Add compiler definitions to every kernel
+sed -i "1i #include \"dg_compiler_defs.h\"" gen/openmp/dg_tookit_kernels.cpp
+sed -i "1i #include \"dg_compiler_defs.h\"" gen/seq/dg_tookit_seqkernels.cpp
 
 mkdir build
 
@@ -55,7 +59,7 @@ cmake .. \
   -DBUILD_MPI=ON \
   -DBUILD_GPU=ON \
   -DORDER=3 \
-  -DDIM=2 \
+  -DDIM=3 \
   -DCMAKE_INSTALL_PREFIX=$(pwd)
 
 make -j

@@ -6,7 +6,7 @@
 
 #include "dg_constants/dg_constants_3d.h"
 #include "dg_compiler_defs.h"
-// #include "dg_op2_blas.h"
+#include "dg_op2_blas.h"
 #include "dg_global_constants/dg_global_constants_3d.h"
 
 DGConstants *constants;
@@ -92,6 +92,9 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
     op_tmp_npf[i] = op_decl_dat(cells, 4 * DG_NPF, "double", tmp_dg_npf_double, tmpname.c_str());
   }
   free(tmp_dg_npf_double);
+  int *int_tmp_1 = (int *)calloc(cells->size, sizeof(int));
+  order = op_decl_dat(cells, 1, "int", int_tmp_1, "order");
+  free(int_tmp_1);
 
   constants = new DGConstants3D(DG_ORDER);
   constants->calc_interp_mats();
@@ -112,7 +115,7 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   op_decl_const(DG_ORDER * DG_NPF * 4, "int", FMASK);
   op_decl_const(DG_ORDER * 2, "int", DG_CONSTANTS);
 #endif
-  order = DG_ORDER;
+  order_int = DG_ORDER;
 }
 
 
@@ -121,6 +124,10 @@ DGMesh3D::~DGMesh3D() {
 }
 
 void DGMesh3D::init() {
+  // Initialise the order to the max order to start with
+  op_par_loop(init_order, "init_order", cells,
+              op_arg_dat(order, -1, OP_ID, 1, "int", OP_WRITE));
+
   op_par_loop(init_nodes_3d, "init_nodes_3d", cells,
               op_arg_dat(node_coords, -4, cell2nodes, 3, "double", OP_READ),
               op_arg_dat(nodeX, -1, OP_ID, 4, "double", OP_WRITE),
@@ -131,12 +138,12 @@ void DGMesh3D::init() {
 }
 
 void DGMesh3D::calc_mesh_constants() {
-  const double *r_ptr = constants->get_mat_ptr(DGConstants::R) + (order - 1) * constants->Np_max;
-  const double *s_ptr = constants->get_mat_ptr(DGConstants::S) + (order - 1) * constants->Np_max;
-  const double *t_ptr = constants->get_mat_ptr(DGConstants::T) + (order - 1) * constants->Np_max;
+  const double *r_ptr = constants->get_mat_ptr(DGConstants::R) + (order_int - 1) * constants->Np_max;
+  const double *s_ptr = constants->get_mat_ptr(DGConstants::S) + (order_int - 1) * constants->Np_max;
+  const double *t_ptr = constants->get_mat_ptr(DGConstants::T) + (order_int - 1) * constants->Np_max;
 
   op_par_loop(init_grid_3d, "init_grid_3d", cells,
-              op_arg_gbl(&order, 1, "int", OP_READ),
+              op_arg_gbl(&order_int, 1, "int", OP_READ),
               op_arg_gbl(r_ptr, DG_NP, "double", OP_READ),
               op_arg_gbl(s_ptr, DG_NP, "double", OP_READ),
               op_arg_gbl(t_ptr, DG_NP, "double", OP_READ),
@@ -147,10 +154,9 @@ void DGMesh3D::calc_mesh_constants() {
               op_arg_dat(y, -1, OP_ID, DG_NP, "double", OP_WRITE),
               op_arg_dat(z, -1, OP_ID, DG_NP, "double", OP_WRITE));
 
-  // TODO op2_blas for 3D
-  // op2_gemv(this, false, 1.0, DGConstants::DR, x, 0.0, op_tmp[0]);
-  // op2_gemv(this, false, 1.0, DGConstants::DS, x, 0.0, op_tmp[1]);
-  // op2_gemv(this, false, 1.0, DGConstants::DT, x, 0.0, op_tmp[2]);
+  op2_gemv(this, false, 1.0, DGConstants::DR, x, 0.0, op_tmp[0]);
+  op2_gemv(this, false, 1.0, DGConstants::DS, x, 0.0, op_tmp[1]);
+  op2_gemv(this, false, 1.0, DGConstants::DT, x, 0.0, op_tmp[2]);
   op_par_loop(init_geometric_factors_copy_3d, "init_geometric_factors_copy_3d", cells,
               op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, "double", OP_READ),
               op_arg_dat(op_tmp[1], -1, OP_ID, DG_NP, "double", OP_READ),
@@ -159,9 +165,9 @@ void DGMesh3D::calc_mesh_constants() {
               op_arg_dat(sx, -1, OP_ID, 1, "double", OP_WRITE),
               op_arg_dat(tx, -1, OP_ID, 1, "double", OP_WRITE));
 
-  // op2_gemv(this, false, 1.0, DGConstants::DR, y, 0.0, op_tmp[0]);
-  // op2_gemv(this, false, 1.0, DGConstants::DS, y, 0.0, op_tmp[1]);
-  // op2_gemv(this, false, 1.0, DGConstants::DT, y, 0.0, op_tmp[2]);
+  op2_gemv(this, false, 1.0, DGConstants::DR, y, 0.0, op_tmp[0]);
+  op2_gemv(this, false, 1.0, DGConstants::DS, y, 0.0, op_tmp[1]);
+  op2_gemv(this, false, 1.0, DGConstants::DT, y, 0.0, op_tmp[2]);
   op_par_loop(init_geometric_factors_copy_3d, "init_geometric_factors_copy_3d", cells,
               op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, "double", OP_READ),
               op_arg_dat(op_tmp[1], -1, OP_ID, DG_NP, "double", OP_READ),
@@ -170,9 +176,9 @@ void DGMesh3D::calc_mesh_constants() {
               op_arg_dat(sy, -1, OP_ID, 1, "double", OP_WRITE),
               op_arg_dat(ty, -1, OP_ID, 1, "double", OP_WRITE));
 
-  // op2_gemv(this, false, 1.0, DGConstants::DR, z, 0.0, op_tmp[0]);
-  // op2_gemv(this, false, 1.0, DGConstants::DS, z, 0.0, op_tmp[1]);
-  // op2_gemv(this, false, 1.0, DGConstants::DT, z, 0.0, op_tmp[2]);
+  op2_gemv(this, false, 1.0, DGConstants::DR, z, 0.0, op_tmp[0]);
+  op2_gemv(this, false, 1.0, DGConstants::DS, z, 0.0, op_tmp[1]);
+  op2_gemv(this, false, 1.0, DGConstants::DT, z, 0.0, op_tmp[2]);
   op_par_loop(init_geometric_factors_copy_3d, "init_geometric_factors_copy_3d", cells,
               op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, "double", OP_READ),
               op_arg_dat(op_tmp[1], -1, OP_ID, DG_NP, "double", OP_READ),
@@ -195,7 +201,7 @@ void DGMesh3D::calc_mesh_constants() {
 
   int num = 0;
   op_par_loop(face_check_3d, "face_check_3d", faces,
-              op_arg_gbl(&order, 1, "int", OP_READ),
+              op_arg_gbl(&order_int, 1, "int", OP_READ),
               op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
               op_arg_dat(periodicFace, -1, OP_ID, 1, "int", OP_READ),
               op_arg_dat(x, -2, face2cells, DG_NP, "double", OP_READ),
@@ -256,12 +262,17 @@ void DGMesh3D::update_order(int new_order, std::vector<op_dat> &dats_to_interp) 
 
     op_par_loop(interp_dat_to_new_order_3d, "interp_dat_to_new_order_3d", cells,
                 op_arg_gbl(constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
-                op_arg_gbl(&order, 1, "int", OP_READ),
+                op_arg_gbl(&order_int, 1, "int", OP_READ),
                 op_arg_gbl(&new_order, 1, "int", OP_READ),
                 op_arg_dat(dats_to_interp[i], -1, OP_ID, DG_NP, "double", OP_RW));
   }
 
-  order = new_order;
+  order_int = new_order;
+
+  // Copy across new orders
+  op_par_loop(copy_new_orders_int, "copy_new_orders_int", cells,
+              op_arg_gbl(&new_order, 1, "int", OP_READ),
+              op_arg_dat(order,  -1, OP_ID, 1, "int", OP_WRITE));
 
   calc_mesh_constants();
 }

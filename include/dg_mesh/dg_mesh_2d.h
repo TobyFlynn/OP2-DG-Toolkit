@@ -67,10 +67,8 @@ public:
   void inv_mass(op_dat u);
 
   // OP2 stuff
-  op_set nodes, cells, edges, bedges;
-  op_map cell2nodes, edge2nodes, edge2cells, bedge2nodes, bedge2cells;
   op_dat node_coords, nodeX, nodeY, x, y, rx, ry, sx, sy, nx,
-         ny, J, sJ, fscale, bedge_type, edgeNum, bedgeNum, reverse, order;
+         ny, sJ, fscale, bedge_type, edgeNum, bedgeNum, reverse, order;
   op_dat op_tmp[4];
 
   DGCubatureData *cubature;

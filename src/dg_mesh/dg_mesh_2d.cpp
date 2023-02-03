@@ -137,22 +137,22 @@ DGMesh2D::DGMesh2D(std::string &meshFile) {
   // Declare OP2 sets
   nodes  = op_decl_set_hdf5(meshFile.c_str(), "nodes");
   cells  = op_decl_set_hdf5(meshFile.c_str(), "cells");
-  edges  = op_decl_set_hdf5(meshFile.c_str(), "edges");
-  bedges = op_decl_set_hdf5(meshFile.c_str(), "bedges");
+  faces  = op_decl_set_hdf5(meshFile.c_str(), "faces");
+  bfaces = op_decl_set_hdf5(meshFile.c_str(), "bfaces");
 
   // Declare OP2 maps
   cell2nodes  = op_decl_map_hdf5(cells, nodes, 3, meshFile.c_str(), "cell2nodes");
-  edge2nodes  = op_decl_map_hdf5(edges, nodes, 2, meshFile.c_str(), "edge2nodes");
-  edge2cells  = op_decl_map_hdf5(edges, cells, 2, meshFile.c_str(), "edge2cells");
-  bedge2nodes = op_decl_map_hdf5(bedges, nodes, 2, meshFile.c_str(), "bedge2nodes");
-  bedge2cells = op_decl_map_hdf5(bedges, cells, 1, meshFile.c_str(), "bedge2cells");
+  face2nodes  = op_decl_map_hdf5(faces, nodes, 2, meshFile.c_str(), "face2nodes");
+  face2cells  = op_decl_map_hdf5(faces, cells, 2, meshFile.c_str(), "face2cells");
+  bface2nodes = op_decl_map_hdf5(bfaces, nodes, 2, meshFile.c_str(), "bface2nodes");
+  bface2cells = op_decl_map_hdf5(bfaces, cells, 1, meshFile.c_str(), "bface2cells");
 
   // Declare OP2 datasets from HDF5
   // Structure: {x, y}
   node_coords = op_decl_dat_hdf5(nodes, 2, "double", meshFile.c_str(), "node_coords");
-  bedge_type  = op_decl_dat_hdf5(bedges, 1, "int", meshFile.c_str(), "bedge_type");
-  edgeNum     = op_decl_dat_hdf5(edges, 2, "int", meshFile.c_str(), "edgeNum");
-  bedgeNum    = op_decl_dat_hdf5(bedges, 1, "int", meshFile.c_str(), "bedgeNum");
+  bedge_type  = op_decl_dat_hdf5(bfaces, 1, "int", meshFile.c_str(), "bedge_type");
+  edgeNum     = op_decl_dat_hdf5(faces, 2, "int", meshFile.c_str(), "edgeNum");
+  bedgeNum    = op_decl_dat_hdf5(bfaces, 1, "int", meshFile.c_str(), "bedgeNum");
 
   // Declare regular OP2 datasets
   // Coords of nodes per cell
@@ -178,8 +178,8 @@ DGMesh2D::DGMesh2D(std::string &meshFile) {
   J          = op_decl_dat(cells, DG_NP, "double", tmp_np, "J");
   sJ         = op_decl_dat(cells, 3 * DG_NPF, "double", tmp_npf, "sJ");
   fscale     = op_decl_dat(cells, 3 * DG_NPF, "double", tmp_npf, "fscale");
-  bool *bool_tmp_1_e = (bool *)calloc(edges->size, sizeof(bool));
-  reverse = op_decl_dat(edges, 1, "bool", bool_tmp_1_e, "reverse");
+  bool *bool_tmp_1_e = (bool *)calloc(faces->size, sizeof(bool));
+  reverse = op_decl_dat(faces, 1, "bool", bool_tmp_1_e, "reverse");
   free(bool_tmp_1_e);
   int *int_tmp_1 = (int *)calloc(cells->size, sizeof(int));
   order = op_decl_dat(cells, 1, "int", int_tmp_1, "order");
@@ -248,10 +248,10 @@ void DGMesh2D::init() {
               op_arg_dat(sJ,     -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
               op_arg_dat(fscale, -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE));
 
-  op_par_loop(init_edges, "init_edges", edges,
+  op_par_loop(init_edges, "init_edges", faces,
               op_arg_dat(edgeNum, -1, OP_ID, 2, "int", OP_READ),
-              op_arg_dat(nodeX, -2, edge2cells, 3, "double", OP_READ),
-              op_arg_dat(nodeY, -2, edge2cells, 3, "double", OP_READ),
+              op_arg_dat(nodeX, -2, face2cells, 3, "double", OP_READ),
+              op_arg_dat(nodeY, -2, face2cells, 3, "double", OP_READ),
               op_arg_dat(reverse, -1, OP_ID, 1, "bool", OP_WRITE));
 
   cubature->init();

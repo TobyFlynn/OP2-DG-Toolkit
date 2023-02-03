@@ -64,6 +64,10 @@
 
 #define DG_NUM_FACES 4
 #define DG_NUM_CONSTANTS 2
+// Just to get things compiled, not actually used for 3D
+#define DG_CUB_NP 1
+#define DG_G_NP 1
+#define DG_GF_NP 1
 
 #if DG_ORDER == 4
 
