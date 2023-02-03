@@ -13,20 +13,26 @@ mkdir -p gen/dg_constants
 mkdir -p gen/dg_mesh
 mkdir -p gen/dg_operators
 
-# python3 preprocessor.py 3
-python3 preprocessor_3d.py 3
+DIM=2
+ORDER=3
+
+python3 preprocessor.py $DIM $ORDER
 
 cd gen
 
-# python3 $OP2_TRANSLATOR \
-#   dg_tookit.cpp dg_mesh/dg_mesh_2d.cpp \
-#   dg_op2_blas.cpp \
-#   dg_operators/dg_operators_2d.cpp openBLAS/* \
-#   cuBLAS/* kernels/
-python3 $OP2_TRANSLATOR \
-  dg_tookit.cpp dg_mesh/dg_mesh_3d.cpp \
-  dg_op2_blas.cpp kernels/
-
+if [ $DIM -eq 2 ]
+then
+  python3 $OP2_TRANSLATOR \
+    dg_tookit.cpp dg_mesh/dg_mesh_2d.cpp \
+    dg_op2_blas.cpp \
+    dg_operators/dg_operators_2d.cpp openBLAS/* \
+    cuBLAS/* kernels/
+elif [ $DIM -eq 3 ]
+then
+  python3 $OP2_TRANSLATOR \
+    dg_tookit.cpp dg_mesh/dg_mesh_3d.cpp \
+    dg_op2_blas.cpp kernels/
+fi
 cd ..
 
 sed -i "19i #include \"dg_compiler_defs.h\"" gen/cuda/dg_tookit_kernels.cu
@@ -57,9 +63,10 @@ cmake .. \
   -DBUILD_CPU=ON \
   -DBUILD_SN=ON \
   -DBUILD_MPI=ON \
-  -DBUILD_GPU=ON \
-  -DORDER=3 \
-  -DDIM=3 \
+  -DBUILD_GPU=OFF \
+  -DBUILD_TESTS=ON \
+  -DORDER=$ORDER \
+  -DDIM=$DIM \
   -DCMAKE_INSTALL_PREFIX=$(pwd)
 
 make -j
