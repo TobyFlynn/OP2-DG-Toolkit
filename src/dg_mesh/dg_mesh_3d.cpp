@@ -11,12 +11,10 @@
 
 DGConstants *constants;
 
-// TODO CUDA
-/*
 #ifdef OP2_DG_CUDA
 void set_cuda_constants_OP2_DG_3D_CUDA();
 #endif
-*/
+
 
 DGMesh3D::DGMesh3D(std::string &meshFile) {
   // Sets
@@ -99,7 +97,6 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   constants = new DGConstants3D(DG_ORDER);
   constants->calc_interp_mats();
 
-// TODO CUDA
 #ifdef OP2_DG_CUDA
   set_cuda_constants_OP2_DG_3D_CUDA();
 #else
