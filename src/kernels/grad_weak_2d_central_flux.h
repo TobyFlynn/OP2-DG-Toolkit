@@ -1,7 +1,7 @@
-inline void grad_weak_central_flux(const int *edgeNum, const bool *rev,
-                                   const double **nx, const double **ny,
-                                   const double **sJ, const double **u, 
-                                   double **ux, double **uy) {
+inline void grad_weak_2d_central_flux(const int *edgeNum, const bool *rev,
+                                      const double **nx, const double **ny,
+                                      const double **sJ, const double **u, 
+                                      double **ux, double **uy) {
   // Work out which edge for each element
   int edgeL = edgeNum[0];
   int edgeR = edgeNum[1];

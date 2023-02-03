@@ -48,6 +48,24 @@ public:
 
   int get_local_vec_unknowns();
 
+  // Operators
+  void div(op_dat u, op_dat v, op_dat res);
+  void div_with_central_flux(op_dat u, op_dat v, op_dat res);
+  void div_weak(op_dat u, op_dat v, op_dat res);
+  void curl(op_dat u, op_dat v, op_dat res);
+  void grad(op_dat u, op_dat ux, op_dat uy);
+  void grad_with_central_flux(op_dat u, op_dat ux, op_dat uy);
+  void cub_grad(op_dat u, op_dat ux, op_dat uy);
+  void cub_grad_with_central_flux(op_dat u, op_dat ux, op_dat uy);
+  void cub_div(op_dat u, op_dat v, op_dat res);
+  void cub_div_with_central_flux_no_inv_mass(op_dat u, op_dat v, op_dat res);
+  void cub_div_with_central_flux(op_dat u, op_dat v, op_dat res);
+  void cub_grad_weak(op_dat u, op_dat ux, op_dat uy);
+  void cub_grad_weak_with_central_flux(op_dat u, op_dat ux, op_dat uy);
+  void cub_div_weak(op_dat u, op_dat v, op_dat res);
+  void cub_div_weak_with_central_flux(op_dat u, op_dat v, op_dat res);
+  void inv_mass(op_dat u);
+
   // OP2 stuff
   op_set nodes, cells, edges, bedges;
   op_map cell2nodes, edge2nodes, edge2cells, bedge2nodes, bedge2cells;

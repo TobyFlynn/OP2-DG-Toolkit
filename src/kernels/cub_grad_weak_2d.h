@@ -1,7 +1,7 @@
-inline void cub_grad_weak(const int *p, double *temp0, const double *rx,
-                          const double *sx, const double *ry, const double *sy,
-                          const double *J, double *temp1, double *temp2,
-                          double *temp3) {
+inline void cub_grad_weak_2d(const int *p, double *temp0, const double *rx,
+                             const double *sx, const double *ry, const double *sy,
+                             const double *J, double *temp1, double *temp2,
+                             double *temp3) {
   // Get constants for this element's order
   const int dg_cub_np = DG_CONSTANTS[(*p - 1) * 5 + 2];
   const double *cubW  = &cubW_g[(*p - 1) * DG_CUB_NP];

@@ -1,6 +1,6 @@
-inline void cub_grad(const int *p, const double *rx, const double *sx,
-                     const double *ry, const double *sy, const double *J,
-                     double *temp0, double *temp1) {
+inline void cub_grad_2d(const int *p, const double *rx, const double *sx,
+                       const double *ry, const double *sy, const double *J,
+                       double *temp0, double *temp1) {
   // Get constants for this element's order
   const int dg_cub_np = DG_CONSTANTS[(*p - 1) * 5 + 2];
   const double *cubW  = &cubW_g[(*p - 1) * DG_CUB_NP];

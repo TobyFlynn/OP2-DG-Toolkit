@@ -7,7 +7,7 @@ set(CPU_SRC "")
 set(GPU_SRC "")
 
 if(DIM EQUAL 2)
-list(APPEND COMMON_SRC dg_constants/dg_constants_2d.cpp dg_mesh_op/dg_mesh_2d_op.cpp dg_operators_op.cpp dg_op2_blas_op.cpp)
+list(APPEND COMMON_SRC dg_constants/dg_constants_2d.cpp dg_mesh_op/dg_mesh_2d_op.cpp dg_operators_op/dg_operators_2d_op.cpp dg_op2_blas_op.cpp)
 list(APPEND CPU_SRC dg_mesh/dg_mesh_2d_cpu.cpp)
 list(APPEND GPU_SRC dg_mesh/dg_mesh_2d_gpu.cu)
 list(APPEND OPENBLAS_SRC openBLAS_op/inv_op.cpp)
