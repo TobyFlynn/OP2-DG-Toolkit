@@ -15,6 +15,17 @@ public:
   void init() override;
   void update_order(int new_order, std::vector<op_dat> &dats_to_interp);
 
+  // Operators
+  void grad(op_dat u, op_dat ux, op_dat uy, op_dat uz);
+  void grad_with_central_flux(op_dat u, op_dat ux, op_dat uy, op_dat uz);
+  void div(op_dat u, op_dat v, op_dat w, op_dat res);
+  void div_with_central_flux(op_dat u, op_dat v, op_dat w, op_dat res);
+  void div_weak(op_dat u, op_dat v, op_dat w, op_dat res);
+  void div_weak_with_central_flux(op_dat u, op_dat v, op_dat w, op_dat res);
+  void curl(op_dat u, op_dat v, op_dat w, op_dat resx, op_dat resy, op_dat resz);
+  void mass(op_dat u);
+  void inv_mass(op_dat u);
+
   int order_int;
 
   // OP2 stuff
