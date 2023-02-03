@@ -24,9 +24,8 @@ if [ $DIM -eq 2 ]
 then
   python3 $OP2_TRANSLATOR \
     dg_tookit.cpp dg_mesh/dg_mesh_2d.cpp \
-    dg_op2_blas.cpp \
-    dg_operators/dg_operators_2d.cpp openBLAS/* \
-    cuBLAS/* kernels/
+    dg_op2_blas.cpp dg_operators/dg_operators_2d.cpp \
+    kernels/
 elif [ $DIM -eq 3 ]
 then
   python3 $OP2_TRANSLATOR \

@@ -6,7 +6,6 @@
 #include <memory>
 #include <iostream>
 
-#include "dg_blas_calls.h"
 #include "dg_compiler_defs.h"
 #include "dg_op2_blas.h"
 
@@ -127,7 +126,6 @@ void DGGaussData::update_mesh_constants() {
 }
 
 DGMesh2D::DGMesh2D(std::string &meshFile) {
-  init_blas();
   // Calculate DG constants
   constants = new DGConstants2D(DG_ORDER);
 
@@ -208,7 +206,6 @@ DGMesh2D::~DGMesh2D() {
   delete constants;
   delete cubature;
   delete gauss;
-  destroy_blas();
 }
 
 void DGMesh2D::init() {
