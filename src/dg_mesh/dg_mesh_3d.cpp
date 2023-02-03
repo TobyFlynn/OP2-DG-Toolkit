@@ -99,15 +99,6 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   constants = new DGConstants3D(DG_ORDER);
   constants->calc_interp_mats();
 
-  // TODO move this to DGConstants3D
-  /*
-  for(int p0 = 0; p0 < DG_ORDER; p0++) {
-    for(int p1 = p0 + 1; p1 < DG_ORDER; p1++) {
-      constants[p1]->interp_[p0] = constants[p0]->interp_[p1].t();
-      memcpy(&order_interp_g[(p1 * DG_ORDER + p0) * DG_NP * DG_NP], constants[p1]->interp_[p0].memptr(), constants[p1]->interp_[p0].n_elem * sizeof(double));
-    }
-  }
-  */
 // TODO CUDA
 #ifdef OP2_DG_CUDA
   set_cuda_constants_OP2_DG_3D_CUDA();

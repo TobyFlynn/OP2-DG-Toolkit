@@ -3,7 +3,8 @@
 set -e
 
 rm -rf build
-rm -rf gen
+rm -rf gen_2d
+rm -rf gen_3d
 
 mkdir -p gen_2d/kernels
 mkdir -p gen_2d/openBLAS
