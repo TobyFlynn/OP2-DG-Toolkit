@@ -51,7 +51,7 @@ DGConstants2D::DGConstants2D(const int n_) {
   invMass_gInterpT_ptr = (double *)calloc(N_max * gNp_max * Np_max, sizeof(double));
   order_interp_ptr = (double *)calloc(N_max * N_max * Np_max * Np_max, sizeof(double));
 
-  for(int N = 1; N < N_max; N++) {
+  for(int N = 1; N <= N_max; N++) {
     int Np, Nfp;
     // Set num points and num face points
     DGUtils::numNodes2D(N, &Np, &Nfp);
@@ -272,7 +272,7 @@ DGConstants2D::~DGConstants2D() {
   delete v_ptr;
   delete invV_ptr;
   delete mass_ptr;
-  delete invMass_ptr; 
+  delete invMass_ptr;
   delete Dr_ptr;
   delete Ds_ptr;
   delete Drw_ptr;

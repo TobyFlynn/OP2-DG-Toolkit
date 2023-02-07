@@ -37,7 +37,7 @@ DGConstants3D::DGConstants3D(const int n_) {
   mmF3_ptr = (double *)calloc(N_max * Np_max * Np_max, sizeof(double));
   order_interp_ptr = (double *)calloc(N_max * N_max * Np_max * Np_max, sizeof(double));
 
-  for(int N = 1; N < N_max; N++) {
+  for(int N = 1; N <= N_max; N++) {
     int Np, Nfp;
     DGUtils::numNodes3D(N, &Np, &Nfp);
 

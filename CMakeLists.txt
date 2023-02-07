@@ -61,8 +61,14 @@ if(BUILD_GPU)
 endif()
 
 # Install headers
-file(GLOB HEADERS include/*.h)
+set(HEADERS include/dg_compiler_defs.h include/dg_op2_blas.h include/dg_utils.h)
 install(FILES ${HEADERS} DESTINATION include)
+set(HEADERS_DG_CONSTS include/dg_constants/dg_constants.h include/dg_constants/dg_constants_2d.h include/dg_constants/dg_constants_3d.h)
+install(FILES ${HEADERS_DG_CONSTS} DESTINATION include/dg_constants)
+set(HEADERS_DG_GLB_CONSTS include/dg_global_constants/dg_global_constants_2d.h include/dg_global_constants/dg_global_constants_3d.h)
+install(FILES ${HEADERS_DG_GLB_CONSTS} DESTINATION include/dg_global_constants)
+set(HEADERS_DG_MESH include/dg_mesh/dg_mesh.h include/dg_mesh/dg_mesh_2d.h include/dg_mesh/dg_mesh_3d.h)
+install(FILES ${HEADERS_DG_MESH} DESTINATION include/dg_mesh)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
@@ -71,7 +77,6 @@ set(DIM 2)
 add_subdirectory(gen_2d)
 set(DIM 3)
 add_subdirectory(gen_3d)
-set(DIM 2)
 add_subdirectory(tools)
 if(BUILD_TESTS)
   add_subdirectory(tests)

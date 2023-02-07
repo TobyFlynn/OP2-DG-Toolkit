@@ -324,14 +324,14 @@ int main(int argc, char **argv) {
 
   op_set nodes  = op_decl_set(x.size(), "nodes");
   op_set cells  = op_decl_set(elements.size() / 3, "cells");
-  op_set edges  = op_decl_set(edgeNum_vec.size() / 2, "edges");
-  op_set bedges = op_decl_set(bedgeNum_vec.size(), "bedges");
+  op_set faces  = op_decl_set(edgeNum_vec.size() / 2, "faces");
+  op_set bfaces = op_decl_set(bedgeNum_vec.size(), "bfaces");
 
   op_map cell2nodes  = op_decl_map(cells, nodes, 3, elements.data(), "cell2nodes");
-  op_map edge2nodes  = op_decl_map(edges, nodes, 2, edge2node_vec.data(), "edge2nodes");
-  op_map edge2cells  = op_decl_map(edges, cells, 2, edge2cell_vec.data(), "edge2cells");
-  op_map bedge2nodes = op_decl_map(bedges, nodes, 2, bedge2node_vec.data(), "bedge2nodes");
-  op_map bedge2cells = op_decl_map(bedges, cells, 1, bedge2cell_vec.data(), "bedge2cells");
+  op_map face2nodes  = op_decl_map(faces, nodes, 2, edge2node_vec.data(), "face2nodes");
+  op_map face2cells  = op_decl_map(faces, cells, 2, edge2cell_vec.data(), "face2cells");
+  op_map bface2nodes = op_decl_map(bfaces, nodes, 2, bedge2node_vec.data(), "bface2nodes");
+  op_map bface2cells = op_decl_map(bfaces, cells, 1, bedge2cell_vec.data(), "bface2cells");
 
   vector<double> coords_vec;
   for(int i = 0; i < x.size(); i++) {
@@ -339,11 +339,11 @@ int main(int argc, char **argv) {
     coords_vec.push_back(y[i]);
   }
   op_dat node_coords = op_decl_dat(nodes, 2, "double", coords_vec.data(), "node_coords");
-  op_dat bedge_type  = op_decl_dat(bedges, 1, "int", bedgeType_vec.data(), "bedge_type");
-  op_dat edgeNum     = op_decl_dat(edges, 2, "int", edgeNum_vec.data(), "edgeNum");
-  op_dat bedgeNum    = op_decl_dat(bedges, 1, "int", bedgeNum_vec.data(), "bedgeNum");
+  op_dat bedge_type  = op_decl_dat(bfaces, 1, "int", bedgeType_vec.data(), "bedge_type");
+  op_dat edgeNum     = op_decl_dat(faces, 2, "int", edgeNum_vec.data(), "edgeNum");
+  op_dat bedgeNum    = op_decl_dat(bfaces, 1, "int", bedgeNum_vec.data(), "bedgeNum");
 
-  op_partition("" STRINGIFY(OP2_PARTITIONER), "KWAY", cells, edge2cells, NULL);
+  op_partition("" STRINGIFY(OP2_PARTITIONER), "KWAY", cells, face2cells, NULL);
 
   std::string meshfile = outdir + "mesh.h5";
   op_dump_to_hdf5(meshfile.c_str());

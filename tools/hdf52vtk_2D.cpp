@@ -22,7 +22,7 @@
 
 using HighFive::File;
 
-void add_2d_vec_solution(File *file, const std::string &nameX, const std::string &nameY, 
+void add_2d_vec_solution(File *file, const std::string &nameX, const std::string &nameY,
                          const std::string &nameVec, const int numCells,
                          vtkUnstructuredGrid *vtkGrid) {
   if(file->exist(nameX) && file->exist(nameY)) {
@@ -42,7 +42,7 @@ void add_2d_vec_solution(File *file, const std::string &nameX, const std::string
   }
 }
 
-void add_1d_vec_solution(File *file, const std::string &name, const std::string &nameVec, 
+void add_1d_vec_solution(File *file, const std::string &name, const std::string &nameVec,
                          const int numCells, vtkUnstructuredGrid *vtkGrid) {
   if(file->exist(name)) {
     std::vector<std::vector<double>> u_vec;
@@ -141,14 +141,14 @@ int main(int argc, char **argv) {
       }
     }
 
-    add_2d_vec_solution(&file, "Q00", "Q01", "velocity", numCells, vtkGrid);
-    add_2d_vec_solution(&file, "Q10", "Q11", "velocity1", numCells, vtkGrid);
-    add_2d_vec_solution(&file, "QT0", "QT1", "velocityT", numCells, vtkGrid);
-    add_2d_vec_solution(&file, "QTT0", "QTT1", "velocityTT", numCells, vtkGrid);
-    add_1d_vec_solution(&file, "p", "pressure", numCells, vtkGrid);
-    add_1d_vec_solution(&file, "rho", "rho", numCells, vtkGrid);
-    add_1d_vec_solution(&file, "mu", "mu", numCells, vtkGrid);
-    add_1d_vec_solution(&file, "s", "s", numCells, vtkGrid);
+    add_2d_vec_solution(&file, "mp_ins_solver_vel00", "mp_ins_solver_vel01", "velocity0", numCells, vtkGrid);
+    add_2d_vec_solution(&file, "mp_ins_solver_vel10", "mp_ins_solver_vel11", "velocity1", numCells, vtkGrid);
+    add_2d_vec_solution(&file, "mp_ins_solver_velT0", "mp_ins_solver_velT1", "velocityT", numCells, vtkGrid);
+    add_2d_vec_solution(&file, "mp_ins_solver_velTT0", "mp_ins_solver_velTT1", "velocityTT", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "mp_ins_solver_pr", "pressure", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "mp_ins_solver_rho", "rho", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "mp_ins_solver_mu", "mu", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "ls_s", "level_set", numCells, vtkGrid);
 
     add_1d_vec_solution(&file, "Q0", "Q0", numCells, vtkGrid);
     add_1d_vec_solution(&file, "Q1", "Q1", numCells, vtkGrid);

@@ -64,11 +64,12 @@ public:
   void cub_grad_weak_with_central_flux(op_dat u, op_dat ux, op_dat uy);
   void cub_div_weak(op_dat u, op_dat v, op_dat res);
   void cub_div_weak_with_central_flux(op_dat u, op_dat v, op_dat res);
+  void mass(op_dat u);
   void inv_mass(op_dat u);
 
   // OP2 stuff
   op_dat node_coords, nodeX, nodeY, x, y, rx, ry, sx, sy, nx,
-         ny, sJ, fscale, bedge_type, edgeNum, bedgeNum, reverse, order;
+         ny, sJ, fscale, bedge_type, edgeNum, bedgeNum, reverse;
   op_dat op_tmp[4];
 
   DGCubatureData *cubature;
