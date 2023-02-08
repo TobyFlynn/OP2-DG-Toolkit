@@ -141,6 +141,12 @@ int main(int argc, char **argv) {
       }
     }
 
+    add_2d_vec_solution(&file, "ins_solver_vel00", "ins_solver_vel01", "velocity0", numCells, vtkGrid);
+    add_2d_vec_solution(&file, "ins_solver_vel10", "ins_solver_vel11", "velocity1", numCells, vtkGrid);
+    add_2d_vec_solution(&file, "ins_solver_velT0", "ins_solver_velT1", "velocityT", numCells, vtkGrid);
+    add_2d_vec_solution(&file, "ins_solver_velTT0", "ins_solver_velTT1", "velocityTT", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "ins_solver_pr", "pressure", numCells, vtkGrid);
+
     add_2d_vec_solution(&file, "mp_ins_solver_vel00", "mp_ins_solver_vel01", "velocity0", numCells, vtkGrid);
     add_2d_vec_solution(&file, "mp_ins_solver_vel10", "mp_ins_solver_vel11", "velocity1", numCells, vtkGrid);
     add_2d_vec_solution(&file, "mp_ins_solver_velT0", "mp_ins_solver_velT1", "velocityT", numCells, vtkGrid);

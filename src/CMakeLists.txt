@@ -8,7 +8,7 @@ list(APPEND COMMON_SRC dg_constants/dg_constants_2d.cpp dg_mesh_op/dg_mesh_2d_op
 list(APPEND CPU_SRC dg_mesh/dg_mesh_2d_cpu.cpp)
 list(APPEND GPU_SRC dg_mesh/dg_mesh_2d_gpu.cu)
 elseif(DIM EQUAL 3)
-list(APPEND COMMON_SRC dg_constants/dg_constants_3d.cpp dg_mesh_op/dg_mesh_3d_op.cpp)
+list(APPEND COMMON_SRC dg_constants/dg_constants_3d.cpp dg_mesh_op/dg_mesh_3d_op.cpp dg_operators_op/dg_operators_3d_op.cpp)
 endif()
 
 # Only needs to be built once

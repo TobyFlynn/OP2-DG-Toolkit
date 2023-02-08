@@ -10,6 +10,7 @@ dg_cub_np    = "1"
 dg_g_np      = "1"
 dg_gf_np     = "1"
 dg_order     = "1"
+dg_num_faces = ""
 
 # Get DG order from command line args
 if dim == "2":
@@ -17,6 +18,7 @@ if dim == "2":
     order_int = int(order)
     dg_np     = str(int((order_int + 1) * (order_int + 2) / 2))
     dg_npf    = str(order_int + 1)
+    dg_num_faces = "3"
     if order == "1":
         dg_cub_np    = "12"
         dg_g_np      = "9"
@@ -41,6 +43,7 @@ elif dim == "3":
     order_int = int(order)
     dg_np     = str(int((order_int + 1) * (order_int + 2) * (order_int + 3) / 6))
     dg_npf    = str(int((order_int + 1) * (order_int + 2) / 2))
+    dg_num_faces = "4"
 
 inputfiles = []
 
@@ -65,6 +68,7 @@ for f in inputfiles:
         newdata = newdata.replace("DG_CUB_NP", dg_cub_np)
         newdata = newdata.replace("DG_G_NP", dg_g_np)
         newdata = newdata.replace("DG_GF_NP", dg_gf_np)
+        newdata = newdata.replace("DG_NUM_FACES", dg_num_faces)
 
     if dim == "2":
         with open("gen_2d/" + f, "w") as file:
