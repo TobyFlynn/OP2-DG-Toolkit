@@ -53,7 +53,8 @@ cd ../gen_3d
 
 python3 $OP2_TRANSLATOR \
   dg_tookit.cpp dg_mesh/dg_mesh_3d.cpp \
-  dg_op2_blas.cpp kernels/
+  dg_op2_blas.cpp dg_operators/dg_operators_3d.cpp \
+  kernels/
 
 # CUDA OP2 library work around
 sed -i "16i #include \"dg_compiler_defs.h\"" cuda/dg_tookit_kernels.cu

@@ -22,6 +22,65 @@
 
 using HighFive::File;
 
+void add_3d_vec_solution(File *file, const std::string &nameX, const std::string &nameY,
+                         const std::string &nameZ, const std::string &nameVec, const int numCells,
+                         vtkUnstructuredGrid *vtkGrid) {
+  if(file->exist(nameX) && file->exist(nameY) && file->exist(nameZ)) {
+    std::vector<std::vector<double>> u_vec, v_vec, w_vec;
+    file->getDataSet(nameX).read(u_vec);
+    file->getDataSet(nameY).read(v_vec);
+    file->getDataSet(nameZ).read(w_vec);
+    vtkNew<vtkDoubleArray> sol_vector;
+    sol_vector->SetName(nameVec.c_str());
+    sol_vector->SetNumberOfComponents(3);
+    sol_vector->SetNumberOfTuples(numCells * DG_NP);
+    for(int i = 0; i < numCells; i++) {
+      for(int j = 0; j < DG_NP; j++) {
+        sol_vector->SetTuple3(i * DG_NP + j, u_vec[i][j], v_vec[i][j], w_vec[i][j]);
+      }
+    }
+    vtkGrid->GetPointData()->AddArray(sol_vector);
+  }
+}
+
+void add_2d_vec_solution(File *file, const std::string &nameX, const std::string &nameY,
+                         const std::string &nameVec, const int numCells,
+                         vtkUnstructuredGrid *vtkGrid) {
+  if(file->exist(nameX) && file->exist(nameY)) {
+    std::vector<std::vector<double>> u_vec, v_vec;
+    file->getDataSet(nameX).read(u_vec);
+    file->getDataSet(nameY).read(v_vec);
+    vtkNew<vtkDoubleArray> sol_vector;
+    sol_vector->SetName(nameVec.c_str());
+    sol_vector->SetNumberOfComponents(2);
+    sol_vector->SetNumberOfTuples(numCells * DG_NP);
+    for(int i = 0; i < numCells; i++) {
+      for(int j = 0; j < DG_NP; j++) {
+        sol_vector->SetTuple2(i * DG_NP + j, u_vec[i][j], v_vec[i][j]);
+      }
+    }
+    vtkGrid->GetPointData()->AddArray(sol_vector);
+  }
+}
+
+void add_1d_vec_solution(File *file, const std::string &name, const std::string &nameVec,
+                         const int numCells, vtkUnstructuredGrid *vtkGrid) {
+  if(file->exist(name)) {
+    std::vector<std::vector<double>> u_vec;
+    file->getDataSet(name).read(u_vec);
+    vtkNew<vtkDoubleArray> sol_vector;
+    sol_vector->SetName(nameVec.c_str());
+    sol_vector->SetNumberOfComponents(1);
+    sol_vector->SetNumberOfTuples(numCells * DG_NP);
+    for(int i = 0; i < numCells; i++) {
+      for(int j = 0; j < DG_NP; j++) {
+        sol_vector->SetTuple1(i * DG_NP + j, u_vec[i][j]);
+      }
+    }
+    vtkGrid->GetPointData()->AddArray(sol_vector);
+  }
+}
+
 int main(int argc, char **argv) {
   for(int arg = 1; arg < argc; arg++) {
     std::string filename = argv[arg];
@@ -185,126 +244,21 @@ int main(int argc, char **argv) {
       }
     }
 
-    std::vector<std::vector<double>> u_vec, v_vec, w_vec;
-    file.getDataSet("ins_solver_vel00").read(u_vec);
-    file.getDataSet("ins_solver_vel01").read(v_vec);
-    file.getDataSet("ins_solver_vel02").read(w_vec);
+    add_3d_vec_solution(&file, "ins_solver_vel00", "ins_solver_vel01",
+                        "ins_solver_vel02", "velocity", numCells, vtkGrid);
+    add_3d_vec_solution(&file, "ins_solver_vel10", "ins_solver_vel11",
+                        "ins_solver_vel12", "velocity1", numCells, vtkGrid);
+    add_3d_vec_solution(&file, "ins_solver_velT0", "ins_solver_velT1",
+                        "ins_solver_velT2", "velocityT", numCells, vtkGrid);
+    add_3d_vec_solution(&file, "ins_solver_velTT0", "ins_solver_velTT1",
+                        "ins_solver_velTT2", "velocityTT", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "ins_solver_pr", "Pressure", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "ins_solver_rho", "Rho", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "ins_solver_mu", "Mu", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "ls_solver_s", "Surface", numCells, vtkGrid);
 
-    vtkNew<vtkDoubleArray> vel_vector;
-    vel_vector->SetName("velocity");
-    vel_vector->SetNumberOfComponents(3);
-    vel_vector->SetNumberOfTuples(numCells * DG_NP);
-    for(int i = 0; i < numCells; i++) {
-      for(int j = 0; j < DG_NP; j++) {
-        vel_vector->SetTuple3(i * DG_NP + j, u_vec[i][j], v_vec[i][j], w_vec[i][j]);
-      }
-    }
-    vtkGrid->GetPointData()->AddArray(vel_vector);
-
-    std::vector<std::vector<double>> u1_vec, v1_vec, w1_vec;
-    file.getDataSet("ins_solver_vel10").read(u1_vec);
-    file.getDataSet("ins_solver_vel11").read(v1_vec);
-    file.getDataSet("ins_solver_vel12").read(w1_vec);
-
-    vtkNew<vtkDoubleArray> vel1_vector;
-    vel1_vector->SetName("velocity1");
-    vel1_vector->SetNumberOfComponents(3);
-    vel1_vector->SetNumberOfTuples(numCells * DG_NP);
-    for(int i = 0; i < numCells; i++) {
-      for(int j = 0; j < DG_NP; j++) {
-        vel1_vector->SetTuple3(i * DG_NP + j, u1_vec[i][j], v1_vec[i][j], w1_vec[i][j]);
-      }
-    }
-    vtkGrid->GetPointData()->AddArray(vel1_vector);
-
-    std::vector<std::vector<double>> uT_vec, vT_vec, wT_vec;
-    file.getDataSet("ins_solver_velT0").read(uT_vec);
-    file.getDataSet("ins_solver_velT1").read(vT_vec);
-    file.getDataSet("ins_solver_velT2").read(wT_vec);
-
-    vtkNew<vtkDoubleArray> velT_vector;
-    velT_vector->SetName("velocityT");
-    velT_vector->SetNumberOfComponents(3);
-    velT_vector->SetNumberOfTuples(numCells * DG_NP);
-    for(int i = 0; i < numCells; i++) {
-      for(int j = 0; j < DG_NP; j++) {
-        velT_vector->SetTuple3(i * DG_NP + j, uT_vec[i][j], vT_vec[i][j], wT_vec[i][j]);
-      }
-    }
-    vtkGrid->GetPointData()->AddArray(velT_vector);
-
-    std::vector<std::vector<double>> uTT_vec, vTT_vec, wTT_vec;
-    file.getDataSet("ins_solver_velTT0").read(uTT_vec);
-    file.getDataSet("ins_solver_velTT1").read(vTT_vec);
-    file.getDataSet("ins_solver_velTT2").read(wTT_vec);
-    vtkNew<vtkDoubleArray> velTT_vector;
-    velTT_vector->SetName("velocityTT");
-    velTT_vector->SetNumberOfComponents(3);
-    velTT_vector->SetNumberOfTuples(numCells * DG_NP);
-    for(int i = 0; i < numCells; i++) {
-      for(int j = 0; j < DG_NP; j++) {
-        velTT_vector->SetTuple3(i * DG_NP + j, uTT_vec[i][j], vTT_vec[i][j], wTT_vec[i][j]);
-      }
-    }
-    vtkGrid->GetPointData()->AddArray(velTT_vector);
-
-    std::vector<std::vector<double>> pr_vec;
-    file.getDataSet("ins_solver_pr").read(pr_vec);
-    vtkNew<vtkDoubleArray> pr_vector;
-    pr_vector->SetName("Pressure");
-    pr_vector->SetNumberOfComponents(1);
-    pr_vector->SetNumberOfTuples(numCells * DG_NP);
-    for(int i = 0; i < numCells; i++) {
-      for(int j = 0; j < DG_NP; j++) {
-        pr_vector->SetTuple1(i * DG_NP + j, pr_vec[i][j]);
-      }
-    }
-    vtkGrid->GetPointData()->AddArray(pr_vector);
-
-    if(file.exist("ins_solver_rho")) {
-      std::vector<std::vector<double>> rho_vec;
-      file.getDataSet("ins_solver_rho").read(rho_vec);
-      vtkNew<vtkDoubleArray> rho_vector;
-      rho_vector->SetName("Rho");
-      rho_vector->SetNumberOfComponents(1);
-      rho_vector->SetNumberOfTuples(numCells * DG_NP);
-      for(int i = 0; i < numCells; i++) {
-        for(int j = 0; j < DG_NP; j++) {
-          rho_vector->SetTuple1(i * DG_NP + j, rho_vec[i][j]);
-        }
-      }
-      vtkGrid->GetPointData()->AddArray(rho_vector);
-    }
-
-    if(file.exist("ins_solver_mu")) {
-      std::vector<std::vector<double>> mu_vec;
-      file.getDataSet("ins_solver_mu").read(mu_vec);
-      vtkNew<vtkDoubleArray> mu_vector;
-      mu_vector->SetName("Mu");
-      mu_vector->SetNumberOfComponents(1);
-      mu_vector->SetNumberOfTuples(numCells * DG_NP);
-      for(int i = 0; i < numCells; i++) {
-        for(int j = 0; j < DG_NP; j++) {
-          mu_vector->SetTuple1(i * DG_NP + j, mu_vec[i][j]);
-        }
-      }
-      vtkGrid->GetPointData()->AddArray(mu_vector);
-    }
-
-    if(file.exist("ls_solver_s")) {
-      std::vector<std::vector<double>> s_vec;
-      file.getDataSet("ls_solver_s").read(s_vec);
-      vtkNew<vtkDoubleArray> s_vector;
-      s_vector->SetName("Surface");
-      s_vector->SetNumberOfComponents(1);
-      s_vector->SetNumberOfTuples(numCells * DG_NP);
-      for(int i = 0; i < numCells; i++) {
-        for(int j = 0; j < DG_NP; j++) {
-          s_vector->SetTuple1(i * DG_NP + j, s_vec[i][j]);
-        }
-      }
-      vtkGrid->GetPointData()->AddArray(s_vector);
-    }
+    add_3d_vec_solution(&file, "advec_u", "advec_v", "advec_w", "velocity", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "advec_val", "Val", numCells, vtkGrid);
 
     vtkNew<vtkUnstructuredGridWriter> writer;
     std::string outfile = filename.substr(0,filename.size() - 3) + ".vtk";
