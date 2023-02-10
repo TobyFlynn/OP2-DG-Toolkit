@@ -260,7 +260,7 @@ void DGMesh3D::update_order(int new_order, std::vector<op_dat> &dats_to_interp) 
   // Copy across new orders
   op_par_loop(copy_new_orders_int, "copy_new_orders_int", cells,
               op_arg_gbl(&new_order, 1, "int", OP_READ),
-              op_arg_dat(order,  -1, OP_ID, 1, "int", OP_WRITE));
+              op_arg_dat(order, -1, OP_ID, 1, "int", OP_WRITE));
 
   calc_mesh_constants();
 }

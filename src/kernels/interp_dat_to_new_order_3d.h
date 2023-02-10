@@ -4,8 +4,8 @@ inline void interp_dat_to_new_order_3d(const double *mats, const int *old_order,
   if(*old_order == *new_order)
     return;
 
-  const int dg_np_old = DG_CONSTANTS[(*old_order - 1) * 2];
-  const int dg_np_new = DG_CONSTANTS[(*new_order - 1) * 2];
+  const int dg_np_old = DG_CONSTANTS[(*old_order - 1) * DG_NUM_CONSTANTS];
+  const int dg_np_new = DG_CONSTANTS[(*new_order - 1) * DG_NUM_CONSTANTS];
   const double *mat = &mats[((*old_order - 1) * DG_ORDER + (*new_order - 1)) * DG_NP * DG_NP];
 
   double res[DG_NP];

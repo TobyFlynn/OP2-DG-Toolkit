@@ -13,7 +13,7 @@ public:
   DGMesh3D(std::string &meshFile);
   ~DGMesh3D();
   void init() override;
-  void update_order(int new_order, std::vector<op_dat> &dats_to_interp);
+  void update_order(int new_order, std::vector<op_dat> &dats_to_interp) override;
 
   // Operators
   void grad(op_dat u, op_dat ux, op_dat uy, op_dat uz);

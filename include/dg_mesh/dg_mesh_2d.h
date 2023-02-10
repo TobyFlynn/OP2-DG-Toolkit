@@ -42,8 +42,8 @@ public:
   DGMesh2D(std::string &meshFile);
   ~DGMesh2D();
   void init() override;
-  void update_order(op_dat new_orders, std::vector<op_dat> &dats_to_interpolate);
-  void update_order(int new_order, std::vector<op_dat> &dats_to_interpolate);
+  void update_order(op_dat new_orders, std::vector<op_dat> &dats_to_interp);
+  void update_order(int new_order, std::vector<op_dat> &dats_to_interp) override;
   void interp_to_max_order(std::vector<op_dat> &dats_in, std::vector<op_dat> &dats_out);
 
   int get_local_vec_unknowns();
