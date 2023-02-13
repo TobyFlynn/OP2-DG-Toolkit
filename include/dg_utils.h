@@ -1,6 +1,8 @@
 #ifndef __DG_UTILS_H
 #define __DG_UTILS_H
 
+#include "dg_compiler_defs.h"
+
 #define ARMA_ALLOW_FAKE_GCC
 #include <armadillo>
 
@@ -8,23 +10,23 @@
 
 namespace DGUtils {
 
-  const double PI = 3.141592653589793238463;
+  const DG_FP PI = 3.141592653589793238463;
 
   /*********************************
   * Calculating polynomials
   **********************************/
 
   // Calculate Nth order Gauss quadature points and weights of Jacobi polynomial
-  void jacobiGQ(const double alpha, const double beta, const int N,
+  void jacobiGQ(const DG_FP alpha, const DG_FP beta, const int N,
                 arma::vec &x, arma::vec &w);
   // Calculate Nth order Gauss Lobatto quadature points of Jacobi polynomial
-  arma::vec jacobiGL(const double alpha, const double beta, const int N);
+  arma::vec jacobiGL(const DG_FP alpha, const DG_FP beta, const int N);
   // Calculate Jacobi polynomial of order N at points x
-  arma::vec jacobiP(const arma::vec &x, const double alpha, const double beta,
+  arma::vec jacobiP(const arma::vec &x, const DG_FP alpha, const DG_FP beta,
                     const int N);
   // Calculate derivative of Jacobi polynomial of order N at points x
-  arma::vec gradJacobiP(const arma::vec &x, const double alpha,
-                        const double beta, const int N);
+  arma::vec gradJacobiP(const arma::vec &x, const DG_FP alpha,
+                        const DG_FP beta, const int N);
   // Calculate 2D orthonomal poly on simplex of order i,j
   arma::vec simplex2DP(const arma::vec &a, const arma::vec &b, const int i,
                        const int j);
@@ -124,23 +126,23 @@ namespace DGUtils {
   void numNodes2D(const int N, int *Np, int *Nfp);
   void numNodes3D(const int N, int *Np, int *Nfp);
   // Convert from global x-y coords to r-s coords
-  void global_xy_to_rs(const double x, const double y, double &r, double &s,
-                       const double *cellX, const double *cellY);
+  void global_xy_to_rs(const DG_FP x, const DG_FP y, DG_FP &r, DG_FP &s,
+                       const DG_FP *cellX, const DG_FP *cellY);
   // Convert from r-s coords to global x-y coords
-  void rs_to_global_xy(const double r, const double s, double &x, double &y,
-                       const double *cellX, const double *cellY);
-  
+  void rs_to_global_xy(const DG_FP r, const DG_FP s, DG_FP &x, DG_FP &y,
+                       const DG_FP *cellX, const DG_FP *cellY);
+
   /*********************************
   * Interpolating values within a cell
   **********************************/
 
-  double val_at_pt_3d(const double r, const double s, const double t,
-                      const double *modal, const int N);
-  void grad_at_pt_3d(const double r, const double s, const double t,
-                     const double *modal, const int N, double &dr,
-                     double &ds, double &dt);
-  double val_at_pt_N_1_3d(const double r, const double s, const double t,
-                          const double *modal, const int N);
+  DG_FP val_at_pt_3d(const DG_FP r, const DG_FP s, const DG_FP t,
+                      const DG_FP *modal, const int N);
+  void grad_at_pt_3d(const DG_FP r, const DG_FP s, const DG_FP t,
+                     const DG_FP *modal, const int N, DG_FP &dr,
+                     DG_FP &ds, DG_FP &dt);
+  DG_FP val_at_pt_N_1_3d(const DG_FP r, const DG_FP s, const DG_FP t,
+                          const DG_FP *modal, const int N);
 }
 
 #endif

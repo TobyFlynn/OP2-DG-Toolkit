@@ -1,8 +1,8 @@
-inline void init_bfaces_3d(const int *faceNum, const double *rx, const double *ry,
-                           const double *rz, const double *sx, const double *sy,
-                           const double *sz, const double *tx, const double *ty,
-                           const double *tz, const double *J, double *nx,
-                           double *ny, double *nz, double *sJ, double *fscale) {
+inline void init_bfaces_3d(const int *faceNum, const DG_FP *rx, const DG_FP *ry,
+                           const DG_FP *rz, const DG_FP *sx, const DG_FP *sy,
+                           const DG_FP *sz, const DG_FP *tx, const DG_FP *ty,
+                           const DG_FP *tz, const DG_FP *J, DG_FP *nx,
+                           DG_FP *ny, DG_FP *nz, DG_FP *sJ, DG_FP *fscale) {
   if(*faceNum == 0) {
     *nx = -*tx;
     *ny = -*ty;

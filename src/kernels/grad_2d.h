@@ -1,6 +1,6 @@
-inline void grad_2d(const int *p, const double *div0, const double *div1,
-                    const double *rx, const double *sx, const double *ry,
-                    const double *sy, double *ux, double *uy) {
+inline void grad_2d(const int *p, const DG_FP *div0, const DG_FP *div1,
+                    const DG_FP *rx, const DG_FP *sx, const DG_FP *ry,
+                    const DG_FP *sy, DG_FP *ux, DG_FP *uy) {
   // Get constants
   const int dg_np  = DG_CONSTANTS[(*p - 1) * 5];
 

@@ -1,6 +1,8 @@
 #ifndef __DG_CONSTANTS_H
 #define __DG_CONSTANTS_H
 
+#include "dg_compiler_defs.h"
+
 #define ARMA_ALLOW_FAKE_GCC
 #include <armadillo>
 
@@ -25,7 +27,7 @@ public:
   };
 
   virtual void calc_interp_mats() = 0;
-  virtual double* get_mat_ptr(Constant_Matrix matrix) = 0;
+  virtual DG_FP* get_mat_ptr(Constant_Matrix matrix) = 0;
 
   int N_max, Np_max, Nfp_max;
 };

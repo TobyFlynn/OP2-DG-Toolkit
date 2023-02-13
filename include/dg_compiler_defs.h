@@ -1,6 +1,8 @@
 #ifndef __DG_COMPILER_DEFS_H
 #define __DG_COMPILER_DEFS_H
 
+#define DG_FP float
+
 #if DG_DIM == 2
 
 #define DG_NUM_FACES 3

@@ -1,7 +1,7 @@
 inline void grad_weak_2d_central_flux(const int *edgeNum, const bool *rev,
-                                      const double **nx, const double **ny,
-                                      const double **sJ, const double **u, 
-                                      double **ux, double **uy) {
+                                      const DG_FP **nx, const DG_FP **ny,
+                                      const DG_FP **sJ, const DG_FP **u, 
+                                      DG_FP **ux, DG_FP **uy) {
   // Work out which edge for each element
   int edgeL = edgeNum[0];
   int edgeR = edgeNum[1];
@@ -19,7 +19,7 @@ inline void grad_weak_2d_central_flux(const int *edgeNum, const bool *rev,
     } else {
       rInd = exIndR + i;
     }
-    double flux = 0.5 * (u[0][lInd] + u[1][rInd]);
+    DG_FP flux = 0.5 * (u[0][lInd] + u[1][rInd]);
     ux[0][lInd] += gaussW_g[i] * sJ[0][lInd] * nx[0][lInd] * flux;
     uy[0][lInd] += gaussW_g[i] * sJ[0][lInd] * ny[0][lInd] * flux;
   }
@@ -32,7 +32,7 @@ inline void grad_weak_2d_central_flux(const int *edgeNum, const bool *rev,
     } else {
       lInd = exIndL + i;
     }
-    double flux = 0.5 * (u[0][lInd] + u[1][rInd]);
+    DG_FP flux = 0.5 * (u[0][lInd] + u[1][rInd]);
     ux[1][rInd] += gaussW_g[i] * sJ[1][rInd] * nx[1][rInd] * flux;
     uy[1][rInd] += gaussW_g[i] * sJ[1][rInd] * ny[1][rInd] * flux;
   }

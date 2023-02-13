@@ -1,6 +1,6 @@
 inline void face_check_3d(const int *order, const int *faceNum,
-                          const int *periodicFace, const double **x,
-                          const double **y, const double **z,
+                          const int *periodicFace, const DG_FP **x,
+                          const DG_FP **y, const DG_FP **z,
                           int *fmaskL_corrected, int * fmaskR_corrected,
                           int *num) {
   const int dg_npf = DG_CONSTANTS[(*order - 1) * 2 + 1];

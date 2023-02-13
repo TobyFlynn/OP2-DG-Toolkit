@@ -1,4 +1,4 @@
-inline void init_edges(const int *edgeNum, const double **x, const double **y,
+inline void init_edges(const int *edgeNum, const DG_FP **x, const DG_FP **y,
                        bool *reverse) {
   int edgeL = edgeNum[0];
   int edgeR = edgeNum[1];

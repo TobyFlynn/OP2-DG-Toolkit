@@ -1,5 +1,5 @@
-inline void init_nodes_3d(const double **nc, double *nodeX, double *nodeY,
-                          double *nodeZ) {
+inline void init_nodes_3d(const DG_FP **nc, DG_FP *nodeX, DG_FP *nodeY,
+                          DG_FP *nodeZ) {
   nodeX[0] = nc[0][0];
   nodeX[1] = nc[1][0];
   nodeX[2] = nc[2][0];

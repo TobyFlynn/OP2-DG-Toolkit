@@ -1,16 +1,16 @@
-inline void init_geometric_factors_3d(double *rx, double *ry, double *rz,
-                                      double *sx, double *sy, double *sz,
-                                      double *tx, double *ty, double *tz,
-                                      double *J) {
-  double xr = *rx;
-  double yr = *ry;
-  double zr = *rz;
-  double xs = *sx;
-  double ys = *sy;
-  double zs = *sz;
-  double xt = *tx;
-  double yt = *ty;
-  double zt = *tz;
+inline void init_geometric_factors_3d(DG_FP *rx, DG_FP *ry, DG_FP *rz,
+                                      DG_FP *sx, DG_FP *sy, DG_FP *sz,
+                                      DG_FP *tx, DG_FP *ty, DG_FP *tz,
+                                      DG_FP *J) {
+  DG_FP xr = *rx;
+  DG_FP yr = *ry;
+  DG_FP zr = *rz;
+  DG_FP xs = *sx;
+  DG_FP ys = *sy;
+  DG_FP zs = *sz;
+  DG_FP xt = *tx;
+  DG_FP yt = *ty;
+  DG_FP zt = *tz;
   *J  = xr * (ys * zt - zs * yt) - yr * (xs * zt - zs * xt) + zr * (xs * yt - ys * xt);
   *rx = (ys * zt - zs * yt) / *J;
   *ry = -(xs * zt - zs * xt) / *J;

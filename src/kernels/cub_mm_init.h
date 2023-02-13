@@ -1,9 +1,9 @@
-inline void cub_mm_init(const int *p, const double *matrix, const double *tmp,
-                        double *mm) {
+inline void cub_mm_init(const int *p, const DG_FP *matrix, const DG_FP *tmp,
+                        DG_FP *mm) {
   // Get constants for this element's order
   const int dg_np     = DG_CONSTANTS[(*p - 1) * 5];
   const int dg_cub_np = DG_CONSTANTS[(*p - 1) * 5 + 2];
-  const double *cubV  = &matrix[(*p - 1) * DG_CUB_NP * DG_NP];
+  const DG_FP *cubV  = &matrix[(*p - 1) * DG_CUB_NP * DG_NP];
 
   for(int i = 0; i < dg_np; i++) {
     for(int j = 0; j < dg_np; j++) {

@@ -1,6 +1,8 @@
 #ifndef __DG_MESH_2D_H
 #define __DG_MESH_2D_H
 
+#include "dg_compiler_defs.h"
+
 #include "dg_mesh.h"
 
 #include "op_seq.h"

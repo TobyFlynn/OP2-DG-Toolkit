@@ -1,8 +1,8 @@
 #include "dg_utils.h"
 
-double DGUtils::val_at_pt_3d(const double r, const double s, const double t,
-                             const double *modal, const int N) {
-  double a, b, c;
+DG_FP DGUtils::val_at_pt_3d(const DG_FP r, const DG_FP s, const DG_FP t,
+                             const DG_FP *modal, const int N) {
+  DG_FP a, b, c;
   if(s + t != 0.0)
     a = 2.0 * (1.0 + r) / (-s - t) - 1.0;
   else
@@ -15,7 +15,7 @@ double DGUtils::val_at_pt_3d(const double r, const double s, const double t,
 
   c = t;
 
-  double new_val = 0.0;
+  DG_FP new_val = 0.0;
   int modal_ind = 0;
   arma::vec a_(1), b_(1), c_(1), ans;
   a_(0) = a; b_(0) = b; c_(0) = c;
@@ -31,10 +31,10 @@ double DGUtils::val_at_pt_3d(const double r, const double s, const double t,
   return new_val;
 }
 
-void DGUtils::grad_at_pt_3d(const double r, const double s, const double t,
-                            const double *modal, const int N, double &dr,
-                            double &ds, double &dt) {
-  double a, b, c;
+void DGUtils::grad_at_pt_3d(const DG_FP r, const DG_FP s, const DG_FP t,
+                            const DG_FP *modal, const int N, DG_FP &dr,
+                            DG_FP &ds, DG_FP &dt) {
+  DG_FP a, b, c;
   if(s + t != 0.0)
     a = 2.0 * (1.0 + r) / (-s - t) - 1.0;
   else
@@ -63,9 +63,9 @@ void DGUtils::grad_at_pt_3d(const double r, const double s, const double t,
   }
 }
 
-double DGUtils::val_at_pt_N_1_3d(const double r, const double s, const double t,
-                                 const double *modal, const int N) {
-  double a, b, c;
+DG_FP DGUtils::val_at_pt_N_1_3d(const DG_FP r, const DG_FP s, const DG_FP t,
+                                 const DG_FP *modal, const int N) {
+  DG_FP a, b, c;
   if(s + t != 0.0)
     a = 2.0 * (1.0 + r) / (-s - t) - 1.0;
   else
@@ -78,7 +78,7 @@ double DGUtils::val_at_pt_N_1_3d(const double r, const double s, const double t,
 
   c = t;
 
-  double new_val = 0.0;
+  DG_FP new_val = 0.0;
   int modal_ind = 0;
   arma::vec a_(1), b_(1), c_(1), ans;
   a_(0) = a; b_(0) = b; c_(0) = c;

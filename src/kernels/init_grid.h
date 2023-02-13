@@ -1,6 +1,6 @@
-inline void init_grid(const int *p, double *rx, double *ry, double *sx,
-                      double *sy, double *nx, double *ny, double *J, double *sJ,
-                      double *fscale) {
+inline void init_grid(const int *p, DG_FP *rx, DG_FP *ry, DG_FP *sx,
+                      DG_FP *sy, DG_FP *nx, DG_FP *ny, DG_FP *J, DG_FP *sJ,
+                      DG_FP *fscale) {
   // Get constants for this element's order
   const int *fmask = &FMASK[(*p - 1) * 3 * DG_NPF];
   const int dg_np  = DG_CONSTANTS[(*p - 1) * 5];
@@ -29,10 +29,10 @@ inline void init_grid(const int *p, double *rx, double *ry, double *sx,
 
   // rx = ys./J; sx =-yr./J; ry =-xs./J; sy = xr./J;
   for(int i = 0; i < dg_np; i++) {
-    double rx_n = sy[i] / J[i];
-    double sx_n = -ry[i] / J[i];
-    double ry_n = -sx[i] / J[i];
-    double sy_n = rx[i] / J[i];
+    DG_FP rx_n = sy[i] / J[i];
+    DG_FP sx_n = -ry[i] / J[i];
+    DG_FP ry_n = -sx[i] / J[i];
+    DG_FP sy_n = rx[i] / J[i];
     rx[i] = rx_n;
     sx[i] = sx_n;
     ry[i] = ry_n;

@@ -12,6 +12,8 @@ dg_gf_np     = "1"
 dg_order     = "1"
 dg_num_faces = ""
 
+fp_type = "f"
+
 # Get DG order from command line args
 if dim == "2":
     dg_order  = order
@@ -62,6 +64,12 @@ for f in inputfiles:
 
     newdata = filedata
     if "CMakeLists" not in f:
+        if fp_type == "d":
+            newdata = newdata.replace("DG_FP_STR", "\"double\"")
+            newdata = newdata.replace("DG_FP", "double")
+        else:
+            newdata = newdata.replace("DG_FP_STR", "\"float\"")
+            newdata = newdata.replace("DG_FP", "float")
         newdata = newdata.replace("DG_ORDER", dg_order)
         newdata = newdata.replace("DG_NPF", dg_npf)
         newdata = newdata.replace("DG_NP", dg_np)

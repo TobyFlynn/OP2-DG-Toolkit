@@ -23,20 +23,20 @@ void set_cuda_constants_OP2_DG_CUDA();
 DGCubatureData::DGCubatureData(DGMesh2D *m) {
   mesh = m;
 
-  double *tmp_cub_np = (double *)calloc(DG_CUB_NP * mesh->cells->size, sizeof(double));
-  double *tmp_np_np = (double *)calloc(DG_NP * DG_NP * mesh->cells->size, sizeof(double));
-  double *tmp_cub_np_np = (double *)calloc(DG_CUB_NP * DG_NP * mesh->cells->size, sizeof(double));
-  rx    = op_decl_dat(mesh->cells, DG_CUB_NP, "double", tmp_cub_np, "cub-rx");
-  sx    = op_decl_dat(mesh->cells, DG_CUB_NP, "double", tmp_cub_np, "cub-sx");
-  ry    = op_decl_dat(mesh->cells, DG_CUB_NP, "double", tmp_cub_np, "cub-ry");
-  sy    = op_decl_dat(mesh->cells, DG_CUB_NP, "double", tmp_cub_np, "cub-sy");
-  J     = op_decl_dat(mesh->cells, DG_CUB_NP, "double", tmp_cub_np, "cub-J");
-  mm    = op_decl_dat(mesh->cells, DG_NP * DG_NP, "double", tmp_np_np, "cub-mm");
-  tmp   = op_decl_dat(mesh->cells, DG_CUB_NP * DG_NP, "double", tmp_cub_np_np, "cub-tmp");
+  DG_FP *tmp_cub_np = (DG_FP *)calloc(DG_CUB_NP * mesh->cells->size, sizeof(DG_FP));
+  DG_FP *tmp_np_np = (DG_FP *)calloc(DG_NP * DG_NP * mesh->cells->size, sizeof(DG_FP));
+  DG_FP *tmp_cub_np_np = (DG_FP *)calloc(DG_CUB_NP * DG_NP * mesh->cells->size, sizeof(DG_FP));
+  rx    = op_decl_dat(mesh->cells, DG_CUB_NP, DG_FP_STR, tmp_cub_np, "cub-rx");
+  sx    = op_decl_dat(mesh->cells, DG_CUB_NP, DG_FP_STR, tmp_cub_np, "cub-sx");
+  ry    = op_decl_dat(mesh->cells, DG_CUB_NP, DG_FP_STR, tmp_cub_np, "cub-ry");
+  sy    = op_decl_dat(mesh->cells, DG_CUB_NP, DG_FP_STR, tmp_cub_np, "cub-sy");
+  J     = op_decl_dat(mesh->cells, DG_CUB_NP, DG_FP_STR, tmp_cub_np, "cub-J");
+  mm    = op_decl_dat(mesh->cells, DG_NP * DG_NP, DG_FP_STR, tmp_np_np, "cub-mm");
+  tmp   = op_decl_dat(mesh->cells, DG_CUB_NP * DG_NP, DG_FP_STR, tmp_cub_np_np, "cub-tmp");
 
   for(int i = 0; i < 4; i++) {
     string tmpname = "cub-op_tmp" + to_string(i);
-    op_tmp[i] = op_decl_dat(mesh->cells, DG_CUB_NP, "double", tmp_cub_np, tmpname.c_str());
+    op_tmp[i] = op_decl_dat(mesh->cells, DG_CUB_NP, DG_FP_STR, tmp_cub_np, tmpname.c_str());
   }
   free(tmp_cub_np_np);
   free(tmp_np_np);
@@ -55,38 +55,38 @@ void DGCubatureData::update_mesh_constants() {
 
   op_par_loop(init_cubature, "init_cubature", mesh->cells,
               op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::CUB_V), DG_ORDER * DG_CUB_NP * DG_NP, "double", OP_READ),
-              op_arg_dat(rx,    -1, OP_ID, DG_CUB_NP, "double", OP_RW),
-              op_arg_dat(sx,    -1, OP_ID, DG_CUB_NP, "double", OP_RW),
-              op_arg_dat(ry,    -1, OP_ID, DG_CUB_NP, "double", OP_RW),
-              op_arg_dat(sy,    -1, OP_ID, DG_CUB_NP, "double", OP_RW),
-              op_arg_dat(J,     -1, OP_ID, DG_CUB_NP, "double", OP_WRITE),
-              op_arg_dat(tmp,   -1, OP_ID, DG_CUB_NP * DG_NP, "double", OP_WRITE));
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::CUB_V), DG_ORDER * DG_CUB_NP * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(rx,    -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(sx,    -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(ry,    -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(sy,    -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(J,     -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(tmp,   -1, OP_ID, DG_CUB_NP * DG_NP, DG_FP_STR, OP_WRITE));
 
   op_par_loop(cub_mm_init, "cub_mm_init", mesh->cells,
               op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::CUB_V), DG_ORDER * DG_CUB_NP * DG_NP, "double", OP_READ),
-              op_arg_dat(tmp,   -1, OP_ID, DG_CUB_NP * DG_NP, "double", OP_READ),
-              op_arg_dat(mm,    -1, OP_ID, DG_NP * DG_NP, "double", OP_WRITE));
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::CUB_V), DG_ORDER * DG_CUB_NP * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp,   -1, OP_ID, DG_CUB_NP * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(mm,    -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_WRITE));
 }
 
 DGGaussData::DGGaussData(DGMesh2D *m) {
   mesh = m;
 
-  double *tmp_g_np = (double *)calloc(DG_G_NP * mesh->cells->size, sizeof(double));
-  x  = op_decl_dat(mesh->cells, DG_G_NP, "double", tmp_g_np, "gauss-x");
-  y  = op_decl_dat(mesh->cells, DG_G_NP, "double", tmp_g_np, "gauss-y");
-  rx = op_decl_dat(mesh->cells, DG_G_NP, "double", tmp_g_np, "gauss-rx");
-  sx = op_decl_dat(mesh->cells, DG_G_NP, "double", tmp_g_np, "gauss-sx");
-  ry = op_decl_dat(mesh->cells, DG_G_NP, "double", tmp_g_np, "gauss-ry");
-  sy = op_decl_dat(mesh->cells, DG_G_NP, "double", tmp_g_np, "gauss-sy");
-  sJ = op_decl_dat(mesh->cells, DG_G_NP, "double", tmp_g_np, "gauss-sJ");
-  nx = op_decl_dat(mesh->cells, DG_G_NP, "double", tmp_g_np, "gauss-nx");
-  ny = op_decl_dat(mesh->cells, DG_G_NP, "double", tmp_g_np, "gauss-ny");
+  DG_FP *tmp_g_np = (DG_FP *)calloc(DG_G_NP * mesh->cells->size, sizeof(DG_FP));
+  x  = op_decl_dat(mesh->cells, DG_G_NP, DG_FP_STR, tmp_g_np, "gauss-x");
+  y  = op_decl_dat(mesh->cells, DG_G_NP, DG_FP_STR, tmp_g_np, "gauss-y");
+  rx = op_decl_dat(mesh->cells, DG_G_NP, DG_FP_STR, tmp_g_np, "gauss-rx");
+  sx = op_decl_dat(mesh->cells, DG_G_NP, DG_FP_STR, tmp_g_np, "gauss-sx");
+  ry = op_decl_dat(mesh->cells, DG_G_NP, DG_FP_STR, tmp_g_np, "gauss-ry");
+  sy = op_decl_dat(mesh->cells, DG_G_NP, DG_FP_STR, tmp_g_np, "gauss-sy");
+  sJ = op_decl_dat(mesh->cells, DG_G_NP, DG_FP_STR, tmp_g_np, "gauss-sJ");
+  nx = op_decl_dat(mesh->cells, DG_G_NP, DG_FP_STR, tmp_g_np, "gauss-nx");
+  ny = op_decl_dat(mesh->cells, DG_G_NP, DG_FP_STR, tmp_g_np, "gauss-ny");
 
   for(int i = 0; i < 3; i++) {
     string tmpname = "gauss-op_tmp" + to_string(i);
-    op_tmp[i] = op_decl_dat(mesh->cells, DG_G_NP, "double", tmp_g_np, tmpname.c_str());
+    op_tmp[i] = op_decl_dat(mesh->cells, DG_G_NP, DG_FP_STR, tmp_g_np, tmpname.c_str());
   }
   free(tmp_g_np);
 }
@@ -101,28 +101,28 @@ void DGGaussData::update_mesh_constants() {
 
   op_par_loop(pre_init_gauss, "pre_init_gauss", mesh->cells,
               op_arg_dat(mesh->order,  -1, OP_ID, 1, "int", OP_READ),
-              op_arg_dat(mesh->x, -1, OP_ID, DG_NP, "double", OP_READ),
-              op_arg_dat(mesh->y, -1, OP_ID, DG_NP, "double", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F0DR), DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F0DS), DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F1DR), DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F1DS), DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F2DR), DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F2DS), DG_ORDER * DG_GF_NP * DG_NP, "double", OP_READ),
-              op_arg_dat(rx, -1, OP_ID, DG_G_NP, "double", OP_WRITE),
-              op_arg_dat(sx, -1, OP_ID, DG_G_NP, "double", OP_WRITE),
-              op_arg_dat(ry, -1, OP_ID, DG_G_NP, "double", OP_WRITE),
-              op_arg_dat(sy, -1, OP_ID, DG_G_NP, "double", OP_WRITE));
+              op_arg_dat(mesh->x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(mesh->y, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F0DR), DG_ORDER * DG_GF_NP * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F0DS), DG_ORDER * DG_GF_NP * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F1DR), DG_ORDER * DG_GF_NP * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F1DS), DG_ORDER * DG_GF_NP * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F2DR), DG_ORDER * DG_GF_NP * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_F2DS), DG_ORDER * DG_GF_NP * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(rx, -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(sx, -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(ry, -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(sy, -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE));
 
   op_par_loop(init_gauss, "init_gauss", mesh->cells,
               op_arg_dat(mesh->order,  -1, OP_ID, 1, "int", OP_READ),
-              op_arg_dat(rx,     -1, OP_ID, DG_G_NP, "double", OP_RW),
-              op_arg_dat(sx,     -1, OP_ID, DG_G_NP, "double", OP_RW),
-              op_arg_dat(ry,     -1, OP_ID, DG_G_NP, "double", OP_RW),
-              op_arg_dat(sy,     -1, OP_ID, DG_G_NP, "double", OP_RW),
-              op_arg_dat(nx,     -1, OP_ID, DG_G_NP, "double", OP_WRITE),
-              op_arg_dat(ny,     -1, OP_ID, DG_G_NP, "double", OP_WRITE),
-              op_arg_dat(sJ,     -1, OP_ID, DG_G_NP, "double", OP_WRITE));
+              op_arg_dat(rx,     -1, OP_ID, DG_G_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(sx,     -1, OP_ID, DG_G_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(ry,     -1, OP_ID, DG_G_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(sy,     -1, OP_ID, DG_G_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(nx,     -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(ny,     -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(sJ,     -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE));
 }
 
 DGMesh2D::DGMesh2D(std::string &meshFile) {
@@ -147,35 +147,35 @@ DGMesh2D::DGMesh2D(std::string &meshFile) {
 
   // Declare OP2 datasets from HDF5
   // Structure: {x, y}
-  node_coords = op_decl_dat_hdf5(nodes, 2, "double", meshFile.c_str(), "node_coords");
+  node_coords = op_decl_dat_hdf5(nodes, 2, DG_FP_STR, meshFile.c_str(), "node_coords");
   bedge_type  = op_decl_dat_hdf5(bfaces, 1, "int", meshFile.c_str(), "bedge_type");
   edgeNum     = op_decl_dat_hdf5(faces, 2, "int", meshFile.c_str(), "edgeNum");
   bedgeNum    = op_decl_dat_hdf5(bfaces, 1, "int", meshFile.c_str(), "bedgeNum");
 
   // Declare regular OP2 datasets
   // Coords of nodes per cell
-  double *tmp_3_data = (double*)calloc(3 * cells->size, sizeof(double));
-  nodeX = op_decl_dat(cells, 3, "double", tmp_3_data, "nodeX");
-  nodeY = op_decl_dat(cells, 3, "double", tmp_3_data, "nodeY");
+  DG_FP *tmp_3_data = (DG_FP*)calloc(3 * cells->size, sizeof(DG_FP));
+  nodeX = op_decl_dat(cells, 3, DG_FP_STR, tmp_3_data, "nodeX");
+  nodeY = op_decl_dat(cells, 3, DG_FP_STR, tmp_3_data, "nodeY");
   free(tmp_3_data);
 
-  double *tmp_np  = (double *)calloc(DG_NP * cells->size, sizeof(double));
-  double *tmp_npf = (double *)calloc(DG_NUM_FACES * DG_NPF * cells->size, sizeof(double));
+  DG_FP *tmp_np  = (DG_FP *)calloc(DG_NP * cells->size, sizeof(DG_FP));
+  DG_FP *tmp_npf = (DG_FP *)calloc(DG_NUM_FACES * DG_NPF * cells->size, sizeof(DG_FP));
   // The x and y coordinates of all the solution points in a cell
-  x = op_decl_dat(cells, DG_NP, "double", tmp_np, "x");
-  y = op_decl_dat(cells, DG_NP, "double", tmp_np, "y");
+  x = op_decl_dat(cells, DG_NP, DG_FP_STR, tmp_np, "x");
+  y = op_decl_dat(cells, DG_NP, DG_FP_STR, tmp_np, "y");
   // Geometric factors that relate to mapping between global and local (cell) coordinates
-  rx = op_decl_dat(cells, DG_NP, "double", tmp_np, "rx");
-  ry = op_decl_dat(cells, DG_NP, "double", tmp_np, "ry");
-  sx = op_decl_dat(cells, DG_NP, "double", tmp_np, "sx");
-  sy = op_decl_dat(cells, DG_NP, "double", tmp_np, "sy");
+  rx = op_decl_dat(cells, DG_NP, DG_FP_STR, tmp_np, "rx");
+  ry = op_decl_dat(cells, DG_NP, DG_FP_STR, tmp_np, "ry");
+  sx = op_decl_dat(cells, DG_NP, DG_FP_STR, tmp_np, "sx");
+  sy = op_decl_dat(cells, DG_NP, DG_FP_STR, tmp_np, "sy");
   // Normals for each cell (calculated for each node on each edge, nodes can appear on multiple edges)
-  nx = op_decl_dat(cells, 3 * DG_NPF, "double", tmp_npf, "nx");
-  ny = op_decl_dat(cells, 3 * DG_NPF, "double", tmp_npf, "ny");
+  nx = op_decl_dat(cells, 3 * DG_NPF, DG_FP_STR, tmp_npf, "nx");
+  ny = op_decl_dat(cells, 3 * DG_NPF, DG_FP_STR, tmp_npf, "ny");
   // surface Jacobian / Jacobian (used when lifting the boundary fluxes)
-  J          = op_decl_dat(cells, DG_NP, "double", tmp_np, "J");
-  sJ         = op_decl_dat(cells, 3 * DG_NPF, "double", tmp_npf, "sJ");
-  fscale     = op_decl_dat(cells, 3 * DG_NPF, "double", tmp_npf, "fscale");
+  J          = op_decl_dat(cells, DG_NP, DG_FP_STR, tmp_np, "J");
+  sJ         = op_decl_dat(cells, 3 * DG_NPF, DG_FP_STR, tmp_npf, "sJ");
+  fscale     = op_decl_dat(cells, 3 * DG_NPF, DG_FP_STR, tmp_npf, "fscale");
   bool *bool_tmp_1_e = (bool *)calloc(faces->size, sizeof(bool));
   reverse = op_decl_dat(faces, 1, "bool", bool_tmp_1_e, "reverse");
   free(bool_tmp_1_e);
@@ -184,7 +184,7 @@ DGMesh2D::DGMesh2D(std::string &meshFile) {
   free(int_tmp_1);
   for(int i = 0; i < 4; i++) {
     string tmpname = "op_tmp" + to_string(i);
-    op_tmp[i] = op_decl_dat(cells, DG_NP, "double", tmp_npf, tmpname.c_str());
+    op_tmp[i] = op_decl_dat(cells, DG_NP, DG_FP_STR, tmp_npf, tmpname.c_str());
   }
   free(tmp_npf);
   free(tmp_np);
@@ -194,8 +194,8 @@ DGMesh2D::DGMesh2D(std::string &meshFile) {
   #else
   op_decl_const(DG_ORDER * 5, "int", DG_CONSTANTS);
   op_decl_const(DG_ORDER * DG_NPF * 3, "int", FMASK);
-  op_decl_const(DG_ORDER * DG_CUB_NP, "double", cubW_g);
-  op_decl_const(DG_ORDER * DG_GF_NP, "double", gaussW_g);
+  op_decl_const(DG_ORDER * DG_CUB_NP, DG_FP_STR, cubW_g);
+  op_decl_const(DG_ORDER * DG_GF_NP, DG_FP_STR, gaussW_g);
   #endif
 
   cubature = new DGCubatureData(this);
@@ -214,19 +214,19 @@ void DGMesh2D::init() {
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_WRITE));
 
   op_par_loop(init_nodes, "init_nodes", cells,
-              op_arg_dat(node_coords, -3, cell2nodes, 2, "double", OP_READ),
-              op_arg_dat(nodeX, -1, OP_ID, 3, "double", OP_WRITE),
-              op_arg_dat(nodeY, -1, OP_ID, 3, "double", OP_WRITE));
+              op_arg_dat(node_coords, -3, cell2nodes, 2, DG_FP_STR, OP_READ),
+              op_arg_dat(nodeX, -1, OP_ID, 3, DG_FP_STR, OP_WRITE),
+              op_arg_dat(nodeY, -1, OP_ID, 3, DG_FP_STR, OP_WRITE));
 
   // Calculate geometric factors
   op_par_loop(calc_geom, "calc_geom", cells,
               op_arg_dat(order,  -1, OP_ID, 1, "int", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::R), DG_ORDER * DG_NP, "double", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::S), DG_ORDER * DG_NP, "double", OP_READ),
-              op_arg_dat(nodeX, -1, OP_ID, 3, "double", OP_READ),
-              op_arg_dat(nodeY, -1, OP_ID, 3, "double", OP_READ),
-              op_arg_dat(x, -1, OP_ID, DG_NP, "double", OP_WRITE),
-              op_arg_dat(y, -1, OP_ID, DG_NP, "double", OP_WRITE));
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::R), DG_ORDER * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::S), DG_ORDER * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(nodeX, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(nodeY, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
 
   op2_gemv(this, false, 1.0, DGConstants::DR, x, 0.0, rx);
   op2_gemv(this, false, 1.0, DGConstants::DS, x, 0.0, sx);
@@ -235,20 +235,20 @@ void DGMesh2D::init() {
 
   op_par_loop(init_grid, "init_grid", cells,
               op_arg_dat(order,  -1, OP_ID, 1, "int", OP_READ),
-              op_arg_dat(rx,     -1, OP_ID, DG_NP, "double", OP_RW),
-              op_arg_dat(ry,     -1, OP_ID, DG_NP, "double", OP_RW),
-              op_arg_dat(sx,     -1, OP_ID, DG_NP, "double", OP_RW),
-              op_arg_dat(sy,     -1, OP_ID, DG_NP, "double", OP_RW),
-              op_arg_dat(nx,     -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
-              op_arg_dat(ny,     -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
-              op_arg_dat(J,      -1, OP_ID, DG_NP, "double", OP_WRITE),
-              op_arg_dat(sJ,     -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
-              op_arg_dat(fscale, -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE));
+              op_arg_dat(rx,     -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(ry,     -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(sx,     -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(sy,     -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(nx,     -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE),
+              op_arg_dat(ny,     -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE),
+              op_arg_dat(J,      -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(sJ,     -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE),
+              op_arg_dat(fscale, -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE));
 
   op_par_loop(init_edges, "init_edges", faces,
               op_arg_dat(edgeNum, -1, OP_ID, 2, "int", OP_READ),
-              op_arg_dat(nodeX, -2, face2cells, 3, "double", OP_READ),
-              op_arg_dat(nodeY, -2, face2cells, 3, "double", OP_READ),
+              op_arg_dat(nodeX, -2, face2cells, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(nodeY, -2, face2cells, 3, DG_FP_STR, OP_READ),
               op_arg_dat(reverse, -1, OP_ID, 1, "bool", OP_WRITE));
 
   cubature->init();
@@ -258,12 +258,12 @@ void DGMesh2D::init() {
 void DGMesh2D::update_mesh_constants() {
   op_par_loop(calc_geom, "calc_geom", cells,
               op_arg_dat(order,  -1, OP_ID, 1, "int", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::R), DG_ORDER * DG_NP, "double", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::S), DG_ORDER * DG_NP, "double", OP_READ),
-              op_arg_dat(nodeX, -1, OP_ID, 3, "double", OP_READ),
-              op_arg_dat(nodeY, -1, OP_ID, 3, "double", OP_READ),
-              op_arg_dat(x, -1, OP_ID, DG_NP, "double", OP_WRITE),
-              op_arg_dat(y, -1, OP_ID, DG_NP, "double", OP_WRITE));
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::R), DG_ORDER * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::S), DG_ORDER * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(nodeX, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(nodeY, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
 
   op2_gemv(this, false, 1.0, DGConstants::DR, x, 0.0, rx);
   op2_gemv(this, false, 1.0, DGConstants::DS, x, 0.0, sx);
@@ -272,15 +272,15 @@ void DGMesh2D::update_mesh_constants() {
 
   op_par_loop(init_grid, "init_grid", cells,
               op_arg_dat(order,  -1, OP_ID, 1, "int", OP_READ),
-              op_arg_dat(rx,     -1, OP_ID, DG_NP, "double", OP_RW),
-              op_arg_dat(ry,     -1, OP_ID, DG_NP, "double", OP_RW),
-              op_arg_dat(sx,     -1, OP_ID, DG_NP, "double", OP_RW),
-              op_arg_dat(sy,     -1, OP_ID, DG_NP, "double", OP_RW),
-              op_arg_dat(nx,     -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
-              op_arg_dat(ny,     -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
-              op_arg_dat(J,      -1, OP_ID, DG_NP, "double", OP_WRITE),
-              op_arg_dat(sJ,     -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE),
-              op_arg_dat(fscale, -1, OP_ID, 3 * DG_NPF, "double", OP_WRITE));
+              op_arg_dat(rx,     -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(ry,     -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(sx,     -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(sy,     -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(nx,     -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE),
+              op_arg_dat(ny,     -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE),
+              op_arg_dat(J,      -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(sJ,     -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE),
+              op_arg_dat(fscale, -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE));
 
   cubature->update_mesh_constants();
   gauss->update_mesh_constants();
@@ -294,10 +294,10 @@ void DGMesh2D::update_order(op_dat new_orders, std::vector<op_dat> &dats_to_inte
       exit(-1);
     }
     op_par_loop(interp_dat_to_new_order, "interp_dat_to_new_order", cells,
-                op_arg_gbl(constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(order,      -1, OP_ID, 1, "int", OP_READ),
                 op_arg_dat(new_orders, -1, OP_ID, 1, "int", OP_READ),
-                op_arg_dat(dats_to_interp[i], -1, OP_ID, DG_NP, "double", OP_RW));
+                op_arg_dat(dats_to_interp[i], -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
   }
 
   // Copy across new orders
@@ -317,10 +317,10 @@ void DGMesh2D::update_order(int new_order, std::vector<op_dat> &dats_to_interp) 
       exit(-1);
     }
     op_par_loop(interp_dat_to_new_order_int, "interp_dat_to_new_order_int", cells,
-                op_arg_gbl(constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(order,     -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&new_order, 1, "int", OP_READ),
-                op_arg_dat(dats_to_interp[i], -1, OP_ID, DG_NP, "double", OP_RW));
+                op_arg_dat(dats_to_interp[i], -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
   }
 
   // Copy across new orders
@@ -346,9 +346,9 @@ void DGMesh2D::interp_to_max_order(std::vector<op_dat> &dats_in,
       exit(-1);
     }
     op_par_loop(interp_dat_to_max_order, "interp_dat_to_max_order", cells,
-                op_arg_gbl(constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, "double", OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(order,       -1, OP_ID, 1, "int", OP_READ),
-                op_arg_dat(dats_in[i],  -1, OP_ID, DG_NP, "double", OP_READ),
-                op_arg_dat(dats_out[i], -1, OP_ID, DG_NP, "double", OP_WRITE));
+                op_arg_dat(dats_in[i],  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(dats_out[i], -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
   }
 }

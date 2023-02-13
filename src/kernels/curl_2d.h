@@ -1,7 +1,7 @@
-inline void curl_2d(const int *p, const double *div0, const double *div1,
-                    const double *div2, const double *div3, const double *rx,
-                    const double *sx, const double *ry, const double *sy,
-                    double *res) {
+inline void curl_2d(const int *p, const DG_FP *div0, const DG_FP *div1,
+                    const DG_FP *div2, const DG_FP *div3, const DG_FP *rx,
+                    const DG_FP *sx, const DG_FP *ry, const DG_FP *sy,
+                    DG_FP *res) {
   // Get constants
   const int dg_np  = DG_CONSTANTS[(*p - 1) * 5];
 
