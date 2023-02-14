@@ -13,13 +13,13 @@ DG_FP cubW_g[1];
 DG_FP gaussW_g[1];
 
 void save_mat(DG_FP *mem_ptr, arma::mat &mat, const int N, const int max_size) {
-  std::vector<DG_FP> mat_vec = arma::conv_to<std::vector<DG_FP>>::from(mat);
-  memcpy(&mem_ptr[(N - 1) * max_size], mat_vec.data(), mat_vec.size() * sizeof(DG_FP));
+  arma::Mat<DG_FP> mat_2 = arma::conv_to<arma::Mat<DG_FP>>::from(mat);
+  memcpy(&mem_ptr[(N - 1) * max_size], mat_2.memptr(), mat_2.n_elem * sizeof(DG_FP));
 }
 
 void save_vec(DG_FP *mem_ptr, arma::vec &vec, const int N, const int max_size) {
-  std::vector<DG_FP> vec_vec = arma::conv_to<std::vector<DG_FP>>::from(vec);
-  memcpy(&mem_ptr[(N - 1) * max_size], vec_vec.data(), vec_vec.size() * sizeof(DG_FP));
+  arma::Col<DG_FP> vec_2 = arma::conv_to<arma::Col<DG_FP>>::from(vec);
+  memcpy(&mem_ptr[(N - 1) * max_size], vec_2.memptr(), vec_2.n_elem * sizeof(DG_FP));
 }
 
 DGConstants3D::DGConstants3D(const int n_) {
@@ -144,8 +144,8 @@ void DGConstants3D::calc_interp_mats() {
         //   // interp_ = DGUtils::interpMatrix3D(r_1, s_1, t_1, invV_0, n0);
         //   interp_ = DGUtils::interpMatrix3D(r_0, s_0, t_0, invV_1, n1).t();
         // }
-        std::vector<DG_FP> interp_vec = arma::conv_to<std::vector<DG_FP>>::from(interp_);
-        memcpy(&order_interp_ptr[((n0 - 1) * N_max + (n1 - 1)) * Np_max * Np_max], interp_vec.data(), interp_vec.size() * sizeof(DG_FP));
+        arma::Mat<DG_FP> interp_2 = arma::conv_to<arma::Mat<DG_FP>>::from(interp_);
+        memcpy(&order_interp_ptr[((n0 - 1) * N_max + (n1 - 1)) * Np_max * Np_max], interp_2.memptr(), interp_2.n_elem * sizeof(DG_FP));
       }
     }
   }

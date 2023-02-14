@@ -10,23 +10,23 @@
 
 namespace DGUtils {
 
-  const DG_FP PI = 3.141592653589793238463;
+  const double PI = 3.141592653589793238463;
 
   /*********************************
   * Calculating polynomials
   **********************************/
 
   // Calculate Nth order Gauss quadature points and weights of Jacobi polynomial
-  void jacobiGQ(const DG_FP alpha, const DG_FP beta, const int N,
+  void jacobiGQ(const double alpha, const double beta, const int N,
                 arma::vec &x, arma::vec &w);
   // Calculate Nth order Gauss Lobatto quadature points of Jacobi polynomial
-  arma::vec jacobiGL(const DG_FP alpha, const DG_FP beta, const int N);
+  arma::vec jacobiGL(const double alpha, const double beta, const int N);
   // Calculate Jacobi polynomial of order N at points x
-  arma::vec jacobiP(const arma::vec &x, const DG_FP alpha, const DG_FP beta,
+  arma::vec jacobiP(const arma::vec &x, const double alpha, const double beta,
                     const int N);
   // Calculate derivative of Jacobi polynomial of order N at points x
-  arma::vec gradJacobiP(const arma::vec &x, const DG_FP alpha,
-                        const DG_FP beta, const int N);
+  arma::vec gradJacobiP(const arma::vec &x, const double alpha,
+                        const double beta, const int N);
   // Calculate 2D orthonomal poly on simplex of order i,j
   arma::vec simplex2DP(const arma::vec &a, const arma::vec &b, const int i,
                        const int j);

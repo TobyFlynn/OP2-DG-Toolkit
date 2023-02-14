@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-void DGUtils::jacobiGQ(const DG_FP alpha, const DG_FP beta, const int N,
+void DGUtils::jacobiGQ(const double alpha, const double beta, const int N,
                        arma::vec &x, arma::vec &w) {
   x.reset(); w.reset();
   if(N == 0) {
@@ -51,7 +51,7 @@ void DGUtils::jacobiGQ(const DG_FP alpha, const DG_FP beta, const int N,
   }
 }
 
-arma::vec DGUtils::jacobiGL(const DG_FP alpha, const DG_FP beta,
+arma::vec DGUtils::jacobiGL(const double alpha, const double beta,
                             const int N) {
   arma::vec x(N + 1);
   if(N == 1) {
@@ -69,10 +69,10 @@ arma::vec DGUtils::jacobiGL(const DG_FP alpha, const DG_FP beta,
 }
 
 // Calculate Jacobi polynomial of order N at points x
-arma::vec DGUtils::jacobiP(const arma::vec &x, const DG_FP alpha,
-                           const DG_FP beta, const int N) {
+arma::vec DGUtils::jacobiP(const arma::vec &x, const double alpha,
+                           const double beta, const int N) {
   arma::mat pl(x.n_elem, N + 1);
-  DG_FP gamma0 = pow(2.0, alpha + beta + 1.0) / (alpha + beta + 1.0) *
+  double gamma0 = pow(2.0, alpha + beta + 1.0) / (alpha + beta + 1.0) *
                   tgamma(alpha + 1.0) * tgamma(beta + 1.0) /
                   tgamma(alpha + beta + 1.0);
   arma::vec col0(x.n_elem);
@@ -84,7 +84,7 @@ arma::vec DGUtils::jacobiP(const arma::vec &x, const DG_FP alpha,
   }
   pl.col(0) = col0;
 
-  DG_FP gamma1 = (alpha + 1.0) * (beta + 1.0) / (alpha + beta + 3.0) * gamma0;
+  double gamma1 = (alpha + 1.0) * (beta + 1.0) / (alpha + beta + 3.0) * gamma0;
   pl.col(1) = ((alpha + beta + 2.0) * x / 2.0 + (alpha - beta) / 2.0) /
               sqrt(gamma1);
   // Second base case
@@ -93,14 +93,14 @@ arma::vec DGUtils::jacobiP(const arma::vec &x, const DG_FP alpha,
   }
 
   // Recurrence for N > 1
-  DG_FP aOld = 2.0 / (2.0 + alpha + beta) * sqrt((alpha + 1.0) * (beta + 1.0) /
+  double aOld = 2.0 / (2.0 + alpha + beta) * sqrt((alpha + 1.0) * (beta + 1.0) /
                 (alpha + beta + 3.0));
   for(int i = 1; i < N; i++) {
-    DG_FP h1 = 2.0 * i + alpha + beta;
-    DG_FP aNew = 2.0 / (h1 + 2.0) * sqrt((i + 1.0) * (i + 1.0 + alpha + beta) *
+    double h1 = 2.0 * i + alpha + beta;
+    double aNew = 2.0 / (h1 + 2.0) * sqrt((i + 1.0) * (i + 1.0 + alpha + beta) *
                   (i + 1.0 + alpha) * (i + 1.0 + beta) / (h1 + 1.0) /
                   (h1 + 3.0));
-    DG_FP bNew = -(alpha * alpha - beta * beta) / h1 / (h1 + 2.0);
+    double bNew = -(alpha * alpha - beta * beta) / h1 / (h1 + 2.0);
     pl.col(i + 1) = 1.0 / aNew * (-aOld * pl.col(i - 1) + (x - bNew) %
                     pl.col(i));
     aOld = aNew;
@@ -109,12 +109,12 @@ arma::vec DGUtils::jacobiP(const arma::vec &x, const DG_FP alpha,
   return pl.col(N);
 }
 
-arma::vec DGUtils::gradJacobiP(const arma::vec &x, const DG_FP alpha,
-                               const DG_FP beta, const int N) {
+arma::vec DGUtils::gradJacobiP(const arma::vec &x, const double alpha,
+                               const double beta, const int N) {
   if(N == 0) {
     return arma::vec(x.n_elem, arma::fill::zeros);
   } else {
-    DG_FP fact = sqrt(N * (N + alpha + beta + 1.0));
+    double fact = sqrt(N * (N + alpha + beta + 1.0));
     return fact * jacobiP(x, alpha + 1.0, beta + 1.0, N - 1);
   }
 }

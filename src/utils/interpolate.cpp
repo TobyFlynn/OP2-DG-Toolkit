@@ -1,7 +1,7 @@
 #include "dg_utils.h"
 
 DG_FP DGUtils::val_at_pt_3d(const DG_FP r, const DG_FP s, const DG_FP t,
-                             const DG_FP *modal, const int N) {
+                            const DG_FP *modal, const int N) {
   DG_FP a, b, c;
   if(s + t != 0.0)
     a = 2.0 * (1.0 + r) / (-s - t) - 1.0;
@@ -64,7 +64,7 @@ void DGUtils::grad_at_pt_3d(const DG_FP r, const DG_FP s, const DG_FP t,
 }
 
 DG_FP DGUtils::val_at_pt_N_1_3d(const DG_FP r, const DG_FP s, const DG_FP t,
-                                 const DG_FP *modal, const int N) {
+                                const DG_FP *modal, const int N) {
   DG_FP a, b, c;
   if(s + t != 0.0)
     a = 2.0 * (1.0 + r) / (-s - t) - 1.0;

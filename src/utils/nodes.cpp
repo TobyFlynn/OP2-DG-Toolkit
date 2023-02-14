@@ -14,13 +14,13 @@ void DGUtils::setRefXY(const int N, arma::vec &x, arma::vec &y) {
   x.set_size(Np); y.set_size(Np);
 
   // Optimal values of alpha up to N = 16
-  DG_FP alphaVals[] = {
+  double alphaVals[] = {
     0.0, 0.0, 1.4152, 0.1001, 0.2751, 0.98, 1.0999, 1.2832, 1.3648, 1.4773,
     1.4959, 1.5743, 1.5770, 1.6223, 1.6258
   };
 
   // Set optimal value of alpha for warp & blend
-  DG_FP alpha = 5.0 / 3.0;
+  double alpha = 5.0 / 3.0;
   if(N < 16)
     alpha = alphaVals[N - 1];
 
@@ -30,8 +30,8 @@ void DGUtils::setRefXY(const int N, arma::vec &x, arma::vec &y) {
   int ind = 0;
   for(int n = 0; n < N + 1; n++) {
     for(int m = 0; m < N + 1 - n; m++) {
-      l1[ind] = (DG_FP)n / (DG_FP)N;
-      l3[ind] = (DG_FP)m / (DG_FP)N;
+      l1[ind] = (double)n / (double)N;
+      l3[ind] = (double)m / (double)N;
       ind++;
     }
   }
@@ -120,11 +120,11 @@ arma::vec warp1D(const int N, const arma::vec &x, const arma::vec &out) {
   arma::vec eq(arma::size(out), arma::fill::zeros);
 
   for(int i = 0; i < N + 1; i++) {
-    eq(i) = -1.0 + 2.0 * (N - i) / (DG_FP)N;
+    eq(i) = -1.0 + 2.0 * (N - i) / (double)N;
   }
 
   for(int i = 0; i < N + 1; i++) {
-    DG_FP d = x(i) - eq(i);
+    double d = x(i) - eq(i);
     arma::vec dvec;
     bool vecSet = false;
     for(int j = 1; j < N; j++) {
@@ -156,7 +156,7 @@ arma::vec warp1D(const int N, const arma::vec &x, const arma::vec &out) {
 }
 
 // Calculate 2D warp factor
-void warp2D(const int N, const DG_FP p1, const arma::vec &l1,
+void warp2D(const int N, const double p1, const arma::vec &l1,
             const arma::vec &l2, const arma::vec &l3, arma::vec &warpx,
             arma::vec &warpy) {
   arma::vec gaussX = -DGUtils::jacobiGL(0.0, 0.0, N);
@@ -189,13 +189,13 @@ void DGUtils::setRefXYZ(const int N, arma::vec &x, arma::vec &y,
   x.set_size(Np); y.set_size(Np); z.set_size(Np);
 
   // Optimal values of alpha up to N = 16
-  DG_FP alphaVals[] = {
+  double alphaVals[] = {
     0.0, 0.0, 0.0, 0.1002, 1.1332, 1.5608, 1.3413, 1.2577, 1.1603, 1.10153,
     0.6080, 0.4523, 0.8856, 0.8717, 0.9655
   };
 
   // Set optimal value of alpha for warp & blend
-  DG_FP alpha = 1.0;
+  double alpha = 1.0;
   if(N < 15)
     alpha = alphaVals[N - 1];
 
@@ -205,9 +205,9 @@ void DGUtils::setRefXYZ(const int N, arma::vec &x, arma::vec &y,
   for(int n = 0; n < N + 1; n++) {
     for(int m = 0; m < N + 1 - n; m++) {
       for(int q = 0; q < N + 1 - n - m; q++) {
-        r[ind] = -1.0 + q * 2.0 / (DG_FP)N;
-        s[ind] = -1.0 + m * 2.0 / (DG_FP)N;
-        t[ind] = -1.0 + n * 2.0 / (DG_FP)N;
+        r[ind] = -1.0 + q * 2.0 / (double)N;
+        s[ind] = -1.0 + m * 2.0 / (double)N;
+        t[ind] = -1.0 + n * 2.0 / (double)N;
         ind++;
       }
     }
