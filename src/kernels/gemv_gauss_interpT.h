@@ -9,7 +9,8 @@ inline void gemv_gauss_interpT(const int *p, const DG_FP *alpha,
   for(int i = 0; i < dg_np; i++) {
     y[i] *= *beta;
     for(int j = 0; j < dg_g_np; j++) {
-      int ind = i * dg_g_np + j;
+      // int ind = i * dg_g_np + j;
+      int ind = DG_MAT_IND(j, i, dg_g_np, dg_np);
       y[i] += *alpha * gauss_interp[ind] * x[j];
     }
   }

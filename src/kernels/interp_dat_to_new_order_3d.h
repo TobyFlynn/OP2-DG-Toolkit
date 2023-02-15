@@ -13,7 +13,8 @@ inline void interp_dat_to_new_order_3d(const DG_FP *mats, const int *old_order,
   for(int i = 0; i < dg_np_new; i++) {
     res[i] = 0.0;
     for(int j = 0; j < dg_np_old; j++) {
-      int ind = i + j * dg_np_new;
+      // int ind = i + j * dg_np_new;
+      int ind = DG_MAT_IND(i, j, dg_np_new, dg_np_old);
       res[i] += mat[ind] * dat[j];
     }
   }

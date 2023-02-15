@@ -7,7 +7,8 @@ inline void gemv_np_np(const int *p, const DG_FP *alpha, const DG_FP *beta,
   for(int i = 0; i < dg_np; i++) {
     y[i] *= *beta;
     for(int j = 0; j < dg_np; j++) {
-      int ind = i + j * dg_np;
+      // int ind = i + j * dg_np;
+      int ind = DG_MAT_IND(i, j, dg_np, dg_np);
       y[i] += *alpha * mat[ind] * x[j];
     }
   }

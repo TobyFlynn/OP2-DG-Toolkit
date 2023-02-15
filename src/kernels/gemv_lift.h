@@ -8,7 +8,8 @@ inline void gemv_lift(const int *p, const DG_FP *alpha, const DG_FP *beta,
   for(int i = 0; i < dg_np; i++) {
     y[i] *= *beta;
     for(int j = 0; j < DG_NUM_FACES * dg_nfp; j++) {
-      int ind = i + j * dg_np;
+      // int ind = i + j * dg_np;
+      int ind = DG_MAT_IND(i, j, dg_np, DG_NUM_FACES * dg_nfp);
       y[i] += *alpha * lift[ind] * x[j];
     }
   }

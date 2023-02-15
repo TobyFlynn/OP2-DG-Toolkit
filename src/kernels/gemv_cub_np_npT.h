@@ -9,7 +9,8 @@ inline void gemv_cub_np_npT(const int *p, const DG_FP *alpha,
   for(int i = 0; i < dg_np; i++) {
     y[i] *= *beta;
     for(int j = 0; j < dg_cub_np; j++) {
-      int ind = i * dg_cub_np + j;
+      // int ind = i * dg_cub_np + j;
+      int ind = DG_MAT_IND(j, i, dg_cub_np, dg_np);
       y[i] += *alpha * mat[ind] * x[j];
     }
   }

@@ -13,7 +13,11 @@ DG_FP cubW_g[1];
 DG_FP gaussW_g[1];
 
 void save_mat(DG_FP *mem_ptr, arma::mat &mat, const int N, const int max_size) {
+  #ifdef DG_COL_MAJ
   arma::Mat<DG_FP> mat_2 = arma::conv_to<arma::Mat<DG_FP>>::from(mat);
+  #else
+  arma::Mat<DG_FP> mat_2 = arma::conv_to<arma::Mat<DG_FP>>::from(mat.t());
+  #endif
   memcpy(&mem_ptr[(N - 1) * max_size], mat_2.memptr(), mat_2.n_elem * sizeof(DG_FP));
 }
 
@@ -144,7 +148,11 @@ void DGConstants3D::calc_interp_mats() {
         //   // interp_ = DGUtils::interpMatrix3D(r_1, s_1, t_1, invV_0, n0);
         //   interp_ = DGUtils::interpMatrix3D(r_0, s_0, t_0, invV_1, n1).t();
         // }
+        #ifdef DG_COL_MAJ
         arma::Mat<DG_FP> interp_2 = arma::conv_to<arma::Mat<DG_FP>>::from(interp_);
+        #else
+        arma::Mat<DG_FP> interp_2 = arma::conv_to<arma::Mat<DG_FP>>::from(interp_.t());
+        #endif
         memcpy(&order_interp_ptr[((n0 - 1) * N_max + (n1 - 1)) * Np_max * Np_max], interp_2.memptr(), interp_2.n_elem * sizeof(DG_FP));
       }
     }

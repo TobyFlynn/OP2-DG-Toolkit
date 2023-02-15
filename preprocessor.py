@@ -12,7 +12,7 @@ dg_gf_np     = "1"
 dg_order     = "1"
 dg_num_faces = ""
 
-fp_type = "f"
+fp_type = "d"
 
 # Get DG order from command line args
 if dim == "2":

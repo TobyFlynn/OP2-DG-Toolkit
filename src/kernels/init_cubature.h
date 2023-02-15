@@ -26,7 +26,8 @@ inline void init_cubature(const int *p, const DG_FP *matrix, DG_FP *rx,
 
   for(int j = 0; j < dg_np; j++) {
     for(int i = 0; i < dg_cub_np; i++) {
-      int ind = j * dg_cub_np + i;
+      // int ind = j * dg_cub_np + i;
+      int ind = DG_MAT_IND(i, j, dg_cub_np, dg_np);
       temp[ind] = J[i] * cubW[i] * cubV[ind];
     }
   }

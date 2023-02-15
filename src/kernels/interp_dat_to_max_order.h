@@ -15,7 +15,8 @@ inline void interp_dat_to_max_order(const DG_FP *mats, const int *order,
   for(int i = 0; i < dg_np_new; i++) {
     out[i] = 0.0;
     for(int j = 0; j < dg_np_old; j++) {
-      int ind = i + j * dg_np_new;
+      // int ind = i + j * dg_np_new;
+      int ind = DG_MAT_IND(i, j, dg_np_new, dg_np_old);
       out[i] += mat[ind] * in[j];
     }
   }

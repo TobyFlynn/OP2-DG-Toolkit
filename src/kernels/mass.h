@@ -7,7 +7,8 @@ inline void mass(const DG_FP *matrix, const DG_FP *J, DG_FP *x) {
   for(int i = 0; i < DG_NP; i++) {
     tmp[i] = 0.0;
     for(int j = 0; j < DG_NP; j++) {
-      int ind = i + j * DG_NP;
+      // int ind = i + j * DG_NP;
+      int ind = DG_MAT_IND(i, j, DG_NP, DG_NP);
       tmp[i] += mat[ind] * x[j];
     }
   }

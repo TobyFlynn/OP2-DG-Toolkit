@@ -11,7 +11,11 @@ DG_FP cubW_g[DG_ORDER * DG_CUB_NP];
 DG_FP gaussW_g[DG_ORDER * DG_GF_NP];
 
 void save_mat(DG_FP *mem_ptr, arma::mat &mat, const int N, const int max_size) {
+  #ifdef DG_COL_MAJ
   arma::Mat<DG_FP> mat_2 = arma::conv_to<arma::Mat<DG_FP>>::from(mat);
+  #else
+  arma::Mat<DG_FP> mat_2 = arma::conv_to<arma::Mat<DG_FP>>::from(mat.t());
+  #endif
   memcpy(&mem_ptr[(N - 1) * max_size], mat_2.memptr(), mat_2.n_elem * sizeof(DG_FP));
 }
 
@@ -235,7 +239,11 @@ void DGConstants2D::calc_interp_mats() {
         DGUtils::setRefXY(n1, x_n1, y_n1);
         DGUtils::xy2rs(x_n1, y_n1, r_n1, s_n1);
         arma::mat interp_ = DGUtils::interpMatrix2D(r_n1, s_n1, invV_n0, n0);
+        #ifdef DG_COL_MAJ
         arma::Mat<DG_FP> interp_2 = arma::conv_to<arma::Mat<DG_FP>>::from(interp_);
+        #else
+        arma::Mat<DG_FP> interp_2 = arma::conv_to<arma::Mat<DG_FP>>::from(interp_.t());
+        #endif
         memcpy(&order_interp_ptr[((n0 - 1) * N_max + (n1 - 1)) * Np_max * Np_max], interp_2.memptr(), interp_2.n_elem * sizeof(DG_FP));
       }
     }

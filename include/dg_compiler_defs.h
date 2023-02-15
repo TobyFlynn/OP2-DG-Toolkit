@@ -1,7 +1,14 @@
 #ifndef __DG_COMPILER_DEFS_H
 #define __DG_COMPILER_DEFS_H
 
-#define DG_FP float
+#define DG_FP double
+
+#ifdef DG_COL_MAJ
+// i = row, j = col, m = total rows, n = total cols
+#define DG_MAT_IND(i, j, m, n) ((i) + (j) * (m))
+#else
+#define DG_MAT_IND(i, j, m, n) ((i) * (n) + (j))
+#endif
 
 #if DG_DIM == 2
 
