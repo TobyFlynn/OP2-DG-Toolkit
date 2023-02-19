@@ -21,7 +21,7 @@ public:
 
     INV_MASS, MASS, V, R, S, T,
 
-    MM_F0, MM_F1, MM_F2, MM_F3,
+    MM_F0, MM_F1, MM_F2, MM_F3, EMAT,
 
     INTERP_MATRIX_ARRAY
   };

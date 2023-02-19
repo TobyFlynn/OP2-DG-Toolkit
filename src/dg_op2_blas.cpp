@@ -53,7 +53,7 @@ void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
-                op_arg_gbl(constants->get_mat_ptr(DGConstants::LIFT), DG_ORDER * 3 * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::LIFT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW));
   } else {
@@ -61,14 +61,35 @@ void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
-                op_arg_gbl(constants->get_mat_ptr(DGConstants::LIFT), DG_ORDER * 3 * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::LIFT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
   }
 }
 
-void op2_gemv_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha, 
-                    const DG_FP *matrix, op_dat x, const DG_FP beta, 
+void op2_gemv_emat(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
+                   const DG_FP beta, op_dat y) {
+  if(transpose) {
+    op_par_loop(gemv_liftT, "gemv_liftT", mesh->cells,
+                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
+                op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::EMAT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(y, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW));
+  } else {
+    op_par_loop(gemv_lift, "gemv_lift", mesh->cells,
+                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
+                op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::EMAT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(x, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_READ),
+                op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
+  }
+}
+
+void op2_gemv_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha,
+                    const DG_FP *matrix, op_dat x, const DG_FP beta,
                     op_dat y) {
   if(transpose) {
     op_par_loop(gemv_np_npT, "gemv_np_npT", mesh->cells,
@@ -89,8 +110,8 @@ void op2_gemv_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha,
   }
 }
 
-void op2_gemv_cub_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha, 
-                        const DG_FP *matrix, op_dat x, const DG_FP beta, 
+void op2_gemv_cub_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha,
+                        const DG_FP *matrix, op_dat x, const DG_FP beta,
                         op_dat y) {
   if(transpose) {
     op_par_loop(gemv_cub_np_npT, "gemv_cub_np_npT", mesh->cells,
@@ -132,6 +153,9 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
       break;
     case DGConstants::LIFT:
       op2_gemv_lift(mesh, transpose, alpha, x, beta, y);
+      break;
+    case DGConstants::EMAT:
+      op2_gemv_emat(mesh, transpose, alpha, x, beta, y);
       break;
     case DGConstants::CUB_VDR:
       op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr(matrix), x, beta, y);

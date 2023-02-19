@@ -40,8 +40,8 @@ sed -i "19i #include \"dg_compiler_defs.h\"" cuda/dg_tookit_kernels.cu
 sed -i "20i #include \"dg_global_constants/dg_global_constants_2d.h\"" cuda/dg_tookit_kernels.cu
 sed -i "21i void set_cuda_constants_OP2_DG_CUDA() {" cuda/dg_tookit_kernels.cu
 sed -i "22i cutilSafeCall(cudaMemcpyToSymbol(FMASK_cuda, FMASK, DG_ORDER * DG_NPF * DG_NUM_FACES * sizeof(int)));" cuda/dg_tookit_kernels.cu
-sed -i "23i cutilSafeCall(cudaMemcpyToSymbol(cubW_g_cuda, cubW_g, DG_ORDER * DG_CUB_NP * sizeof(double)));" cuda/dg_tookit_kernels.cu
-sed -i "24i cutilSafeCall(cudaMemcpyToSymbol(gaussW_g_cuda, gaussW_g, DG_ORDER * DG_GF_NP * sizeof(double)));" cuda/dg_tookit_kernels.cu
+sed -i "23i cutilSafeCall(cudaMemcpyToSymbol(cubW_g_cuda, cubW_g, DG_ORDER * DG_CUB_NP * sizeof(DG_FP)));" cuda/dg_tookit_kernels.cu
+sed -i "24i cutilSafeCall(cudaMemcpyToSymbol(gaussW_g_cuda, gaussW_g, DG_ORDER * DG_GF_NP * sizeof(DG_FP)));" cuda/dg_tookit_kernels.cu
 sed -i "25i cutilSafeCall(cudaMemcpyToSymbol(DG_CONSTANTS_cuda, DG_CONSTANTS, DG_ORDER * DG_NUM_CONSTANTS * sizeof(int)));" cuda/dg_tookit_kernels.cu
 sed -i "26i }" cuda/dg_tookit_kernels.cu
 

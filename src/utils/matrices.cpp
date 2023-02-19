@@ -56,9 +56,9 @@ arma::mat DGUtils::lift2D(const arma::vec &r, const arma::vec &s,
 }
 
 // Calculate 3D surface to volume lift operator
-arma::mat DGUtils::lift3D(const arma::vec &r, const arma::vec &s,
+arma::mat DGUtils::eMat3D(const arma::vec &r, const arma::vec &s,
                           const arma::vec &t, const arma::uvec &fmask,
-                          const arma::mat &v, const int N) {
+                          const int N) {
   int Np, Nfp;
   numNodes3D(N, &Np, &Nfp);
 
@@ -92,7 +92,14 @@ arma::mat DGUtils::lift3D(const arma::vec &r, const arma::vec &s,
   col   = arma::regspace<arma::uvec>(3 * Nfp, 4 * Nfp - 1);
   eMat.submat(fmask(arma::span(3 * Nfp, 4 * Nfp - 1)), col) += mFace;
 
-  return v * (v.t() * eMat);
+  return eMat;
+}
+
+// Calculate 3D surface to volume lift operator
+arma::mat DGUtils::lift3D(const arma::vec &r, const arma::vec &s,
+                          const arma::vec &t, const arma::uvec &fmask,
+                          const arma::mat &v, const int N) {
+  return v * (v.t() * eMat3D(r, s, t, fmask, N));
 }
 
 // Interpolation matrix

@@ -76,6 +76,9 @@ namespace DGUtils {
   // Surface to volume lift matrix
   arma::mat lift2D(const arma::vec &r, const arma::vec &s,
                    const arma::uvec &fmask, const arma::mat &V, const int N);
+  // Calculate 3D surface to volume lift operator without inv Mass
+  arma::mat eMat3D(const arma::vec &r, const arma::vec &s, const arma::vec &t,
+                   const arma::uvec &fmask, const int N);
   // Calculate 3D surface to volume lift operator
   arma::mat lift3D(const arma::vec &r, const arma::vec &s, const arma::vec &t,
                    const arma::uvec &fmask, const arma::mat &v, const int N);

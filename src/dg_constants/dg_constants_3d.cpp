@@ -49,6 +49,7 @@ DGConstants3D::DGConstants3D(const int n_) {
   mmF1_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
   mmF2_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
   mmF3_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
+  eMat_ptr = (DG_FP *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(DG_FP));
   order_interp_ptr = (DG_FP *)calloc(N_max * N_max * Np_max * Np_max, sizeof(DG_FP));
 
   for(int N = 1; N <= N_max; N++) {
@@ -72,6 +73,7 @@ DGConstants3D::DGConstants3D(const int n_) {
     arma::uvec fmask4_ = arma::find(arma::abs(1 + r_)  < 1e-12);
     arma::uvec fmask_  = arma::join_cols(fmask1_, fmask2_, fmask3_, fmask4_);
 
+    arma::mat eMat_ = DGUtils::eMat3D(r_, s_, t_, fmask_, N);
     arma::mat lift_ = DGUtils::lift3D(r_, s_, t_, fmask_, v_, N);
     arma::mat mmF0_, mmF1_, mmF2_, mmF3_;
     DGUtils::faceMassMatrix3D(r_, s_, t_, fmask_, v_, N, mmF0_, mmF1_, mmF2_, mmF3_);
@@ -99,6 +101,7 @@ DGConstants3D::DGConstants3D(const int n_) {
     save_mat(mmF1_ptr, mmF1_, N, Np_max * Np_max);
     save_mat(mmF2_ptr, mmF2_, N, Np_max * Np_max);
     save_mat(mmF3_ptr, mmF3_, N, Np_max * Np_max);
+    save_mat(eMat_ptr, eMat_, N, DG_NUM_FACES * Nfp_max * Np_max);
     // memcpy(&r_ptr[(N - 1) * Np_max], r_.memptr(), r_.n_elem * sizeof(DG_FP));
     // memcpy(&s_ptr[(N - 1) * Np_max], s_.memptr(), s_.n_elem * sizeof(DG_FP));
     // memcpy(&t_ptr[(N - 1) * Np_max], t_.memptr(), t_.n_elem * sizeof(DG_FP));
@@ -201,6 +204,8 @@ DG_FP* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
       return mmF2_ptr;
     case MM_F3:
       return mmF3_ptr;
+    case EMAT:
+      return eMat_ptr;
     case INTERP_MATRIX_ARRAY:
       return order_interp_ptr;
     default:
@@ -227,5 +232,6 @@ DGConstants3D::~DGConstants3D() {
   delete mmF1_ptr;
   delete mmF2_ptr;
   delete mmF3_ptr;
+  delete eMat_ptr;
   delete order_interp_ptr;
 }
