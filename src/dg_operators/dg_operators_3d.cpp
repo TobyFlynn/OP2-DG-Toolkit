@@ -9,14 +9,16 @@
 extern DGConstants *constants;
 
 void DGMesh3D::grad(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
-  op2_gemv(this, false, 1.0, DGConstants::DR, u, 0.0, op_tmp[0]);
-  op2_gemv(this, false, 1.0, DGConstants::DS, u, 0.0, op_tmp[1]);
-  op2_gemv(this, false, 1.0, DGConstants::DT, u, 0.0, op_tmp[2]);
+  // op2_gemv(this, false, 1.0, DGConstants::DR, u, 0.0, op_tmp[0]);
+  // op2_gemv(this, false, 1.0, DGConstants::DS, u, 0.0, op_tmp[1]);
+  // op2_gemv(this, false, 1.0, DGConstants::DT, u, 0.0, op_tmp[2]);
 
   op_par_loop(grad_3d, "grad_3d", cells,
-              op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp[1], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp[2], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::DR), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::DS), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::DT), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(u,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(rx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(sx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(tx, -1, OP_ID, 1, DG_FP_STR, OP_READ),

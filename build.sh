@@ -22,7 +22,7 @@ mkdir -p gen_3d/dg_constants
 mkdir -p gen_3d/dg_mesh
 mkdir -p gen_3d/dg_operators
 
-ORDER=3
+ORDER=4
 
 python3 preprocessor.py 2 $ORDER
 
