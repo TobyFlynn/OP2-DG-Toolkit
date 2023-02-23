@@ -8,7 +8,46 @@
 
 extern DGConstants *constants;
 
+void custom_kernel_grad_3d(char const *name, op_set set,
+  op_arg arg0,
+  op_arg arg1,
+  op_arg arg2,
+  op_arg arg3,
+  op_arg arg4,
+  op_arg arg5,
+  op_arg arg6,
+  op_arg arg7,
+  op_arg arg8,
+  op_arg arg9,
+  op_arg arg10,
+  op_arg arg11,
+  op_arg arg12,
+  op_arg arg13,
+  op_arg arg14,
+  op_arg arg15,
+  op_arg arg16);
+
 void DGMesh3D::grad(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
+#ifdef OP2_DG_CUDA
+custom_kernel_grad_3d("grad_3d",cells,
+                     op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
+                     op_arg_gbl(constants->get_mat_ptr(DGConstants::DR), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
+                     op_arg_gbl(constants->get_mat_ptr(DGConstants::DS), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
+                     op_arg_gbl(constants->get_mat_ptr(DGConstants::DT), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
+                     op_arg_dat(u,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+                     op_arg_dat(rx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                     op_arg_dat(sx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                     op_arg_dat(tx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                     op_arg_dat(ry, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                     op_arg_dat(sy, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                     op_arg_dat(ty, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                     op_arg_dat(rz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                     op_arg_dat(sz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                     op_arg_dat(tz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                     op_arg_dat(ux, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+                     op_arg_dat(uy, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+                     op_arg_dat(uz, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+#else
   op_par_loop(grad_3d, "grad_3d", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
               op_arg_gbl(constants->get_mat_ptr(DGConstants::DR), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
@@ -27,6 +66,7 @@ void DGMesh3D::grad(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
               op_arg_dat(ux, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(uy, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(uz, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+#endif
 }
 
 void DGMesh3D::grad_with_central_flux(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
