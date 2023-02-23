@@ -58,9 +58,6 @@ __global__ void _op_cuda_grad_3d(
   __shared__ double ds_shared[DG_ORDER * DG_NP * DG_NP];
   __shared__ double dt_shared[DG_ORDER * DG_NP * DG_NP];
   __shared__ double u_shared[NUM_CELLS * DG_NP];
-  __shared__ double ux_shared[NUM_CELLS * DG_NP];
-  __shared__ double uy_shared[NUM_CELLS * DG_NP];
-  __shared__ double uz_shared[NUM_CELLS * DG_NP];
 
   for(int i = threadIdx.x; i < DG_ORDER * DG_NP * DG_NP; i += blockDim.x) {
     dr_shared[i] = arg1[i];
@@ -71,145 +68,138 @@ __global__ void _op_cuda_grad_3d(
   __syncthreads();
 
   //process set elements
-  for (int n = (threadIdx.x / DG_NP) + blockIdx.x * NUM_CELLS; n < set_size; n += NUM_CELLS * gridDim.x){
+  for (int n = threadIdx.x + blockIdx.x * blockDim.x; n < set_size * DG_NP; n += blockDim.x * gridDim.x){
+    const int node_id = n % DG_NP;
+    const int cell_id = n / DG_NP;
+    const int local_cell_id = (n / DG_NP) - ((n - threadIdx.x) / DG_NP);
     // If entire thread is in set
-    if(n - (threadIdx.x / DG_NP) + NUM_CELLS < set_size) {
+    if(n - threadIdx.x + blockDim.x < set_size * DG_NP) {
       __syncthreads();
-      u_shared[threadIdx.x] = arg4[n * DG_NP + threadIdx.x % DG_NP];
+      const int start_ind = ((n - threadIdx.x) / DG_NP) * DG_NP;
+      const int num_elem  = ((n - threadIdx.x + blockDim.x) / DG_NP) - ((n - threadIdx.x) / DG_NP) + 1;
+      for(int i = threadIdx.x; i < num_elem * DG_NP; i += blockDim.x) {
+        u_shared[i] = arg4[start_ind + i];
+      }
+      // u_shared[threadIdx.x] = arg4[cell_id * DG_NP + node_id];
       __syncthreads();
 
-      switch(*(arg0+n*1)) {
+      switch(*(arg0 + cell_id * 1)) {
         case 1:
-        _grad_3d_gpu<4, DG_NP>(threadIdx.x % DG_NP, arg0+n*1,
+        _grad_3d_gpu<4, DG_NP>(node_id, arg0 + cell_id * 1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
-                u_shared + (threadIdx.x / DG_NP) * DG_NP, //arg4+n*DG_NP,
-                arg5+n*1,
-                arg6+n*1,
-                arg7+n*1,
-                arg8+n*1,
-                arg9+n*1,
-                arg10+n*1,
-                arg11+n*1,
-                arg12+n*1,
-                arg13+n*1,
-                ux_shared + (threadIdx.x / DG_NP) * DG_NP, //arg14+n*DG_NP,
-                uy_shared + (threadIdx.x / DG_NP) * DG_NP, //arg15+n*DG_NP,
-                uz_shared + (threadIdx.x / DG_NP) * DG_NP); //arg16+n*DG_NP);
+                u_shared + local_cell_id * DG_NP, //arg4 + cell_id * DG_NP,
+                arg5 + cell_id * 1,
+                arg6 + cell_id * 1,
+                arg7 + cell_id * 1,
+                arg8 + cell_id * 1,
+                arg9 + cell_id * 1,
+                arg10 + cell_id * 1,
+                arg11 + cell_id * 1,
+                arg12 + cell_id * 1,
+                arg13 + cell_id * 1,
+                arg14 + cell_id * DG_NP,
+                arg15 + cell_id * DG_NP,
+                arg16 + cell_id * DG_NP);
           break;
         case 2:
-        _grad_3d_gpu<10, DG_NP>(threadIdx.x % DG_NP, arg0+n*1,
+        _grad_3d_gpu<10, DG_NP>(node_id, arg0 + cell_id * 1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
-                u_shared + (threadIdx.x / DG_NP) * DG_NP, //arg4+n*DG_NP,
-                arg5+n*1,
-                arg6+n*1,
-                arg7+n*1,
-                arg8+n*1,
-                arg9+n*1,
-                arg10+n*1,
-                arg11+n*1,
-                arg12+n*1,
-                arg13+n*1,
-                ux_shared + (threadIdx.x / DG_NP) * DG_NP, //arg14+n*DG_NP,
-                uy_shared + (threadIdx.x / DG_NP) * DG_NP, //arg15+n*DG_NP,
-                uz_shared + (threadIdx.x / DG_NP) * DG_NP); //arg16+n*DG_NP);
+                u_shared + local_cell_id * DG_NP, //arg4 + cell_id * DG_NP,
+                arg5 + cell_id * 1,
+                arg6 + cell_id * 1,
+                arg7 + cell_id * 1,
+                arg8 + cell_id * 1,
+                arg9 + cell_id * 1,
+                arg10 + cell_id * 1,
+                arg11 + cell_id * 1,
+                arg12 + cell_id * 1,
+                arg13 + cell_id * 1,
+                arg14 + cell_id * DG_NP,
+                arg15 + cell_id * DG_NP,
+                arg16 + cell_id * DG_NP);
           break;
         case 3:
-        _grad_3d_gpu<20, DG_NP>(threadIdx.x % DG_NP, arg0+n*1,
+        _grad_3d_gpu<20, DG_NP>(node_id, arg0 + cell_id * 1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
-                u_shared + (threadIdx.x / DG_NP) * DG_NP, //arg4+n*DG_NP,
-                arg5+n*1,
-                arg6+n*1,
-                arg7+n*1,
-                arg8+n*1,
-                arg9+n*1,
-                arg10+n*1,
-                arg11+n*1,
-                arg12+n*1,
-                arg13+n*1,
-                ux_shared + (threadIdx.x / DG_NP) * DG_NP, //arg14+n*DG_NP,
-                uy_shared + (threadIdx.x / DG_NP) * DG_NP, //arg15+n*DG_NP,
-                uz_shared + (threadIdx.x / DG_NP) * DG_NP); //arg16+n*DG_NP);
+                u_shared + local_cell_id * DG_NP, //arg4 + cell_id * DG_NP,
+                arg5 + cell_id * 1,
+                arg6 + cell_id * 1,
+                arg7 + cell_id * 1,
+                arg8 + cell_id * 1,
+                arg9 + cell_id * 1,
+                arg10 + cell_id * 1,
+                arg11 + cell_id * 1,
+                arg12 + cell_id * 1,
+                arg13 + cell_id * 1,
+                arg14 + cell_id * DG_NP,
+                arg15 + cell_id * DG_NP,
+                arg16 + cell_id * DG_NP);
           break;
       }
-      __syncthreads();
-      arg14[n * DG_NP + threadIdx.x % DG_NP] = ux_shared[threadIdx.x];
-      arg15[n * DG_NP + threadIdx.x % DG_NP] = uy_shared[threadIdx.x];
-      arg16[n * DG_NP + threadIdx.x % DG_NP] = uz_shared[threadIdx.x];
-      __syncthreads();
-      // __syncthreads();
-      // for(int i = threadIdx.x; i < 20 * blockDim.x; i += blockDim.x) {
-      //   arg14[start_ind + i] = ux_shared[i];
-      //   arg15[start_ind + i] = uy_shared[i];
-      //   arg16[start_ind + i] = uz_shared[i];
-      // }
-      // int start_ind = n * 20;
-      // for(int i = 0; i < 20; i++) {
-      //   u_shared[threadIdx.x * 20 + i] = arg4[start_ind + i];
-      // }
     } else {
-      switch(*(arg0+n*1)) {
+      switch(*(arg0 + cell_id * 1)) {
         case 1:
-        _grad_3d_gpu<4, DG_NP>(threadIdx.x % DG_NP, arg0+n*1,
+        _grad_3d_gpu<4, DG_NP>(node_id, arg0 + cell_id * 1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
-                arg4+n*DG_NP,
-                arg5+n*1,
-                arg6+n*1,
-                arg7+n*1,
-                arg8+n*1,
-                arg9+n*1,
-                arg10+n*1,
-                arg11+n*1,
-                arg12+n*1,
-                arg13+n*1,
-                arg14+n*DG_NP,
-                arg15+n*DG_NP,
-                arg16+n*DG_NP);
+                arg4 + cell_id * DG_NP,
+                arg5 + cell_id * 1,
+                arg6 + cell_id * 1,
+                arg7 + cell_id * 1,
+                arg8 + cell_id * 1,
+                arg9 + cell_id * 1,
+                arg10 + cell_id * 1,
+                arg11 + cell_id * 1,
+                arg12 + cell_id * 1,
+                arg13 + cell_id * 1,
+                arg14 + cell_id * DG_NP,
+                arg15 + cell_id * DG_NP,
+                arg16 + cell_id * DG_NP);
           break;
         case 2:
-        _grad_3d_gpu<10, DG_NP>(threadIdx.x % DG_NP, arg0+n*1,
+        _grad_3d_gpu<10, DG_NP>(node_id, arg0 + cell_id * 1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
-                arg4+n*DG_NP,
-                arg5+n*1,
-                arg6+n*1,
-                arg7+n*1,
-                arg8+n*1,
-                arg9+n*1,
-                arg10+n*1,
-                arg11+n*1,
-                arg12+n*1,
-                arg13+n*1,
-                arg14+n*DG_NP,
-                arg15+n*DG_NP,
-                arg16+n*DG_NP);
+                arg4 + cell_id * DG_NP,
+                arg5 + cell_id * 1,
+                arg6 + cell_id * 1,
+                arg7 + cell_id * 1,
+                arg8 + cell_id * 1,
+                arg9 + cell_id * 1,
+                arg10 + cell_id * 1,
+                arg11 + cell_id * 1,
+                arg12 + cell_id * 1,
+                arg13 + cell_id * 1,
+                arg14 + cell_id * DG_NP,
+                arg15 + cell_id * DG_NP,
+                arg16 + cell_id * DG_NP);
           break;
         case 3:
-        _grad_3d_gpu<20, DG_NP>(threadIdx.x % DG_NP, arg0+n*1,
+        _grad_3d_gpu<20, DG_NP>(node_id, arg0 + cell_id * 1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
-                arg4+n*DG_NP,
-                arg5+n*1,
-                arg6+n*1,
-                arg7+n*1,
-                arg8+n*1,
-                arg9+n*1,
-                arg10+n*1,
-                arg11+n*1,
-                arg12+n*1,
-                arg13+n*1,
-                arg14+n*DG_NP,
-                arg15+n*DG_NP,
-                arg16+n*DG_NP);
+                arg4 + cell_id * DG_NP,
+                arg5 + cell_id * 1,
+                arg6 + cell_id * 1,
+                arg7 + cell_id * 1,
+                arg8 + cell_id * 1,
+                arg9 + cell_id * 1,
+                arg10 + cell_id * 1,
+                arg11 + cell_id * 1,
+                arg12 + cell_id * 1,
+                arg13 + cell_id * 1,
+                arg14 + cell_id * DG_NP,
+                arg15 + cell_id * DG_NP,
+                arg16 + cell_id * DG_NP);
           break;
       }
     }
@@ -271,40 +261,38 @@ void custom_kernel_grad_3d(char const *name, op_set set,
 
     //transfer constants to GPU
     int consts_bytes = 0;
-    consts_bytes += ROUND_UP(1200*sizeof(double));
-    consts_bytes += ROUND_UP(1200*sizeof(double));
-    consts_bytes += ROUND_UP(1200*sizeof(double));
+    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(double));
+    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(double));
+    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(double));
     reallocConstArrays(consts_bytes);
     consts_bytes = 0;
     arg1.data   = OP_consts_h + consts_bytes;
     arg1.data_d = OP_consts_d + consts_bytes;
-    for ( int d=0; d<1200; d++ ){
-      ((double *)arg1.data)[d] = arg1h[d];
-    }
-    consts_bytes += ROUND_UP(1200*sizeof(double));
+    memcpy(arg1.data, arg1h, DG_ORDER * DG_NP * DG_NP * sizeof(DG_FP));
+    // for ( int d=0; d<DG_ORDER * DG_NP * DG_NP; d++ ){
+    //   ((double *)arg1.data)[d] = arg1h[d];
+    // }
+    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(double));
     arg2.data   = OP_consts_h + consts_bytes;
     arg2.data_d = OP_consts_d + consts_bytes;
-    for ( int d=0; d<1200; d++ ){
-      ((double *)arg2.data)[d] = arg2h[d];
-    }
-    consts_bytes += ROUND_UP(1200*sizeof(double));
+    memcpy(arg2.data, arg2h, DG_ORDER * DG_NP * DG_NP * sizeof(DG_FP));
+    // for ( int d=0; d<DG_ORDER * DG_NP * DG_NP; d++ ){
+    //   ((double *)arg2.data)[d] = arg2h[d];
+    // }
+    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(double));
     arg3.data   = OP_consts_h + consts_bytes;
     arg3.data_d = OP_consts_d + consts_bytes;
-    for ( int d=0; d<1200; d++ ){
-      ((double *)arg3.data)[d] = arg3h[d];
-    }
-    consts_bytes += ROUND_UP(1200*sizeof(double));
+    memcpy(arg3.data, arg3h, DG_ORDER * DG_NP * DG_NP * sizeof(DG_FP));
+    // for ( int d=0; d<DG_ORDER * DG_NP * DG_NP; d++ ){
+    //   ((double *)arg3.data)[d] = arg3h[d];
+    // }
+    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(double));
     mvConstArraysToDevice(consts_bytes);
 
     //set CUDA execution parameters
-    #ifdef OP_BLOCK_SIZE_19
-      int nthread = OP_BLOCK_SIZE_19;
-    #else
-      int nthread = OP_block_size;
-    #endif
-    int nblocks = 200;
-    const int num_cells = 20;
-    nthread = num_cells * DG_NP;
+    const int nthread = 256;
+    const int nblocks = 200 < (set->size * DG_NP) / nthread + 1 ? 200 : (set->size * DG_NP) / nthread + 1;
+    const int num_cells = (nthread / DG_NP) + 2;
 
     _op_cuda_grad_3d<num_cells><<<nblocks,nthread>>>(
       (int *) arg0.data_d,
