@@ -5,35 +5,34 @@
 #include "dg_compiler_defs.h"
 
 template<int dg_np, int dg_np_max>
-__device__ void _grad_3d_gpu( const int *p, const double *dr, const double *ds,
-                    const double *dt, const double *u,
-                    const double *rx, const double *sx, const double *tx,
-                    const double *ry, const double *sy, const double *ty,
-                    const double *rz, const double *sz, const double *tz,
-                    double *ux, double *uy, double *uz) {
+__device__ void _grad_3d_gpu(const int ind, const int *p, const double *dr, const double *ds,
+                             const double *dt, const double *u,
+                             const double *rx, const double *sx, const double *tx,
+                             const double *ry, const double *sy, const double *ty,
+                             const double *rz, const double *sz, const double *tz,
+                             double *ux, double *uy, double *uz) {
+  if(ind > dg_np) return;
+
   const double *dr_mat = &dr[(*p - 1) * dg_np_max * dg_np_max];
   const double *ds_mat = &ds[(*p - 1) * dg_np_max * dg_np_max];
   const double *dt_mat = &dt[(*p - 1) * dg_np_max * dg_np_max];
 
-  for(int m = 0; m < dg_np; m++) {
-    double tmp_r = 0.0;
-    double tmp_s = 0.0;
-    double tmp_t = 0.0;
-    for(int n = 0; n < dg_np; n++) {
-
-      int ind = DG_MAT_IND(m, n, dg_np, dg_np);
-      tmp_r += dr_mat[ind] * u[n];
-      tmp_s += ds_mat[ind] * u[n];
-      tmp_t += dt_mat[ind] * u[n];
-    }
-    ux[m] = *rx * tmp_r + *sx * tmp_s + *tx * tmp_t;
-    uy[m] = *ry * tmp_r + *sy * tmp_s + *ty * tmp_t;
-    uz[m] = *rz * tmp_r + *sz * tmp_s + *tz * tmp_t;
+  double tmp_r = 0.0;
+  double tmp_s = 0.0;
+  double tmp_t = 0.0;
+  for(int n = 0; n < dg_np; n++) {
+    int mat_ind = DG_MAT_IND(ind, n, dg_np, dg_np);
+    tmp_r += dr_mat[mat_ind] * u[n];
+    tmp_s += ds_mat[mat_ind] * u[n];
+    tmp_t += dt_mat[mat_ind] * u[n];
   }
-
+  ux[ind] = *rx * tmp_r + *sx * tmp_s + *tx * tmp_t;
+  uy[ind] = *ry * tmp_r + *sy * tmp_s + *ty * tmp_t;
+  uz[ind] = *rz * tmp_r + *sz * tmp_s + *tz * tmp_t;
 }
 
 // CUDA kernel function
+template<int NUM_CELLS>
 __global__ void _op_cuda_grad_3d(
   const int *__restrict arg0,
   const double *arg1,
@@ -58,10 +57,10 @@ __global__ void _op_cuda_grad_3d(
   __shared__ double dr_shared[DG_ORDER * DG_NP * DG_NP];
   __shared__ double ds_shared[DG_ORDER * DG_NP * DG_NP];
   __shared__ double dt_shared[DG_ORDER * DG_NP * DG_NP];
-  __shared__ double u_shared[64 * DG_NP];
-  // __shared__ double ux_shared[64 * DG_NP];
-  // __shared__ double uy_shared[64 * DG_NP];
-  // __shared__ double uz_shared[64 * DG_NP];
+  __shared__ double u_shared[NUM_CELLS * DG_NP];
+  __shared__ double ux_shared[NUM_CELLS * DG_NP];
+  __shared__ double uy_shared[NUM_CELLS * DG_NP];
+  __shared__ double uz_shared[NUM_CELLS * DG_NP];
 
   for(int i = threadIdx.x; i < DG_ORDER * DG_NP * DG_NP; i += blockDim.x) {
     dr_shared[i] = arg1[i];
@@ -72,27 +71,20 @@ __global__ void _op_cuda_grad_3d(
   __syncthreads();
 
   //process set elements
-  for (int n = threadIdx.x+blockIdx.x*blockDim.x; n<set_size; n+=blockDim.x*gridDim.x ){
+  for (int n = (threadIdx.x / DG_NP) + blockIdx.x * NUM_CELLS; n < set_size; n += NUM_CELLS * gridDim.x){
     // If entire thread is in set
-    if(n - threadIdx.x + blockDim.x < set_size) {
+    if(n - (threadIdx.x / DG_NP) + NUM_CELLS < set_size) {
       __syncthreads();
-      int start_ind = (n - threadIdx.x) * DG_NP;
-      for(int i = threadIdx.x; i < DG_NP * blockDim.x; i += blockDim.x) {
-        u_shared[i] = arg4[start_ind + i];
-      }
-      // int start_ind = n * 20;
-      // for(int i = 0; i < 20; i++) {
-      //   u_shared[threadIdx.x * 20 + i] = arg4[start_ind + i];
-      // }
+      u_shared[threadIdx.x] = arg4[n * DG_NP + threadIdx.x % DG_NP];
       __syncthreads();
 
       switch(*(arg0+n*1)) {
         case 1:
-        _grad_3d_gpu<4, DG_NP>(arg0+n*1,
+        _grad_3d_gpu<4, DG_NP>(threadIdx.x % DG_NP, arg0+n*1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
-                u_shared + threadIdx.x * DG_NP, //arg4+n*DG_NP,
+                u_shared + (threadIdx.x / DG_NP) * DG_NP, //arg4+n*DG_NP,
                 arg5+n*1,
                 arg6+n*1,
                 arg7+n*1,
@@ -102,16 +94,16 @@ __global__ void _op_cuda_grad_3d(
                 arg11+n*1,
                 arg12+n*1,
                 arg13+n*1,
-                arg14+n*DG_NP,
-                arg15+n*DG_NP,
-                arg16+n*DG_NP);
+                ux_shared + (threadIdx.x / DG_NP) * DG_NP, //arg14+n*DG_NP,
+                uy_shared + (threadIdx.x / DG_NP) * DG_NP, //arg15+n*DG_NP,
+                uz_shared + (threadIdx.x / DG_NP) * DG_NP); //arg16+n*DG_NP);
           break;
         case 2:
-        _grad_3d_gpu<10, DG_NP>(arg0+n*1,
+        _grad_3d_gpu<10, DG_NP>(threadIdx.x % DG_NP, arg0+n*1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
-                u_shared + threadIdx.x * DG_NP, //arg4+n*DG_NP,
+                u_shared + (threadIdx.x / DG_NP) * DG_NP, //arg4+n*DG_NP,
                 arg5+n*1,
                 arg6+n*1,
                 arg7+n*1,
@@ -121,16 +113,16 @@ __global__ void _op_cuda_grad_3d(
                 arg11+n*1,
                 arg12+n*1,
                 arg13+n*1,
-                arg14+n*DG_NP,
-                arg15+n*DG_NP,
-                arg16+n*DG_NP);
+                ux_shared + (threadIdx.x / DG_NP) * DG_NP, //arg14+n*DG_NP,
+                uy_shared + (threadIdx.x / DG_NP) * DG_NP, //arg15+n*DG_NP,
+                uz_shared + (threadIdx.x / DG_NP) * DG_NP); //arg16+n*DG_NP);
           break;
         case 3:
-        _grad_3d_gpu<20, DG_NP>(arg0+n*1,
+        _grad_3d_gpu<20, DG_NP>(threadIdx.x % DG_NP, arg0+n*1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
-                u_shared + threadIdx.x * DG_NP, //arg4+n*DG_NP,
+                u_shared + (threadIdx.x / DG_NP) * DG_NP, //arg4+n*DG_NP,
                 arg5+n*1,
                 arg6+n*1,
                 arg7+n*1,
@@ -140,11 +132,16 @@ __global__ void _op_cuda_grad_3d(
                 arg11+n*1,
                 arg12+n*1,
                 arg13+n*1,
-                arg14+n*DG_NP,
-                arg15+n*DG_NP,
-                arg16+n*DG_NP);
+                ux_shared + (threadIdx.x / DG_NP) * DG_NP, //arg14+n*DG_NP,
+                uy_shared + (threadIdx.x / DG_NP) * DG_NP, //arg15+n*DG_NP,
+                uz_shared + (threadIdx.x / DG_NP) * DG_NP); //arg16+n*DG_NP);
           break;
       }
+      __syncthreads();
+      arg14[n * DG_NP + threadIdx.x % DG_NP] = ux_shared[threadIdx.x];
+      arg15[n * DG_NP + threadIdx.x % DG_NP] = uy_shared[threadIdx.x];
+      arg16[n * DG_NP + threadIdx.x % DG_NP] = uz_shared[threadIdx.x];
+      __syncthreads();
       // __syncthreads();
       // for(int i = threadIdx.x; i < 20 * blockDim.x; i += blockDim.x) {
       //   arg14[start_ind + i] = ux_shared[i];
@@ -158,7 +155,7 @@ __global__ void _op_cuda_grad_3d(
     } else {
       switch(*(arg0+n*1)) {
         case 1:
-        _grad_3d_gpu<4, DG_NP>(arg0+n*1,
+        _grad_3d_gpu<4, DG_NP>(threadIdx.x % DG_NP, arg0+n*1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
@@ -177,7 +174,7 @@ __global__ void _op_cuda_grad_3d(
                 arg16+n*DG_NP);
           break;
         case 2:
-        _grad_3d_gpu<10, DG_NP>(arg0+n*1,
+        _grad_3d_gpu<10, DG_NP>(threadIdx.x % DG_NP, arg0+n*1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
@@ -196,7 +193,7 @@ __global__ void _op_cuda_grad_3d(
                 arg16+n*DG_NP);
           break;
         case 3:
-        _grad_3d_gpu<20, DG_NP>(arg0+n*1,
+        _grad_3d_gpu<20, DG_NP>(threadIdx.x % DG_NP, arg0+n*1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
@@ -306,8 +303,10 @@ void custom_kernel_grad_3d(char const *name, op_set set,
       int nthread = OP_block_size;
     #endif
     int nblocks = 200;
+    const int num_cells = 20;
+    nthread = num_cells * DG_NP;
 
-    _op_cuda_grad_3d<<<nblocks,nthread>>>(
+    _op_cuda_grad_3d<num_cells><<<nblocks,nthread>>>(
       (int *) arg0.data_d,
       (double *) arg1.data_d,
       (double *) arg2.data_d,
