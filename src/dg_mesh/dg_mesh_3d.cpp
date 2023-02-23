@@ -220,6 +220,26 @@ void DGMesh3D::calc_mesh_constants() {
               op_arg_dat(nz, -1, OP_ID, 2, DG_FP_STR, OP_WRITE),
               op_arg_dat(sJ, -1, OP_ID, 2, DG_FP_STR, OP_WRITE),
               op_arg_dat(fscale, -1, OP_ID, 2, DG_FP_STR, OP_WRITE));
+
+  int num_norm = 0;
+  op_par_loop(normals_check_3d, "normals_check_3d", faces,
+              op_arg_dat(order, -2, face2cells, 1, "int", OP_READ),
+              op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
+              op_arg_dat(nx, -1, OP_ID, 2, DG_FP_STR, OP_RW),
+              op_arg_dat(ny, -1, OP_ID, 2, DG_FP_STR, OP_RW),
+              op_arg_dat(nz, -1, OP_ID, 2, DG_FP_STR, OP_RW),
+              op_arg_dat(x, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(y, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(z, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(nodeX, -2, face2cells, 4, DG_FP_STR, OP_READ),
+              op_arg_dat(nodeY, -2, face2cells, 4, DG_FP_STR, OP_READ),
+              op_arg_dat(nodeZ, -2, face2cells, 4, DG_FP_STR, OP_READ),
+              op_arg_gbl(&num_norm, 1, "int", OP_INC));
+  if(num_norm != 0) {
+    std::cout << "Number of normal errors: " << num_norm << std::endl;
+    exit(-1);
+  }
+
   if(bface2cells) {
     op_par_loop(init_bfaces_3d, "init_bfaces_3d", bfaces,
                 op_arg_dat(bfaceNum, -1, OP_ID, 1, "int", OP_READ),

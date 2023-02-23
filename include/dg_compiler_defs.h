@@ -3,6 +3,8 @@
 
 #define DG_FP double
 
+#define fp_equal(x,y) (fabs((x) - (y)) < 1e-8)
+
 #ifdef DG_COL_MAJ
 // i = row, j = col, m = total rows, n = total cols
 #define DG_MAT_IND(i, j, m, n) ((i) + (j) * (m))
