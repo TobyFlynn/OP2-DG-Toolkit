@@ -7,16 +7,12 @@ rm -rf gen_2d
 rm -rf gen_3d
 
 mkdir -p gen_2d/kernels
-mkdir -p gen_2d/openBLAS
-mkdir -p gen_2d/cuBLAS
 mkdir -p gen_2d/utils
 mkdir -p gen_2d/dg_constants
 mkdir -p gen_2d/dg_mesh
 mkdir -p gen_2d/dg_operators
 
 mkdir -p gen_3d/kernels
-mkdir -p gen_3d/openBLAS
-mkdir -p gen_3d/cuBLAS
 mkdir -p gen_3d/utils
 mkdir -p gen_3d/dg_constants
 mkdir -p gen_3d/dg_mesh
