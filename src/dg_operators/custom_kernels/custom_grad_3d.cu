@@ -4,22 +4,22 @@
 
 #include "dg_compiler_defs.h"
 
-template<int dg_np, int dg_np_max>
-__device__ void _grad_3d_gpu(const int ind, const int *p, const double *dr, const double *ds,
-                             const double *dt, const double *u,
-                             const double *rx, const double *sx, const double *tx,
-                             const double *ry, const double *sy, const double *ty,
-                             const double *rz, const double *sz, const double *tz,
-                             double *ux, double *uy, double *uz) {
+template<int dg_np>
+__device__ void _grad_3d_gpu(const int ind, const int *p, const DG_FP *dr, const DG_FP *ds,
+                             const DG_FP *dt, const DG_FP *u,
+                             const DG_FP *rx, const DG_FP *sx, const DG_FP *tx,
+                             const DG_FP *ry, const DG_FP *sy, const DG_FP *ty,
+                             const DG_FP *rz, const DG_FP *sz, const DG_FP *tz,
+                             DG_FP *ux, DG_FP *uy, DG_FP *uz) {
   if(ind > dg_np) return;
 
-  const double *dr_mat = &dr[(*p - 1) * dg_np_max * dg_np_max];
-  const double *ds_mat = &ds[(*p - 1) * dg_np_max * dg_np_max];
-  const double *dt_mat = &dt[(*p - 1) * dg_np_max * dg_np_max];
+  const DG_FP *dr_mat = &dr[(*p - 1) * DG_NP * DG_NP];
+  const DG_FP *ds_mat = &ds[(*p - 1) * DG_NP * DG_NP];
+  const DG_FP *dt_mat = &dt[(*p - 1) * DG_NP * DG_NP];
 
-  double tmp_r = 0.0;
-  double tmp_s = 0.0;
-  double tmp_t = 0.0;
+  DG_FP tmp_r = 0.0;
+  DG_FP tmp_s = 0.0;
+  DG_FP tmp_t = 0.0;
   for(int n = 0; n < dg_np; n++) {
     int mat_ind = DG_MAT_IND(ind, n, dg_np, dg_np);
     tmp_r += dr_mat[mat_ind] * u[n];
@@ -35,29 +35,29 @@ __device__ void _grad_3d_gpu(const int ind, const int *p, const double *dr, cons
 template<int NUM_CELLS>
 __global__ void _op_cuda_grad_3d(
   const int *__restrict arg0,
-  const double *arg1,
-  const double *arg2,
-  const double *arg3,
-  const double *__restrict arg4,
-  const double *__restrict arg5,
-  const double *__restrict arg6,
-  const double *__restrict arg7,
-  const double *__restrict arg8,
-  const double *__restrict arg9,
-  const double *__restrict arg10,
-  const double *__restrict arg11,
-  const double *__restrict arg12,
-  const double *__restrict arg13,
-  double *arg14,
-  double *arg15,
-  double *arg16,
+  const DG_FP *arg1,
+  const DG_FP *arg2,
+  const DG_FP *arg3,
+  const DG_FP *__restrict arg4,
+  const DG_FP *__restrict arg5,
+  const DG_FP *__restrict arg6,
+  const DG_FP *__restrict arg7,
+  const DG_FP *__restrict arg8,
+  const DG_FP *__restrict arg9,
+  const DG_FP *__restrict arg10,
+  const DG_FP *__restrict arg11,
+  const DG_FP *__restrict arg12,
+  const DG_FP *__restrict arg13,
+  DG_FP *arg14,
+  DG_FP *arg15,
+  DG_FP *arg16,
   int   set_size ) {
 
   // Load matrices into shared memory
-  __shared__ double dr_shared[DG_ORDER * DG_NP * DG_NP];
-  __shared__ double ds_shared[DG_ORDER * DG_NP * DG_NP];
-  __shared__ double dt_shared[DG_ORDER * DG_NP * DG_NP];
-  __shared__ double u_shared[NUM_CELLS * DG_NP];
+  __shared__ DG_FP dr_shared[DG_ORDER * DG_NP * DG_NP];
+  __shared__ DG_FP ds_shared[DG_ORDER * DG_NP * DG_NP];
+  __shared__ DG_FP dt_shared[DG_ORDER * DG_NP * DG_NP];
+  __shared__ DG_FP u_shared[NUM_CELLS * DG_NP];
 
   for(int i = threadIdx.x; i < DG_ORDER * DG_NP * DG_NP; i += blockDim.x) {
     dr_shared[i] = arg1[i];
@@ -85,7 +85,7 @@ __global__ void _op_cuda_grad_3d(
 
       switch(*(arg0 + cell_id * 1)) {
         case 1:
-        _grad_3d_gpu<4, DG_NP>(node_id, arg0 + cell_id * 1,
+        _grad_3d_gpu<4>(node_id, arg0 + cell_id * 1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
@@ -104,7 +104,7 @@ __global__ void _op_cuda_grad_3d(
                 arg16 + cell_id * DG_NP);
           break;
         case 2:
-        _grad_3d_gpu<10, DG_NP>(node_id, arg0 + cell_id * 1,
+        _grad_3d_gpu<10>(node_id, arg0 + cell_id * 1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
@@ -123,7 +123,7 @@ __global__ void _op_cuda_grad_3d(
                 arg16 + cell_id * DG_NP);
           break;
         case 3:
-        _grad_3d_gpu<20, DG_NP>(node_id, arg0 + cell_id * 1,
+        _grad_3d_gpu<20>(node_id, arg0 + cell_id * 1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
@@ -145,7 +145,7 @@ __global__ void _op_cuda_grad_3d(
     } else {
       switch(*(arg0 + cell_id * 1)) {
         case 1:
-        _grad_3d_gpu<4, DG_NP>(node_id, arg0 + cell_id * 1,
+        _grad_3d_gpu<4>(node_id, arg0 + cell_id * 1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
@@ -164,7 +164,7 @@ __global__ void _op_cuda_grad_3d(
                 arg16 + cell_id * DG_NP);
           break;
         case 2:
-        _grad_3d_gpu<10, DG_NP>(node_id, arg0 + cell_id * 1,
+        _grad_3d_gpu<10>(node_id, arg0 + cell_id * 1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
@@ -183,7 +183,7 @@ __global__ void _op_cuda_grad_3d(
                 arg16 + cell_id * DG_NP);
           break;
         case 3:
-        _grad_3d_gpu<20, DG_NP>(node_id, arg0 + cell_id * 1,
+        _grad_3d_gpu<20>(node_id, arg0 + cell_id * 1,
                 dr_shared,
                 ds_shared,
                 dt_shared,
@@ -227,9 +227,9 @@ void custom_kernel_grad_3d(char const *name, op_set set,
   op_arg arg15,
   op_arg arg16){
 
-  double*arg1h = (double *)arg1.data;
-  double*arg2h = (double *)arg2.data;
-  double*arg3h = (double *)arg3.data;
+  DG_FP*arg1h = (DG_FP *)arg1.data;
+  DG_FP*arg2h = (DG_FP *)arg2.data;
+  DG_FP*arg3h = (DG_FP *)arg3.data;
   int nargs = 17;
   op_arg args[17];
 
@@ -261,32 +261,32 @@ void custom_kernel_grad_3d(char const *name, op_set set,
 
     //transfer constants to GPU
     int consts_bytes = 0;
-    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(double));
-    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(double));
-    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(double));
+    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(DG_FP));
+    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(DG_FP));
+    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(DG_FP));
     reallocConstArrays(consts_bytes);
     consts_bytes = 0;
     arg1.data   = OP_consts_h + consts_bytes;
     arg1.data_d = OP_consts_d + consts_bytes;
     memcpy(arg1.data, arg1h, DG_ORDER * DG_NP * DG_NP * sizeof(DG_FP));
     // for ( int d=0; d<DG_ORDER * DG_NP * DG_NP; d++ ){
-    //   ((double *)arg1.data)[d] = arg1h[d];
+    //   ((DG_FP *)arg1.data)[d] = arg1h[d];
     // }
-    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(double));
+    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(DG_FP));
     arg2.data   = OP_consts_h + consts_bytes;
     arg2.data_d = OP_consts_d + consts_bytes;
     memcpy(arg2.data, arg2h, DG_ORDER * DG_NP * DG_NP * sizeof(DG_FP));
     // for ( int d=0; d<DG_ORDER * DG_NP * DG_NP; d++ ){
-    //   ((double *)arg2.data)[d] = arg2h[d];
+    //   ((DG_FP *)arg2.data)[d] = arg2h[d];
     // }
-    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(double));
+    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(DG_FP));
     arg3.data   = OP_consts_h + consts_bytes;
     arg3.data_d = OP_consts_d + consts_bytes;
     memcpy(arg3.data, arg3h, DG_ORDER * DG_NP * DG_NP * sizeof(DG_FP));
     // for ( int d=0; d<DG_ORDER * DG_NP * DG_NP; d++ ){
-    //   ((double *)arg3.data)[d] = arg3h[d];
+    //   ((DG_FP *)arg3.data)[d] = arg3h[d];
     // }
-    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(double));
+    consts_bytes += ROUND_UP(DG_ORDER * DG_NP * DG_NP*sizeof(DG_FP));
     mvConstArraysToDevice(consts_bytes);
 
     //set CUDA execution parameters
@@ -296,22 +296,22 @@ void custom_kernel_grad_3d(char const *name, op_set set,
 
     _op_cuda_grad_3d<num_cells><<<nblocks,nthread>>>(
       (int *) arg0.data_d,
-      (double *) arg1.data_d,
-      (double *) arg2.data_d,
-      (double *) arg3.data_d,
-      (double *) arg4.data_d,
-      (double *) arg5.data_d,
-      (double *) arg6.data_d,
-      (double *) arg7.data_d,
-      (double *) arg8.data_d,
-      (double *) arg9.data_d,
-      (double *) arg10.data_d,
-      (double *) arg11.data_d,
-      (double *) arg12.data_d,
-      (double *) arg13.data_d,
-      (double *) arg14.data_d,
-      (double *) arg15.data_d,
-      (double *) arg16.data_d,
+      (DG_FP *) arg1.data_d,
+      (DG_FP *) arg2.data_d,
+      (DG_FP *) arg3.data_d,
+      (DG_FP *) arg4.data_d,
+      (DG_FP *) arg5.data_d,
+      (DG_FP *) arg6.data_d,
+      (DG_FP *) arg7.data_d,
+      (DG_FP *) arg8.data_d,
+      (DG_FP *) arg9.data_d,
+      (DG_FP *) arg10.data_d,
+      (DG_FP *) arg11.data_d,
+      (DG_FP *) arg12.data_d,
+      (DG_FP *) arg13.data_d,
+      (DG_FP *) arg14.data_d,
+      (DG_FP *) arg15.data_d,
+      (DG_FP *) arg16.data_d,
       set->size );
   }
   op_mpi_set_dirtybit_cuda(nargs, args);
