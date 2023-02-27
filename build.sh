@@ -44,6 +44,8 @@ sed -i "26i }" cuda/dg_tookit_kernels.cu
 # Add compiler definitions to every kernel
 sed -i "1i #include \"dg_compiler_defs.h\"" openmp/dg_tookit_kernels.cpp
 sed -i "1i #include \"dg_compiler_defs.h\"" seq/dg_tookit_seqkernels.cpp
+sed -i "2i #include \"cblas.h\"" openmp/dg_tookit_kernels.cpp
+sed -i "2i #include \"cblas.h\"" seq/dg_tookit_seqkernels.cpp
 
 cd ../gen_3d
 
@@ -63,6 +65,8 @@ sed -i "21i }" cuda/dg_tookit_kernels.cu
 # Add compiler definitions to every kernel
 sed -i "1i #include \"dg_compiler_defs.h\"" openmp/dg_tookit_kernels.cpp
 sed -i "1i #include \"dg_compiler_defs.h\"" seq/dg_tookit_seqkernels.cpp
+sed -i "2i #include \"cblas.h\"" openmp/dg_tookit_kernels.cpp
+sed -i "2i #include \"cblas.h\"" seq/dg_tookit_seqkernels.cpp
 
 cd ..
 

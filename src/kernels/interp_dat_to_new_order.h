@@ -10,6 +10,9 @@ inline void interp_dat_to_new_order(const DG_FP *mats, const int *old_order,
 
   DG_FP res[DG_NP];
 
+  op2_in_kernel_gemv(false, dg_np_new, dg_np_old, 1.0, mat, dg_np_new, dat, 0.0, res);
+
+/*
   for(int i = 0; i < dg_np_new; i++) {
     res[i] = 0.0;
     for(int j = 0; j < dg_np_old; j++) {
@@ -18,6 +21,7 @@ inline void interp_dat_to_new_order(const DG_FP *mats, const int *old_order,
       res[i] += mat[ind] * dat[j];
     }
   }
+*/
 
   for(int i = 0; i < dg_np_new; i++) {
     dat[i] = res[i];

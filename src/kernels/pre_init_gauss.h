@@ -12,48 +12,18 @@ inline void pre_init_gauss(const int *p, const DG_FP *x, const DG_FP *y,
   const DG_FP *gF2Dr = &gF2Dr_g[(*p - 1) * DG_GF_NP * DG_NP];
   const DG_FP *gF2Ds = &gF2Ds_g[(*p - 1) * DG_GF_NP * DG_NP];
 
-  for(int m = 0; m < DG_GF_NP; m++) {
-    rx[m] = 0.0;
-    sx[m] = 0.0;
-    ry[m] = 0.0;
-    sy[m] = 0.0;
-    for(int n = 0; n < dg_np; n++) {
-      // int ind = m + n * DG_GF_NP;
-      int ind = DG_MAT_IND(m, n, DG_GF_NP, dg_np);
-      rx[m] += gF0Dr[ind] * x[n];
-      sx[m] += gF0Ds[ind] * x[n];
-      ry[m] += gF0Dr[ind] * y[n];
-      sy[m] += gF0Ds[ind] * y[n];
-    }
-  }
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF0Dr, DG_GF_NP, x, 0.0, rx);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF0Ds, DG_GF_NP, x, 0.0, sx);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF0Dr, DG_GF_NP, y, 0.0, ry);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF0Ds, DG_GF_NP, y, 0.0, sy);
 
-  for(int m = 0; m < DG_GF_NP; m++) {
-    rx[m + DG_GF_NP] = 0.0;
-    sx[m + DG_GF_NP] = 0.0;
-    ry[m + DG_GF_NP] = 0.0;
-    sy[m + DG_GF_NP] = 0.0;
-    for(int n = 0; n < dg_np; n++) {
-      // int ind = m + n * DG_GF_NP;
-      int ind = DG_MAT_IND(m, n, DG_GF_NP, dg_np);
-      rx[m + DG_GF_NP] += gF1Dr[ind] * x[n];
-      sx[m + DG_GF_NP] += gF1Ds[ind] * x[n];
-      ry[m + DG_GF_NP] += gF1Dr[ind] * y[n];
-      sy[m + DG_GF_NP] += gF1Ds[ind] * y[n];
-    }
-  }
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF1Dr, DG_GF_NP, x, 0.0, &rx[DG_GF_NP]);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF1Ds, DG_GF_NP, x, 0.0, &sx[DG_GF_NP]);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF1Dr, DG_GF_NP, y, 0.0, &ry[DG_GF_NP]);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF1Ds, DG_GF_NP, y, 0.0, &sy[DG_GF_NP]);
 
-  for(int m = 0; m < DG_GF_NP; m++) {
-    rx[m + 2 * DG_GF_NP] = 0.0;
-    sx[m + 2 * DG_GF_NP] = 0.0;
-    ry[m + 2 * DG_GF_NP] = 0.0;
-    sy[m + 2 * DG_GF_NP] = 0.0;
-    for(int n = 0; n < dg_np; n++) {
-      // int ind = m + n * DG_GF_NP;
-      int ind = DG_MAT_IND(m, n, DG_GF_NP, dg_np);
-      rx[m + 2 * DG_GF_NP] += gF2Dr[ind] * x[n];
-      sx[m + 2 * DG_GF_NP] += gF2Ds[ind] * x[n];
-      ry[m + 2 * DG_GF_NP] += gF2Dr[ind] * y[n];
-      sy[m + 2 * DG_GF_NP] += gF2Ds[ind] * y[n];
-    }
-  }
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF2Dr, DG_GF_NP, x, 0.0, &rx[2 * DG_GF_NP]);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF2Ds, DG_GF_NP, x, 0.0, &sx[2 * DG_GF_NP]);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF2Dr, DG_GF_NP, y, 0.0, &ry[2 * DG_GF_NP]);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF2Ds, DG_GF_NP, y, 0.0, &sy[2 * DG_GF_NP]);
 }

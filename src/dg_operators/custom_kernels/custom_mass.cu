@@ -116,7 +116,7 @@ void custom_kernel_mass(char const *name, op_set set,
     //set CUDA execution parameters
     const int nthread = (256 / DG_NP) * DG_NP;
     const int nblocks = 200 < (set->size * DG_NP) / nthread + 1 ? 200 : (set->size * DG_NP) / nthread + 1;
-    const int num_cells = (nthread / DG_NP) + 2;
+    const int num_cells = (nthread / DG_NP) + 1;
 
     _op_cuda_mass<num_cells><<<nblocks,nthread>>>(
       (int *) arg0.data_d,

@@ -1,9 +1,15 @@
 #ifndef __DG_COMPILER_DEFS_H
 #define __DG_COMPILER_DEFS_H
 
-#define DG_FP double
+#define DG_DOUBLE 1
 
+#if DG_DOUBLE == 1
+#define DG_FP double
 #define fp_equal(x,y) (fabs((x) - (y)) < 1e-8)
+#else
+#define DG_FP float
+#define fp_equal(x,y) (fabs((x) - (y)) < 1e-6)
+#endif
 
 #ifdef DG_COL_MAJ
 // i = row, j = col, m = total rows, n = total cols

@@ -4,12 +4,5 @@ inline void gemv_np_np(const int *p, const DG_FP *alpha, const DG_FP *beta,
   const int dg_np   = DG_CONSTANTS[(*p - 1) * DG_NUM_CONSTANTS];
   const DG_FP *mat = &matrix[(*p - 1) * DG_NP * DG_NP];
 
-  for(int i = 0; i < dg_np; i++) {
-    y[i] *= *beta;
-    for(int j = 0; j < dg_np; j++) {
-      // int ind = i + j * dg_np;
-      int ind = DG_MAT_IND(i, j, dg_np, dg_np);
-      y[i] += *alpha * mat[ind] * x[j];
-    }
-  }
+  op2_in_kernel_gemv(false, dg_np, dg_np, *alpha, mat, dg_np, x, *beta, y);
 }
