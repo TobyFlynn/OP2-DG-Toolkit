@@ -10,6 +10,7 @@ list(APPEND GPU_SRC dg_mesh/dg_mesh_2d_gpu.cu)
 elseif(DIM EQUAL 3)
 list(APPEND COMMON_SRC dg_constants/dg_constants_3d.cpp dg_mesh_op/dg_mesh_3d_op.cpp dg_operators_op/dg_operators_3d_op.cpp)
 list(APPEND GPU_SRC dg_operators/custom_kernels/custom_grad_3d.cu)
+list(APPEND GPU_SRC dg_operators/custom_kernels/custom_mass.cu)
 endif()
 
 # Only needs to be built once
