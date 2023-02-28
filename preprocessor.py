@@ -1,26 +1,26 @@
 import os
 import sys
 
-blas_template = \
+gemv_template = \
 """
 #ifndef OP2_DG_CUDA
 #if DG_DOUBLE == 1
-cblas_dgemv({},{},{},{},{},{},{},{}, 1,{},{}, 1);
+cblas_dgemv({row_col},{trans},{m},{n},{alpha},{A},{lda},{x}, 1,{beta},{y}, 1);
 #else
-cblas_sgemv({},{},{},{},{},{},{},{}, 1,{},{}, 1);
+cblas_sgemv({row_col},{trans},{m},{n},{alpha},{A},{lda},{x}, 1,{beta},{y}, 1);
 #endif
 #else
-for(int i = 0; i < {}; i++) {{
-  ({})[i] *= {};
-  for(int j = 0; j < {}; j++) {{
-    int ind = DG_MAT_IND({},{},{},{});
-    ({})[i] += {} * ({})[ind] * ({})[j];
+for(int i = 0; i < {m}; i++) {{
+  ({y})[i] *= {beta};
+  for(int j = 0; j < {n}; j++) {{
+    int ind = DG_MAT_IND({ind_0},{ind_1},{m},{n});
+    ({y})[i] += ({alpha}) * ({A})[ind] * ({x})[j];
   }}
 }}
 #endif
 """
 
-def replace_blas_kernels(input_str):
+def replace_gemv_kernels(input_str):
     out_str = input_str
     index = out_str.find("op2_in_kernel_gemv")
     col_maj = True
@@ -38,13 +38,9 @@ def replace_blas_kernels(input_str):
             transpose_str = " CblasTrans"
             ind0 = "j"
             ind1 = "i"
-        blas_call = blas_template.format(col_row_maj_str, transpose_str, args_str[1], \
-            args_str[2], args_str[3], args_str[4], args_str[5], args_str[6], \
-            args_str[7], args_str[8], col_row_maj_str, transpose_str, args_str[1], \
-            args_str[2], args_str[3], args_str[4], args_str[5], args_str[6], \
-            args_str[7], args_str[8], args_str[1], args_str[8], args_str[7], \
-            args_str[2], ind0, ind1, args_str[1], args_str[2], args_str[8], args_str[3], \
-            args_str[4], args_str[6])
+        blas_call = gemv_template.format(row_col = col_row_maj_str, trans = transpose_str, m = args_str[1], \
+            n = args_str[2], alpha = args_str[3], A = args_str[4], lda = args_str[5], x = args_str[6], \
+            beta = args_str[7], y = args_str[8], ind_0 = ind0, ind_1 = ind1)
         out_str = out_str[0 : index] + blas_call + out_str[end_ind + 2 :]
         index = out_str.find("op2_in_kernel_gemv")
     return out_str
@@ -112,7 +108,7 @@ for f in inputfiles:
         filedata = file.read()
 
     newdata = filedata
-    newdata = replace_blas_kernels(newdata)
+    newdata = replace_gemv_kernels(newdata)
     if "CMakeLists" not in f:
         if fp_type == "d":
             newdata = newdata.replace("DG_FP_STR", "\"double\"")
