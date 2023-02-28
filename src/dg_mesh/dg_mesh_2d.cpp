@@ -123,6 +123,22 @@ void DGGaussData::update_mesh_constants() {
               op_arg_dat(nx,     -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(ny,     -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(sJ,     -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE));
+
+  int num_norm = 0;
+  op_par_loop(normals_check_2d, "normals_check_2d", mesh->faces,
+              op_arg_dat(mesh->edgeNum, -1, OP_ID, 2, "int", OP_READ),
+              op_arg_dat(mesh->reverse, -1, OP_ID, 1, "bool", OP_READ),
+              op_arg_dat(nx, -2, mesh->face2cells, DG_G_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(ny, -2, mesh->face2cells, DG_G_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(x,  -2, mesh->face2cells, DG_G_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(y,  -2, mesh->face2cells, DG_G_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(mesh->nodeX, -2, mesh->face2cells, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(mesh->nodeY, -2, mesh->face2cells, 3, DG_FP_STR, OP_READ),
+              op_arg_gbl(&num_norm, 1, "int", OP_INC));
+  if(num_norm != 0) {
+    std::cout << "Number of normal errors: " << num_norm << std::endl;
+    exit(-1);
+  }
 }
 
 DGMesh2D::DGMesh2D(std::string &meshFile) {
