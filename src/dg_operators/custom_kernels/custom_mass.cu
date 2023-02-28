@@ -6,7 +6,7 @@
 
 template<int dg_np>
 __device__ void _mass_gpu(const int ind, const int *p, const DG_FP *matrix, const DG_FP *J, const DG_FP *in, DG_FP *x) {
-  const DG_FP *mat = &matrix[(*p - 1) * dg_np * dg_np];
+  const DG_FP *mat = &matrix[(*p - 1) * DG_NP * DG_NP];
 
   DG_FP tmp = 0.0;
   for(int j = 0; j < dg_np; j++) {
