@@ -6,5 +6,5 @@ inline void gemv_inv_mass_gauss_interpT(const int *p, const DG_FP *alpha,
   const int dg_g_np = DG_CONSTANTS[(*p - 1) * DG_NUM_CONSTANTS + 3];
   const DG_FP *inv_mass_gauss_interp = &matrix[(*p - 1) * DG_G_NP * DG_NP];
 
-  op2_in_kernel_gemv(false, dg_np, dg_g_np, *alpha, inv_mass_gauss_interp, dg_np, x, *beta, y);
+  op2_in_kernel_gemv(false, dg_np, dg_g_np, *alpha / J[0], inv_mass_gauss_interp, dg_np, x, *beta, y);
 }

@@ -98,9 +98,9 @@ void DGMesh3D::grad_with_central_flux(op_dat u, op_dat ux, op_dat uy, op_dat uz)
               op_arg_dat(op_tmp_npf[1], -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC),
               op_arg_dat(op_tmp_npf[2], -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC));
 
-  op2_gemv(this, false, 1.0, DGConstants::LIFT, op_tmp_npf[0], 1.0, ux);
-  op2_gemv(this, false, 1.0, DGConstants::LIFT, op_tmp_npf[1], 1.0, uy);
-  op2_gemv(this, false, 1.0, DGConstants::LIFT, op_tmp_npf[2], 1.0, uz);
+  op2_gemv(this, false, -1.0, DGConstants::LIFT, op_tmp_npf[0], 1.0, ux);
+  op2_gemv(this, false, -1.0, DGConstants::LIFT, op_tmp_npf[1], 1.0, uy);
+  op2_gemv(this, false, -1.0, DGConstants::LIFT, op_tmp_npf[2], 1.0, uz);
 }
 
 void DGMesh3D::div(op_dat u, op_dat v, op_dat w, op_dat res) {
@@ -143,7 +143,7 @@ void DGMesh3D::div_with_central_flux(op_dat u, op_dat v, op_dat w, op_dat res) {
               op_arg_dat(w, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(op_tmp_npf[0], -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC));
 
-  op2_gemv(this, false, 1.0, DGConstants::LIFT, op_tmp_npf[0], 1.0, res);
+  op2_gemv(this, false, -1.0, DGConstants::LIFT, op_tmp_npf[0], 1.0, res);
 }
 
 void DGMesh3D::div_weak(op_dat u, op_dat v, op_dat w, op_dat res) {
