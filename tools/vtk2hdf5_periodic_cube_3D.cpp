@@ -403,6 +403,28 @@ int main(int argc, char **argv) {
   std::cout << "Size of y map: " << y_periodic_bc_map.size() << std::endl;
   std::cout << "Size of z map: " << z_periodic_bc_map.size() << std::endl;
 
+  // Optimise mapping order and indices
+  std::vector<std::pair<std::pair<int,int>,int>> list;
+  for(int i = 0; i < face2cell_vec.size() / 2; i++) {
+    list.push_back({{face2cell_vec[i * 2], face2cell_vec[i * 2 + 1]}, i});
+  }
+  std::sort(list.begin(), list.end());
+  std::vector<int> faceNum_tmp, periodicFace_tmp, face2node_tmp;
+  for(int i = 0; i < list.size(); i++) {
+    face2cell_vec[i * 2] = list[i].first.first;
+    face2cell_vec[i * 2 + 1] = list[i].first.second;
+    faceNum_tmp.push_back(faceNum_vec[list[i].second * 2]);
+    faceNum_tmp.push_back(faceNum_vec[list[i].second * 2 + 1]);
+    periodicFace_tmp.push_back(periodicFace_vec[list[i].second]);
+    face2node_tmp.push_back(face2node_vec[list[i].second * 3]);
+    face2node_tmp.push_back(face2node_vec[list[i].second * 3 + 1]);
+    face2node_tmp.push_back(face2node_vec[list[i].second * 3 + 2]);
+  }
+  faceNum_vec = faceNum_tmp;
+  periodicFace_vec = periodicFace_vec;
+  face2node_vec = face2node_tmp;
+
+  // Create OP2 objects
   op_set nodes  = op_decl_set(numNodes, "nodes");
   op_set cells  = op_decl_set(numCells, "cells");
   op_set faces  = op_decl_set(numFaces, "faces");
