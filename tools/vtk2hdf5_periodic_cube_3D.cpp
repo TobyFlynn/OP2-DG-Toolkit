@@ -405,14 +405,22 @@ int main(int argc, char **argv) {
 
   // Optimise mapping order and indices
   std::vector<std::pair<std::pair<int,int>,int>> list;
-  for(int i = 0; i < face2cell_vec.size() / 2; i++) {
-    list.push_back({{face2cell_vec[i * 2], face2cell_vec[i * 2 + 1]}, i});
+  for(int i = 0; i < numFaces; i++) {
+    if(face2cell_vec[i * 2] < face2cell_vec[i * 2 + 1]) {
+      list.push_back({{face2cell_vec[i * 2], face2cell_vec[i * 2 + 1]}, i});
+    } else {
+      list.push_back({{face2cell_vec[i * 2 + 1], face2cell_vec[i * 2]}, i});
+      int tmp = faceNum_vec[i * 2];
+      faceNum_vec[i * 2] = faceNum_vec[i * 2 + 1];
+      faceNum_vec[i * 2 + 1] = tmp;
+    }
   }
   std::sort(list.begin(), list.end());
   std::vector<int> faceNum_tmp, periodicFace_tmp, face2node_tmp;
-  for(int i = 0; i < list.size(); i++) {
+  for(int i = 0; i < numFaces; i++) {
     face2cell_vec[i * 2] = list[i].first.first;
     face2cell_vec[i * 2 + 1] = list[i].first.second;
+    // op_printf("%d %d\n", face2cell_vec[i * 2], face2cell_vec[i * 2 + 1]);
     faceNum_tmp.push_back(faceNum_vec[list[i].second * 2]);
     faceNum_tmp.push_back(faceNum_vec[list[i].second * 2 + 1]);
     periodicFace_tmp.push_back(periodicFace_vec[list[i].second]);
@@ -421,8 +429,46 @@ int main(int argc, char **argv) {
     face2node_tmp.push_back(face2node_vec[list[i].second * 3 + 2]);
   }
   faceNum_vec = faceNum_tmp;
-  periodicFace_vec = periodicFace_vec;
+  periodicFace_vec = periodicFace_tmp;
   face2node_vec = face2node_tmp;
+
+  std::map<int,int> newCellInds;
+  int newCurrentInd = 0;
+  for(int i = 0; i < numFaces; i++) {
+    if(newCellInds.count(face2cell_vec[i * 2]) == 0) {
+      // Set new index
+      newCellInds.insert({face2cell_vec[i * 2], newCurrentInd});
+      face2cell_vec[i * 2] = newCurrentInd;
+      newCurrentInd++;
+    } else {
+      // Update index
+      face2cell_vec[i * 2] = newCellInds.at(face2cell_vec[i * 2]);
+    }
+
+    if(newCellInds.count(face2cell_vec[i * 2 + 1]) == 0) {
+      // Set new index
+      newCellInds.insert({face2cell_vec[i * 2 + 1], newCurrentInd});
+      face2cell_vec[i * 2 + 1] = newCurrentInd;
+      newCurrentInd++;
+    } else {
+      // Update index
+      face2cell_vec[i * 2 + 1] = newCellInds.at(face2cell_vec[i * 2 + 1]);
+    }
+  }
+
+  // Update other maps for new indices
+  std::vector<int> cells_tmp(4 * numCells);
+  for(int i = 0; i < numCells; i++) {
+    int index = newCellInds.at(i);
+    cells_tmp[index * 4] = cells_vec[i * 4];
+    cells_tmp[index * 4 + 1] = cells_vec[i * 4 + 1];
+    cells_tmp[index * 4 + 2] = cells_vec[i * 4 + 2];
+    cells_tmp[index * 4 + 3] = cells_vec[i * 4 + 3];
+  }
+  cells_vec = cells_tmp;
+  for(int i = 0; i < numBoundaryFaces; i++) {
+    bface2cell_vec[i] = newCellInds.at(bface2cell_vec[i]);
+  }
 
   // Create OP2 objects
   op_set nodes  = op_decl_set(numNodes, "nodes");
