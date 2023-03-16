@@ -31,17 +31,8 @@ python3 $OP2_TRANSLATOR \
   dg_op2_blas.cpp dg_operators/dg_operators_2d.cpp \
   kernels/
 
-# CUDA OP2 library work around
-sed -i "19i #include \"dg_compiler_defs.h\"" cuda/dg_tookit_kernels.cu
-sed -i "20i #include \"dg_global_constants/dg_global_constants_2d.h\"" cuda/dg_tookit_kernels.cu
-sed -i "21i void set_cuda_constants_OP2_DG_CUDA() {" cuda/dg_tookit_kernels.cu
-sed -i "22i cutilSafeCall(cudaMemcpyToSymbol(FMASK_cuda, FMASK, DG_ORDER * DG_NPF * DG_NUM_FACES * sizeof(int)));" cuda/dg_tookit_kernels.cu
-sed -i "23i cutilSafeCall(cudaMemcpyToSymbol(cubW_g_cuda, cubW_g, DG_ORDER * DG_CUB_NP * sizeof(DG_FP)));" cuda/dg_tookit_kernels.cu
-sed -i "24i cutilSafeCall(cudaMemcpyToSymbol(gaussW_g_cuda, gaussW_g, DG_ORDER * DG_GF_NP * sizeof(DG_FP)));" cuda/dg_tookit_kernels.cu
-sed -i "25i cutilSafeCall(cudaMemcpyToSymbol(DG_CONSTANTS_cuda, DG_CONSTANTS, DG_ORDER * DG_NUM_CONSTANTS * sizeof(int)));" cuda/dg_tookit_kernels.cu
-sed -i "26i }" cuda/dg_tookit_kernels.cu
-
 # Add compiler definitions to every kernel
+sed -i "19i #include \"dg_compiler_defs.h\"" cuda/dg_tookit_kernels.cu
 sed -i "1i #include \"dg_compiler_defs.h\"" openmp/dg_tookit_kernels.cpp
 sed -i "1i #include \"dg_compiler_defs.h\"" seq/dg_tookit_seqkernels.cpp
 sed -i "2i #include \"cblas.h\"" openmp/dg_tookit_kernels.cpp
@@ -54,15 +45,8 @@ python3 $OP2_TRANSLATOR \
   dg_op2_blas.cpp dg_operators/dg_operators_3d.cpp \
   kernels/
 
-# CUDA OP2 library work around
-sed -i "16i #include \"dg_compiler_defs.h\"" cuda/dg_tookit_kernels.cu
-sed -i "17i #include \"dg_global_constants/dg_global_constants_3d.h\"" cuda/dg_tookit_kernels.cu
-sed -i "18i void set_cuda_constants_OP2_DG_3D_CUDA() {" cuda/dg_tookit_kernels.cu
-sed -i "19i cutilSafeCall(cudaMemcpyToSymbol(FMASK_cuda, FMASK, DG_ORDER * DG_NPF * DG_NUM_FACES * sizeof(int)));" cuda/dg_tookit_kernels.cu
-sed -i "20i cutilSafeCall(cudaMemcpyToSymbol(DG_CONSTANTS_cuda, DG_CONSTANTS, DG_ORDER * DG_NUM_CONSTANTS * sizeof(int)));" cuda/dg_tookit_kernels.cu
-sed -i "21i }" cuda/dg_tookit_kernels.cu
-
 # Add compiler definitions to every kernel
+sed -i "16i #include \"dg_compiler_defs.h\"" cuda/dg_tookit_kernels.cu
 sed -i "1i #include \"dg_compiler_defs.h\"" openmp/dg_tookit_kernels.cpp
 sed -i "1i #include \"dg_compiler_defs.h\"" seq/dg_tookit_seqkernels.cpp
 sed -i "2i #include \"cblas.h\"" openmp/dg_tookit_kernels.cpp

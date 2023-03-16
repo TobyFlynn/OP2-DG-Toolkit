@@ -2,9 +2,9 @@ inline void init_cubature(const int *p, const DG_FP *matrix, DG_FP *rx,
                           DG_FP *sx, DG_FP *ry, DG_FP *sy, DG_FP *J,
                           DG_FP *temp) {
   // Get constants for this element's order
-  const int dg_np      = DG_CONSTANTS[(*p - 1) * 5];
-  const int dg_cub_np  = DG_CONSTANTS[(*p - 1) * 5 + 2];
-  const DG_FP *cubW = &cubW_g[(*p - 1) * DG_CUB_NP];
+  const int dg_np      = DG_CONSTANTS_TK[(*p - 1) * 5];
+  const int dg_cub_np  = DG_CONSTANTS_TK[(*p - 1) * 5 + 2];
+  const DG_FP *cubW = &cubW_g_TK[(*p - 1) * DG_CUB_NP];
   const DG_FP *cubV = &matrix[(*p - 1) * DG_CUB_NP * DG_NP];
 
   // J = -xs.*yr + xr.*ys

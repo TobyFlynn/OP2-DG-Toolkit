@@ -7,7 +7,7 @@ inline void grad_3d(const int *p, const DG_FP *dr, const DG_FP *ds,
   const DG_FP *dr_mat = &dr[(*p - 1) * DG_NP * DG_NP];
   const DG_FP *ds_mat = &ds[(*p - 1) * DG_NP * DG_NP];
   const DG_FP *dt_mat = &dt[(*p - 1) * DG_NP * DG_NP];
-  const int dg_np = DG_CONSTANTS[(*p - 1) * DG_NUM_CONSTANTS];
+  const int dg_np = DG_CONSTANTS_TK[(*p - 1) * DG_NUM_CONSTANTS];
 
   DG_FP tmp_r[DG_NP], tmp_s[DG_NP], tmp_t[DG_NP];
   op2_in_kernel_gemv(false, dg_np, dg_np, 1.0, dr_mat, dg_np, u, 0.0, tmp_r);

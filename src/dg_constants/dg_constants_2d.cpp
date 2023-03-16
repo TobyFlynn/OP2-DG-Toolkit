@@ -10,6 +10,11 @@ int DG_CONSTANTS[DG_ORDER * 5];
 DG_FP cubW_g[DG_ORDER * DG_CUB_NP];
 DG_FP gaussW_g[DG_ORDER * DG_GF_NP];
 
+int FMASK_TK[DG_ORDER * DG_NUM_FACES * DG_NPF];
+int DG_CONSTANTS_TK[DG_ORDER * 5];
+DG_FP cubW_g_TK[DG_ORDER * DG_CUB_NP];
+DG_FP gaussW_g_TK[DG_ORDER * DG_GF_NP];
+
 void save_mat(DG_FP *mem_ptr, arma::mat &mat, const int N, const int max_size) {
   #ifdef DG_COL_MAJ
   arma::Mat<DG_FP> mat_2 = arma::conv_to<arma::Mat<DG_FP>>::from(mat);
@@ -132,10 +137,15 @@ DGConstants2D::DGConstants2D(const int n_) {
     // memcpy(&lift_ptr[(N - 1) * Np_max * DG_NUM_FACES * Nfp_max], lift_.memptr(), lift_.n_elem * sizeof(DG_FP));
     std::vector<int> fmask_int = arma::conv_to<std::vector<int>>::from(fmask_);
     memcpy(&FMASK[(N - 1) * DG_NUM_FACES * Nfp_max], fmask_int.data(), fmask_int.size() * sizeof(int));
+    memcpy(&FMASK_TK[(N - 1) * DG_NUM_FACES * Nfp_max], fmask_int.data(), fmask_int.size() * sizeof(int));
     // Number of points
     DG_CONSTANTS[(N - 1) * 5 + 0] = Np;
     // Number of face points
     DG_CONSTANTS[(N - 1) * 5 + 1] = Nfp;
+    // Number of points
+    DG_CONSTANTS_TK[(N - 1) * 5 + 0] = Np;
+    // Number of face points
+    DG_CONSTANTS_TK[(N - 1) * 5 + 1] = Nfp;
   }
 }
 
@@ -152,20 +162,17 @@ void DGConstants2D::cubature(const int nCub, const int N, arma::mat &V_, arma::m
   arma::mat cub_V_Ds = cub_V_ * Ds_;
 
   save_vec(cubW_g, cub_w_, N, cNp_max);
+  save_vec(cubW_g_TK, cub_w_, N, cNp_max);
   save_mat(cubV_ptr, cub_V_, N, cNp_max * Np_max);
   save_mat(cubDr_ptr, cub_Dr_, N, cNp_max * Np_max);
   save_mat(cubDs_ptr, cub_Ds_, N, cNp_max * Np_max);
   save_mat(cubVDr_ptr, cub_V_Dr, N, cNp_max * Np_max);
   save_mat(cubVDs_ptr, cub_V_Ds, N, cNp_max * Np_max);
-  // memcpy(&cubW_g[(N - 1) * cNp_max], cub_w_.memptr(), cub_w_.n_elem * sizeof(DG_FP));
-  // memcpy(&cubV_ptr[(N - 1) * cNp_max * Np_max], cub_V_.memptr(), cub_V_.n_elem * sizeof(DG_FP));
-  // memcpy(&cubDr_ptr[(N - 1) * cNp_max * Np_max], cub_Dr_.memptr(), cub_Dr_.n_elem * sizeof(DG_FP));
-  // memcpy(&cubDs_ptr[(N - 1) * cNp_max * Np_max], cub_Ds_.memptr(), cub_Ds_.n_elem * sizeof(DG_FP));
-  // memcpy(&cubVDr_ptr[(N - 1) * cNp_max * Np_max], cub_V_Dr.memptr(), cub_V_Dr.n_elem * sizeof(DG_FP));
-  // memcpy(&cubVDs_ptr[(N - 1) * cNp_max * Np_max], cub_V_Ds.memptr(), cub_V_Ds.n_elem * sizeof(DG_FP));
+
   // Number of cubature points
   int cNp = cub_w_.n_elem;
   DG_CONSTANTS[(N - 1) * 5 + 2] = cNp;
+  DG_CONSTANTS_TK[(N - 1) * 5 + 2] = cNp;
 }
 
 void DGConstants2D::gauss(const int nGauss, const int N, arma::mat &V_, arma::mat &invV_, arma::mat &Dr_, arma::mat &Ds_) {
@@ -195,6 +202,7 @@ void DGConstants2D::gauss(const int nGauss, const int N, arma::mat &V_, arma::ma
   arma::mat invMass_gauss_interpT = V_ * V_.t() * gauss_interp_.t();
 
   save_vec(gaussW_g, gauss_w_, N, gNfp_max);
+  save_vec(gaussW_g_TK, gauss_w_, N, gNfp_max);
   save_mat(gInterp_ptr, gauss_interp_, N, gNp_max * Np_max);
   save_mat(gFInterp0_ptr, gauss_interp1_, N, gNfp_max * Np_max);
   save_mat(gFInterp1_ptr, gauss_interp2_, N, gNfp_max * Np_max);
@@ -206,24 +214,15 @@ void DGConstants2D::gauss(const int nGauss, const int N, arma::mat &V_, arma::ma
   save_mat(gF2Dr_ptr, gauss_i3_Dr, N, gNfp_max * Np_max);
   save_mat(gF2Ds_ptr, gauss_i3_Ds, N, gNfp_max * Np_max);
   save_mat(invMass_gInterpT_ptr, invMass_gauss_interpT, N, gNp_max * Np_max);
-  // memcpy(&gaussW_g[(N - 1) * gNfp_max], gauss_w_.memptr(), gauss_w_.n_elem * sizeof(DG_FP));
-  // memcpy(&gInterp_ptr[(N - 1) * gNp_max * Np_max], gauss_interp_.memptr(), gauss_interp_.n_elem * sizeof(DG_FP));
-  // memcpy(&gFInterp0_ptr[(N - 1) * gNfp_max * Np_max], gauss_interp1_.memptr(), gauss_interp1_.n_elem * sizeof(DG_FP));
-  // memcpy(&gFInterp1_ptr[(N - 1) * gNfp_max * Np_max], gauss_interp2_.memptr(), gauss_interp2_.n_elem * sizeof(DG_FP));
-  // memcpy(&gFInterp2_ptr[(N - 1) * gNfp_max * Np_max], gauss_interp3_.memptr(), gauss_interp3_.n_elem * sizeof(DG_FP));
-  // memcpy(&gF0Dr_ptr[(N - 1) * gNfp_max * Np_max], gauss_i1_Dr.memptr(), gauss_i1_Dr.n_elem * sizeof(DG_FP));
-  // memcpy(&gF0Ds_ptr[(N - 1) * gNfp_max * Np_max], gauss_i1_Ds.memptr(), gauss_i1_Ds.n_elem * sizeof(DG_FP));
-  // memcpy(&gF1Dr_ptr[(N - 1) * gNfp_max * Np_max], gauss_i2_Dr.memptr(), gauss_i2_Dr.n_elem * sizeof(DG_FP));
-  // memcpy(&gF1Ds_ptr[(N - 1) * gNfp_max * Np_max], gauss_i2_Ds.memptr(), gauss_i2_Ds.n_elem * sizeof(DG_FP));
-  // memcpy(&gF2Dr_ptr[(N - 1) * gNfp_max * Np_max], gauss_i3_Dr.memptr(), gauss_i3_Dr.n_elem * sizeof(DG_FP));
-  // memcpy(&gF2Ds_ptr[(N - 1) * gNfp_max * Np_max], gauss_i3_Ds.memptr(), gauss_i3_Ds.n_elem * sizeof(DG_FP));
-  // memcpy(&invMass_gInterpT_ptr[(N - 1) * gNp_max * Np_max], invMass_gauss_interpT.memptr(), invMass_gauss_interpT.n_elem * sizeof(DG_FP));
+
   // Number of gauss points
   int gNp = gauss_w_.n_elem * 3;
   DG_CONSTANTS[(N - 1) * 5 + 3] = gNp;
+  DG_CONSTANTS_TK[(N - 1) * 5 + 3] = gNp;
   // Number of gauss points per edge
   int gNfp = gauss_w_.n_elem;
   DG_CONSTANTS[(N - 1) * 5 + 4] = gNfp;
+  DG_CONSTANTS_TK[(N - 1) * 5 + 4] = gNfp;
 }
 
 void DGConstants2D::calc_interp_mats() {

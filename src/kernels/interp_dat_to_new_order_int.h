@@ -4,8 +4,8 @@ inline void interp_dat_to_new_order_int(const DG_FP *mats, const int *old_order,
   if(*old_order == *new_order)
     return;
 
-  const int dg_np_old = DG_CONSTANTS[(*old_order - 1) * 5];
-  const int dg_np_new = DG_CONSTANTS[(*new_order - 1) * 5];
+  const int dg_np_old = DG_CONSTANTS_TK[(*old_order - 1) * 5];
+  const int dg_np_new = DG_CONSTANTS_TK[(*new_order - 1) * 5];
   const DG_FP *mat = &mats[((*old_order - 1) * DG_ORDER + (*new_order - 1)) * DG_NP * DG_NP];
 
   DG_FP res[DG_NP];

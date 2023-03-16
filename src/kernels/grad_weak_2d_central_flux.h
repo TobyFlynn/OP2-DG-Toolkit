@@ -20,8 +20,8 @@ inline void grad_weak_2d_central_flux(const int *edgeNum, const bool *rev,
       rInd = exIndR + i;
     }
     DG_FP flux = 0.5 * (u[0][lInd] + u[1][rInd]);
-    ux[0][lInd] += gaussW_g[i] * sJ[0][lInd] * nx[0][lInd] * flux;
-    uy[0][lInd] += gaussW_g[i] * sJ[0][lInd] * ny[0][lInd] * flux;
+    ux[0][lInd] += gaussW_g_TK[i] * sJ[0][lInd] * nx[0][lInd] * flux;
+    uy[0][lInd] += gaussW_g_TK[i] * sJ[0][lInd] * ny[0][lInd] * flux;
   }
 
   for(int i = 0; i < DG_GF_NP; i++) {
@@ -33,7 +33,7 @@ inline void grad_weak_2d_central_flux(const int *edgeNum, const bool *rev,
       lInd = exIndL + i;
     }
     DG_FP flux = 0.5 * (u[0][lInd] + u[1][rInd]);
-    ux[1][rInd] += gaussW_g[i] * sJ[1][rInd] * nx[1][rInd] * flux;
-    uy[1][rInd] += gaussW_g[i] * sJ[1][rInd] * ny[1][rInd] * flux;
+    ux[1][rInd] += gaussW_g_TK[i] * sJ[1][rInd] * nx[1][rInd] * flux;
+    uy[1][rInd] += gaussW_g_TK[i] * sJ[1][rInd] * ny[1][rInd] * flux;
   }
 }

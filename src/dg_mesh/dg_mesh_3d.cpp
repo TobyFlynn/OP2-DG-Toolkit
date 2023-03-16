@@ -11,11 +11,6 @@
 
 DGConstants *constants;
 
-#ifdef OP2_DG_CUDA
-void set_cuda_constants_OP2_DG_3D_CUDA();
-#endif
-
-
 DGMesh3D::DGMesh3D(std::string &meshFile) {
   // Sets
   nodes  = op_decl_set_hdf5(meshFile.c_str(), "nodes");
@@ -97,12 +92,9 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   constants = new DGConstants3D(DG_ORDER);
   constants->calc_interp_mats();
 
-#ifdef OP2_DG_CUDA
-  set_cuda_constants_OP2_DG_3D_CUDA();
-#else
-  op_decl_const(DG_ORDER * DG_NPF * 4, "int", FMASK);
-  op_decl_const(DG_ORDER * 2, "int", DG_CONSTANTS);
-#endif
+  op_decl_const(DG_ORDER * DG_NPF * 4, "int", FMASK_TK);
+  op_decl_const(DG_ORDER * 2, "int", DG_CONSTANTS_TK);
+
   order_int = DG_ORDER;
 }
 

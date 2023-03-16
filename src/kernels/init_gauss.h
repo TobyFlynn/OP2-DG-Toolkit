@@ -1,8 +1,8 @@
 inline void init_gauss(const int *p, DG_FP *rx, DG_FP *sx, DG_FP *ry,
                        DG_FP *sy, DG_FP *nx, DG_FP *ny, DG_FP *sJ) {
   // Get constants for this element's order
-  const int dg_gnp  = DG_CONSTANTS[(*p - 1) * 5 + 3];
-  const int dg_gnfp = DG_CONSTANTS[(*p - 1) * 5 + 4];
+  const int dg_gnp  = DG_CONSTANTS_TK[(*p - 1) * 5 + 3];
+  const int dg_gnfp = DG_CONSTANTS_TK[(*p - 1) * 5 + 4];
   // J = -xs.*yr + xr.*ys
   DG_FP J[DG_G_NP];
   for(int i = 0; i < dg_gnp; i++) {

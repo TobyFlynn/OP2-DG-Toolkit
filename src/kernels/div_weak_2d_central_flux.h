@@ -21,7 +21,7 @@ inline void div_weak_2d_central_flux(const int *edgeNum, const bool *rev,
     }
     DG_FP flux_u = 0.5 * (u[0][lInd] + u[1][rInd]);
     DG_FP flux_v = 0.5 * (v[0][lInd] + v[1][rInd]);
-    flux[0][lInd] += gaussW_g[i] * sJ[0][lInd] * (nx[0][lInd] * flux_u + ny[0][lInd] * flux_v);
+    flux[0][lInd] += gaussW_g_TK[i] * sJ[0][lInd] * (nx[0][lInd] * flux_u + ny[0][lInd] * flux_v);
   }
 
   for(int i = 0; i < DG_GF_NP; i++) {
@@ -34,6 +34,6 @@ inline void div_weak_2d_central_flux(const int *edgeNum, const bool *rev,
     }
     DG_FP flux_u = 0.5 * (u[0][lInd] + u[1][rInd]);
     DG_FP flux_v = 0.5 * (v[0][lInd] + v[1][rInd]);
-    flux[1][rInd] += gaussW_g[i] * sJ[1][rInd] * (nx[1][rInd] * flux_u + ny[1][rInd] * flux_v);
+    flux[1][rInd] += gaussW_g_TK[i] * sJ[1][rInd] * (nx[1][rInd] * flux_u + ny[1][rInd] * flux_v);
   }
 }

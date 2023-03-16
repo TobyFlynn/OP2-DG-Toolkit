@@ -1,6 +1,6 @@
 inline void mass(const int *p, const DG_FP *matrix, const DG_FP *J, DG_FP *x) {
   // Get constants
-  const int dg_np  = DG_CONSTANTS[(*p - 1) * DG_NUM_CONSTANTS];
+  const int dg_np  = DG_CONSTANTS_TK[(*p - 1) * DG_NUM_CONSTANTS];
   const DG_FP *mat = &matrix[(*p - 1) * DG_NP * DG_NP];
 
   DG_FP tmp[DG_NP];

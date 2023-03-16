@@ -2,7 +2,7 @@ inline void calc_geom(const int *p, const DG_FP *r_g, const DG_FP *s_g,
                       const DG_FP *nX, const DG_FP *nY,
                       DG_FP *x, DG_FP *y) {
   // Get constants for this element's order
-  const int dg_np  = DG_CONSTANTS[(*p - 1) * 5];
+  const int dg_np  = DG_CONSTANTS_TK[(*p - 1) * 5];
   const DG_FP *r  = &r_g[(*p - 1) * DG_NP];
   const DG_FP *s  = &s_g[(*p - 1) * DG_NP];
 

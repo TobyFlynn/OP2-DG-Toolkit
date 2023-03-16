@@ -3,8 +3,8 @@ inline void cub_div_weak_2d(const int *p, DG_FP *temp0, DG_FP *temp1,
                             const DG_FP *sy, const DG_FP *J, DG_FP *temp2,
                             DG_FP *temp3) {
   // Get constants for this element's order
-  const int dg_cub_np = DG_CONSTANTS[(*p - 1) * 5 + 2];
-  const DG_FP *cubW  = &cubW_g[(*p - 1) * DG_CUB_NP];
+  const int dg_cub_np = DG_CONSTANTS_TK[(*p - 1) * 5 + 2];
+  const DG_FP *cubW  = &cubW_g_TK[(*p - 1) * DG_CUB_NP];
 
   for(int i = 0; i < dg_cub_np; i++) {
     DG_FP Vu = temp0[i];

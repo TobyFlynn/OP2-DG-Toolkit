@@ -8,6 +8,9 @@
 int FMASK[DG_ORDER * DG_NUM_FACES * DG_NPF];
 int DG_CONSTANTS[DG_ORDER * DG_NUM_CONSTANTS];
 
+int FMASK_TK[DG_ORDER * DG_NUM_FACES * DG_NPF];
+int DG_CONSTANTS_TK[DG_ORDER * DG_NUM_CONSTANTS];
+
 // TODO not require this
 DG_FP cubW_g[1];
 DG_FP gaussW_g[1];
@@ -102,29 +105,15 @@ DGConstants3D::DGConstants3D(const int n_) {
     save_mat(mmF2_ptr, mmF2_, N, Np_max * Np_max);
     save_mat(mmF3_ptr, mmF3_, N, Np_max * Np_max);
     save_mat(eMat_ptr, eMat_, N, DG_NUM_FACES * Nfp_max * Np_max);
-    // memcpy(&r_ptr[(N - 1) * Np_max], r_.memptr(), r_.n_elem * sizeof(DG_FP));
-    // memcpy(&s_ptr[(N - 1) * Np_max], s_.memptr(), s_.n_elem * sizeof(DG_FP));
-    // memcpy(&t_ptr[(N - 1) * Np_max], t_.memptr(), t_.n_elem * sizeof(DG_FP));
-    // memcpy(&Dr_ptr[(N - 1) * Np_max * Np_max], dr_.memptr(), dr_.n_elem * sizeof(DG_FP));
-    // memcpy(&Ds_ptr[(N - 1) * Np_max * Np_max], ds_.memptr(), ds_.n_elem * sizeof(DG_FP));
-    // memcpy(&Dt_ptr[(N - 1) * Np_max * Np_max], dt_.memptr(), dt_.n_elem * sizeof(DG_FP));
-    // memcpy(&Drw_ptr[(N - 1) * Np_max * Np_max], drw_.memptr(), drw_.n_elem * sizeof(DG_FP));
-    // memcpy(&Dsw_ptr[(N - 1) * Np_max * Np_max], dsw_.memptr(), dsw_.n_elem * sizeof(DG_FP));
-    // memcpy(&Dtw_ptr[(N - 1) * Np_max * Np_max], dtw_.memptr(), dtw_.n_elem * sizeof(DG_FP));
-    // memcpy(&mass_ptr[(N - 1) * Np_max * Np_max], mass_.memptr(), mass_.n_elem * sizeof(DG_FP));
-    // memcpy(&invMass_ptr[(N - 1) * Np_max * Np_max], inv_mass_.memptr(), inv_mass_.n_elem * sizeof(DG_FP));
-    // memcpy(&invV_ptr[(N - 1) * Np_max * Np_max], invV_.memptr(), invV_.n_elem * sizeof(DG_FP));
-    // memcpy(&lift_ptr[(N - 1) * DG_NUM_FACES * Nfp_max * Np_max], lift_.memptr(), lift_.n_elem * sizeof(DG_FP));
-    // memcpy(&mmF0_ptr[(N - 1) * Np_max * Np_max], mmF0_.memptr(), mmF0_.n_elem * sizeof(DG_FP));
-    // memcpy(&mmF1_ptr[(N - 1) * Np_max * Np_max], mmF1_.memptr(), mmF1_.n_elem * sizeof(DG_FP));
-    // memcpy(&mmF2_ptr[(N - 1) * Np_max * Np_max], mmF2_.memptr(), mmF2_.n_elem * sizeof(DG_FP));
-    // memcpy(&mmF3_ptr[(N - 1) * Np_max * Np_max], mmF3_.memptr(), mmF3_.n_elem * sizeof(DG_FP));
 
     std::vector<int> fmask_int = arma::conv_to<std::vector<int>>::from(fmask_);
     memcpy(&FMASK[(N - 1) * DG_NUM_FACES * Nfp_max], fmask_int.data(), fmask_int.size() * sizeof(int));
+    memcpy(&FMASK_TK[(N - 1) * DG_NUM_FACES * Nfp_max], fmask_int.data(), fmask_int.size() * sizeof(int));
 
     DG_CONSTANTS[(N - 1) * DG_NUM_CONSTANTS]     = Np;
     DG_CONSTANTS[(N - 1) * DG_NUM_CONSTANTS + 1] = Nfp;
+    DG_CONSTANTS_TK[(N - 1) * DG_NUM_CONSTANTS]     = Np;
+    DG_CONSTANTS_TK[(N - 1) * DG_NUM_CONSTANTS + 1] = Nfp;
   }
 }
 

@@ -3,8 +3,8 @@ inline void face_check_3d(const int *order, const int *faceNum,
                           const DG_FP **y, const DG_FP **z,
                           int *fmaskL_corrected, int * fmaskR_corrected,
                           int *num) {
-  const int dg_npf = DG_CONSTANTS[(*order - 1) * 2 + 1];
-  const int *fmask  = &FMASK[(*order - 1) * 4 * DG_NPF];
+  const int dg_npf = DG_CONSTANTS_TK[(*order - 1) * 2 + 1];
+  const int *fmask  = &FMASK_TK[(*order - 1) * 4 * DG_NPF];
   const int *fmaskL = &fmask[faceNum[0] * dg_npf];
   const int *fmaskR = &fmask[faceNum[1] * dg_npf];
 

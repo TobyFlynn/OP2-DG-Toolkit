@@ -1,8 +1,8 @@
 inline void cub_mm_init(const int *p, const DG_FP *matrix, const DG_FP *tmp,
                         DG_FP *mm) {
   // Get constants for this element's order
-  const int dg_np     = DG_CONSTANTS[(*p - 1) * 5];
-  const int dg_cub_np = DG_CONSTANTS[(*p - 1) * 5 + 2];
+  const int dg_np     = DG_CONSTANTS_TK[(*p - 1) * 5];
+  const int dg_cub_np = DG_CONSTANTS_TK[(*p - 1) * 5 + 2];
   const DG_FP *cubV  = &matrix[(*p - 1) * DG_CUB_NP * DG_NP];
 
   for(int i = 0; i < dg_np; i++) {

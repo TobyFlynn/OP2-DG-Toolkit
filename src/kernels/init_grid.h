@@ -2,9 +2,9 @@ inline void init_grid(const int *p, DG_FP *rx, DG_FP *ry, DG_FP *sx,
                       DG_FP *sy, DG_FP *nx, DG_FP *ny, DG_FP *J, DG_FP *sJ,
                       DG_FP *fscale) {
   // Get constants for this element's order
-  const int *fmask = &FMASK[(*p - 1) * 3 * DG_NPF];
-  const int dg_np  = DG_CONSTANTS[(*p - 1) * 5];
-  const int dg_nfp = DG_CONSTANTS[(*p - 1) * 5 + 1];
+  const int *fmask = &FMASK_TK[(*p - 1) * 3 * DG_NPF];
+  const int dg_np  = DG_CONSTANTS_TK[(*p - 1) * 5];
+  const int dg_nfp = DG_CONSTANTS_TK[(*p - 1) * 5 + 1];
   // Calculate normals
   // Face 0
   for(int i = 0; i < dg_nfp; i++) {

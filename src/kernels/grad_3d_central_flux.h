@@ -3,7 +3,7 @@ inline void grad_3d_central_flux(const int *faceNum, const int *fmaskL_corrected
                                  const DG_FP *ny, const DG_FP *nz,
                                  const DG_FP *fscale, const DG_FP **u,
                                  DG_FP **fluxX, DG_FP **fluxY, DG_FP **fluxZ) {
-  const int *fmask  = &FMASK[(DG_ORDER - 1) * DG_NUM_FACES * DG_NPF];
+  const int *fmask  = &FMASK_TK[(DG_ORDER - 1) * DG_NUM_FACES * DG_NPF];
   const int *fmaskL = &fmask[faceNum[0] * DG_NPF];
   const int *fmaskR = &fmask[faceNum[1] * DG_NPF];
 
