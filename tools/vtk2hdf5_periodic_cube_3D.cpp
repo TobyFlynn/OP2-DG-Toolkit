@@ -451,7 +451,7 @@ int main(int argc, char **argv) {
   op_set cells   = op_decl_set(numCells, "cells");
   op_set faces   = op_decl_set(numFaces, "faces");
   op_set bfaces  = op_decl_set(numBoundaryFaces, "bfaces");
-  op_set fluxes  = op_decl_set(numCells, "fluxes");
+  op_set fluxes  = op_decl_set(fluxL_vec.size() / 4, "fluxes");
   op_set bfluxes = op_decl_set(bfluxL_vec.size(), "bfluxes");
 
   // Maps
