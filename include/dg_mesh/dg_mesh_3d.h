@@ -39,7 +39,7 @@ public:
   op_dat op_tmp[3], op_tmp_npf[3];
 
   op_set fluxes, bfluxes;
-  op_map flux2cells, flux2faces, bflux2cells, bflux2faces;
+  op_map flux2main_cell, flux2neighbour_cells, flux2faces, bflux2cells, bflux2faces;
   op_dat fluxL, fluxFaceNums, fluxFmask, fluxNx, fluxNy, fluxNz, fluxFscale, fluxSJ;
   op_dat bfluxL;
 private:

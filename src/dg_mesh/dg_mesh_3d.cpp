@@ -26,7 +26,8 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   face2cells  = op_decl_map_hdf5(faces, cells, 2, meshFile.c_str(), "face2cells");
   bface2nodes = op_decl_map_hdf5(bfaces, nodes, 3, meshFile.c_str(), "bface2nodes");
   bface2cells = op_decl_map_hdf5(bfaces, cells, 1, meshFile.c_str(), "bface2cells");
-  flux2cells  = op_decl_map_hdf5(fluxes, cells, 5, meshFile.c_str(), "flux2cells");
+  flux2main_cell = op_decl_map_hdf5(fluxes, cells, 1, meshFile.c_str(), "flux2main_cell");
+  flux2neighbour_cells = op_decl_map_hdf5(fluxes, cells, 4, meshFile.c_str(), "flux2neighbour_cells");
   flux2faces  = op_decl_map_hdf5(fluxes, faces, 4, meshFile.c_str(), "flux2faces");
   bflux2cells = op_decl_map_hdf5(bfluxes, cells, 2, meshFile.c_str(), "bflux2cells");
   bflux2faces = op_decl_map_hdf5(bfluxes, faces, 1, meshFile.c_str(), "bflux2faces");
@@ -277,7 +278,7 @@ void DGMesh3D::calc_mesh_constants() {
   }
 
   op_par_loop(flux_init_3d, "flux_init_3d", fluxes,
-              op_arg_dat(order, 0, flux2cells, 1, "int", OP_READ),
+              op_arg_dat(order, 0, flux2main_cell, 1, "int", OP_READ),
               op_arg_dat(faceNum, -4, flux2faces, 2, "int", OP_READ),
               op_arg_dat(fmaskL, -4, flux2faces, DG_NPF, "int", OP_READ),
               op_arg_dat(fmaskR, -4, flux2faces, DG_NPF, "int", OP_READ),

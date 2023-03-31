@@ -60,6 +60,7 @@ inline void init_edges(const int *edgeNum, const DG_FP **x, const DG_FP **y,
       }
     }
   } else {
+    // Regular edges
     if(edgeR == 0) {
       if(edgeL == 0) {
         *reverse = !(fp_equal(x[0][0], x[1][0]) && fp_equal(y[0][0], y[1][0]));

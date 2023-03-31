@@ -188,7 +188,8 @@ int main(int argc, char **argv) {
     flux_mapping.at(ind0).push_back({ind1, {i, true}});
     flux_mapping.at(ind1).push_back({ind0, {i, false}});
   }
-  std::vector<int> flux2cells_vec;
+  std::vector<int> flux2main_cell_vec;
+  std::vector<int> flux2neighbour_cells_vec;
   std::vector<int> flux2faces_vec;
   std::vector<int> fluxL_vec;
   std::vector<int> bflux2cells_vec;
@@ -203,11 +204,11 @@ int main(int argc, char **argv) {
         bfluxL_vec.push_back(flux_mapping.at(i)[j].second.second);
       }
     } else {
-      flux2cells_vec.push_back(i);
-      flux2cells_vec.push_back(flux_mapping.at(i)[0].first);
-      flux2cells_vec.push_back(flux_mapping.at(i)[1].first);
-      flux2cells_vec.push_back(flux_mapping.at(i)[2].first);
-      flux2cells_vec.push_back(flux_mapping.at(i)[3].first);
+      flux2main_cell_vec.push_back(i);
+      flux2neighbour_cells_vec.push_back(flux_mapping.at(i)[0].first);
+      flux2neighbour_cells_vec.push_back(flux_mapping.at(i)[1].first);
+      flux2neighbour_cells_vec.push_back(flux_mapping.at(i)[2].first);
+      flux2neighbour_cells_vec.push_back(flux_mapping.at(i)[3].first);
       flux2faces_vec.push_back(flux_mapping.at(i)[0].second.first);
       flux2faces_vec.push_back(flux_mapping.at(i)[1].second.first);
       flux2faces_vec.push_back(flux_mapping.at(i)[2].second.first);
@@ -232,7 +233,8 @@ int main(int argc, char **argv) {
   op_map face2cells  = op_decl_map(faces, cells, 2, face2cell_vec.data(), "face2cells");
   op_map bface2nodes = op_decl_map(bfaces, nodes, 3, bface2node_vec.data(), "bface2nodes");
   op_map bface2cells = op_decl_map(bfaces, cells, 1, bface2cell_vec.data(), "bface2cells");
-  op_map flux2cells  = op_decl_map(fluxes, cells, 5, flux2cells_vec.data(), "flux2cells");
+  op_map flux2main_cell  = op_decl_map(fluxes, cells, 1, flux2main_cell_vec.data(), "flux2main_cell");
+  op_map flux2neighbour_cells  = op_decl_map(fluxes, cells, 4, flux2neighbour_cells_vec.data(), "flux2neighbour_cells");
   op_map flux2faces  = op_decl_map(fluxes, faces, 4, flux2faces_vec.data(), "flux2faces");
   op_map bflux2cells = op_decl_map(bfluxes, cells, 2, bflux2cells_vec.data(), "bflux2cells");
   op_map bflux2faces = op_decl_map(bfluxes, faces, 1, bflux2faces_vec.data(), "bflux2faces");
