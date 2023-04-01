@@ -71,7 +71,7 @@ void op2_cpu_gemm(const int order, const int m, const int n, const int k,
   #else
   const int batch_size = n / 32;
   const int num_batches = n / batch_size;
-  const char transA = trans ? CblasTrans : CblasNoTrans;
+  const CBLAS_TRANSPOSE transA = trans ? CblasTrans : CblasNoTrans;
   #pragma omp parallel for
   for(int i = 0; i < num_batches; i++) {
     cblas_dgemm(CblasColMajor, transA, CblasNoTrans, m, batch_size, k, alpha, A, lda, B + i * batch_size * ldb, ldb, beta, C + i * batch_size * ldc, ldc);
