@@ -52,6 +52,11 @@ endif()
 include_directories(${ARMA_DIR}/include)
 set(ARMA_LIB "-L${ARMA_DIR}/lib -larmadillo")
 
+if(LIBXSMM_DIR)
+include_directories(${LIBXSMM_DIR}/include)
+set(LIBXSMM_COMPILE_OPTS -DNDEBUG -DTHRESHOLD=262144 OP2_DG_USE_LIBXSMM)
+endif()
+
 if(BUILD_GPU)
   enable_language(CUDA)
   find_package(CUDAToolkit)

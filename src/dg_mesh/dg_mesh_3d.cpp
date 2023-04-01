@@ -9,9 +9,20 @@
 #include "dg_op2_blas.h"
 #include "dg_global_constants/dg_global_constants_3d.h"
 
+#ifndef OP2_DG_CUDA
+#ifdef OP2_DG_USE_LIBXSMM
+#include "libxsmm_source.h"
+#endif
+#endif
+
 DGConstants *constants;
 
 DGMesh3D::DGMesh3D(std::string &meshFile) {
+  #ifndef OP2_DG_CUDA
+  #ifdef OP2_DG_USE_LIBXSMM
+  libxsmm_init();
+  #endif
+  #endif
   // Sets
   nodes   = op_decl_set_hdf5(meshFile.c_str(), "nodes");
   cells   = op_decl_set_hdf5(meshFile.c_str(), "cells");
@@ -126,6 +137,11 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
 
 DGMesh3D::~DGMesh3D() {
   delete constants;
+  #ifndef OP2_DG_CUDA
+  #ifdef OP2_DG_USE_LIBXSMM
+  libxsmm_finalize();
+  #endif
+  #endif
 }
 
 void DGMesh3D::init() {

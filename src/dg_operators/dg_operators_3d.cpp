@@ -54,6 +54,27 @@ custom_kernel_grad_3d("grad_3d",cells,
                      op_arg_dat(uy, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
                      op_arg_dat(uz, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
 #else
+  op2_gemv(this, false, 1.0, DGConstants::DR, u, 0.0, op_tmp[0]);
+  op2_gemv(this, false, 1.0, DGConstants::DS, u, 0.0, op_tmp[1]);
+  op2_gemv(this, false, 1.0, DGConstants::DT, u, 0.0, op_tmp[2]);
+  op_par_loop(grad_3d_geof, "grad_3d_geof", cells,
+              op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
+              op_arg_dat(rx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+              op_arg_dat(sx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+              op_arg_dat(tx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+              op_arg_dat(ry, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+              op_arg_dat(sy, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+              op_arg_dat(ty, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+              op_arg_dat(rz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+              op_arg_dat(sz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+              op_arg_dat(tz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+              op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(op_tmp[1], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(op_tmp[2], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(ux, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(uy, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(uz, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+  /*
   op_par_loop(grad_3d, "grad_3d", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
               op_arg_gbl(constants->get_mat_ptr(DGConstants::DR), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
@@ -72,6 +93,7 @@ custom_kernel_grad_3d("grad_3d",cells,
               op_arg_dat(ux, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(uy, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(uz, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+  */
 #endif
 }
 
@@ -252,11 +274,19 @@ void DGMesh3D::mass(op_dat u) {
               op_arg_dat(J, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(u, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
   #else
+  op2_gemv(this, false, 1.0, DGConstants::MASS, u, 0.0, op_tmp[0]);
+  op_par_loop(J_3d, "J_3d", cells,
+              op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
+              op_arg_dat(J, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+              op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(u, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+  /*
   op_par_loop(mass, "mass", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
               op_arg_gbl(constants->get_mat_ptr(DGConstants::MASS), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(J, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(u, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
+  */
   #endif
 }
 

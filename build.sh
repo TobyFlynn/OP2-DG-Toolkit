@@ -11,12 +11,14 @@ mkdir -p gen_2d/utils
 mkdir -p gen_2d/dg_constants
 mkdir -p gen_2d/dg_mesh
 mkdir -p gen_2d/dg_operators/custom_kernels
+mkdir -p gen_2d/blas
 
 mkdir -p gen_3d/kernels
 mkdir -p gen_3d/utils
 mkdir -p gen_3d/dg_constants
 mkdir -p gen_3d/dg_mesh
 mkdir -p gen_3d/dg_operators/custom_kernels
+mkdir -p gen_3d/blas
 
 ORDER=3
 
@@ -28,7 +30,7 @@ cd gen_2d
 
 python3 $OP2_TRANSLATOR \
   dg_tookit.cpp dg_mesh/dg_mesh_2d.cpp \
-  dg_op2_blas.cpp dg_operators/dg_operators_2d.cpp \
+  blas/dg_op2_blas.cpp dg_operators/dg_operators_2d.cpp \
   kernels/
 
 # Add compiler definitions to every kernel
@@ -42,7 +44,7 @@ cd ../gen_3d
 
 python3 $OP2_TRANSLATOR \
   dg_tookit.cpp dg_mesh/dg_mesh_3d.cpp \
-  dg_op2_blas.cpp dg_operators/dg_operators_3d.cpp \
+  blas/dg_op2_blas.cpp dg_operators/dg_operators_3d.cpp \
   kernels/
 
 # Add compiler definitions to every kernel
