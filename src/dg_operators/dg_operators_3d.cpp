@@ -8,7 +8,7 @@
 
 extern DGConstants *constants;
 
-void custom_kernel_grad_3d(char const *name, op_set set,
+void custom_kernel_grad_3d(const int order, char const *name, op_set set,
   op_arg arg0,
   op_arg arg1,
   op_arg arg2,
@@ -27,7 +27,7 @@ void custom_kernel_grad_3d(char const *name, op_set set,
   op_arg arg15,
   op_arg arg16);
 
-void custom_kernel_mass(char const *name, op_set set,
+void custom_kernel_mass(const int order, char const *name, op_set set,
   op_arg arg0,
   op_arg arg1,
   op_arg arg2,
@@ -35,7 +35,7 @@ void custom_kernel_mass(char const *name, op_set set,
 
 void DGMesh3D::grad(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
 #ifdef OP2_DG_CUDA
-custom_kernel_grad_3d("grad_3d",cells,
+custom_kernel_grad_3d(order_int, "grad_3d",cells,
                      op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
                      op_arg_gbl(constants->get_mat_ptr(DGConstants::DR), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
                      op_arg_gbl(constants->get_mat_ptr(DGConstants::DS), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
@@ -268,7 +268,7 @@ void DGMesh3D::curl(op_dat u, op_dat v, op_dat w,
 
 void DGMesh3D::mass(op_dat u) {
   #ifdef OP2_DG_CUDA
-  custom_kernel_mass("mass", cells,
+  custom_kernel_mass(order_int, "mass", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
               op_arg_gbl(constants->get_mat_ptr(DGConstants::MASS), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(J, -1, OP_ID, 1, DG_FP_STR, OP_READ),

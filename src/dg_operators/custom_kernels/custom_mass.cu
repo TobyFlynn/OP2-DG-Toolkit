@@ -4,10 +4,11 @@
 
 #include "dg_compiler_defs.h"
 
-template<int dg_np>
-__device__ void _mass_gpu(const int ind, const int *p, const DG_FP *matrix, const DG_FP *J, const DG_FP *in, DG_FP *x) {
-  const DG_FP *mat = &matrix[(*p - 1) * DG_NP * DG_NP];
-
+template<int p, int dg_np>
+__device__ void _mass_gpu(const int ind, const DG_FP *matrix, const DG_FP *J, const DG_FP *in, DG_FP *x) {
+  const DG_FP *mat = &matrix[(p - 1) * DG_NP * DG_NP];
+  if(!(ind < dg_np))
+    return;
   DG_FP tmp = 0.0;
   for(int j = 0; j < dg_np; j++) {
     int mat_ind = DG_MAT_IND(ind, j, dg_np, dg_np);
@@ -17,14 +18,14 @@ __device__ void _mass_gpu(const int ind, const int *p, const DG_FP *matrix, cons
 }
 
 // CUDA kernel function
-template<int NUM_CELLS>
+template<int p, int NUM_CELLS>
 __global__ void _op_cuda_mass(
   const int *__restrict arg0,
   const DG_FP *arg1,
   const DG_FP *__restrict arg2,
   DG_FP *arg3,
   int   set_size ) {
-
+  const int np = (p + 1) * (p + 2) * (p + 3) / 6;
   // Load matrices into shared memory
   __shared__ DG_FP mass_shared[DG_ORDER * DG_NP * DG_NP];
   __shared__ DG_FP u_shared[NUM_CELLS * DG_NP];
@@ -48,36 +49,18 @@ __global__ void _op_cuda_mass(
     __syncthreads();
 
     if(n < set_size * DG_NP) {
-      switch (*(arg0 + cell_id * 1)) {
-        case 1:
-          _mass_gpu<4>(node_id, arg0 + cell_id * 1,
+      _mass_gpu<p,np>(node_id,
                arg1,
                arg2 + cell_id * 1,
                u_shared + local_cell_id * DG_NP,
                arg3 + cell_id * DG_NP);
-          break;
-        case 2:
-          _mass_gpu<10>(node_id, arg0 + cell_id * 1,
-               arg1,
-               arg2 + cell_id * 1,
-               u_shared + local_cell_id * DG_NP,
-               arg3 + cell_id * DG_NP);
-          break;
-        case 3:
-          _mass_gpu<20>(node_id, arg0 + cell_id * 1,
-               arg1,
-               arg2 + cell_id * 1,
-               u_shared + local_cell_id * DG_NP,
-               arg3 + cell_id * DG_NP);
-          break;
-      }
     }
   }
 }
 
 
 //host stub function
-void custom_kernel_mass(char const *name, op_set set,
+void custom_kernel_mass(const int order, char const *name, op_set set,
   op_arg arg0,
   op_arg arg1,
   op_arg arg2,
@@ -118,12 +101,48 @@ void custom_kernel_mass(char const *name, op_set set,
     const int nblocks = 200 < (set->size * DG_NP) / nthread + 1 ? 200 : (set->size * DG_NP) / nthread + 1;
     const int num_cells = (nthread / DG_NP) + 1;
 
-    _op_cuda_mass<num_cells><<<nblocks,nthread>>>(
-      (int *) arg0.data_d,
-      (DG_FP *) arg1.data_d,
-      (DG_FP *) arg2.data_d,
-      (DG_FP *) arg3.data_d,
-      set->size );
+    switch(order) {
+      case 1:
+        _op_cuda_mass<1,num_cells><<<nblocks,nthread>>>(
+          (int *) arg0.data_d,
+          (DG_FP *) arg1.data_d,
+          (DG_FP *) arg2.data_d,
+          (DG_FP *) arg3.data_d,
+          set->size );
+        break;
+      case 2:
+        _op_cuda_mass<2,num_cells><<<nblocks,nthread>>>(
+          (int *) arg0.data_d,
+          (DG_FP *) arg1.data_d,
+          (DG_FP *) arg2.data_d,
+          (DG_FP *) arg3.data_d,
+          set->size );
+        break;
+      case 3:
+        _op_cuda_mass<3,num_cells><<<nblocks,nthread>>>(
+          (int *) arg0.data_d,
+          (DG_FP *) arg1.data_d,
+          (DG_FP *) arg2.data_d,
+          (DG_FP *) arg3.data_d,
+          set->size );
+        break;
+      case 4:
+        _op_cuda_mass<4,num_cells><<<nblocks,nthread>>>(
+          (int *) arg0.data_d,
+          (DG_FP *) arg1.data_d,
+          (DG_FP *) arg2.data_d,
+          (DG_FP *) arg3.data_d,
+          set->size );
+        break;
+      case 5:
+        _op_cuda_mass<5,num_cells><<<nblocks,nthread>>>(
+          (int *) arg0.data_d,
+          (DG_FP *) arg1.data_d,
+          (DG_FP *) arg2.data_d,
+          (DG_FP *) arg3.data_d,
+          set->size );
+        break;
+    }
   }
   op_mpi_set_dirtybit_cuda(nargs, args);
   cutilSafeCall(cudaDeviceSynchronize());
