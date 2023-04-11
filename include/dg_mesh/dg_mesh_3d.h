@@ -16,7 +16,6 @@ public:
   ~DGMesh3D();
   void init() override;
   void update_order(int new_order, std::vector<op_dat> &dats_to_interp) override;
-  void interp_dat_between_orders(int old_order, int new_order, op_dat in, op_dat out);
 
   // Operators
   void grad(op_dat u, op_dat ux, op_dat uy, op_dat uz);
@@ -28,6 +27,8 @@ public:
   void curl(op_dat u, op_dat v, op_dat w, op_dat resx, op_dat resy, op_dat resz);
   void mass(op_dat u);
   void inv_mass(op_dat u);
+  void interp_dat_between_orders(int old_order, int new_order, op_dat in, op_dat out);
+  void interp_dat_between_orders(int old_order, int new_order, op_dat in);
 
   int order_int;
 

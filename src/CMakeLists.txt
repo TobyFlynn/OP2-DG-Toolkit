@@ -1,7 +1,7 @@
 set(TOOLKIT_SRC utils/misc.cpp utils/nodes.cpp utils/polynomial.cpp utils/vandermonde.cpp utils/matrices.cpp utils/interpolate.cpp)
 set(COMMON_SRC blas_op/dg_op2_blas_op.cpp)
 set(CPU_SRC "")
-set(GPU_SRC "")
+set(GPU_SRC blas/dg_op2_gemv_kernel.cu)
 
 if(DIM EQUAL 2)
 list(APPEND COMMON_SRC dg_constants/dg_constants_2d.cpp dg_mesh_op/dg_mesh_2d_op.cpp dg_operators_op/dg_operators_2d_op.cpp)

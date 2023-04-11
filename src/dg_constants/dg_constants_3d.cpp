@@ -118,6 +118,7 @@ DGConstants3D::DGConstants3D(const int n_) {
 }
 
 void DGConstants3D::calc_interp_mats() {
+  // From n0 to n1
   for(int n0 = 1; n0 <= N_max; n0++) {
     arma::vec x_0, y_0, z_0, r_0, s_0, t_0;
     DGUtils::setRefXYZ(n0, x_0, y_0, z_0);
@@ -131,15 +132,44 @@ void DGConstants3D::calc_interp_mats() {
         DGUtils::xyz2rst(x_1, y_1, z_1, r_1, s_1, t_1);
         arma::mat v_1    = DGUtils::vandermonde3D(r_1, s_1, t_1, n1);
         arma::mat invV_1 = arma::inv(v_1);
-        // arma::mat interp_;
-        arma::mat interp_ = DGUtils::interpMatrix3D(r_1, s_1, t_1, invV_0, n0);
-        // if(n1 < n0) {
-        //   // interp_ = DGUtils::interpMatrix3D(r_0, s_0, t_0, invV_1, n1).t();
-        //   interp_ = DGUtils::interpMatrix3D(r_1, s_1, t_1, invV_0, n0);
-        // } else {
-        //   // interp_ = DGUtils::interpMatrix3D(r_1, s_1, t_1, invV_0, n0);
-        //   interp_ = DGUtils::interpMatrix3D(r_0, s_0, t_0, invV_1, n1).t();
-        // }
+        arma::mat interp_;
+        // arma::mat interp_ = DGUtils::interpMatrix3D(r_1, s_1, t_1, invV_0, n0);
+        if(n1 > n0) {
+          // interp_ = DGUtils::interpMatrix3D(r_0, s_0, t_0, invV_1, n1).t();
+          // interp_ = DGUtils::interpMatrix3D(r_1, s_1, t_1, invV_0, n0);
+          interp_ = DGUtils::interpMatrix3D(r_1, s_1, t_1, invV_0, n0);
+
+          // arma::mat tmp_M(r_0.n_elem, r_0.n_elem, arma::fill::zeros);
+          // arma::mat tmp_vT_inv_1 = arma::inv(v_1.t());
+          // arma::mat tmp_vT_inv_0 = arma::inv(v_0.t());
+          // for(int i = 0; i < r_0.n_elem; i++) {
+          //   for(int j = 0; j < r_0.n_elem; j++) {
+          //     for(int n = 0; n < r_0.n_elem; n++) {
+          //       tmp_M(i, j) += tmp_vT_inv_0(i, n) * tmp_vT_inv_0(j, n);
+          //     }
+          //   }
+          // }
+          // arma::mat interp_points = DGUtils::interpMatrix3D(r_1, s_1, t_1, invV_0, n0);
+          // interp_ = arma::inv(invV_1.t() * invV_1) * interp_points * tmp_M;
+        } else {
+          // interp_ = DGUtils::interpMatrix3D(r_1, s_1, t_1, invV_0, n0);
+          // interp_ = DGUtils::interpMatrix3D(r_0, s_0, t_0, invV_1, n1).t();
+          interp_ = DGUtils::interpMatrix3D(r_0, s_0, t_0, invV_1, n1).t();
+
+          // arma::mat tmp_M(r_1.n_elem, r_1.n_elem, arma::fill::zeros);
+          // arma::mat tmp_vT_inv_1 = arma::inv(v_1.t());
+          // arma::mat tmp_vT_inv_0 = arma::inv(v_0.t());
+          // for(int i = 0; i < r_1.n_elem; i++) {
+          //   for(int j = 0; j < r_1.n_elem; j++) {
+          //     for(int n = 0; n < r_0.n_elem; n++) {
+          //       tmp_M(i, j) += tmp_vT_inv_1(i, n) * tmp_vT_inv_1(j, n);
+          //     }
+          //   }
+          // }
+          // arma::mat interp_points = DGUtils::interpMatrix3D(r_0, s_0, t_0, invV_1, n1);
+          // interp_ = arma::inv(invV_0.t() * invV_0) * interp_points * tmp_M;
+          // interp_ = interp_.t();
+        }
         #ifdef DG_COL_MAJ
         arma::Mat<DG_FP> interp_2 = arma::conv_to<arma::Mat<DG_FP>>::from(interp_);
         #else
@@ -150,11 +180,12 @@ void DGConstants3D::calc_interp_mats() {
     }
   }
 
-  for(int p0 = 0; p0 < N_max; p0++) {
-    for(int p1 = p0 + 1; p1 < N_max; p1++) {
-      memcpy(&order_interp_ptr[(p1 * DG_ORDER + p0) * DG_NP * DG_NP], &order_interp_ptr[(p0 * DG_ORDER + p1) * DG_NP * DG_NP], DG_NP * DG_NP * sizeof(DG_FP));
-    }
-  }
+
+  // for(int p0 = 0; p0 < N_max; p0++) {
+  //   for(int p1 = p0 + 1; p1 < N_max; p1++) {
+  //     memcpy(&order_interp_ptr[(p1 * DG_ORDER + p0) * DG_NP * DG_NP], &order_interp_ptr[(p0 * DG_ORDER + p1) * DG_NP * DG_NP], DG_NP * DG_NP * sizeof(DG_FP));
+  //   }
+  // }
 }
 
 DG_FP* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {

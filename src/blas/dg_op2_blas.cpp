@@ -8,20 +8,22 @@
 
 extern DGConstants *constants;
 
+#if DG_DIM == 2
+#include "dg_global_constants/dg_global_constants_2d.h"
+#else
+#include "dg_global_constants/dg_global_constants_3d.h"
+#include "dg_mesh/dg_mesh_3d.h"
+#endif
+
 #ifndef OP2_DG_CUDA
 #ifdef OP2_DG_USE_LIBXSMM
 #include "libxsmm_source.h"
 #else
 #include "cblas.h"
 #endif
-#if DG_DIM == 2
-#include "dg_global_constants/dg_global_constants_2d.h"
-#else
-#include "dg_global_constants/dg_global_constants_3d.h"
-#endif
 
 // Assumes all elements are same order (does not work for p-adaptivity)
-void op2_cpu_gemm(const int order, const int m, const int n, const int k,
+void op2_cpu_gemm(const int m, const int n, const int k,
                   const DG_FP alpha, const bool trans, const DG_FP *A,
                   const int lda, op_dat b_dat, const int ldb, const DG_FP beta,
                   op_dat c_dat, const int ldc) {
@@ -84,6 +86,9 @@ void op2_cpu_gemm(const int order, const int m, const int n, const int k,
   op_mpi_set_dirtybit(2, args);
 }
 
+#else
+void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
+  const DG_FP beta, const DG_FP *matrix, op_dat arg4, op_dat arg5);
 #endif
 
 void op2_gemv_inv_mass_gass_interpT(DGMesh *mesh, bool transpose,
@@ -127,7 +132,7 @@ void op2_gemv_gauss_interp(DGMesh *mesh, bool transpose, const DG_FP alpha,
 void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                    const DG_FP beta, op_dat y) {
   if(transpose) {
-    #if defined(USE_OP2_BLAS_KERNEL) || defined(OP2_DG_CUDA)
+    #if defined(USE_OP2_BLAS_KERNEL) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
     op_par_loop(gemv_liftT, "gemv_liftT", mesh->cells,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
@@ -135,16 +140,22 @@ void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                 op_arg_gbl(constants->get_mat_ptr(DGConstants::LIFT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW));
+    #elif defined(OP2_DG_CUDA)
+    const int order = ((DGMesh3D *)mesh)->order_int;
+    const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
+    const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
+    const DG_FP *A = constants->get_mat_ptr(DGConstants::LIFT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
+    custom_kernel_gemv(mesh->cells, true, m, k, alpha, beta, A, x, y);
     #else
     const int order = *((int *)mesh->order->data);
     const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
     const int n = mesh->cells->size;
     const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
     const DG_FP *A = constants->get_mat_ptr(DGConstants::LIFT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
-    op2_cpu_gemm(order, k, n, m, alpha, true, A, m, x, DG_NP, beta, y, DG_NUM_FACES * DG_NPF);
+    op2_cpu_gemm(k, n, m, alpha, true, A, m, x, DG_NP, beta, y, DG_NUM_FACES * DG_NPF);
     #endif
   } else {
-    #if defined(USE_OP2_BLAS_KERNEL) || defined(OP2_DG_CUDA)
+    #if defined(USE_OP2_BLAS_KERNEL) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
     op_par_loop(gemv_lift, "gemv_lift", mesh->cells,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
@@ -152,13 +163,19 @@ void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                 op_arg_gbl(constants->get_mat_ptr(DGConstants::LIFT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
+    #elif defined(OP2_DG_CUDA)
+    const int order = ((DGMesh3D *)mesh)->order_int;
+    const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
+    const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
+    const DG_FP *A = constants->get_mat_ptr(DGConstants::LIFT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
+    custom_kernel_gemv(mesh->cells, false, m, k, alpha, beta, A, x, y);
     #else
     const int order = *((int *)mesh->order->data);
     const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
     const int n = mesh->cells->size;
     const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
     const DG_FP *A = constants->get_mat_ptr(DGConstants::LIFT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
-    op2_cpu_gemm(order, m, n, k, alpha, false, A, m, x, DG_NUM_FACES * DG_NPF, beta, y, DG_NP);
+    op2_cpu_gemm(m, n, k, alpha, false, A, m, x, DG_NUM_FACES * DG_NPF, beta, y, DG_NP);
     #endif
   }
 }
@@ -166,7 +183,7 @@ void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
 void op2_gemv_emat(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                    const DG_FP beta, op_dat y) {
   if(transpose) {
-    #if defined(USE_OP2_BLAS_KERNEL) || defined(OP2_DG_CUDA)
+    #if defined(USE_OP2_BLAS_KERNEL) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
     op_par_loop(gemv_liftT, "gemv_liftT", mesh->cells,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
@@ -174,16 +191,22 @@ void op2_gemv_emat(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                 op_arg_gbl(constants->get_mat_ptr(DGConstants::EMAT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW));
+    #elif defined(OP2_DG_CUDA)
+    const int order = ((DGMesh3D *)mesh)->order_int;
+    const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
+    const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
+    const DG_FP *A = constants->get_mat_ptr(DGConstants::EMAT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
+    custom_kernel_gemv(mesh->cells, true, m, k, alpha, beta, A, x, y);
     #else
     const int order = *((int *)mesh->order->data);
     const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
     const int n = mesh->cells->size;
     const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
     const DG_FP *A = constants->get_mat_ptr(DGConstants::EMAT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
-    op2_cpu_gemm(order, k, n, m, alpha, true, A, m, x, DG_NP, beta, y, DG_NUM_FACES * DG_NPF);
+    op2_cpu_gemm(k, n, m, alpha, true, A, m, x, DG_NP, beta, y, DG_NUM_FACES * DG_NPF);
     #endif
   } else {
-    #if defined(USE_OP2_BLAS_KERNEL) || defined(OP2_DG_CUDA)
+    #if defined(USE_OP2_BLAS_KERNEL) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
     op_par_loop(gemv_lift, "gemv_lift", mesh->cells,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
@@ -191,13 +214,19 @@ void op2_gemv_emat(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                 op_arg_gbl(constants->get_mat_ptr(DGConstants::EMAT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
+    #elif defined(OP2_DG_CUDA)
+    const int order = ((DGMesh3D *)mesh)->order_int;
+    const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
+    const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
+    const DG_FP *A = constants->get_mat_ptr(DGConstants::LIFT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
+    custom_kernel_gemv(mesh->cells, false, m, k, alpha, beta, A, x, y);
     #else
     const int order = *((int *)mesh->order->data);
     const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
     const int n = mesh->cells->size;
     const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
     const DG_FP *A = constants->get_mat_ptr(DGConstants::EMAT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
-    op2_cpu_gemm(order, m, n, k, alpha, false, A, m, x, DG_NUM_FACES * DG_NPF, beta, y, DG_NP);
+    op2_cpu_gemm(m, n, k, alpha, false, A, m, x, DG_NUM_FACES * DG_NPF, beta, y, DG_NP);
     #endif
   }
 }
@@ -206,7 +235,7 @@ void op2_gemv_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha,
                     const DG_FP *matrix, op_dat x, const DG_FP beta,
                     op_dat y) {
   if(transpose) {
-    #if defined(USE_OP2_BLAS_KERNEL) || defined(OP2_DG_CUDA)
+    #if defined(USE_OP2_BLAS_KERNEL) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
     op_par_loop(gemv_np_npT, "gemv_np_npT", mesh->cells,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
@@ -214,16 +243,22 @@ void op2_gemv_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha,
                 op_arg_gbl(matrix, DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
+    #elif defined(OP2_DG_CUDA)
+    const int order = ((DGMesh3D *)mesh)->order_int;
+    const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
+    const int k = m;
+    const DG_FP *A = matrix + (order - 1) * DG_NP * DG_NP;
+    custom_kernel_gemv(mesh->cells, true, m, k, alpha, beta, A, x, y);
     #else
     const int order = *((int *)mesh->order->data);
     const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
     const int n = mesh->cells->size;
     const int k = m;
     const DG_FP *A = matrix + (order - 1) * DG_NP * DG_NP;
-    op2_cpu_gemm(order, k, n, m, alpha, true, A, m, x, DG_NP, beta, y, DG_NP);
+    op2_cpu_gemm(k, n, m, alpha, true, A, m, x, DG_NP, beta, y, DG_NP);
     #endif
   } else {
-    #if defined(USE_OP2_BLAS_KERNEL) || defined(OP2_DG_CUDA)
+    #if defined(USE_OP2_BLAS_KERNEL) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
     op_par_loop(gemv_np_np, "gemv_np_np", mesh->cells,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
@@ -231,13 +266,19 @@ void op2_gemv_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha,
                 op_arg_gbl(matrix, DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
+    #elif defined(OP2_DG_CUDA)
+    const int order = ((DGMesh3D *)mesh)->order_int;
+    const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
+    const int k = m;
+    const DG_FP *A = matrix + (order - 1) * DG_NP * DG_NP;
+    custom_kernel_gemv(mesh->cells, false, m, k, alpha, beta, A, x, y);
     #else
     const int order = *((int *)mesh->order->data);
     const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
     const int n = mesh->cells->size;
     const int k = m;
     const DG_FP *A = matrix + (order - 1) * DG_NP * DG_NP;
-    op2_cpu_gemm(order, m, n, k, alpha, false, A, m, x, DG_NP, beta, y, DG_NP);
+    op2_cpu_gemm(m, n, k, alpha, false, A, m, x, DG_NP, beta, y, DG_NP);
     #endif
   }
 }
@@ -311,4 +352,34 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
       std::cerr << "op2_gemv call not implemented for this matrix ... exiting" << std::endl;
       exit(2);
   }
+}
+
+void op2_gemv_interp(DGMesh *mesh, const int from_N, const int to_N, op_dat x, op_dat y) {
+  if(from_N == to_N) {
+    op_par_loop(copy_dg_np, "copy_dg_np", mesh->cells,
+                op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+    return;
+  }
+
+  const int from_NP = DG_CONSTANTS_TK[(from_N - 1) * DG_NUM_CONSTANTS];
+  const int to_NP = DG_CONSTANTS_TK[(to_N - 1) * DG_NUM_CONSTANTS];
+  const int m = to_NP;
+  const int n = mesh->cells->size;
+  const int k = from_NP;
+  const DG_FP *A = constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY) + ((from_N - 1) * DG_ORDER + (to_N - 1)) * DG_NP * DG_NP;
+
+  // TODO 2D
+  #if defined(USE_OP2_BLAS_KERNEL)
+  op_par_loop(interp_dat_to_new_order_3d_copy, "interp_dat_to_new_order_3d_copy", mesh->cells,
+              op_arg_gbl(constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_gbl(&from_N, 1, "int", OP_READ),
+              op_arg_gbl(&to_N, 1, "int", OP_READ),
+              op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+  #elif defined(OP2_DG_CUDA)
+  custom_kernel_gemv(mesh->cells, false, m, k, 1.0, 0.0, A, x, y);
+  #else
+  op2_cpu_gemm(m, n, k, 1.0, false, A, m, x, DG_NP, 0.0, y, DG_NP);
+  #endif
 }

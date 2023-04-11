@@ -320,11 +320,7 @@ void DGMesh3D::update_order(int new_order, std::vector<op_dat> &dats_to_interp) 
       exit(-1);
     }
 
-    op_par_loop(interp_dat_to_new_order_3d, "interp_dat_to_new_order_3d", cells,
-                op_arg_gbl(constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
-                op_arg_gbl(&order_int, 1, "int", OP_READ),
-                op_arg_gbl(&new_order, 1, "int", OP_READ),
-                op_arg_dat(dats_to_interp[i], -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
+    interp_dat_between_orders(order_int, new_order, dats_to_interp[i]);
   }
 
   order_int = new_order;
@@ -335,14 +331,4 @@ void DGMesh3D::update_order(int new_order, std::vector<op_dat> &dats_to_interp) 
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_WRITE));
 
   calc_mesh_constants();
-}
-
-void DGMesh3D::interp_dat_between_orders(int old_order, int new_order, op_dat in, op_dat out) {
-  if(old_order != new_order)
-    op_par_loop(interp_dat_to_new_order_3d_copy, "interp_dat_to_new_order_3d_copy", cells,
-                op_arg_gbl(constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
-                op_arg_gbl(&old_order, 1, "int", OP_READ),
-                op_arg_gbl(&new_order, 1, "int", OP_READ),
-                op_arg_dat(in, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-                op_arg_dat(out, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
 }

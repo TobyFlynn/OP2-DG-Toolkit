@@ -297,3 +297,15 @@ void DGMesh3D::inv_mass(op_dat u) {
               op_arg_dat(J, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(u, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
 }
+
+void DGMesh3D::interp_dat_between_orders(int old_order, int new_order, op_dat in, op_dat out) {
+  op2_gemv_interp(this, old_order, new_order, in, out);
+}
+
+void DGMesh3D::interp_dat_between_orders(int old_order, int new_order, op_dat in) {
+  op2_gemv_interp(this, old_order, new_order, in, op_tmp[0]);
+
+  op_par_loop(copy_dg_np, "copy_dg_np", cells,
+              op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(in, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+}
