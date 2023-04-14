@@ -34,7 +34,7 @@ void custom_kernel_mass(const int order, char const *name, op_set set,
   op_arg arg3);
 
 void DGMesh3D::grad(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
-#ifdef OP2_DG_CUDA
+#if defined(OP2_DG_CUDA) && !defined(USE_OP2_KERNELS)
 custom_kernel_grad_3d(order_int, "grad_3d",cells,
                      op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
                      op_arg_gbl(constants->get_mat_ptr(DGConstants::DR), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
@@ -267,12 +267,13 @@ void DGMesh3D::curl(op_dat u, op_dat v, op_dat w,
 }
 
 void DGMesh3D::mass(op_dat u) {
-  #ifdef OP2_DG_CUDA
+  #if defined(OP2_DG_CUDA) && !defined(USE_OP2_KERNELS)
   custom_kernel_mass(order_int, "mass", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
               op_arg_gbl(constants->get_mat_ptr(DGConstants::MASS), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(J, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(u, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
+
   #else
   op2_gemv(this, false, 1.0, DGConstants::MASS, u, 0.0, op_tmp[0]);
   op_par_loop(J_3d, "J_3d", cells,

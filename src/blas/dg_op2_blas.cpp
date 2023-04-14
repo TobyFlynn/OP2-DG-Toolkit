@@ -132,7 +132,7 @@ void op2_gemv_gauss_interp(DGMesh *mesh, bool transpose, const DG_FP alpha,
 void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                    const DG_FP beta, op_dat y) {
   if(transpose) {
-    #if defined(USE_OP2_BLAS_KERNEL) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
+    #if defined(USE_OP2_KERNELS) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
     op_par_loop(gemv_liftT, "gemv_liftT", mesh->cells,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
@@ -155,7 +155,7 @@ void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
     op2_cpu_gemm(k, n, m, alpha, true, A, m, x, DG_NP, beta, y, DG_NUM_FACES * DG_NPF);
     #endif
   } else {
-    #if defined(USE_OP2_BLAS_KERNEL) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
+    #if defined(USE_OP2_KERNELS) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
     op_par_loop(gemv_lift, "gemv_lift", mesh->cells,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
@@ -183,7 +183,7 @@ void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
 void op2_gemv_emat(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                    const DG_FP beta, op_dat y) {
   if(transpose) {
-    #if defined(USE_OP2_BLAS_KERNEL) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
+    #if defined(USE_OP2_KERNELS) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
     op_par_loop(gemv_liftT, "gemv_liftT", mesh->cells,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
@@ -206,7 +206,7 @@ void op2_gemv_emat(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
     op2_cpu_gemm(k, n, m, alpha, true, A, m, x, DG_NP, beta, y, DG_NUM_FACES * DG_NPF);
     #endif
   } else {
-    #if defined(USE_OP2_BLAS_KERNEL) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
+    #if defined(USE_OP2_KERNELS) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
     op_par_loop(gemv_lift, "gemv_lift", mesh->cells,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
@@ -235,7 +235,7 @@ void op2_gemv_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha,
                     const DG_FP *matrix, op_dat x, const DG_FP beta,
                     op_dat y) {
   if(transpose) {
-    #if defined(USE_OP2_BLAS_KERNEL) || (defined(OP2_DG_CUDA) && DG_DIM == 2) 
+    #if defined(USE_OP2_KERNELS) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
     op_par_loop(gemv_np_npT, "gemv_np_npT", mesh->cells,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
@@ -258,7 +258,7 @@ void op2_gemv_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha,
     op2_cpu_gemm(k, n, m, alpha, true, A, m, x, DG_NP, beta, y, DG_NP);
     #endif
   } else {
-    #if defined(USE_OP2_BLAS_KERNEL) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
+    #if defined(USE_OP2_KERNELS) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
     op_par_loop(gemv_np_np, "gemv_np_np", mesh->cells,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
@@ -370,7 +370,7 @@ void op2_gemv_interp(DGMesh *mesh, const int from_N, const int to_N, op_dat x, o
   const DG_FP *A = constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY) + ((from_N - 1) * DG_ORDER + (to_N - 1)) * DG_NP * DG_NP;
 
   // TODO 2D
-  #if defined(USE_OP2_BLAS_KERNEL)
+  #if defined(USE_OP2_KERNELS)
   op_par_loop(interp_dat_to_new_order_3d_copy, "interp_dat_to_new_order_3d_copy", mesh->cells,
               op_arg_gbl(constants->get_mat_ptr(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
               op_arg_gbl(&from_N, 1, "int", OP_READ),
