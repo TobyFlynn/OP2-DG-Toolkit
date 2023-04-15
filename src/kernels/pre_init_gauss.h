@@ -17,13 +17,21 @@ inline void pre_init_gauss(const int *p, const DG_FP *x, const DG_FP *y,
   op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF0Dr, DG_GF_NP, y, 0.0, ry);
   op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF0Ds, DG_GF_NP, y, 0.0, sy);
 
-  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF1Dr, DG_GF_NP, x, 0.0, &rx[DG_GF_NP]);
-  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF1Ds, DG_GF_NP, x, 0.0, &sx[DG_GF_NP]);
-  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF1Dr, DG_GF_NP, y, 0.0, &ry[DG_GF_NP]);
-  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF1Ds, DG_GF_NP, y, 0.0, &sy[DG_GF_NP]);
+  DG_FP *rx_1 = &rx[DG_GF_NP];
+  DG_FP *sx_1 = &sx[DG_GF_NP];
+  DG_FP *ry_1 = &ry[DG_GF_NP];
+  DG_FP *sy_1 = &sy[DG_GF_NP];
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF1Dr, DG_GF_NP, x, 0.0, rx_1);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF1Ds, DG_GF_NP, x, 0.0, sx_1);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF1Dr, DG_GF_NP, y, 0.0, ry_1);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF1Ds, DG_GF_NP, y, 0.0, sy_1);
 
-  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF2Dr, DG_GF_NP, x, 0.0, &rx[2 * DG_GF_NP]);
-  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF2Ds, DG_GF_NP, x, 0.0, &sx[2 * DG_GF_NP]);
-  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF2Dr, DG_GF_NP, y, 0.0, &ry[2 * DG_GF_NP]);
-  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF2Ds, DG_GF_NP, y, 0.0, &sy[2 * DG_GF_NP]);
+  DG_FP *rx_2 = &rx[2 * DG_GF_NP];
+  DG_FP *sx_2 = &sx[2 * DG_GF_NP];
+  DG_FP *ry_2 = &ry[2 * DG_GF_NP];
+  DG_FP *sy_2 = &sy[2 * DG_GF_NP];
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF2Dr, DG_GF_NP, x, 0.0, rx_2);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF2Ds, DG_GF_NP, x, 0.0, sx_2);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF2Dr, DG_GF_NP, y, 0.0, ry_2);
+  op2_in_kernel_gemv(false, DG_GF_NP, dg_np, 1.0, gF2Ds, DG_GF_NP, y, 0.0, sy_2);
 }
