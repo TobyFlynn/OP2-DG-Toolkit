@@ -61,17 +61,17 @@ mkdir build
 cd build
 
 cmake .. \
-  -DOP2_DIR=/dcs/pg20/u1717021/PhD/OP2-Common/op2 \
-  -DOPENBLAS_DIR=/dcs/pg20/u1717021/PhD/apps \
+  -DOP2_DIR=/home/u1717021/Code/PhD/OP2-Common/op2 \
+  -DOPENBLAS_DIR=/opt/OpenBLAS \
   -DPART_LIB_NAME=PARMETIS \
-  -DPARMETIS_DIR=/dcs/pg20/u1717021/PhD/apps \
-  -DARMA_DIR=/dcs/pg20/u1717021/PhD/apps \
-  -DHDF5_DIR=/dcs/pg20/u1717021/PhD/apps \
-  -DHIGHFIVE_DIR=/dcs/pg20/u1717021/PhD/HighFive/include \
+  -DPARMETIS_DIR=/home/u1717021/Code/PhD/ParMetis_Libs \
+  -DARMA_DIR=/home/u1717021/Code/PhD/armadillo-10.5.3/build \
+  -DHDF5_DIR=/usr/local/module-software/hdf5-1.12.0-parallel \
+  -DHIGHFIVE_DIR=/home/u1717021/Code/PhD/HighFive/include \
   -DBUILD_CPU=ON \
   -DBUILD_SN=ON \
   -DBUILD_MPI=ON \
-  -DBUILD_GPU=OFF \
+  -DBUILD_GPU=ON \
   -DBUILD_TESTS=ON \
   -DORDER=$ORDER \
   -DCMAKE_INSTALL_PREFIX=$(pwd)
