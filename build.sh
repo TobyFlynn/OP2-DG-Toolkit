@@ -43,13 +43,13 @@ sed -i "2i #include \"cblas.h\"" seq/dg_tookit_seqkernels.cpp
 
 cd ../gen_3d
 
-if [SOA = 1]; then
-  python3 $OP2_TRANSLATOR \
+if [ $SOA = 1 ]; then
+  OP_AUTO_SOA=1 python3 $OP2_TRANSLATOR \
     dg_tookit.cpp dg_mesh/dg_mesh_3d.cpp \
     blas/dg_op2_blas.cpp dg_operators/dg_operators_3d.cpp \
     kernels/
 else
-  OP_AUTO_SOA=1 python3 $OP2_TRANSLATOR \
+  python3 $OP2_TRANSLATOR \
     dg_tookit.cpp dg_mesh/dg_mesh_3d.cpp \
     blas/dg_op2_blas.cpp dg_operators/dg_operators_3d.cpp \
     kernels/

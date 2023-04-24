@@ -3,7 +3,7 @@ import sys
 
 gemv_template = \
 """
-#ifdef OP2_DG_CUDA__
+#ifndef OP2_DG_CUDA
 #if DG_DOUBLE == 1
 cblas_dgemv({row_col},{trans},{m},{n},{alpha},{A},{lda},{x}, 1,{beta},{y}, 1);
 #else
