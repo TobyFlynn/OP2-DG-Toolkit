@@ -21,6 +21,7 @@ mkdir -p gen_3d/dg_operators/custom_kernels
 mkdir -p gen_3d/blas
 
 ORDER=3
+SOA=0
 
 python3 preprocessor.py 2 $ORDER
 
@@ -42,10 +43,17 @@ sed -i "2i #include \"cblas.h\"" seq/dg_tookit_seqkernels.cpp
 
 cd ../gen_3d
 
-OP_AUTO_SOA=1 python3 $OP2_TRANSLATOR \
-  dg_tookit.cpp dg_mesh/dg_mesh_3d.cpp \
-  blas/dg_op2_blas.cpp dg_operators/dg_operators_3d.cpp \
-  kernels/
+if [SOA = 1]; then
+  python3 $OP2_TRANSLATOR \
+    dg_tookit.cpp dg_mesh/dg_mesh_3d.cpp \
+    blas/dg_op2_blas.cpp dg_operators/dg_operators_3d.cpp \
+    kernels/
+else
+  OP_AUTO_SOA=1 python3 $OP2_TRANSLATOR \
+    dg_tookit.cpp dg_mesh/dg_mesh_3d.cpp \
+    blas/dg_op2_blas.cpp dg_operators/dg_operators_3d.cpp \
+    kernels/
+fi
 
 # Add compiler definitions to every kernel
 sed -i "16i #include \"dg_compiler_defs.h\"" cuda/dg_tookit_kernels.cu
@@ -74,6 +82,7 @@ cmake .. \
   -DBUILD_GPU=ON \
   -DBUILD_TESTS=ON \
   -DORDER=$ORDER \
+  -DSOA=$SOA \
   -DCMAKE_INSTALL_PREFIX=$(pwd)
 
 make -j
