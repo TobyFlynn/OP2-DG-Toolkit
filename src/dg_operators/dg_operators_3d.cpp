@@ -34,7 +34,7 @@ void custom_kernel_mass(const int order, char const *name, op_set set,
   op_arg arg3);
 
 void DGMesh3D::grad(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
-#if defined(OP2_DG_CUDA) && !defined(USE_OP2_KERNELS)
+#if defined(OP2_DG_CUDA) && !defined(DG_OP2_SOA)
 custom_kernel_grad_3d(order_int, "grad_3d",cells,
                      op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
                      op_arg_gbl(constants->get_mat_ptr(DGConstants::DR), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
@@ -128,9 +128,6 @@ void DGMesh3D::grad_with_central_flux(op_dat u, op_dat ux, op_dat uy, op_dat uz)
 void DGMesh3D::div(op_dat u, op_dat v, op_dat w, op_dat res) {
   op_par_loop(div_3d, "div_3d", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::DR), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::DS), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::DT), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(u,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(v,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(w,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
@@ -143,7 +140,13 @@ void DGMesh3D::div(op_dat u, op_dat v, op_dat w, op_dat res) {
               op_arg_dat(rz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(sz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(tz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(res, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+              op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(op_tmp[1], -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(op_tmp[2], -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+
+  op2_gemv(this, false, 1.0, DGConstants::DR, op_tmp[0], 0.0, res);
+  op2_gemv(this, false, 1.0, DGConstants::DS, op_tmp[1], 1.0, res);
+  op2_gemv(this, false, 1.0, DGConstants::DT, op_tmp[2], 1.0, res);
 }
 
 void DGMesh3D::div_with_central_flux(op_dat u, op_dat v, op_dat w, op_dat res) {
@@ -171,9 +174,6 @@ void DGMesh3D::div_with_central_flux(op_dat u, op_dat v, op_dat w, op_dat res) {
 void DGMesh3D::div_weak(op_dat u, op_dat v, op_dat w, op_dat res) {
   op_par_loop(div_3d, "div_3d", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::DRW), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::DSW), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::DTW), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(u,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(v,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(w,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
@@ -186,7 +186,13 @@ void DGMesh3D::div_weak(op_dat u, op_dat v, op_dat w, op_dat res) {
               op_arg_dat(rz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(sz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(tz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(res, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+              op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(op_tmp[1], -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(op_tmp[2], -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+
+  op2_gemv(this, false, 1.0, DGConstants::DRW, op_tmp[0], 0.0, res);
+  op2_gemv(this, false, 1.0, DGConstants::DSW, op_tmp[1], 1.0, res);
+  op2_gemv(this, false, 1.0, DGConstants::DTW, op_tmp[2], 1.0, res);
 }
 
 void DGMesh3D::div_weak_with_central_flux(op_dat u, op_dat v, op_dat w, op_dat res) {
@@ -267,7 +273,7 @@ void DGMesh3D::curl(op_dat u, op_dat v, op_dat w,
 }
 
 void DGMesh3D::mass(op_dat u) {
-  #if defined(OP2_DG_CUDA) && !defined(USE_OP2_KERNELS)
+  #if defined(OP2_DG_CUDA) && !defined(DG_OP2_SOA)
   custom_kernel_mass(order_int, "mass", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
               op_arg_gbl(constants->get_mat_ptr(DGConstants::MASS), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
