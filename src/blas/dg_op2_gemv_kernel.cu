@@ -100,15 +100,16 @@ void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, cons
 
     //set CUDA execution parameters
     int nthread = 256;
-    const int nblocks = t ? (set->size * n / nthread + 1) : (set->size * m / nthread + 1);
 
     if(t) {
-      const int ncells = nthread / n + 2;
+      const int nblocks = set->size * n / nthread + 1;
+      const int ncells = nthread / n + 3;
       cuda_gemm_T_gpu<<<nblocks,nthread,(m*n + ncells * x->dim)*sizeof(double)>>>(m, n, x->dim, y->dim, alpha, beta,
                                            matrix_d, (double *) args[0].data_d,
                                            (double *) args[1].data_d, set->size);
     } else {
-      const int ncells = nthread / m + 2;
+      const int nblocks = set->size * m / nthread + 1;
+      const int ncells = nthread / m + 3;
       cuda_gemm_gpu<<<nblocks,nthread,(m*n + ncells * x->dim)*sizeof(double)>>>(m, n, x->dim, y->dim, alpha, beta,
                                          matrix_d, (double *) args[0].data_d,
                                          (double *) args[1].data_d, set->size);
