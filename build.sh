@@ -11,14 +11,14 @@ mkdir -p gen_2d/utils
 mkdir -p gen_2d/dg_constants
 mkdir -p gen_2d/dg_mesh
 mkdir -p gen_2d/dg_operators/custom_kernels
-mkdir -p gen_2d/blas
+mkdir -p gen_2d/blas/kernels
 
 mkdir -p gen_3d/kernels
 mkdir -p gen_3d/utils
 mkdir -p gen_3d/dg_constants
 mkdir -p gen_3d/dg_mesh
 mkdir -p gen_3d/dg_operators/custom_kernels
-mkdir -p gen_3d/blas
+mkdir -p gen_3d/blas/kernels
 
 ORDER=3
 SOA=0
