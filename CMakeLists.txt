@@ -67,7 +67,7 @@ if(BUILD_GPU)
 endif()
 
 # Install headers
-set(HEADERS include/dg_compiler_defs.h include/dg_op2_blas.h include/dg_utils.h)
+set(HEADERS include/dg_compiler_defs.h include/dg_op2_blas.h include/dg_utils.h include/dg_dat_pool.h)
 install(FILES ${HEADERS} DESTINATION include)
 set(HEADERS_DG_CONSTS include/dg_constants/dg_constants.h include/dg_constants/dg_constants_2d.h include/dg_constants/dg_constants_3d.h)
 install(FILES ${HEADERS_DG_CONSTS} DESTINATION include/dg_constants)

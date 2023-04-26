@@ -5,8 +5,10 @@
 #include "dg_compiler_defs.h"
 #include "dg_op2_blas.h"
 #include "dg_constants/dg_constants.h"
+#include "dg_dat_pool.h"
 
 extern DGConstants *constants;
+extern DGDatPool3D *dg_dat_pool;
 
 void custom_kernel_grad_3d(const int order, char const *name, op_set set,
   op_arg arg0,
@@ -54,9 +56,13 @@ custom_kernel_grad_3d(order_int, "grad_3d",cells,
                      op_arg_dat(uy, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
                      op_arg_dat(uz, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
 #else
-  op2_gemv(this, false, 1.0, DGConstants::DR, u, 0.0, op_tmp[0]);
-  op2_gemv(this, false, 1.0, DGConstants::DS, u, 0.0, op_tmp[1]);
-  op2_gemv(this, false, 1.0, DGConstants::DT, u, 0.0, op_tmp[2]);
+  DGTempDat tmp_r = dg_dat_pool->requestTempDatCells(DG_NP);
+  DGTempDat tmp_s = dg_dat_pool->requestTempDatCells(DG_NP);
+  DGTempDat tmp_t = dg_dat_pool->requestTempDatCells(DG_NP);
+
+  op2_gemv(this, false, 1.0, DGConstants::DR, u, 0.0, tmp_r.dat);
+  op2_gemv(this, false, 1.0, DGConstants::DS, u, 0.0, tmp_s.dat);
+  op2_gemv(this, false, 1.0, DGConstants::DT, u, 0.0, tmp_t.dat);
   op_par_loop(grad_3d_geof, "grad_3d_geof", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
               op_arg_dat(rx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
@@ -68,12 +74,16 @@ custom_kernel_grad_3d(order_int, "grad_3d",cells,
               op_arg_dat(rz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(sz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(tz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp[1], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp[2], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_r.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_s.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_t.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(ux, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(uy, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(uz, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+
+  dg_dat_pool->releaseTempDatCells(tmp_r);
+  dg_dat_pool->releaseTempDatCells(tmp_s);
+  dg_dat_pool->releaseTempDatCells(tmp_t);
   /*
   op_par_loop(grad_3d, "grad_3d", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
@@ -100,12 +110,16 @@ custom_kernel_grad_3d(order_int, "grad_3d",cells,
 void DGMesh3D::grad_with_central_flux(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
   grad(u, ux, uy, uz);
 
+  DGTempDat tmp_0 = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_NPF);
+  DGTempDat tmp_1 = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_NPF);
+  DGTempDat tmp_2 = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_NPF);
+
   op_par_loop(zero_npf, "zero_npf", cells,
-              op_arg_dat(op_tmp_npf[0], -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
+              op_arg_dat(tmp_0.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
   op_par_loop(zero_npf, "zero_npf", cells,
-              op_arg_dat(op_tmp_npf[1], -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
+              op_arg_dat(tmp_1.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
   op_par_loop(zero_npf, "zero_npf", cells,
-              op_arg_dat(op_tmp_npf[2], -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
+              op_arg_dat(tmp_2.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
 
   op_par_loop(grad_3d_central_flux, "grad_3d_central_flux", faces,
               op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
@@ -116,16 +130,24 @@ void DGMesh3D::grad_with_central_flux(op_dat u, op_dat ux, op_dat uy, op_dat uz)
               op_arg_dat(nz, -1, OP_ID, 2, DG_FP_STR, OP_READ),
               op_arg_dat(fscale, -1, OP_ID, 2, DG_FP_STR, OP_READ),
               op_arg_dat(u, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp_npf[0], -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC),
-              op_arg_dat(op_tmp_npf[1], -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC),
-              op_arg_dat(op_tmp_npf[2], -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC));
+              op_arg_dat(tmp_0.dat, -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC),
+              op_arg_dat(tmp_1.dat, -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC),
+              op_arg_dat(tmp_2.dat, -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC));
 
-  op2_gemv(this, false, -1.0, DGConstants::LIFT, op_tmp_npf[0], 1.0, ux);
-  op2_gemv(this, false, -1.0, DGConstants::LIFT, op_tmp_npf[1], 1.0, uy);
-  op2_gemv(this, false, -1.0, DGConstants::LIFT, op_tmp_npf[2], 1.0, uz);
+  op2_gemv(this, false, -1.0, DGConstants::LIFT, tmp_0.dat, 1.0, ux);
+  op2_gemv(this, false, -1.0, DGConstants::LIFT, tmp_1.dat, 1.0, uy);
+  op2_gemv(this, false, -1.0, DGConstants::LIFT, tmp_2.dat, 1.0, uz);
+
+  dg_dat_pool->releaseTempDatCells(tmp_0);
+  dg_dat_pool->releaseTempDatCells(tmp_1);
+  dg_dat_pool->releaseTempDatCells(tmp_2);
 }
 
 void DGMesh3D::div(op_dat u, op_dat v, op_dat w, op_dat res) {
+  DGTempDat tmp_r = dg_dat_pool->requestTempDatCells(DG_NP);
+  DGTempDat tmp_s = dg_dat_pool->requestTempDatCells(DG_NP);
+  DGTempDat tmp_t = dg_dat_pool->requestTempDatCells(DG_NP);
+
   op_par_loop(div_3d, "div_3d", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
               op_arg_dat(u,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
@@ -140,20 +162,26 @@ void DGMesh3D::div(op_dat u, op_dat v, op_dat w, op_dat res) {
               op_arg_dat(rz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(sz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(tz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
-              op_arg_dat(op_tmp[1], -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
-              op_arg_dat(op_tmp[2], -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+              op_arg_dat(tmp_r.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(tmp_s.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(tmp_t.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
 
-  op2_gemv(this, false, 1.0, DGConstants::DR, op_tmp[0], 0.0, res);
-  op2_gemv(this, false, 1.0, DGConstants::DS, op_tmp[1], 1.0, res);
-  op2_gemv(this, false, 1.0, DGConstants::DT, op_tmp[2], 1.0, res);
+  op2_gemv(this, false, 1.0, DGConstants::DR, tmp_r.dat, 0.0, res);
+  op2_gemv(this, false, 1.0, DGConstants::DS, tmp_s.dat, 1.0, res);
+  op2_gemv(this, false, 1.0, DGConstants::DT, tmp_t.dat, 1.0, res);
+
+  dg_dat_pool->releaseTempDatCells(tmp_r);
+  dg_dat_pool->releaseTempDatCells(tmp_s);
+  dg_dat_pool->releaseTempDatCells(tmp_t);
 }
 
 void DGMesh3D::div_with_central_flux(op_dat u, op_dat v, op_dat w, op_dat res) {
   div(u, v, w, res);
 
+  DGTempDat tmp_0 = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_NPF);
+
   op_par_loop(zero_npf, "zero_npf", cells,
-              op_arg_dat(op_tmp_npf[0], -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
+              op_arg_dat(tmp_0.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
 
   op_par_loop(div_3d_central_flux, "div_3d_central_flux", faces,
               op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
@@ -166,12 +194,18 @@ void DGMesh3D::div_with_central_flux(op_dat u, op_dat v, op_dat w, op_dat res) {
               op_arg_dat(u, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(v, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(w, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp_npf[0], -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC));
+              op_arg_dat(tmp_0.dat, -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC));
 
-  op2_gemv(this, false, -1.0, DGConstants::LIFT, op_tmp_npf[0], 1.0, res);
+  op2_gemv(this, false, -1.0, DGConstants::LIFT, tmp_0.dat, 1.0, res);
+
+  dg_dat_pool->releaseTempDatCells(tmp_0);
 }
 
 void DGMesh3D::div_weak(op_dat u, op_dat v, op_dat w, op_dat res) {
+  DGTempDat tmp_r = dg_dat_pool->requestTempDatCells(DG_NP);
+  DGTempDat tmp_s = dg_dat_pool->requestTempDatCells(DG_NP);
+  DGTempDat tmp_t = dg_dat_pool->requestTempDatCells(DG_NP);
+
   op_par_loop(div_3d, "div_3d", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
               op_arg_dat(u,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
@@ -186,20 +220,26 @@ void DGMesh3D::div_weak(op_dat u, op_dat v, op_dat w, op_dat res) {
               op_arg_dat(rz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(sz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(tz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
-              op_arg_dat(op_tmp[1], -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
-              op_arg_dat(op_tmp[2], -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+              op_arg_dat(tmp_r.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(tmp_s.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(tmp_t.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
 
-  op2_gemv(this, false, 1.0, DGConstants::DRW, op_tmp[0], 0.0, res);
-  op2_gemv(this, false, 1.0, DGConstants::DSW, op_tmp[1], 1.0, res);
-  op2_gemv(this, false, 1.0, DGConstants::DTW, op_tmp[2], 1.0, res);
+  op2_gemv(this, false, 1.0, DGConstants::DRW, tmp_r.dat, 0.0, res);
+  op2_gemv(this, false, 1.0, DGConstants::DSW, tmp_s.dat, 1.0, res);
+  op2_gemv(this, false, 1.0, DGConstants::DTW, tmp_t.dat, 1.0, res);
+
+  dg_dat_pool->releaseTempDatCells(tmp_r);
+  dg_dat_pool->releaseTempDatCells(tmp_s);
+  dg_dat_pool->releaseTempDatCells(tmp_t);
 }
 
 void DGMesh3D::div_weak_with_central_flux(op_dat u, op_dat v, op_dat w, op_dat res) {
   div_weak(u, v, w, res);
 
+  DGTempDat tmp_0 = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_NPF);
+
   op_par_loop(zero_npf, "zero_npf", cells,
-              op_arg_dat(op_tmp_npf[0], -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
+              op_arg_dat(tmp_0.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
 
   op_par_loop(div_weak_3d_central_flux, "div_weak_3d_central_flux", faces,
               op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
@@ -212,22 +252,28 @@ void DGMesh3D::div_weak_with_central_flux(op_dat u, op_dat v, op_dat w, op_dat r
               op_arg_dat(u, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(v, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(w, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp_npf[0], -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC));
+              op_arg_dat(tmp_0.dat, -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC));
 
   // TODO bfaces
-  op2_gemv(this, false, 1.0, DGConstants::LIFT, op_tmp_npf[0], -1.0, res);
+  op2_gemv(this, false, 1.0, DGConstants::LIFT, tmp_0.dat, -1.0, res);
+
+  dg_dat_pool->releaseTempDatCells(tmp_0);
 }
 
 void DGMesh3D::curl(op_dat u, op_dat v, op_dat w,
           op_dat resx, op_dat resy, op_dat resz) {
-  op2_gemv(this, false, 1.0, DGConstants::DR, u, 0.0, op_tmp[0]);
-  op2_gemv(this, false, 1.0, DGConstants::DS, u, 0.0, op_tmp[1]);
-  op2_gemv(this, false, 1.0, DGConstants::DT, u, 0.0, op_tmp[2]);
+  DGTempDat tmp_r = dg_dat_pool->requestTempDatCells(DG_NP);
+  DGTempDat tmp_s = dg_dat_pool->requestTempDatCells(DG_NP);
+  DGTempDat tmp_t = dg_dat_pool->requestTempDatCells(DG_NP);
+
+  op2_gemv(this, false, 1.0, DGConstants::DR, u, 0.0, tmp_r.dat);
+  op2_gemv(this, false, 1.0, DGConstants::DS, u, 0.0, tmp_s.dat);
+  op2_gemv(this, false, 1.0, DGConstants::DT, u, 0.0, tmp_t.dat);
 
   op_par_loop(curl0_3d, "curl0_3d", cells,
-              op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp[1], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp[2], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_r.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_s.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_t.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(ry, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(sy, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(ty, -1, OP_ID, 1, DG_FP_STR, OP_READ),
@@ -237,14 +283,14 @@ void DGMesh3D::curl(op_dat u, op_dat v, op_dat w,
               op_arg_dat(resy, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(resz, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
 
-  op2_gemv(this, false, 1.0, DGConstants::DR, v, 0.0, op_tmp[0]);
-  op2_gemv(this, false, 1.0, DGConstants::DS, v, 0.0, op_tmp[1]);
-  op2_gemv(this, false, 1.0, DGConstants::DT, v, 0.0, op_tmp[2]);
+  op2_gemv(this, false, 1.0, DGConstants::DR, v, 0.0, tmp_r.dat);
+  op2_gemv(this, false, 1.0, DGConstants::DS, v, 0.0, tmp_s.dat);
+  op2_gemv(this, false, 1.0, DGConstants::DT, v, 0.0, tmp_t.dat);
 
   op_par_loop(curl1_3d, "curl1_3d", cells,
-              op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp[1], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp[2], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_r.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_s.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_t.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(rx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(sx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(tx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
@@ -254,14 +300,14 @@ void DGMesh3D::curl(op_dat u, op_dat v, op_dat w,
               op_arg_dat(resx, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(resz, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
 
-  op2_gemv(this, false, 1.0, DGConstants::DR, w, 0.0, op_tmp[0]);
-  op2_gemv(this, false, 1.0, DGConstants::DS, w, 0.0, op_tmp[1]);
-  op2_gemv(this, false, 1.0, DGConstants::DT, w, 0.0, op_tmp[2]);
+  op2_gemv(this, false, 1.0, DGConstants::DR, w, 0.0, tmp_r.dat);
+  op2_gemv(this, false, 1.0, DGConstants::DS, w, 0.0, tmp_s.dat);
+  op2_gemv(this, false, 1.0, DGConstants::DT, w, 0.0, tmp_t.dat);
 
   op_par_loop(curl2_3d, "curl2_3d", cells,
-              op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp[1], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp[2], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_r.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_s.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_t.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(rx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(sx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(tx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
@@ -270,6 +316,10 @@ void DGMesh3D::curl(op_dat u, op_dat v, op_dat w,
               op_arg_dat(ty, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(resx, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
               op_arg_dat(resy, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
+
+  dg_dat_pool->releaseTempDatCells(tmp_r);
+  dg_dat_pool->releaseTempDatCells(tmp_s);
+  dg_dat_pool->releaseTempDatCells(tmp_t);
 }
 
 void DGMesh3D::mass(op_dat u) {
@@ -281,12 +331,16 @@ void DGMesh3D::mass(op_dat u) {
               op_arg_dat(u, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
 
   #else
-  op2_gemv(this, false, 1.0, DGConstants::MASS, u, 0.0, op_tmp[0]);
+  DGTempDat tmp_0 = dg_dat_pool->requestTempDatCells(DG_NP);
+
+  op2_gemv(this, false, 1.0, DGConstants::MASS, u, 0.0, tmp_0.dat);
   op_par_loop(J_3d, "J_3d", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
               op_arg_dat(J, -1, OP_ID, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_0.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(u, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+
+  dg_dat_pool->releaseTempDatCells(tmp_0);
   /*
   op_par_loop(mass, "mass", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
@@ -310,9 +364,12 @@ void DGMesh3D::interp_dat_between_orders(int old_order, int new_order, op_dat in
 }
 
 void DGMesh3D::interp_dat_between_orders(int old_order, int new_order, op_dat in) {
-  op2_gemv_interp(this, old_order, new_order, in, op_tmp[0]);
+  DGTempDat tmp_0 = dg_dat_pool->requestTempDatCells(DG_NP);
+  op2_gemv_interp(this, old_order, new_order, in, tmp_0.dat);
 
   op_par_loop(copy_dg_np, "copy_dg_np", cells,
-              op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_0.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(in, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+
+  dg_dat_pool->releaseTempDatCells(tmp_0);
 }
