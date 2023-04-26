@@ -14,6 +14,8 @@ list(APPEND GPU_SRC dg_mesh/dg_mesh_2d_gpu.cu)
 elseif(DIM EQUAL 3)
 list(APPEND COMMON_SRC dg_constants/dg_constants_3d.cpp dg_mesh_op/dg_mesh_3d_op.cpp dg_operators_op/dg_operators_3d_op.cpp)
 list(APPEND COMMON_SRC dg_dat_pool.cpp)
+list(APPEND CPU_SRC dg_constants/dg_constants_3d_cpu.cpp)
+list(APPEND GPU_SRC dg_constants/dg_constants_3d_gpu.cu)
 list(APPEND GPU_SRC dg_operators/custom_kernels/custom_grad_3d.cu)
 list(APPEND GPU_SRC dg_operators/custom_kernels/custom_mass.cu)
 endif()
@@ -54,6 +56,8 @@ if(BUILD_SN AND BUILD_GPU)
   target_link_libraries(${DG_LIB_PREFIX}_cuda dgtoolkit -L${OP2_DIR}/lib -lop2_cuda -lop2_hdf5 ${HDF5_LIB} ${ARMA_LIB} ${OPENBLAS_LIB} ${EXTRA_LIBS})
   target_compile_definitions(${DG_LIB_PREFIX}_cuda PRIVATE ${DG_COMPILER_DEFS} OP2_DG_CUDA DG_ORDER=${ORDER} DG_DIM=${DIM} DG_COL_MAJ MAX_CONST_SIZE=1024)
 
+  set_property(TARGET ${DG_LIB_PREFIX}_cuda PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+
   list(APPEND DG_LIBS ${DG_LIB_PREFIX}_cuda)
 endif()
 
@@ -73,6 +77,8 @@ if(BUILD_MPI AND BUILD_GPU)
   add_library(${DG_LIB_PREFIX}_mpi_cuda SHARED ${COMMON_SRC} ${GPU_SRC} cuda/dg_tookit_kernels.cu)
   target_link_libraries(${DG_LIB_PREFIX}_mpi_cuda dgtoolkit -L${OP2_DIR}/lib -lop2_mpi_cuda -lop2_hdf5 ${HDF5_LIB} ${ARMA_LIB} ${OPENBLAS_LIB} ${PART_LIB} ${EXTRA_LIBS})
   target_compile_definitions(${DG_LIB_PREFIX}_mpi_cuda PRIVATE ${DG_COMPILER_DEFS} DG_MPI OP2_DG_CUDA DG_ORDER=${ORDER} DG_DIM=${DIM} DG_COL_MAJ MAX_CONST_SIZE=1024)
+
+  set_property(TARGET ${DG_LIB_PREFIX}_mpi_cuda PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
   list(APPEND DG_LIBS ${DG_LIB_PREFIX}_mpi_cuda)
 endif()

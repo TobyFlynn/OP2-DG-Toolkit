@@ -12,9 +12,6 @@ extern DGDatPool3D *dg_dat_pool;
 
 void custom_kernel_grad_3d(const int order, char const *name, op_set set,
   op_arg arg0,
-  op_arg arg1,
-  op_arg arg2,
-  op_arg arg3,
   op_arg arg4,
   op_arg arg5,
   op_arg arg6,
@@ -31,7 +28,6 @@ void custom_kernel_grad_3d(const int order, char const *name, op_set set,
 
 void custom_kernel_mass(const int order, char const *name, op_set set,
   op_arg arg0,
-  op_arg arg1,
   op_arg arg2,
   op_arg arg3);
 
@@ -39,9 +35,6 @@ void DGMesh3D::grad(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
 #if defined(OP2_DG_CUDA) && !defined(DG_OP2_SOA)
 custom_kernel_grad_3d(order_int, "grad_3d",cells,
                      op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
-                     op_arg_gbl(constants->get_mat_ptr(DGConstants::DR), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
-                     op_arg_gbl(constants->get_mat_ptr(DGConstants::DS), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
-                     op_arg_gbl(constants->get_mat_ptr(DGConstants::DT), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
                      op_arg_dat(u,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                      op_arg_dat(rx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
                      op_arg_dat(sx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
@@ -326,7 +319,6 @@ void DGMesh3D::mass(op_dat u) {
   #if defined(OP2_DG_CUDA) && !defined(DG_OP2_SOA)
   custom_kernel_mass(order_int, "mass", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::MASS), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(J, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(u, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
 
@@ -354,7 +346,6 @@ void DGMesh3D::mass(op_dat u) {
 void DGMesh3D::inv_mass(op_dat u) {
   op_par_loop(inv_mass, "inv_mass", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
-              op_arg_gbl(constants->get_mat_ptr(DGConstants::INV_MASS), DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(J, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(u, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
 }

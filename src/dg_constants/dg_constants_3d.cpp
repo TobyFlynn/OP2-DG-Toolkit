@@ -186,6 +186,8 @@ void DGConstants3D::calc_interp_mats() {
   //     memcpy(&order_interp_ptr[(p1 * DG_ORDER + p0) * DG_NP * DG_NP], &order_interp_ptr[(p0 * DG_ORDER + p1) * DG_NP * DG_NP], DG_NP * DG_NP * sizeof(DG_FP));
   //   }
   // }
+
+  transfer_kernel_ptrs();
 }
 
 DG_FP* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
@@ -235,6 +237,8 @@ DG_FP* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
 }
 
 DGConstants3D::~DGConstants3D() {
+  clean_up_kernel_ptrs();
+
   delete r_ptr;
   delete s_ptr;
   delete t_ptr;

@@ -140,15 +140,8 @@ void DGMesh3D::calc_mesh_constants() {
   DGTempDat tmp1 = dg_dat_pool->requestTempDatCells(DG_NP);
   DGTempDat tmp2 = dg_dat_pool->requestTempDatCells(DG_NP);
 
-  const DG_FP *r_ptr = constants->get_mat_ptr(DGConstants::R) + (order_int - 1) * constants->Np_max;
-  const DG_FP *s_ptr = constants->get_mat_ptr(DGConstants::S) + (order_int - 1) * constants->Np_max;
-  const DG_FP *t_ptr = constants->get_mat_ptr(DGConstants::T) + (order_int - 1) * constants->Np_max;
-
   op_par_loop(init_grid_3d, "init_grid_3d", cells,
               op_arg_gbl(&order_int, 1, "int", OP_READ),
-              op_arg_gbl(r_ptr, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_gbl(s_ptr, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_gbl(t_ptr, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(nodeX, -1, OP_ID, 4, DG_FP_STR, OP_READ),
               op_arg_dat(nodeY, -1, OP_ID, 4, DG_FP_STR, OP_READ),
               op_arg_dat(nodeZ, -1, OP_ID, 4, DG_FP_STR, OP_READ),

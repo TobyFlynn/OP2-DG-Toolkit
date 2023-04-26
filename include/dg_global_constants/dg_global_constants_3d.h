@@ -3,8 +3,6 @@
 
 #include "dg_compiler_defs.h"
 
-#include "dg_compiler_defs.h"
-
 extern int FMASK[DG_ORDER * DG_NUM_FACES * DG_NPF];
 extern int DG_CONSTANTS[DG_ORDER * DG_NUM_CONSTANTS];
 

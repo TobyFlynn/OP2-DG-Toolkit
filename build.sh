@@ -59,6 +59,9 @@ fi
 sed -i "16i #include \"dg_compiler_defs.h\"" cuda/dg_tookit_kernels.cu
 sed -i "1i #include \"dg_compiler_defs.h\"" openmp/dg_tookit_kernels.cpp
 sed -i "1i #include \"dg_compiler_defs.h\"" seq/dg_tookit_seqkernels.cpp
+sed -i "17i #include \"dg_global_constants/dg_mat_constants_3d.h\"" cuda/dg_tookit_kernels.cu
+sed -i "2i #include \"dg_global_constants/dg_mat_constants_3d.h\"" openmp/dg_tookit_kernels.cpp
+sed -i "2i #include \"dg_global_constants/dg_mat_constants_3d.h\"" seq/dg_tookit_seqkernels.cpp
 sed -i "2i #include \"cblas.h\"" openmp/dg_tookit_kernels.cpp
 sed -i "2i #include \"cblas.h\"" seq/dg_tookit_seqkernels.cpp
 
