@@ -358,7 +358,7 @@ void DGMesh3D::interp_dat_between_orders(int old_order, int new_order, op_dat in
   DGTempDat tmp_0 = dg_dat_pool->requestTempDatCells(DG_NP);
   op2_gemv_interp(this, old_order, new_order, in, tmp_0.dat);
 
-  op_par_loop(copy_dg_np, "copy_dg_np", cells,
+  op_par_loop(copy_dg_np_tk, "copy_dg_np_tk", cells,
               op_arg_dat(tmp_0.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(in, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
 

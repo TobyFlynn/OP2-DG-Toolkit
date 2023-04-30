@@ -22,7 +22,7 @@ endif()
 
 # Only needs to be built once
 if(DIM EQUAL 2)
-  add_library(dgtoolkit SHARED ${TOOLKIT_SRC})
+  add_library(dgtoolkit STATIC ${TOOLKIT_SRC})
   target_link_libraries(dgtoolkit ${ARMA_LIB} ${OPENBLAS_LIB} ${EXTRA_LIBS})
   set(DG_LIBS dgtoolkit)
 endif()
@@ -40,11 +40,11 @@ else()
 endif()
 
 if(BUILD_SN AND BUILD_CPU)
-  add_library(${DG_LIB_PREFIX}_seq SHARED ${COMMON_SRC} ${CPU_SRC} seq/dg_tookit_seqkernels.cpp)
+  add_library(${DG_LIB_PREFIX}_seq STATIC ${COMMON_SRC} ${CPU_SRC} seq/dg_tookit_seqkernels.cpp)
   target_link_libraries(${DG_LIB_PREFIX}_seq dgtoolkit -L${OP2_DIR}/lib -lop2_seq -lop2_hdf5 ${HDF5_LIB} ${ARMA_LIB} ${OPENBLAS_LIB} ${EXTRA_LIBS})
   target_compile_definitions(${DG_LIB_PREFIX}_seq PRIVATE ${LIBXSMM_COMPILE_OPTS} DG_ORDER=${ORDER} DG_DIM=${DIM} DG_COL_MAJ MAX_CONST_SIZE=1024)
 
-  add_library(${DG_LIB_PREFIX}_openmp SHARED ${COMMON_SRC} ${CPU_SRC} openmp/dg_tookit_kernels.cpp)
+  add_library(${DG_LIB_PREFIX}_openmp STATIC ${COMMON_SRC} ${CPU_SRC} openmp/dg_tookit_kernels.cpp)
   target_link_libraries(${DG_LIB_PREFIX}_openmp dgtoolkit -L${OP2_DIR}/lib -lop2_openmp -lop2_hdf5 ${HDF5_LIB} ${ARMA_LIB} ${OPENBLAS_LIB} ${EXTRA_LIBS})
   target_compile_definitions(${DG_LIB_PREFIX}_openmp PRIVATE ${LIBXSMM_COMPILE_OPTS} DG_ORDER=${ORDER} DG_DIM=${DIM} DG_COL_MAJ MAX_CONST_SIZE=1024)
 
@@ -52,7 +52,7 @@ if(BUILD_SN AND BUILD_CPU)
 endif()
 
 if(BUILD_SN AND BUILD_GPU)
-  add_library(${DG_LIB_PREFIX}_cuda SHARED ${COMMON_SRC} ${GPU_SRC} cuda/dg_tookit_kernels.cu)
+  add_library(${DG_LIB_PREFIX}_cuda STATIC ${COMMON_SRC} ${GPU_SRC} cuda/dg_tookit_kernels.cu)
   target_link_libraries(${DG_LIB_PREFIX}_cuda dgtoolkit -L${OP2_DIR}/lib -lop2_cuda -lop2_hdf5 ${HDF5_LIB} ${ARMA_LIB} ${OPENBLAS_LIB} ${EXTRA_LIBS})
   target_compile_definitions(${DG_LIB_PREFIX}_cuda PRIVATE ${DG_COMPILER_DEFS} OP2_DG_CUDA DG_ORDER=${ORDER} DG_DIM=${DIM} DG_COL_MAJ MAX_CONST_SIZE=1024)
 
@@ -62,11 +62,11 @@ if(BUILD_SN AND BUILD_GPU)
 endif()
 
 if(BUILD_MPI AND BUILD_CPU)
-  add_library(${DG_LIB_PREFIX}_mpi SHARED ${COMMON_SRC} ${CPU_SRC} seq/dg_tookit_seqkernels.cpp)
+  add_library(${DG_LIB_PREFIX}_mpi STATIC ${COMMON_SRC} ${CPU_SRC} seq/dg_tookit_seqkernels.cpp)
   target_link_libraries(${DG_LIB_PREFIX}_mpi dgtoolkit -L${OP2_DIR}/lib -lop2_mpi -lop2_hdf5 ${HDF5_LIB} ${ARMA_LIB} ${OPENBLAS_LIB} ${PART_LIB} ${EXTRA_LIBS})
   target_compile_definitions(${DG_LIB_PREFIX}_mpi PRIVATE ${LIBXSMM_COMPILE_OPTS} DG_MPI DG_ORDER=${ORDER} DG_DIM=${DIM} DG_COL_MAJ MAX_CONST_SIZE=1024)
 
-  add_library(${DG_LIB_PREFIX}_mpi_openmp SHARED ${COMMON_SRC} ${CPU_SRC} openmp/dg_tookit_kernels.cpp)
+  add_library(${DG_LIB_PREFIX}_mpi_openmp STATIC ${COMMON_SRC} ${CPU_SRC} openmp/dg_tookit_kernels.cpp)
   target_link_libraries(${DG_LIB_PREFIX}_mpi_openmp dgtoolkit -L${OP2_DIR}/lib -lop2_mpi -lop2_openmp -lop2_hdf5 ${HDF5_LIB} ${ARMA_LIB} ${OPENBLAS_LIB} ${PART_LIB} ${EXTRA_LIBS})
   target_compile_definitions(${DG_LIB_PREFIX}_mpi_openmp PRIVATE ${LIBXSMM_COMPILE_OPTS} DG_MPI DG_ORDER=${ORDER} DG_DIM=${DIM} DG_COL_MAJ MAX_CONST_SIZE=1024)
 
@@ -74,7 +74,7 @@ if(BUILD_MPI AND BUILD_CPU)
 endif()
 
 if(BUILD_MPI AND BUILD_GPU)
-  add_library(${DG_LIB_PREFIX}_mpi_cuda SHARED ${COMMON_SRC} ${GPU_SRC} cuda/dg_tookit_kernels.cu)
+  add_library(${DG_LIB_PREFIX}_mpi_cuda STATIC ${COMMON_SRC} ${GPU_SRC} cuda/dg_tookit_kernels.cu)
   target_link_libraries(${DG_LIB_PREFIX}_mpi_cuda dgtoolkit -L${OP2_DIR}/lib -lop2_mpi_cuda -lop2_hdf5 ${HDF5_LIB} ${ARMA_LIB} ${OPENBLAS_LIB} ${PART_LIB} ${EXTRA_LIBS})
   target_compile_definitions(${DG_LIB_PREFIX}_mpi_cuda PRIVATE ${DG_COMPILER_DEFS} DG_MPI OP2_DG_CUDA DG_ORDER=${ORDER} DG_DIM=${DIM} DG_COL_MAJ MAX_CONST_SIZE=1024)
 

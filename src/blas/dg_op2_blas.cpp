@@ -356,7 +356,7 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
 
 void op2_gemv_interp(DGMesh *mesh, const int from_N, const int to_N, op_dat x, op_dat y) {
   if(from_N == to_N) {
-    op_par_loop(copy_dg_np, "copy_dg_np", mesh->cells,
+    op_par_loop(copy_dg_np_tk, "copy_dg_np_tk", mesh->cells,
                 op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
     return;
