@@ -38,10 +38,10 @@ public:
   op_dat faceNum, bfaceNum, periodicFace, fmaskL, fmaskR, nx, ny, nz, sJ, fscale;
   op_dat bnx, bny, bnz, bsJ, bfscale;
 
-  op_set fluxes, bfluxes;
-  op_map flux2main_cell, flux2neighbour_cells, flux2faces, bflux2cells, bflux2faces;
-  op_dat fluxL, fluxFaceNums, fluxFmask, fluxNx, fluxNy, fluxNz, fluxFscale, fluxSJ;
-  op_dat bfluxL;
+  // op_set fluxes, bfluxes;
+  // op_map flux2main_cell, flux2neighbour_cells, flux2faces, bflux2cells, bflux2faces;
+  // op_dat fluxL, fluxFaceNums, fluxFmask, fluxNx, fluxNy, fluxNz, fluxFscale, fluxSJ;
+  // op_dat bfluxL;
 private:
   void calc_mesh_constants();
 };
