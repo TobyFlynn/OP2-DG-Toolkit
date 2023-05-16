@@ -1,7 +1,7 @@
 inline void init_geometric_factors_3d(DG_FP *rx, DG_FP *ry, DG_FP *rz,
                                       DG_FP *sx, DG_FP *sy, DG_FP *sz,
                                       DG_FP *tx, DG_FP *ty, DG_FP *tz,
-                                      DG_FP *J) {
+                                      DG_FP *J, DG_FP *geof) {
   DG_FP xr = *rx;
   DG_FP yr = *ry;
   DG_FP zr = *rz;
@@ -21,4 +21,14 @@ inline void init_geometric_factors_3d(DG_FP *rx, DG_FP *ry, DG_FP *rz,
   *tx = (yr * zs - zr * ys) / *J;
   *ty = -(xr * zs - zr * xs) / *J;
   *tz = (xr * ys - yr * xs) / *J;
+  geof[J_IND] = *J;
+  geof[RX_IND] = *rx;
+  geof[RY_IND] = *ry;
+  geof[RZ_IND] = *rz;
+  geof[SX_IND] = *sx;
+  geof[SY_IND] = *sy;
+  geof[SZ_IND] = *sz;
+  geof[TX_IND] = *tx;
+  geof[TY_IND] = *ty;
+  geof[TZ_IND] = *tz;
 }

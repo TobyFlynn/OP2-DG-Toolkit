@@ -72,6 +72,7 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   ty = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "ty");
   tz = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "tz");
   J  = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "J");
+  geof = op_decl_dat(cells, 10, DG_FP_STR, (DG_FP *)NULL, "geof");
 
   fmaskL = op_decl_dat(faces, DG_NPF, "int", (int *)NULL, "fmaskL");
   fmaskR = op_decl_dat(faces, DG_NPF, "int", (int *)NULL, "fmaskR");
@@ -196,7 +197,8 @@ void DGMesh3D::calc_mesh_constants() {
               op_arg_dat(tx, -1, OP_ID, 1, DG_FP_STR, OP_RW),
               op_arg_dat(ty, -1, OP_ID, 1, DG_FP_STR, OP_RW),
               op_arg_dat(tz, -1, OP_ID, 1, DG_FP_STR, OP_RW),
-              op_arg_dat(J, -1, OP_ID, 1, DG_FP_STR, OP_WRITE));
+              op_arg_dat(J, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
+              op_arg_dat(geof, -1, OP_ID, 10, DG_FP_STR, OP_WRITE));
 
   int num = 0;
   op_par_loop(face_check_3d, "face_check_3d", faces,

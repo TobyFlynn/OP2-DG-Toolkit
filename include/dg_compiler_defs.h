@@ -18,6 +18,17 @@
 #define DG_MAT_IND(i, j, m, n) ((i) * (n) + (j))
 #endif
 
+#define RX_IND 0
+#define RY_IND 1
+#define RZ_IND 2
+#define SX_IND 3
+#define SY_IND 4
+#define SZ_IND 5
+#define TX_IND 6
+#define TY_IND 7
+#define TZ_IND 8
+#define J_IND  9
+
 #if DG_DIM == 2
 
 #define DG_NUM_FACES 3

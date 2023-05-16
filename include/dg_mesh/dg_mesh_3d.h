@@ -34,7 +34,7 @@ public:
 
   // OP2 stuff
   op_dat node_coords, nodeX, nodeY, nodeZ, x, y, z;
-  op_dat rx, ry, rz, sx, sy, sz, tx, ty, tz;
+  op_dat rx, ry, rz, sx, sy, sz, tx, ty, tz, geof;
   op_dat faceNum, bfaceNum, periodicFace, fmaskL, fmaskR, nx, ny, nz, sJ, fscale;
   op_dat bnx, bny, bnz, bsJ, bfscale;
 
