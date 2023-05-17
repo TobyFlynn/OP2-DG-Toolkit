@@ -24,6 +24,13 @@ void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, cons
     if(t) {
       const int nblocks = set->size * n / nthread + 1;
       const int ncells = nthread / n + 3;
+      cutilSafeCall(cudaFuncSetCacheConfig(templated_cuda_gemm_T_gpu<4>, cudaFuncCachePreferShared));
+      cutilSafeCall(cudaFuncSetCacheConfig(templated_cuda_gemm_T_gpu<10>, cudaFuncCachePreferShared));
+      cutilSafeCall(cudaFuncSetCacheConfig(templated_cuda_gemm_T_gpu<20>, cudaFuncCachePreferShared));
+      cutilSafeCall(cudaFuncSetCacheConfig(templated_cuda_gemm_T_gpu<12>, cudaFuncCachePreferShared));
+      cutilSafeCall(cudaFuncSetCacheConfig(templated_cuda_gemm_T_gpu<24>, cudaFuncCachePreferShared));
+      cutilSafeCall(cudaFuncSetCacheConfig(templated_cuda_gemm_T_gpu<40>, cudaFuncCachePreferShared));
+      cutilSafeCall(cudaFuncSetCacheConfig(cuda_gemm_T_gpu, cudaFuncCachePreferShared));
       switch(m) {
         // The number of nodes for each order
         case 4:
@@ -71,6 +78,13 @@ void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, cons
     } else {
       const int nblocks = set->size * m / nthread + 1;
       const int ncells = nthread / m + 3;
+      cutilSafeCall(cudaFuncSetCacheConfig(templated_cuda_gemm_gpu<4>, cudaFuncCachePreferShared));
+      cutilSafeCall(cudaFuncSetCacheConfig(templated_cuda_gemm_gpu<10>, cudaFuncCachePreferShared));
+      cutilSafeCall(cudaFuncSetCacheConfig(templated_cuda_gemm_gpu<20>, cudaFuncCachePreferShared));
+      cutilSafeCall(cudaFuncSetCacheConfig(templated_cuda_gemm_gpu<12>, cudaFuncCachePreferShared));
+      cutilSafeCall(cudaFuncSetCacheConfig(templated_cuda_gemm_gpu<24>, cudaFuncCachePreferShared));
+      cutilSafeCall(cudaFuncSetCacheConfig(templated_cuda_gemm_gpu<40>, cudaFuncCachePreferShared));
+      cutilSafeCall(cudaFuncSetCacheConfig(cuda_gemm_gpu, cudaFuncCachePreferShared));
       switch(n) {
         // The number of nodes for each order
         case 4:

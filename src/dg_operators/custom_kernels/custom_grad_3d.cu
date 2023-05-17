@@ -62,14 +62,13 @@ __global__ void _op_cuda_grad_3d(
 
   __syncthreads();
 
-  //process set elements
-  for (int n = threadIdx.x + blockIdx.x * blockDim.x; n < set_size * DG_NP; n += blockDim.x * gridDim.x){
+  int n = threadIdx.x + blockIdx.x * blockDim.x;
+  if(n < set_size * DG_NP) {
     const int node_id = n % DG_NP;
     const int cell_id = n / DG_NP;
     const int local_cell_id = (n / DG_NP) - ((n - threadIdx.x) / DG_NP);
     // If entire thread is in set
     if(n - threadIdx.x + blockDim.x < set_size * DG_NP) {
-      __syncthreads();
       const int start_ind = ((n - threadIdx.x) / DG_NP) * DG_NP;
       const int num_elem  = ((n - threadIdx.x + blockDim.x) / DG_NP) - ((n - threadIdx.x) / DG_NP) + 1;
       for(int i = threadIdx.x; i < num_elem * DG_NP; i += blockDim.x) {
@@ -162,8 +161,15 @@ void custom_kernel_grad_3d(const int order, char const *name, op_set set,
   if (set_size > 0) {
     //set CUDA execution parameters
     const int nthread = 256;
-    const int nblocks = 200 < (set->size * DG_NP) / nthread + 1 ? 200 : (set->size * DG_NP) / nthread + 1;
+    // const int nblocks = 200 < (set->size * DG_NP) / nthread + 1 ? 200 : (set->size * DG_NP) / nthread + 1;
+    const int nblocks = (set->size * DG_NP) / nthread + 1;
     const int num_cells = (nthread / DG_NP) + 2;
+
+    cutilSafeCall(cudaFuncSetCacheConfig(_op_cuda_grad_3d<1,num_cells>, cudaFuncCachePreferShared));
+    cutilSafeCall(cudaFuncSetCacheConfig(_op_cuda_grad_3d<2,num_cells>, cudaFuncCachePreferShared));
+    cutilSafeCall(cudaFuncSetCacheConfig(_op_cuda_grad_3d<3,num_cells>, cudaFuncCachePreferShared));
+    cutilSafeCall(cudaFuncSetCacheConfig(_op_cuda_grad_3d<4,num_cells>, cudaFuncCachePreferShared));
+    cutilSafeCall(cudaFuncSetCacheConfig(_op_cuda_grad_3d<5,num_cells>, cudaFuncCachePreferShared));
 
     switch(order) {
       case 1:
