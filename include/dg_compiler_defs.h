@@ -97,7 +97,35 @@
 #define DG_G_NP 1
 #define DG_GF_NP 1
 
-#if DG_ORDER == 4
+#if DG_ORDER == 8
+
+// Number of points per element
+#define DG_NP 165
+// Number of points per face
+#define DG_NPF 45
+
+#elif DG_ORDER == 7
+
+// Number of points per element
+#define DG_NP 120
+// Number of points per face
+#define DG_NPF 36
+
+#elif DG_ORDER == 6
+
+// Number of points per element
+#define DG_NP 84
+// Number of points per face
+#define DG_NPF 28
+
+#elif DG_ORDER == 5
+
+// Number of points per element
+#define DG_NP 56
+// Number of points per face
+#define DG_NPF 21
+
+#elif DG_ORDER == 4
 
 // Number of points per element
 #define DG_NP 35
