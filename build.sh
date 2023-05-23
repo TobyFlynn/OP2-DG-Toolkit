@@ -38,6 +38,9 @@ python3 $OP2_TRANSLATOR \
 sed -i "19i #include \"dg_compiler_defs.h\"" cuda/dg_tookit_kernels.cu
 sed -i "1i #include \"dg_compiler_defs.h\"" openmp/dg_tookit_kernels.cpp
 sed -i "1i #include \"dg_compiler_defs.h\"" seq/dg_tookit_seqkernels.cpp
+sed -i "20i #include \"dg_global_constants/dg_mat_constants_2d.h\"" cuda/dg_tookit_kernels.cu
+sed -i "2i #include \"dg_global_constants/dg_mat_constants_2d.h\"" openmp/dg_tookit_kernels.cpp
+sed -i "2i #include \"dg_global_constants/dg_mat_constants_2d.h\"" seq/dg_tookit_seqkernels.cpp
 sed -i "2i #include \"cblas.h\"" openmp/dg_tookit_kernels.cpp
 sed -i "2i #include \"cblas.h\"" seq/dg_tookit_seqkernels.cpp
 

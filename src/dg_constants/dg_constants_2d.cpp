@@ -247,6 +247,8 @@ void DGConstants2D::calc_interp_mats() {
       }
     }
   }
+
+  transfer_kernel_ptrs();
 }
 
 DG_FP* DGConstants2D::get_mat_ptr(Constant_Matrix matrix) {
@@ -314,6 +316,8 @@ DG_FP* DGConstants2D::get_mat_ptr(Constant_Matrix matrix) {
 }
 
 DGConstants2D::~DGConstants2D() {
+  clean_up_kernel_ptrs();
+
   delete r_ptr;
   delete s_ptr;
   delete v_ptr;
@@ -342,9 +346,4 @@ DGConstants2D::~DGConstants2D() {
   delete gF2Ds_ptr;
   delete invMass_gInterpT_ptr;
   delete order_interp_ptr;
-}
-
-DG_FP* DGConstants2D::get_mat_ptr_kernel(Constant_Matrix matrix) {
-  throw std::runtime_error("get_mat_ptr_kernel not implemented for 2D");
-  return nullptr;
 }

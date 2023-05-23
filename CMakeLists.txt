@@ -73,6 +73,7 @@ set(HEADERS_DG_CONSTS include/dg_constants/dg_constants.h include/dg_constants/d
 install(FILES ${HEADERS_DG_CONSTS} DESTINATION include/dg_constants)
 set(HEADERS_DG_GLB_CONSTS include/dg_global_constants/dg_global_constants_2d.h include/dg_global_constants/dg_global_constants_3d.h)
 list(APPEND HEADERS_DG_GLB_CONSTS include/dg_global_constants/dg_mat_constants_3d.h include/dg_global_constants/dg_mat_constants_dev_ptrs_3d.h)
+list(APPEND HEADERS_DG_GLB_CONSTS include/dg_global_constants/dg_mat_constants_2d.h include/dg_global_constants/dg_mat_constants_dev_ptrs_2d.h)
 install(FILES ${HEADERS_DG_GLB_CONSTS} DESTINATION include/dg_global_constants)
 set(HEADERS_DG_MESH include/dg_mesh/dg_mesh.h include/dg_mesh/dg_mesh_2d.h include/dg_mesh/dg_mesh_3d.h)
 install(FILES ${HEADERS_DG_MESH} DESTINATION include/dg_mesh)

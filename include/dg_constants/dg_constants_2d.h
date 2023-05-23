@@ -23,6 +23,9 @@ private:
   void cubature(const int nCub, const int N, arma::mat &V_, arma::mat &invV_, arma::mat &Dr_, arma::mat &Ds_);
   void gauss(const int nGauss, const int N, arma::mat &V_, arma::mat &invV_, arma::mat &Dr_, arma::mat &Ds_);
 
+  void transfer_kernel_ptrs();
+  void clean_up_kernel_ptrs();
+
   // Pointers to all matrices that are returned by get_mat_ptr
   DG_FP *r_ptr, *s_ptr, *v_ptr, *invV_ptr, *mass_ptr, *invMass_ptr, *Dr_ptr;
   DG_FP *Ds_ptr, *Drw_ptr, *Dsw_ptr, *lift_ptr, *cubV_ptr, *cubDr_ptr;
