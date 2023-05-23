@@ -73,6 +73,7 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   tz = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "tz");
   J  = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "J");
   geof = op_decl_dat(cells, 10, DG_FP_STR, (DG_FP *)NULL, "geof");
+  bcell = op_decl_dat(cells, 1, "int", (int *)NULL, "bcell");
 
   fmaskL = op_decl_dat(faces, DG_NPF, "int", (int *)NULL, "fmaskL");
   fmaskR = op_decl_dat(faces, DG_NPF, "int", (int *)NULL, "fmaskR");
@@ -148,7 +149,8 @@ void DGMesh3D::calc_mesh_constants() {
               op_arg_dat(nodeZ, -1, OP_ID, 4, DG_FP_STR, OP_READ),
               op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
-              op_arg_dat(z, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+              op_arg_dat(z, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(bcell, -1, OP_ID, 1, "int", OP_WRITE));
 
   op2_gemv(this, false, 1.0, DGConstants::DR, x, 0.0, tmp0.dat);
   op2_gemv(this, false, 1.0, DGConstants::DS, x, 0.0, tmp1.dat);
@@ -270,7 +272,8 @@ void DGMesh3D::calc_mesh_constants() {
                 op_arg_dat(bny, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
                 op_arg_dat(bnz, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
                 op_arg_dat(bsJ, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
-                op_arg_dat(bfscale, -1, OP_ID, 1, DG_FP_STR, OP_WRITE));
+                op_arg_dat(bfscale, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
+                op_arg_dat(bcell, 0, bface2cells, 1, "int", OP_INC));
   }
 
   op_par_loop(flux_init_3d, "flux_init_3d", fluxes,

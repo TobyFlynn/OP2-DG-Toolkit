@@ -2,7 +2,8 @@ inline void init_bfaces_3d(const int *faceNum, const DG_FP *rx, const DG_FP *ry,
                            const DG_FP *rz, const DG_FP *sx, const DG_FP *sy,
                            const DG_FP *sz, const DG_FP *tx, const DG_FP *ty,
                            const DG_FP *tz, const DG_FP *J, DG_FP *nx,
-                           DG_FP *ny, DG_FP *nz, DG_FP *sJ, DG_FP *fscale) {
+                           DG_FP *ny, DG_FP *nz, DG_FP *sJ, DG_FP *fscale,
+                           int *bcell) {
   if(*faceNum == 0) {
     *nx = -*tx;
     *ny = -*ty;
@@ -27,4 +28,5 @@ inline void init_bfaces_3d(const int *faceNum, const DG_FP *rx, const DG_FP *ry,
   *nz /= *sJ;
   *sJ *= *J;
   *fscale = *sJ / *J;
+  *bcell += 1;
 }
