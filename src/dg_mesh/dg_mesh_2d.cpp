@@ -8,11 +8,13 @@
 
 #include "dg_compiler_defs.h"
 #include "dg_op2_blas.h"
+#include "dg_dat_pool.h"
 
 #include "dg_constants/dg_constants_2d.h"
 #include "dg_global_constants/dg_global_constants_2d.h"
 
 DGConstants *constants;
+DGDatPool *dg_dat_pool;
 
 using namespace std;
 
@@ -200,6 +202,8 @@ DGMesh2D::DGMesh2D(std::string &meshFile) {
   }
   free(tmp_npf);
   free(tmp_np);
+
+  dg_dat_pool = new DGDatPool(this);
 
   op_decl_const(DG_ORDER * 5, "int", DG_CONSTANTS_TK);
   op_decl_const(DG_ORDER * DG_NPF * 3, "int", FMASK_TK);

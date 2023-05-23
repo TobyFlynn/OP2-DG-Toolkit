@@ -6,11 +6,11 @@
 #include "mpi.h"
 #endif
 
-DGDatPool3D::DGDatPool3D(DGMesh3D *m) {
+DGDatPool::DGDatPool(DGMesh *m) {
   mesh = m;
 }
 
-DGDatPool3D::~DGDatPool3D() {
+DGDatPool::~DGDatPool() {
   for(int i = 0; i < cell_dats.size(); i++) {
     op_free_dat_temp(cell_dats[i].dat);
   }
@@ -20,7 +20,7 @@ DGDatPool3D::~DGDatPool3D() {
   }
 }
 
-DGTempDat DGDatPool3D::requestTempDatCells(const int dim) {
+DGTempDat DGDatPool::requestTempDatCells(const int dim) {
   for(int i = 0; i < cell_dats.size(); i++) {
     if(cell_dats[i].dat->dim == dim && !cell_dats[i].in_use) {
       cell_dats[i].in_use = true;
@@ -42,11 +42,11 @@ DGTempDat DGDatPool3D::requestTempDatCells(const int dim) {
   return tmp;
 }
 
-void DGDatPool3D::releaseTempDatCells(DGTempDat tempDat) {
+void DGDatPool::releaseTempDatCells(DGTempDat tempDat) {
   cell_dats[tempDat.ind].in_use = false;
 }
 
-DGTempDat DGDatPool3D::requestTempDatFaces(const int dim) {
+DGTempDat DGDatPool::requestTempDatFaces(const int dim) {
   for(int i = 0; i < face_dats.size(); i++) {
     if(face_dats[i].dat->dim == dim && !face_dats[i].in_use) {
       face_dats[i].in_use = true;
@@ -68,11 +68,11 @@ DGTempDat DGDatPool3D::requestTempDatFaces(const int dim) {
   return tmp;
 }
 
-void DGDatPool3D::releaseTempDatFaces(DGTempDat tempDat) {
+void DGDatPool::releaseTempDatFaces(DGTempDat tempDat) {
   face_dats[tempDat.ind].in_use = false;
 }
 
-void DGDatPool3D::report() {
+void DGDatPool::report() {
   int dim_cells = 0;
   int dim_faces = 0;
 

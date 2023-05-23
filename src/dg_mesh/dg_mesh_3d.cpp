@@ -17,8 +17,7 @@
 #endif
 
 DGConstants *constants;
-
-DGDatPool3D *dg_dat_pool;
+DGDatPool *dg_dat_pool;
 
 DGMesh3D::DGMesh3D(std::string &meshFile) {
   #ifndef OP2_DG_CUDA
@@ -100,7 +99,7 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   fluxSJ = op_decl_dat(fluxes, 4, DG_FP_STR, (DG_FP *)NULL, "fluxSJ");
   fluxFscale = op_decl_dat(fluxes, 8, DG_FP_STR, (DG_FP *)NULL, "fluxFscale");
 
-  dg_dat_pool = new DGDatPool3D(this);
+  dg_dat_pool = new DGDatPool(this);
 
   constants = new DGConstants3D(DG_ORDER);
   constants->calc_interp_mats();

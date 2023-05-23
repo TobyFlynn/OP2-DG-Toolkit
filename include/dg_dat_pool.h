@@ -5,17 +5,17 @@
 
 #include <vector>
 
-#include "dg_mesh/dg_mesh_3d.h"
+#include "dg_mesh/dg_mesh.h"
 
 struct DGTempDat {
   op_dat dat;
   int ind;
 };
 
-class DGDatPool3D {
+class DGDatPool {
 public:
-  DGDatPool3D(DGMesh3D *m);
-  ~DGDatPool3D();
+  DGDatPool(DGMesh *m);
+  ~DGDatPool();
 
   DGTempDat requestTempDatCells(const int dim);
   void releaseTempDatCells(DGTempDat tempDat);
@@ -30,7 +30,7 @@ private:
     bool in_use;
   };
 
-  DGMesh3D *mesh;
+  DGMesh *mesh;
 
   std::vector<DatWrapper> cell_dats;
   std::vector<DatWrapper> face_dats;
