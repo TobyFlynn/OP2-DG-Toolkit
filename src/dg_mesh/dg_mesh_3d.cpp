@@ -31,8 +31,8 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   cells   = op_decl_set_hdf5(meshFile.c_str(), "cells");
   faces   = op_decl_set_hdf5(meshFile.c_str(), "faces");
   bfaces  = op_decl_set_hdf5(meshFile.c_str(), "bfaces");
-  fluxes  = op_decl_set_hdf5(meshFile.c_str(), "fluxes");
-  bfluxes = op_decl_set_hdf5(meshFile.c_str(), "bfluxes");
+  // fluxes  = op_decl_set_hdf5(meshFile.c_str(), "fluxes");
+  // bfluxes = op_decl_set_hdf5(meshFile.c_str(), "bfluxes");
 
   // Maps
   cell2nodes  = op_decl_map_hdf5(cells, nodes, 4, meshFile.c_str(), "cell2nodes");
@@ -40,19 +40,19 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   face2cells  = op_decl_map_hdf5(faces, cells, 2, meshFile.c_str(), "face2cells");
   bface2nodes = op_decl_map_hdf5(bfaces, nodes, 3, meshFile.c_str(), "bface2nodes");
   bface2cells = op_decl_map_hdf5(bfaces, cells, 1, meshFile.c_str(), "bface2cells");
-  flux2main_cell = op_decl_map_hdf5(fluxes, cells, 1, meshFile.c_str(), "flux2main_cell");
-  flux2neighbour_cells = op_decl_map_hdf5(fluxes, cells, 4, meshFile.c_str(), "flux2neighbour_cells");
-  flux2faces  = op_decl_map_hdf5(fluxes, faces, 4, meshFile.c_str(), "flux2faces");
-  bflux2cells = op_decl_map_hdf5(bfluxes, cells, 2, meshFile.c_str(), "bflux2cells");
-  bflux2faces = op_decl_map_hdf5(bfluxes, faces, 1, meshFile.c_str(), "bflux2faces");
+  // flux2main_cell = op_decl_map_hdf5(fluxes, cells, 1, meshFile.c_str(), "flux2main_cell");
+  // flux2neighbour_cells = op_decl_map_hdf5(fluxes, cells, 4, meshFile.c_str(), "flux2neighbour_cells");
+  // flux2faces  = op_decl_map_hdf5(fluxes, faces, 4, meshFile.c_str(), "flux2faces");
+  // bflux2cells = op_decl_map_hdf5(bfluxes, cells, 2, meshFile.c_str(), "bflux2cells");
+  // bflux2faces = op_decl_map_hdf5(bfluxes, faces, 1, meshFile.c_str(), "bflux2faces");
 
   // Dats
   node_coords  = op_decl_dat_hdf5(nodes, 3, DG_FP_STR, meshFile.c_str(), "node_coords");
   faceNum      = op_decl_dat_hdf5(faces, 2, "int", meshFile.c_str(), "faceNum");
   bfaceNum     = op_decl_dat_hdf5(bfaces, 1, "int", meshFile.c_str(), "bfaceNum");
   periodicFace = op_decl_dat_hdf5(faces, 1, "int", meshFile.c_str(), "periodicFace");
-  fluxL        = op_decl_dat_hdf5(fluxes, 4, "int", meshFile.c_str(), "fluxL");
-  bfluxL       = op_decl_dat_hdf5(bfluxes, 1, "int", meshFile.c_str(), "bfluxL");
+  // fluxL        = op_decl_dat_hdf5(fluxes, 4, "int", meshFile.c_str(), "fluxL");
+  // bfluxL       = op_decl_dat_hdf5(bfluxes, 1, "int", meshFile.c_str(), "bfluxL");
 
   nodeX = op_decl_dat(cells, 4, DG_FP_STR, (DG_FP *)NULL, "nodeX");
   nodeY = op_decl_dat(cells, 4, DG_FP_STR, (DG_FP *)NULL, "nodeY");
@@ -73,6 +73,10 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   tz = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "tz");
   J  = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "J");
   geof = op_decl_dat(cells, 10, DG_FP_STR, (DG_FP *)NULL, "geof");
+  nx_c = op_decl_dat(cells, 4, DG_FP_STR, (DG_FP *)NULL, "nx_c");
+  ny_c = op_decl_dat(cells, 4, DG_FP_STR, (DG_FP *)NULL, "ny_c");
+  nz_c = op_decl_dat(cells, 4, DG_FP_STR, (DG_FP *)NULL, "nz_c");
+  sJ_c = op_decl_dat(cells, 4, DG_FP_STR, (DG_FP *)NULL, "sJ_c");
 
   fmaskL = op_decl_dat(faces, DG_NPF, "int", (int *)NULL, "fmaskL");
   fmaskR = op_decl_dat(faces, DG_NPF, "int", (int *)NULL, "fmaskR");
@@ -90,7 +94,7 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   bfscale = op_decl_dat(bfaces, 1, DG_FP_STR, (DG_FP *)NULL, "bfscale");
 
   order = op_decl_dat(cells, 1, "int", (int *)NULL, "order");
-
+/*
   fluxFaceNums = op_decl_dat(fluxes, 8, "int", (int *)NULL, "fluxFaceNums");
   fluxFmask = op_decl_dat(fluxes, 4 * DG_NPF, "int", (int *)NULL, "fluxFmask");
 
@@ -99,7 +103,7 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   fluxNz = op_decl_dat(fluxes, 4, DG_FP_STR, (DG_FP *)NULL, "fluxNz");
   fluxSJ = op_decl_dat(fluxes, 4, DG_FP_STR, (DG_FP *)NULL, "fluxSJ");
   fluxFscale = op_decl_dat(fluxes, 8, DG_FP_STR, (DG_FP *)NULL, "fluxFscale");
-
+*/
   dg_dat_pool = new DGDatPool3D(this);
 
   constants = new DGConstants3D(DG_ORDER);
@@ -109,10 +113,18 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   op_decl_const(DG_ORDER * 2, "int", DG_CONSTANTS_TK);
 
   order_int = DG_ORDER;
+
+  for(int i = 0; i < DG_ORDER; i++) {
+    custom_map_info tmp;
+    node2node_custom_maps.push_back(tmp);
+  }
 }
 
 
 DGMesh3D::~DGMesh3D() {
+  for(int i = 0; i < DG_ORDER; i++) {
+    free_custom_map(node2node_custom_maps[i]);
+  }
   delete dg_dat_pool;
   delete constants;
   #ifndef OP2_DG_CUDA
@@ -253,6 +265,17 @@ void DGMesh3D::calc_mesh_constants() {
     exit(-1);
   }
 
+  op_par_loop(copy_normals_3d, "copy_normals_3d", faces,
+              op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
+              op_arg_dat(nx, -1, OP_ID, 2, DG_FP_STR, OP_READ),
+              op_arg_dat(ny, -1, OP_ID, 2, DG_FP_STR, OP_READ),
+              op_arg_dat(nz, -1, OP_ID, 2, DG_FP_STR, OP_READ),
+              op_arg_dat(sJ, -1, OP_ID, 2, DG_FP_STR, OP_READ),
+              op_arg_dat(nx_c, -2, face2cells, 4, DG_FP_STR, OP_WRITE),
+              op_arg_dat(ny_c, -2, face2cells, 4, DG_FP_STR, OP_WRITE),
+              op_arg_dat(nz_c, -2, face2cells, 4, DG_FP_STR, OP_WRITE),
+              op_arg_dat(sJ_c, -2, face2cells, 4, DG_FP_STR, OP_WRITE));
+
   if(bface2cells) {
     op_par_loop(init_bfaces_3d, "init_bfaces_3d", bfaces,
                 op_arg_dat(bfaceNum, -1, OP_ID, 1, "int", OP_READ),
@@ -273,6 +296,19 @@ void DGMesh3D::calc_mesh_constants() {
                 op_arg_dat(bfscale, -1, OP_ID, 1, DG_FP_STR, OP_WRITE));
   }
 
+  if(bface2cells) {
+    op_par_loop(copy_normals_bfaces_3d, "copy_normals_bfaces_3d", bfaces,
+                op_arg_dat(bfaceNum, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_dat(bnx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                op_arg_dat(bny, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                op_arg_dat(bnz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                op_arg_dat(bsJ, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                op_arg_dat(nx_c, 0, bface2cells, 4, DG_FP_STR, OP_WRITE),
+                op_arg_dat(ny_c, 0, bface2cells, 4, DG_FP_STR, OP_WRITE),
+                op_arg_dat(nz_c, 0, bface2cells, 4, DG_FP_STR, OP_WRITE),
+                op_arg_dat(sJ_c, 0, bface2cells, 4, DG_FP_STR, OP_WRITE));
+  }
+/*
   op_par_loop(flux_init_3d, "flux_init_3d", fluxes,
               op_arg_dat(order, 0, flux2main_cell, 1, "int", OP_READ),
               op_arg_dat(faceNum, -4, flux2faces, 2, "int", OP_READ),
@@ -291,6 +327,8 @@ void DGMesh3D::calc_mesh_constants() {
               op_arg_dat(fluxNz, -1, OP_ID, 4, DG_FP_STR, OP_WRITE),
               op_arg_dat(fluxSJ, -1, OP_ID, 4, DG_FP_STR, OP_WRITE),
               op_arg_dat(fluxFscale, -1, OP_ID, 8, DG_FP_STR, OP_WRITE));
+*/
+  update_custom_map();
 }
 
 void DGMesh3D::update_order(int new_order, std::vector<op_dat> &dats_to_interp) {

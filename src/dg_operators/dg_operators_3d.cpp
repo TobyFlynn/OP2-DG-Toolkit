@@ -364,3 +364,25 @@ void DGMesh3D::interp_dat_between_orders(int old_order, int new_order, op_dat in
 
   dg_dat_pool->releaseTempDatCells(tmp_0);
 }
+
+#if FALSE
+void DGMesh3D::avg(op_dat in, op_dat out) {
+  op_par_loop(avg_3d, "avg_3d", faces,
+              op_arg_dat(order, -2, face2cells, 1, "int", OP_READ),
+              op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
+              op_arg_dat(fmaskL, -1, OP_ID, DG_NPF, "int", OP_READ),
+              op_arg_dat(fmaskR, -1, OP_ID, DG_NPF, "int", OP_READ),
+              op_arg_dat(in,  -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(out, -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
+}
+
+void DGMesh3D::jump(op_dat in, op_dat out) {
+  op_par_loop(jump_3d, "jump_3d", faces,
+              op_arg_dat(order, -2, face2cells, 1, "int", OP_READ),
+              op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
+              op_arg_dat(fmaskL, -1, OP_ID, DG_NPF, "int", OP_READ),
+              op_arg_dat(fmaskR, -1, OP_ID, DG_NPF, "int", OP_READ),
+              op_arg_dat(in,  -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(out, -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
+}
+#endif
