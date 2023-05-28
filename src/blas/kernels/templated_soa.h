@@ -9,7 +9,6 @@ __global__ void templated_cuda_gemm_gpu(
 
   extern __shared__ double sh_mem[];
   double *mat_sh = sh_mem;
-  double *x_sh = &sh_mem[m * n];
 
   for(int i = threadIdx.x; i < m * n; i += blockDim.x) {
     mat_sh[i] = matrix[i];
@@ -32,32 +31,27 @@ __global__ void templated_cuda_gemm_gpu(
 }
 
 template<int m>
-__global__ void templated_cuda_gemm_T_gpu(
-  const int n, const int strideX, const int strideY,
-  const double alpha, const double beta, const double *matrix,
-  const double *__restrict arg4, double *arg5,
-  int set_size) {
-
-  extern __shared__ double sh_mem[];
-  double *mat_sh = sh_mem;
-  double *x_sh = &sh_mem[m * n];
-
-  for(int i = threadIdx.x; i < m * n; i += blockDim.x) {
-    mat_sh[i] = matrix[i];
-  }
-  __syncthreads();
-
+__global__ void templated_cuda_gemm_T_gpu( const int n, const int strideX,
+                      const int strideY, const double alpha, const double beta,
+                      const double *matrix, const double *__restrict arg4,
+                      double *arg5, int set_size) {
+  extern __shared__ double mat_sh[];
   const int cell = threadIdx.x + blockIdx.x * blockDim.x;
-  if(cell >= set_size) return;
   const double *x = arg4 + cell;
   double *y = arg5 + cell;
   for(int i = 0; i < n; i++) {
-    DG_FP tmp = 0.0;
-    #pragma unroll
-    for(int j = 0; j < m; j++) {
+    for(int j = threadIdx.x; j < m; j += blockDim.x) {
       int ind = DG_MAT_IND(j, i, m, n);
-      tmp += mat_sh[ind] * x[j * strideX];
+      mat_sh[j] = matrix[ind];
     }
-    y[i * strideY] = beta * y[i * strideY] + alpha * tmp;
+    __syncthreads();
+    if(cell < set_size) {
+      DG_FP tmp = 0.0;
+      #pragma unroll
+      for(int j = 0; j < m; j++) {
+        tmp += mat_sh[j] * x[j * strideX];
+      }
+      y[i * strideY] = beta * y[i * strideY] + alpha * tmp;
+    }
   }
 }
