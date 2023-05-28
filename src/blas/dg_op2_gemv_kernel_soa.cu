@@ -28,38 +28,38 @@ void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, cons
       switch(m) {
         // The number of nodes for each order
         case 4:
-          templated_cuda_gemm_T_gpu<4><<<nblocks,nthread,m*sizeof(double)>>>(n,
+          templated_cuda_gemm_T_gpu<4><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
                                               strideX, strideY, alpha, beta,
                                               matrix, (double *) args[0].data_d,
                                               (double *) args[1].data_d, set->size);
           break;
         case 10:
-          templated_cuda_gemm_T_gpu<10><<<nblocks,nthread,m*sizeof(double)>>>(n,
+          templated_cuda_gemm_T_gpu<10><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
                                               strideX, strideY, alpha, beta,
                                               matrix, (double *) args[0].data_d,
                                               (double *) args[1].data_d, set->size);
           break;
         case 20:
-          templated_cuda_gemm_T_gpu<20><<<nblocks,nthread,m*sizeof(double)>>>(n,
+          templated_cuda_gemm_T_gpu<20><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
                                               strideX, strideY, alpha, beta,
                                               matrix, (double *) args[0].data_d,
                                               (double *) args[1].data_d, set->size);
           break;
         // The number of face nodes for each order
         case 12:
-          templated_cuda_gemm_T_gpu<12><<<nblocks,nthread,m*sizeof(double)>>>(n,
+          templated_cuda_gemm_T_gpu<12><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
                                               strideX, strideY, alpha, beta,
                                               matrix, (double *) args[0].data_d,
                                               (double *) args[1].data_d, set->size);
           break;
         case 24:
-          templated_cuda_gemm_T_gpu<24><<<nblocks,nthread,m*sizeof(double)>>>(n,
+          templated_cuda_gemm_T_gpu<24><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
                                               strideX, strideY, alpha, beta,
                                               matrix, (double *) args[0].data_d,
                                               (double *) args[1].data_d, set->size);
           break;
         case 40:
-          templated_cuda_gemm_T_gpu<40><<<nblocks,nthread,m*sizeof(double)>>>(n,
+          templated_cuda_gemm_T_gpu<40><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
                                               strideX, strideY, alpha, beta,
                                               matrix, (double *) args[0].data_d,
                                               (double *) args[1].data_d, set->size);
