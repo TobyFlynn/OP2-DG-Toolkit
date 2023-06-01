@@ -37,11 +37,11 @@ void DGMesh3D::update_custom_map() {
     const int faceNumR = faceNum_ptr[2 * i + 1];
 
     for(int j = 0; j < dg_npf; j++) {
-      const int writeIndL = cell_indL * DG_NUM_FACES * DG_NPF + faceNumL * DG_NPF + j;
+      const int writeIndL = cell_indL * DG_NUM_FACES * DG_NPF + faceNumL * dg_npf + j;
       int writeIndR = 0;
       for(int n = 0; n < dg_npf; n++) {
         if(fmaskR_corrected_ptr[i * DG_NPF + j] == fmask[faceNumR * dg_npf + n])
-          writeIndR = cell_indR * DG_NUM_FACES * DG_NPF + faceNumR * DG_NPF + n;
+          writeIndR = cell_indR * DG_NUM_FACES * DG_NPF + faceNumR * dg_npf + n;
       }
       const int readIndL = cell_indL * DG_NP + fmask[faceNumL * dg_npf + j];
       const int readIndR = cell_indR * DG_NP + fmaskR_corrected_ptr[i * DG_NPF + j];
@@ -59,11 +59,11 @@ void DGMesh3D::update_custom_map() {
     const int faceNumR = faceNum_ptr[2 * i + 1];
 
     for(int j = 0; j < dg_npf; j++) {
-      const int writeIndL = cell_indL * DG_NUM_FACES * DG_NPF + faceNumL * DG_NPF + j;
+      const int writeIndL = cell_indL * DG_NUM_FACES * DG_NPF + faceNumL * dg_npf + j;
       int writeIndR = 0;
       for(int n = 0; n < dg_npf; n++) {
         if(fmaskR_corrected_ptr[i * DG_NPF + j] == fmask[faceNumR * dg_npf + n])
-          writeIndR = cell_indR * DG_NUM_FACES * DG_NPF + faceNumR * DG_NPF + n;
+          writeIndR = cell_indR * DG_NUM_FACES * DG_NPF + faceNumR * dg_npf + n;
       }
       const int readIndL = cell_indL * DG_NP + fmask[faceNumL * dg_npf + j];
       const int readIndR = cell_indR * DG_NP + fmaskR_corrected_ptr[i * DG_NPF + j];
