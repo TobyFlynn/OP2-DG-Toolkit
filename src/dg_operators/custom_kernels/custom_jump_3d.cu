@@ -36,13 +36,13 @@ void DGMesh3D::jump(op_dat in, op_dat out) {
   in_arg.idx = 0;
   args[0] = in_arg;
   for ( int v=1; v<2; v++ ){
-    args[0 + v] = op_arg_dat(in_arg.dat, v, in_arg.map, 20, "double", OP_READ);
+    args[0 + v] = op_arg_dat(in_arg.dat, v, in_arg.map, DG_NP, DG_FP_STR, OP_READ);
   }
 
   out_arg.idx = 0;
   args[2] = out_arg;
   for ( int v=1; v<2; v++ ){
-    args[2 + v] = op_arg_dat(out_arg.dat, v, out_arg.map, 40, "double", OP_WRITE);
+    args[2 + v] = op_arg_dat(out_arg.dat, v, out_arg.map, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE);
   }
 
   int ninds   = 2;

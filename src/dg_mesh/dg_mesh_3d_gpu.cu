@@ -1,6 +1,8 @@
 #include "dg_mesh/dg_mesh_3d.h"
 
-#include "op_seq.h"
+#include "op_lib_cpp.h"
+#include "op_cuda_rt_support.h"
+#include "op_cuda_reduction.h"
 
 #include "dg_constants/dg_constants_3d.h"
 #include "dg_compiler_defs.h"
@@ -29,6 +31,18 @@ void DGMesh3D::update_custom_map() {
     node2node_custom_total_size = node2node_custom_maps[order_int - 1].total_size;
     return;
   }
+
+  // order in args is just to force a halo exchange
+  const int nargs = 4;
+  op_arg args[] = {
+    op_arg_dat(order, 0, face2cells, 1, "int", OP_RW),
+    op_arg_dat(order, 1, face2cells, 1, "int", OP_RW),
+    op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
+    op_arg_dat(fmaskR, -1, OP_ID, DG_NPF, "int", OP_READ),
+  };
+  op_mpi_halo_exchanges_grouped(faces, nargs, args, 2);
+  op_mpi_wait_all_grouped(nargs, args, 2);
+  op_mpi_set_dirtybit_cuda(nargs, args);
 
   const int map_size = faces->size + faces->exec_size;
   const int dg_npf = DG_CONSTANTS_TK[(order_int - 1) * DG_NUM_CONSTANTS + 1];
@@ -121,6 +135,18 @@ void DGMesh3D::update_custom_map() {
     node2node_custom_total_size = node2node_custom_maps[order_int - 1].total_size;
     return;
   }
+
+  // order in args is just to force a halo exchange
+  const int nargs = 4;
+  op_arg args[] = {
+    op_arg_dat(order, 0, face2cells, 1, "int", OP_RW),
+    op_arg_dat(order, 1, face2cells, 1, "int", OP_RW),
+    op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
+    op_arg_dat(fmaskR, -1, OP_ID, DG_NPF, "int", OP_READ),
+  };
+  op_mpi_halo_exchanges_grouped(faces, nargs, args, 2);
+  op_mpi_wait_all_grouped(nargs, args, 2);
+  op_mpi_set_dirtybit_cuda(nargs, args);
 
   const int dg_npf = DG_CONSTANTS_TK[(order_int - 1) * DG_NUM_CONSTANTS + 1];
   const int *fmask = &FMASK_TK[(order_int - 1) * DG_NUM_FACES * DG_NPF];
