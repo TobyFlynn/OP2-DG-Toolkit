@@ -212,6 +212,8 @@ DGMesh2D::DGMesh2D(std::string &meshFile) {
 
   cubature = new DGCubatureData(this);
   gauss = new DGGaussData(this);
+
+  order_int = DG_ORDER;
 }
 
 DGMesh2D::~DGMesh2D() {
@@ -334,6 +336,8 @@ void DGMesh2D::update_order(int new_order, std::vector<op_dat> &dats_to_interp) 
                 op_arg_gbl(&new_order, 1, "int", OP_READ),
                 op_arg_dat(dats_to_interp[i], -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
   }
+
+  order_int = new_order;
 
   // Copy across new orders
   op_par_loop(copy_new_orders_int, "copy_new_orders_int", cells,

@@ -30,8 +30,6 @@ public:
   void interp_dat_between_orders(int old_order, int new_order, op_dat in, op_dat out);
   void interp_dat_between_orders(int old_order, int new_order, op_dat in);
 
-  int order_int;
-
   // OP2 stuff
   op_dat node_coords, nodeX, nodeY, nodeZ, x, y, z;
   op_dat rx, ry, rz, sx, sy, sz, tx, ty, tz, geof;

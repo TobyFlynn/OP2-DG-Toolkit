@@ -107,7 +107,7 @@ DG_FP* DGConstants2D::get_mat_ptr_kernel(Constant_Matrix matrix) {
     case INTERP_MATRIX_ARRAY:
       return dg_Interp_d;
     default:
-      throw std::runtime_error("This constant matrix is not supported by DGConstants3D\n");
+      throw std::runtime_error("This constant matrix is not supported by DGConstants2D\n");
       return nullptr;
   }
 }

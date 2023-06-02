@@ -101,7 +101,7 @@ void op2_gemv_inv_mass_gass_interpT(DGMesh *mesh, bool transpose,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
-                op_arg_gbl(constants->get_mat_ptr_kernel(DGConstants::INV_MASS_GAUSS_INTERP_T), DG_ORDER * DG_G_NP * DG_NP, DG_FP_STR, OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::INV_MASS_GAUSS_INTERP_T), DG_ORDER * DG_G_NP * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(mesh->J, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_G_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
@@ -115,7 +115,7 @@ void op2_gemv_gauss_interp(DGMesh *mesh, bool transpose, const DG_FP alpha,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
-                op_arg_gbl(constants->get_mat_ptr_kernel(DGConstants::GAUSS_INTERP), DG_ORDER * DG_G_NP * DG_NP, DG_FP_STR, OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_INTERP), DG_ORDER * DG_G_NP * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_G_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
   } else {
@@ -123,7 +123,7 @@ void op2_gemv_gauss_interp(DGMesh *mesh, bool transpose, const DG_FP alpha,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
-                op_arg_gbl(constants->get_mat_ptr_kernel(DGConstants::GAUSS_INTERP), DG_ORDER * DG_G_NP * DG_NP, DG_FP_STR, OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_INTERP), DG_ORDER * DG_G_NP * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_G_NP, DG_FP_STR, OP_RW));
   }
@@ -137,7 +137,7 @@ void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
-                op_arg_gbl(constants->get_mat_ptr_kernel(DGConstants::LIFT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::LIFT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW));
     #elif defined(OP2_DG_CUDA)
@@ -160,7 +160,7 @@ void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
-                op_arg_gbl(constants->get_mat_ptr_kernel(DGConstants::LIFT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::LIFT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
     #elif defined(OP2_DG_CUDA)
@@ -188,7 +188,7 @@ void op2_gemv_emat(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
-                op_arg_gbl(constants->get_mat_ptr_kernel(DGConstants::EMAT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::EMAT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW));
     #elif defined(OP2_DG_CUDA)
@@ -211,7 +211,7 @@ void op2_gemv_emat(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                 op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
-                op_arg_gbl(constants->get_mat_ptr_kernel(DGConstants::EMAT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
+                op_arg_gbl(constants->get_mat_ptr(DGConstants::EMAT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(x, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_READ),
                 op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
     #elif defined(OP2_DG_CUDA)
@@ -319,10 +319,18 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
     case DGConstants::INV_MASS:
     case DGConstants::V:
     case DGConstants::INV_V:
+      #if DG_DIM == 2
+      op2_gemv_np_np(mesh, transpose, alpha, constants->get_mat_ptr(matrix), x, beta, y);
+      #else
       op2_gemv_np_np(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
+      #endif
       break;
     case DGConstants::CUB_V:
+      #if DG_DIM == 2
+      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr(matrix), x, beta, y);
+      #else
       op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
+      #endif
       break;
     case DGConstants::LIFT:
       op2_gemv_lift(mesh, transpose, alpha, x, beta, y);
@@ -331,10 +339,10 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
       op2_gemv_emat(mesh, transpose, alpha, x, beta, y);
       break;
     case DGConstants::CUB_VDR:
-      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
+      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr(matrix), x, beta, y);
       break;
     case DGConstants::CUB_VDS:
-      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
+      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr(matrix), x, beta, y);
       break;
     case DGConstants::INV_MASS_GAUSS_INTERP_T:
       op2_gemv_inv_mass_gass_interpT(mesh, transpose, alpha, x, beta, y);
@@ -343,10 +351,10 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
       op2_gemv_gauss_interp(mesh, transpose, alpha, x, beta, y);
       break;
     case DGConstants::CUB_DR:
-      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
+      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr(matrix), x, beta, y);
       break;
     case DGConstants::CUB_DS:
-      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
+      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr(matrix), x, beta, y);
       break;
     default:
       std::cerr << "op2_gemv call not implemented for this matrix ... exiting" << std::endl;
