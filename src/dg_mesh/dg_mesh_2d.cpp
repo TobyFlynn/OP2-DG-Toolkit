@@ -185,6 +185,10 @@ DGMesh2D::DGMesh2D(std::string &meshFile, bool overInt) {
   ny = op_decl_dat(faces, 2, DG_FP_STR, (DG_FP *)NULL, "ny");
   sJ = op_decl_dat(faces, 2, DG_FP_STR, (DG_FP *)NULL, "sJ");
   fscale = op_decl_dat(faces, 2, DG_FP_STR, (DG_FP *)NULL, "fscale");
+  bnx = op_decl_dat(bfaces, 1, DG_FP_STR, (DG_FP *)NULL, "bnx");
+  bny = op_decl_dat(bfaces, 1, DG_FP_STR, (DG_FP *)NULL, "bny");
+  bsJ = op_decl_dat(bfaces, 1, DG_FP_STR, (DG_FP *)NULL, "bsJ");
+  bfscale = op_decl_dat(bfaces, 1, DG_FP_STR, (DG_FP *)NULL, "bfscale");
   order = op_decl_dat(cells, 1, "int", (int *)NULL, "order");
   for(int i = 0; i < 4; i++) {
     string tmpname = "op_tmp" + to_string(i);
@@ -269,6 +273,20 @@ void DGMesh2D::init() {
               op_arg_dat(sJ, -1, OP_ID, 2, DG_FP_STR, OP_WRITE),
               op_arg_dat(fscale, -1, OP_ID, 2, DG_FP_STR, OP_WRITE));
 
+  if(bface2cells) {
+    op_par_loop(copy_normals_bface_2d, "copy_normals_bface_2d", bfaces,
+                op_arg_dat(order, 0, bface2cells, 1, "int", OP_READ),
+                op_arg_dat(bedgeNum, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_dat(nx_c, 0, bface2cells, 3 * DG_NPF, DG_FP_STR, OP_READ),
+                op_arg_dat(ny_c, 0, bface2cells, 3 * DG_NPF, DG_FP_STR, OP_READ),
+                op_arg_dat(sJ_c, 0, bface2cells, 3 * DG_NPF, DG_FP_STR, OP_READ),
+                op_arg_dat(fscale_c, 0, bface2cells, 3 * DG_NPF, DG_FP_STR, OP_READ),
+                op_arg_dat(bnx, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
+                op_arg_dat(bny, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
+                op_arg_dat(bsJ, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
+                op_arg_dat(bfscale, -1, OP_ID, 1, DG_FP_STR, OP_WRITE));
+  }
+
   op_par_loop(copy_geof_2d, "copy_geof_2d", cells,
               op_arg_dat(rx,    -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(ry,    -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
@@ -321,6 +339,20 @@ void DGMesh2D::update_mesh_constants() {
               op_arg_dat(ny, -1, OP_ID, 2, DG_FP_STR, OP_WRITE),
               op_arg_dat(sJ, -1, OP_ID, 2, DG_FP_STR, OP_WRITE),
               op_arg_dat(fscale, -1, OP_ID, 2, DG_FP_STR, OP_WRITE));
+
+  if(bface2cells) {
+    op_par_loop(copy_normals_bface_2d, "copy_normals_bface_2d", bfaces,
+                op_arg_dat(order, 0, bface2cells, 1, "int", OP_READ),
+                op_arg_dat(bedgeNum, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_dat(nx_c, 0, bface2cells, 3 * DG_NPF, DG_FP_STR, OP_READ),
+                op_arg_dat(ny_c, 0, bface2cells, 3 * DG_NPF, DG_FP_STR, OP_READ),
+                op_arg_dat(sJ_c, 0, bface2cells, 3 * DG_NPF, DG_FP_STR, OP_READ),
+                op_arg_dat(fscale_c, 0, bface2cells, 3 * DG_NPF, DG_FP_STR, OP_READ),
+                op_arg_dat(bnx, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
+                op_arg_dat(bny, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
+                op_arg_dat(bsJ, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
+                op_arg_dat(bfscale, -1, OP_ID, 1, DG_FP_STR, OP_WRITE));
+  }
 
   op_par_loop(copy_geof_2d, "copy_geof_2d", cells,
               op_arg_dat(rx,    -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
