@@ -1,39 +1,28 @@
-inline void grad_2d_central_flux(const int *edgeNum, const bool *rev,
-                                 const DG_FP **nx, const DG_FP **ny,
-                                 const DG_FP **sJ, const DG_FP **u, 
-                                 DG_FP **ux, DG_FP **uy) {
-  // Work out which edge for each element
-  int edgeL = edgeNum[0];
-  int edgeR = edgeNum[1];
-  bool reverse = *rev;
+inline void grad_2d_central_flux(const int *faceNum, const bool *reverse,
+                                 const DG_FP *nx, const DG_FP *ny,
+                                 const DG_FP *fscale, const DG_FP **u,
+                                 DG_FP **fluxX, DG_FP **fluxY) {
+  const int *fmask  = &FMASK_TK[(DG_ORDER - 1) * DG_NUM_FACES * DG_NPF];
+  const int *fmaskL = &fmask[faceNum[0] * DG_NPF];
+  const int *fmaskR = &fmask[faceNum[1] * DG_NPF];
+  const bool rev = *reverse;
 
-  // Copy data from R to L
-  int exIndL = edgeL * DG_GF_NP;
-  int exIndR = edgeR * DG_GF_NP;
-
-  for(int i = 0; i < DG_GF_NP; i++) {
-    int lInd = exIndL + i;
-    int rInd;
-    if(reverse) {
-      rInd = exIndR + DG_GF_NP - 1 - i;
+  for(int i = 0; i < DG_NPF; i++) {
+    int findL = faceNum[0] * DG_NPF + i;
+    int fmaskL_ind = fmaskL[i];
+    int findR, fmaskR_ind;
+    if(rev) {
+      findR = faceNum[1] * DG_NPF + DG_NPF - i - 1;
+      fmaskR_ind = fmaskR[DG_NPF - i - 1];
     } else {
-      rInd = exIndR + i;
+      findR = faceNum[1] * DG_NPF + i;
+      fmaskR_ind = fmaskR[i];
     }
-    DG_FP flux = u[0][lInd] - 0.5 * (u[0][lInd] + u[1][rInd]);
-    ux[0][lInd] += gaussW_g_TK[i] * sJ[0][lInd] * nx[0][lInd] * flux;
-    uy[0][lInd] += gaussW_g_TK[i] * sJ[0][lInd] * ny[0][lInd] * flux;
-  }
 
-  for(int i = 0; i < DG_GF_NP; i++) {
-    int rInd = exIndR + i;
-    int lInd;
-    if(reverse) {
-      lInd = exIndL + DG_GF_NP - 1 - i;
-    } else {
-      lInd = exIndL + i;
-    }
-    DG_FP flux = u[1][rInd] - 0.5 * (u[0][lInd] + u[1][rInd]);
-    ux[1][rInd] += gaussW_g_TK[i] * sJ[1][rInd] * nx[1][rInd] * flux;
-    uy[1][rInd] += gaussW_g_TK[i] * sJ[1][rInd] * ny[1][rInd] * flux;
+    DG_FP flux = u[0][fmaskL_ind] - 0.5 * (u[0][fmaskL_ind] + u[1][fmaskR_ind]);
+    fluxX[0][findL] = fscale[0] * nx[0] * flux;
+    fluxY[0][findL] = fscale[0] * ny[0] * flux;
+    fluxX[1][findR] = fscale[1] * nx[1] * flux;
+    fluxY[1][findR] = fscale[1] * ny[1] * flux;
   }
 }

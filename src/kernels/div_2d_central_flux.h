@@ -1,39 +1,32 @@
-inline void div_2d_central_flux(const int *edgeNum, const bool *rev,
-                                const DG_FP **nx, const DG_FP **ny,
-                                const DG_FP **sJ, const DG_FP **u, 
+inline void div_2d_central_flux(const int *faceNum, const bool *reverse,
+                                const DG_FP *nx, const DG_FP *ny,
+                                const DG_FP *fscale, const DG_FP **u,
                                 const DG_FP **v, DG_FP **flux) {
-  // Work out which edge for each element
-  int edgeL = edgeNum[0];
-  int edgeR = edgeNum[1];
-  bool reverse = *rev;
+  const int *fmask  = &FMASK_TK[(DG_ORDER - 1) * DG_NUM_FACES * DG_NPF];
+  const int *fmaskL = &fmask[faceNum[0] * DG_NPF];
+  const int *fmaskR = &fmask[faceNum[1] * DG_NPF];
+  const bool rev = *reverse;
 
-  // Copy data from R to L
-  int exIndL = edgeL * DG_GF_NP;
-  int exIndR = edgeR * DG_GF_NP;
-
-  for(int i = 0; i < DG_GF_NP; i++) {
-    int lInd = exIndL + i;
-    int rInd;
-    if(reverse) {
-      rInd = exIndR + DG_GF_NP - 1 - i;
+  for(int i = 0; i < DG_NPF; i++) {
+    int findL = faceNum[0] * DG_NPF + i;
+    int fmaskL_ind = fmaskL[i];
+    int findR, fmaskR_ind;
+    if(rev) {
+      findR = faceNum[1] * DG_NPF + DG_NPF - i - 1;
+      fmaskR_ind = fmaskR[DG_NPF - i - 1];
     } else {
-      rInd = exIndR + i;
+      findR = faceNum[1] * DG_NPF + i;
+      fmaskR_ind = fmaskR[i];
     }
-    DG_FP flux_u = u[0][lInd] - 0.5 * (u[0][lInd] + u[1][rInd]);
-    DG_FP flux_v = v[0][lInd] - 0.5 * (v[0][lInd] + v[1][rInd]);
-    flux[0][lInd] += gaussW_g_TK[i] * sJ[0][lInd] * (nx[0][lInd] * flux_u + ny[0][lInd] * flux_v);
-  }
 
-  for(int i = 0; i < DG_GF_NP; i++) {
-    int rInd = exIndR + i;
-    int lInd;
-    if(reverse) {
-      lInd = exIndL + DG_GF_NP - 1 - i;
-    } else {
-      lInd = exIndL + i;
-    }
-    DG_FP flux_u = u[1][rInd] - 0.5 * (u[0][lInd] + u[1][rInd]);
-    DG_FP flux_v = v[1][rInd] - 0.5 * (v[0][lInd] + v[1][rInd]);
-    flux[1][rInd] += gaussW_g_TK[i] * sJ[1][rInd] * (nx[1][rInd] * flux_u + ny[1][rInd] * flux_v);
+    const DG_FP u_avg = 0.5 * (u[0][fmaskL_ind] + u[1][fmaskR_ind]);
+    const DG_FP fluxUL = u[0][fmaskL_ind] - u_avg;
+    const DG_FP fluxUR = u[1][fmaskR_ind] - u_avg;
+    const DG_FP v_avg = 0.5 * (v[0][fmaskL_ind] + v[1][fmaskR_ind]);
+    const DG_FP fluxVL = v[0][fmaskL_ind] - v_avg;
+    const DG_FP fluxVR = v[1][fmaskR_ind] - v_avg;
+
+    flux[0][findL] += fscale[0] * (nx[0] * fluxUL + ny[0] * fluxVL);
+    flux[1][findR] += fscale[1] * (nx[1] * fluxUR + ny[1] * fluxVR);
   }
 }

@@ -41,7 +41,7 @@ private:
 
 class DGMesh2D : public DGMesh {
 public:
-  DGMesh2D(std::string &meshFile);
+  DGMesh2D(std::string &meshFile, bool overInt = true);
   ~DGMesh2D();
   void init() override;
   void update_order(op_dat new_orders, std::vector<op_dat> &dats_to_interp);
@@ -53,10 +53,12 @@ public:
   // Operators
   void div(op_dat u, op_dat v, op_dat res);
   void div_with_central_flux(op_dat u, op_dat v, op_dat res);
+  void div_with_central_flux_over_int(op_dat u, op_dat v, op_dat res);
   void div_weak(op_dat u, op_dat v, op_dat res);
   void curl(op_dat u, op_dat v, op_dat res);
   void grad(op_dat u, op_dat ux, op_dat uy);
   void grad_with_central_flux(op_dat u, op_dat ux, op_dat uy);
+  void grad_with_central_flux_over_int(op_dat u, op_dat ux, op_dat uy);
   void cub_grad(op_dat u, op_dat ux, op_dat uy);
   void cub_grad_with_central_flux(op_dat u, op_dat ux, op_dat uy);
   void cub_div(op_dat u, op_dat v, op_dat res);
@@ -70,14 +72,18 @@ public:
   void inv_mass(op_dat u);
 
   // OP2 stuff
-  op_dat node_coords, nodeX, nodeY, x, y, rx, ry, sx, sy, nx,
-         ny, sJ, fscale, bedge_type, edgeNum, bedgeNum, reverse;
+  op_dat node_coords, nodeX, nodeY, x, y, rx, ry, sx, sy;
+  op_dat nx, ny, sJ, fscale;
+  op_dat bedge_type, edgeNum, bedgeNum, reverse;
+  op_dat nx_c, ny_c, sJ_c, fscale_c;
   op_dat op_tmp[4];
 
   DGCubatureData *cubature;
   DGGaussData *gauss;
 private:
   void update_mesh_constants();
+
+  bool over_integrate;
 };
 
 #endif
