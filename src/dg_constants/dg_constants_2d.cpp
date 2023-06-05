@@ -70,6 +70,7 @@ DGConstants2D::DGConstants2D(const int n_) {
   mmF0_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
   mmF1_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
   mmF2_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
+  eMat_ptr = (DG_FP *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(DG_FP));
   invMass_gInterpT_ptr = (DG_FP *)calloc(N_max * gNp_max * Np_max, sizeof(DG_FP));
   order_interp_ptr = (DG_FP *)calloc(N_max * N_max * Np_max * Np_max, sizeof(DG_FP));
 
@@ -98,6 +99,7 @@ DGConstants2D::DGConstants2D(const int n_) {
     arma::uvec fmask_  = arma::join_cols(fmask1_, fmask2_, fmask3_);
 
     // LIFT matrix
+    arma::mat eMat_ = DGUtils::eMat2D(r_, s_, fmask_, N);
     arma::mat lift_ = DGUtils::lift2D(r_, s_, fmask_, V_, N);
     arma::mat mmF0_, mmF1_, mmF2_;
     DGUtils::faceMassMatrix2D(r_, s_, fmask_, V_, N, mmF0_, mmF1_, mmF2_);
@@ -128,6 +130,7 @@ DGConstants2D::DGConstants2D(const int n_) {
     save_mat(Ds_ptr, Ds_, N, Np_max * Np_max);
     save_mat(Drw_ptr, Drw_, N, Np_max * Np_max);
     save_mat(Dsw_ptr, Dsw_, N, Np_max * Np_max);
+    save_mat(eMat_ptr, eMat_, N, Np_max * DG_NUM_FACES * Nfp_max);
     save_mat(lift_ptr, lift_, N, Np_max * DG_NUM_FACES * Nfp_max);
     save_mat(mmF0_ptr, mmF0_, N, Np_max * Np_max);
     save_mat(mmF1_ptr, mmF1_, N, Np_max * Np_max);
@@ -321,6 +324,8 @@ DG_FP* DGConstants2D::get_mat_ptr(Constant_Matrix matrix) {
       return mmF1_ptr;
     case MM_F2:
       return mmF2_ptr;
+    case EMAT:
+      return eMat_ptr;
     case INTERP_MATRIX_ARRAY:
       return order_interp_ptr;
     default:
@@ -361,6 +366,7 @@ DGConstants2D::~DGConstants2D() {
   free(mmF0_ptr);
   free(mmF1_ptr);
   free(mmF2_ptr);
+  free(eMat_ptr);
   free(invMass_gInterpT_ptr);
   free(order_interp_ptr);
 }

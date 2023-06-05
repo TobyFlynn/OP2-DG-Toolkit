@@ -18,6 +18,7 @@ __constant__ DG_FP *dg_Interp_kernel;
 __constant__ DG_FP *dg_MM_F0_kernel;
 __constant__ DG_FP *dg_MM_F1_kernel;
 __constant__ DG_FP *dg_MM_F2_kernel;
+__constant__ DG_FP *dg_Emat_kernel;
 
 DG_FP *dg_r_d;
 DG_FP *dg_s_d;
@@ -33,6 +34,7 @@ DG_FP *dg_Interp_d;
 DG_FP *dg_MM_F0_d;
 DG_FP *dg_MM_F1_d;
 DG_FP *dg_MM_F2_d;
+DG_FP *dg_Emat_d;
 
 void DGConstants2D::transfer_kernel_ptrs() {
   // Allocate device memory
@@ -50,6 +52,7 @@ void DGConstants2D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMalloc(&dg_MM_F0_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
   cutilSafeCall(cudaMalloc(&dg_MM_F1_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
   cutilSafeCall(cudaMalloc(&dg_MM_F2_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(cudaMalloc(&dg_Emat_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP)));
 
   // Transfer matrices to device
   cutilSafeCall(cudaMemcpy(dg_r_d, r_ptr, N_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
@@ -66,6 +69,7 @@ void DGConstants2D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMemcpy(dg_MM_F0_d, mmF0_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
   cutilSafeCall(cudaMemcpy(dg_MM_F1_d, mmF1_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
   cutilSafeCall(cudaMemcpy(dg_MM_F2_d, mmF2_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_Emat_d, eMat_ptr, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
 
   // Set up pointers that are accessible from the device
   cutilSafeCall(cudaMemcpyToSymbol(dg_r_kernel, &dg_r_d, sizeof(dg_r_d)));
@@ -81,6 +85,7 @@ void DGConstants2D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMemcpyToSymbol(dg_MM_F0_kernel, &dg_MM_F0_d, sizeof(dg_MM_F0_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_MM_F1_kernel, &dg_MM_F1_d, sizeof(dg_MM_F1_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_MM_F2_kernel, &dg_MM_F2_d, sizeof(dg_MM_F2_d)));
+  cutilSafeCall(cudaMemcpyToSymbol(dg_Emat_kernel, &dg_Emat_d, sizeof(dg_Emat_d)));
 }
 
 void DGConstants2D::clean_up_kernel_ptrs() {
@@ -98,6 +103,7 @@ void DGConstants2D::clean_up_kernel_ptrs() {
   cudaFree(dg_MM_F0_kernel);
   cudaFree(dg_MM_F1_kernel);
   cudaFree(dg_MM_F2_kernel);
+  cudaFree(dg_Emat_d);
 }
 
 DG_FP* DGConstants2D::get_mat_ptr_kernel(Constant_Matrix matrix) {
@@ -130,6 +136,8 @@ DG_FP* DGConstants2D::get_mat_ptr_kernel(Constant_Matrix matrix) {
       return dg_MM_F1_d;
     case MM_F2:
       return dg_MM_F2_d;
+    case EMAT:
+      return dg_Emat_d;
     default:
       throw std::runtime_error("This constant matrix is not supported by DGConstants2D\n");
       return nullptr;

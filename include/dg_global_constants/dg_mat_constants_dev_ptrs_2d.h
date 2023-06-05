@@ -18,6 +18,7 @@ extern DG_FP *dg_Interp_d;
 extern DG_FP *dg_MM_F0_d;
 extern DG_FP *dg_MM_F1_d;
 extern DG_FP *dg_MM_F2_d;
+extern DG_FP *dg_Emat_d;
 #endif
 
 #endif

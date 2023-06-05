@@ -18,6 +18,7 @@ extern __constant__ DG_FP *dg_Interp_kernel;
 extern __constant__ DG_FP *dg_MM_F0_kernel;
 extern __constant__ DG_FP *dg_MM_F1_kernel;
 extern __constant__ DG_FP *dg_MM_F2_kernel;
+extern __constant__ DG_FP *dg_Emat_kernel;
 #else
 extern DG_FP *dg_r_kernel;
 extern DG_FP *dg_s_kernel;
@@ -33,6 +34,7 @@ extern DG_FP *dg_Interp_kernel;
 extern DG_FP *dg_MM_F0_kernel;
 extern DG_FP *dg_MM_F1_kernel;
 extern DG_FP *dg_MM_F2_kernel;
+extern DG_FP *dg_Emat_kernel;
 #endif
 
 #endif
