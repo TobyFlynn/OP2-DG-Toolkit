@@ -67,6 +67,9 @@ DGConstants2D::DGConstants2D(const int n_) {
   gF1Ds_ptr = (DG_FP *)calloc(N_max * gNfp_max * Np_max, sizeof(DG_FP));
   gF2Dr_ptr = (DG_FP *)calloc(N_max * gNfp_max * Np_max, sizeof(DG_FP));
   gF2Ds_ptr = (DG_FP *)calloc(N_max * gNfp_max * Np_max, sizeof(DG_FP));
+  mmF0_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
+  mmF1_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
+  mmF2_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
   invMass_gInterpT_ptr = (DG_FP *)calloc(N_max * gNp_max * Np_max, sizeof(DG_FP));
   order_interp_ptr = (DG_FP *)calloc(N_max * N_max * Np_max * Np_max, sizeof(DG_FP));
 
@@ -96,6 +99,8 @@ DGConstants2D::DGConstants2D(const int n_) {
 
     // LIFT matrix
     arma::mat lift_ = DGUtils::lift2D(r_, s_, fmask_, V_, N);
+    arma::mat mmF0_, mmF1_, mmF2_;
+    DGUtils::faceMassMatrix2D(r_, s_, fmask_, V_, N, mmF0_, mmF1_, mmF2_);
 
     // Weak operators
     arma::mat Vr, Vs;
@@ -124,6 +129,9 @@ DGConstants2D::DGConstants2D(const int n_) {
     save_mat(Drw_ptr, Drw_, N, Np_max * Np_max);
     save_mat(Dsw_ptr, Dsw_, N, Np_max * Np_max);
     save_mat(lift_ptr, lift_, N, Np_max * DG_NUM_FACES * Nfp_max);
+    save_mat(mmF0_ptr, mmF0_, N, Np_max * Np_max);
+    save_mat(mmF1_ptr, mmF1_, N, Np_max * Np_max);
+    save_mat(mmF2_ptr, mmF2_, N, Np_max * Np_max);
     // memcpy(&r_ptr[(N - 1) * Np_max], r_.memptr(), r_.n_elem * sizeof(DG_FP));
     // memcpy(&s_ptr[(N - 1) * Np_max], s_.memptr(), s_.n_elem * sizeof(DG_FP));
     // memcpy(&v_ptr[(N - 1) * Np_max * Np_max], V_.memptr(), V_.n_elem * sizeof(DG_FP));
@@ -307,6 +315,12 @@ DG_FP* DGConstants2D::get_mat_ptr(Constant_Matrix matrix) {
       return gF2Ds_ptr;
     case INV_MASS_GAUSS_INTERP_T:
       return invMass_gInterpT_ptr;
+    case MM_F0:
+      return mmF0_ptr;
+    case MM_F1:
+      return mmF1_ptr;
+    case MM_F2:
+      return mmF2_ptr;
     case INTERP_MATRIX_ARRAY:
       return order_interp_ptr;
     default:
@@ -318,32 +332,35 @@ DG_FP* DGConstants2D::get_mat_ptr(Constant_Matrix matrix) {
 DGConstants2D::~DGConstants2D() {
   clean_up_kernel_ptrs();
 
-  delete r_ptr;
-  delete s_ptr;
-  delete v_ptr;
-  delete invV_ptr;
-  delete mass_ptr;
-  delete invMass_ptr;
-  delete Dr_ptr;
-  delete Ds_ptr;
-  delete Drw_ptr;
-  delete Dsw_ptr;
-  delete lift_ptr;
-  delete cubV_ptr;
-  delete cubDr_ptr;
-  delete cubDs_ptr;
-  delete cubVDr_ptr;
-  delete cubVDs_ptr;
-  delete gInterp_ptr;
-  delete gFInterp0_ptr;
-  delete gFInterp1_ptr;
-  delete gFInterp2_ptr;
-  delete gF0Dr_ptr;
-  delete gF0Ds_ptr;
-  delete gF1Dr_ptr;
-  delete gF1Ds_ptr;
-  delete gF2Dr_ptr;
-  delete gF2Ds_ptr;
-  delete invMass_gInterpT_ptr;
-  delete order_interp_ptr;
+  free(r_ptr);
+  free(s_ptr);
+  free(v_ptr);
+  free(invV_ptr);
+  free(mass_ptr);
+  free(invMass_ptr);
+  free(Dr_ptr);
+  free(Ds_ptr);
+  free(Drw_ptr);
+  free(Dsw_ptr);
+  free(lift_ptr);
+  free(cubV_ptr);
+  free(cubDr_ptr);
+  free(cubDs_ptr);
+  free(cubVDr_ptr);
+  free(cubVDs_ptr);
+  free(gInterp_ptr);
+  free(gFInterp0_ptr);
+  free(gFInterp1_ptr);
+  free(gFInterp2_ptr);
+  free(gF0Dr_ptr);
+  free(gF0Ds_ptr);
+  free(gF1Dr_ptr);
+  free(gF1Ds_ptr);
+  free(gF2Dr_ptr);
+  free(gF2Ds_ptr);
+  free(mmF0_ptr);
+  free(mmF1_ptr);
+  free(mmF2_ptr);
+  free(invMass_gInterpT_ptr);
+  free(order_interp_ptr);
 }

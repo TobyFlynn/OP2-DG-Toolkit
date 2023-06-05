@@ -15,6 +15,9 @@ extern DG_FP *dg_InvMass_d;
 extern DG_FP *dg_InvV_d;
 extern DG_FP *dg_Lift_d;
 extern DG_FP *dg_Interp_d;
+extern DG_FP *dg_MM_F0_d;
+extern DG_FP *dg_MM_F1_d;
+extern DG_FP *dg_MM_F2_d;
 #endif
 
 #endif

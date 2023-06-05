@@ -32,6 +32,7 @@ private:
   DG_FP *cubDs_ptr, *cubVDr_ptr, *cubVDs_ptr, *gInterp_ptr, *gFInterp0_ptr;
   DG_FP *gFInterp1_ptr, *gFInterp2_ptr, *gF0Dr_ptr, *gF0Ds_ptr, *gF1Dr_ptr, *gF1Ds_ptr;
   DG_FP *gF2Dr_ptr, *gF2Ds_ptr, *invMass_gInterpT_ptr;
+  DG_FP *mmF0_ptr, *mmF1_ptr, *mmF2_ptr;
   // Effectively a 2D array of interp matrices. Size [DG_ORDER][DG_ORDER]
   // To get an interp array:
   // int ind = ((order_from - 1) * DG_ORDER + (order_to - 1)) * DG_NP * DG_NP

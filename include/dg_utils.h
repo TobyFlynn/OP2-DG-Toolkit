@@ -74,6 +74,8 @@ namespace DGUtils {
                    const arma::mat &V, const int N, arma::mat &dr,
                    arma::mat &ds, arma::mat &dt);
   // Surface to volume lift matrix
+  arma::mat eMat2D(const arma::vec &r, const arma::vec &s,
+                   const arma::uvec &fmask, const int N);
   arma::mat lift2D(const arma::vec &r, const arma::vec &s,
                    const arma::uvec &fmask, const arma::mat &V, const int N);
   // Calculate 3D surface to volume lift operator without inv Mass
@@ -90,6 +92,10 @@ namespace DGUtils {
                            const arma::vec &t, const arma::mat &invV,
                            const int N);
   // Calculate the mass matrix of each face
+  void faceMassMatrix2D(const arma::vec &r, const arma::vec &s,
+                        const arma::uvec &fmask, const arma::mat &v,
+                        const int N, arma::mat &face0, arma::mat &face1,
+                        arma::mat &face2);
   void faceMassMatrix3D(const arma::vec &r, const arma::vec &s,
                         const arma::vec &t, const arma::uvec &fmask,
                         const arma::mat &v, const int N, arma::mat &face0,

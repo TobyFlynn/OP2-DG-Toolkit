@@ -27,9 +27,8 @@ void DGUtils::dMatrices3D(const arma::vec &r, const arma::vec &s,
 }
 
 // Surface to volume lift matrix
-arma::mat DGUtils::lift2D(const arma::vec &r, const arma::vec &s,
-                          const arma::uvec &fmask, const arma::mat &V,
-                          const int N) {
+arma::mat DGUtils::eMat2D(const arma::vec &r, const arma::vec &s,
+                          const arma::uvec &fmask, const int N) {
   int Np, Nfp;
   DGUtils::numNodes2D(N, &Np, &Nfp);
   arma::mat eMat(Np, 3 * Nfp);
@@ -51,6 +50,14 @@ arma::mat DGUtils::lift2D(const arma::vec &r, const arma::vec &s,
   mE              = arma::inv(v1D * v1D.t());
   col             = arma::regspace<arma::uvec>(2 * Nfp, 3 * Nfp - 1);
   eMat.submat(fmask(arma::span(2 * Nfp, 3 * Nfp - 1)), col) = mE;
+
+  return eMat;
+}
+
+arma::mat DGUtils::lift2D(const arma::vec &r, const arma::vec &s,
+                          const arma::uvec &fmask, const arma::mat &V,
+                          const int N) {
+  arma::mat eMat = eMat2D(r, s, fmask, N);
 
   return V * (V.t() * eMat);
 }
@@ -117,6 +124,34 @@ arma::mat DGUtils::interpMatrix3D(const arma::vec &r, const arma::vec &s,
 }
 
 // Calculate the mass matrix of each face
+void DGUtils::faceMassMatrix2D(const arma::vec &r, const arma::vec &s,
+                               const arma::uvec &fmask, const arma::mat &v,
+                               const int N, arma::mat &face0, arma::mat &face1,
+                               arma::mat &face2) {
+  int Np, Nfp;
+  numNodes2D(N, &Np, &Nfp);
+
+  arma::mat zMat(Np, Np, arma::fill::zeros);
+  face0 = zMat;
+  face1 = zMat;
+  face2 = zMat;
+
+  arma::vec faceR = r(fmask(arma::span(0, Nfp - 1)));
+  arma::mat v1D   = DGUtils::vandermonde1D(faceR, N);
+  arma::mat mE    = arma::inv(v1D * v1D.t());
+  face0.submat(fmask(arma::span(0, Nfp - 1)), fmask(arma::span(0, Nfp - 1))) += mE;
+
+  faceR = r(fmask(arma::span(Nfp, 2 * Nfp - 1)));
+  v1D   = DGUtils::vandermonde1D(faceR, N);
+  mE    = arma::inv(v1D * v1D.t());
+  face1.submat(fmask(arma::span(Nfp, 2 * Nfp - 1)), fmask(arma::span(Nfp, 2 * Nfp - 1))) += mE;
+
+  arma::vec faceS = s(fmask(arma::span(2 * Nfp, 3 * Nfp - 1)));
+  v1D             = DGUtils::vandermonde1D(faceS, N);
+  mE              = arma::inv(v1D * v1D.t());
+  face2.submat(fmask(arma::span(2 * Nfp, 3 * Nfp - 1)), fmask(arma::span(2 * Nfp, 3 * Nfp - 1))) += mE;
+}
+
 void DGUtils::faceMassMatrix3D(const arma::vec &r, const arma::vec &s,
                                const arma::vec &t, const arma::uvec &fmask,
                                const arma::mat &v, const int N,

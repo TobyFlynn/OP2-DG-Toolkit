@@ -239,23 +239,23 @@ DG_FP* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
 DGConstants3D::~DGConstants3D() {
   clean_up_kernel_ptrs();
 
-  delete r_ptr;
-  delete s_ptr;
-  delete t_ptr;
-  delete Dr_ptr;
-  delete Ds_ptr;
-  delete Dt_ptr;
-  delete Drw_ptr;
-  delete Dsw_ptr;
-  delete Dtw_ptr;
-  delete mass_ptr;
-  delete invMass_ptr;
-  delete invV_ptr;
-  delete lift_ptr;
-  delete mmF0_ptr;
-  delete mmF1_ptr;
-  delete mmF2_ptr;
-  delete mmF3_ptr;
-  delete eMat_ptr;
-  delete order_interp_ptr;
+  free(r_ptr);
+  free(s_ptr);
+  free(t_ptr);
+  free(Dr_ptr);
+  free(Ds_ptr);
+  free(Dt_ptr);
+  free(Drw_ptr);
+  free(Dsw_ptr);
+  free(Dtw_ptr);
+  free(mass_ptr);
+  free(invMass_ptr);
+  free(invV_ptr);
+  free(lift_ptr);
+  free(mmF0_ptr);
+  free(mmF1_ptr);
+  free(mmF2_ptr);
+  free(mmF3_ptr);
+  free(eMat_ptr);
+  free(order_interp_ptr);
 }

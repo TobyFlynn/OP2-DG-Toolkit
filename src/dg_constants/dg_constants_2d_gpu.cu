@@ -15,6 +15,9 @@ __constant__ DG_FP *dg_InvMass_kernel;
 __constant__ DG_FP *dg_InvV_kernel;
 __constant__ DG_FP *dg_Lift_kernel;
 __constant__ DG_FP *dg_Interp_kernel;
+__constant__ DG_FP *dg_MM_F0_kernel;
+__constant__ DG_FP *dg_MM_F1_kernel;
+__constant__ DG_FP *dg_MM_F2_kernel;
 
 DG_FP *dg_r_d;
 DG_FP *dg_s_d;
@@ -27,6 +30,9 @@ DG_FP *dg_InvMass_d;
 DG_FP *dg_InvV_d;
 DG_FP *dg_Lift_d;
 DG_FP *dg_Interp_d;
+DG_FP *dg_MM_F0_d;
+DG_FP *dg_MM_F1_d;
+DG_FP *dg_MM_F2_d;
 
 void DGConstants2D::transfer_kernel_ptrs() {
   // Allocate device memory
@@ -41,6 +47,9 @@ void DGConstants2D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMalloc(&dg_InvV_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
   cutilSafeCall(cudaMalloc(&dg_Lift_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP)));
   cutilSafeCall(cudaMalloc(&dg_Interp_d, N_max * N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(cudaMalloc(&dg_MM_F0_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(cudaMalloc(&dg_MM_F1_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(cudaMalloc(&dg_MM_F2_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
 
   // Transfer matrices to device
   cutilSafeCall(cudaMemcpy(dg_r_d, r_ptr, N_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
@@ -54,6 +63,9 @@ void DGConstants2D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMemcpy(dg_InvV_d, invV_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
   cutilSafeCall(cudaMemcpy(dg_Lift_d, lift_ptr, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
   cutilSafeCall(cudaMemcpy(dg_Interp_d, order_interp_ptr, N_max * N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_MM_F0_d, mmF0_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_MM_F1_d, mmF1_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_MM_F2_d, mmF2_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
 
   // Set up pointers that are accessible from the device
   cutilSafeCall(cudaMemcpyToSymbol(dg_r_kernel, &dg_r_d, sizeof(dg_r_d)));
@@ -66,6 +78,9 @@ void DGConstants2D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMemcpyToSymbol(dg_InvMass_kernel, &dg_InvMass_d, sizeof(dg_InvMass_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_Lift_kernel, &dg_Lift_d, sizeof(dg_Lift_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_Interp_kernel, &dg_Interp_d, sizeof(dg_Interp_d)));
+  cutilSafeCall(cudaMemcpyToSymbol(dg_MM_F0_kernel, &dg_MM_F0_d, sizeof(dg_MM_F0_d)));
+  cutilSafeCall(cudaMemcpyToSymbol(dg_MM_F1_kernel, &dg_MM_F1_d, sizeof(dg_MM_F1_d)));
+  cutilSafeCall(cudaMemcpyToSymbol(dg_MM_F2_kernel, &dg_MM_F2_d, sizeof(dg_MM_F2_d)));
 }
 
 void DGConstants2D::clean_up_kernel_ptrs() {
@@ -80,6 +95,9 @@ void DGConstants2D::clean_up_kernel_ptrs() {
   cudaFree(dg_InvV_d);
   cudaFree(dg_Lift_d);
   cudaFree(dg_Interp_d);
+  cudaFree(dg_MM_F0_kernel);
+  cudaFree(dg_MM_F1_kernel);
+  cudaFree(dg_MM_F2_kernel);
 }
 
 DG_FP* DGConstants2D::get_mat_ptr_kernel(Constant_Matrix matrix) {
@@ -106,6 +124,12 @@ DG_FP* DGConstants2D::get_mat_ptr_kernel(Constant_Matrix matrix) {
       return dg_Lift_d;
     case INTERP_MATRIX_ARRAY:
       return dg_Interp_d;
+    case MM_F0:
+      return dg_MM_F0_d;
+    case MM_F1:
+      return dg_MM_F1_d;
+    case MM_F2:
+      return dg_MM_F2_d;
     default:
       throw std::runtime_error("This constant matrix is not supported by DGConstants2D\n");
       return nullptr;

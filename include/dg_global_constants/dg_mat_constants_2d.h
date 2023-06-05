@@ -15,6 +15,9 @@ extern __constant__ DG_FP *dg_InvMass_kernel;
 extern __constant__ DG_FP *dg_InvV_kernel;
 extern __constant__ DG_FP *dg_Lift_kernel;
 extern __constant__ DG_FP *dg_Interp_kernel;
+extern __constant__ DG_FP *dg_MM_F0_kernel;
+extern __constant__ DG_FP *dg_MM_F1_kernel;
+extern __constant__ DG_FP *dg_MM_F2_kernel;
 #else
 extern DG_FP *dg_r_kernel;
 extern DG_FP *dg_s_kernel;
@@ -27,6 +30,9 @@ extern DG_FP *dg_InvMass_kernel;
 extern DG_FP *dg_InvV_kernel;
 extern DG_FP *dg_Lift_kernel;
 extern DG_FP *dg_Interp_kernel;
+extern DG_FP *dg_MM_F0_kernel;
+extern DG_FP *dg_MM_F1_kernel;
+extern DG_FP *dg_MM_F2_kernel;
 #endif
 
 #endif
