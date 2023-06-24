@@ -5,6 +5,7 @@
 #include "dg_compiler_defs.h"
 
 #include <iostream>
+#include <stdexcept>
 
 extern DGConstants *constants;
 
@@ -88,6 +89,8 @@ void op2_cpu_gemm(const int m, const int n, const int k,
 
 #else
 void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
+  const DG_FP beta, const DG_FP *matrix, op_dat arg4, op_dat arg5);
+void custom_kernel_gemv_halo_exchange(DGMesh *mesh, const bool t, const int m, const int n, const DG_FP alpha,
   const DG_FP beta, const DG_FP *matrix, op_dat arg4, op_dat arg5);
 #endif
 
@@ -382,4 +385,39 @@ void op2_gemv_interp(DGMesh *mesh, const int from_N, const int to_N, op_dat x, o
   #else
   op2_cpu_gemm(m, n, k, 1.0, false, A, m, x, DG_NP, 0.0, y, DG_NP);
   #endif
+}
+
+void op2_gemv_np_np_halo_exchange(DGMesh *mesh, bool transpose, const DG_FP alpha,
+                    const DG_FP *matrix, op_dat x, const DG_FP beta,
+                    op_dat y) {
+  if(transpose) {
+    throw std::runtime_error("gemv_halo_exchange not fully supported yet\n");
+  } else {
+    #if defined(USE_OP2_KERNELS) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
+    throw std::runtime_error("gemv_halo_exchange not fully supported yet\n");
+    #elif defined(OP2_DG_CUDA)
+    const int order = ((DGMesh3D *)mesh)->order_int;
+    const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
+    const int k = m;
+    const DG_FP *A = matrix + (order - 1) * DG_NP * DG_NP;
+    custom_kernel_gemv_halo_exchange(mesh, false, m, k, alpha, beta, A, x, y);
+    #else
+    throw std::runtime_error("gemv_halo_exchange not fully supported yet\n");
+    #endif
+  }
+}
+
+void op2_gemv_halo_exchange(DGMesh *mesh, bool transpose, const DG_FP alpha,
+              DGConstants::Constant_Matrix matrix, op_dat x, const DG_FP beta,
+              op_dat y) {
+  switch(matrix) {
+    case DGConstants::DR:
+    case DGConstants::DS:
+    case DGConstants::DT:
+      op2_gemv_np_np_halo_exchange(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
+      break;
+    default:
+      std::cerr << "op2_gemv call not implemented for this matrix ... exiting" << std::endl;
+      exit(2);
+  }
 }

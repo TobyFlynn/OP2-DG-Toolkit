@@ -7,13 +7,15 @@
 #include "kernels/non_templated_aos.h"
 #include "kernels/templated_aos.h"
 
+#include <stdexcept>
+
 void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
   const DG_FP beta, const DG_FP *matrix, op_dat x, op_dat y) {
 
   int nargs = 2;
   op_arg args[2] = {
     op_arg_dat(x, -1, OP_ID, x->dim, DG_FP_STR, OP_READ),
-    op_arg_dat(y, -1, OP_ID, y->dim, DG_FP_STR, OP_WRITE)
+    op_arg_dat(y, -1, OP_ID, y->dim, DG_FP_STR, OP_RW)
   };
 
   int set_size = op_mpi_halo_exchanges_grouped(set, nargs, args, 2);
@@ -133,4 +135,10 @@ void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, cons
   }
   op_mpi_set_dirtybit_cuda(nargs, args);
   cutilSafeCall(cudaDeviceSynchronize());
+}
+
+void custom_kernel_gemv_halo_exchange(DGMesh *mesh, const bool t, const int m, const int n, const DG_FP alpha,
+  const DG_FP beta, const DG_FP *matrix, op_dat x, op_dat y) {
+
+  throw std::runtime_error("gemv_halo_exchange not fully supported yet\n");
 }

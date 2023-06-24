@@ -33,6 +33,8 @@ public:
   void avg(op_dat in, op_dat out);
   void jump(op_dat in, op_dat out);
 
+  void grad_halo_exchange(op_dat u, op_dat ux, op_dat uy, op_dat uz);
+
   int order_int;
 
   // OP2 stuff
