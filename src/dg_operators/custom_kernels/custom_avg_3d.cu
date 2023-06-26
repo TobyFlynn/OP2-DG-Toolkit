@@ -51,14 +51,14 @@ void DGMesh3D::avg(op_dat in, op_dat out) {
   if (OP_diags>2) {
     printf(" kernel routine with indirection: avg_3d\n");
   }
-  int set_size = op_mpi_halo_exchanges_grouped(faces, nargs, args, 2);
+  int set_size = op_mpi_halo_exchanges_grouped(faces, nargs, args, 2, 0);
   if (set_size > 0) {
     //set CUDA execution parameters
     int nthread = 64;
 
     for ( int round=0; round<2; round++ ){
       if (round==1) {
-        op_mpi_wait_all_grouped(nargs, args, 2);
+        op_mpi_wait_all_grouped(nargs, args, 2, 0);
       }
       int start = round==0 ? 0 : node2node_custom_core_size;
       int end = round==0 ? node2node_custom_core_size : node2node_custom_total_size;

@@ -40,8 +40,8 @@ void DGMesh3D::update_custom_map() {
     op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
     op_arg_dat(fmaskR, -1, OP_ID, DG_NPF, "int", OP_READ),
   };
-  op_mpi_halo_exchanges_grouped(faces, nargs, args, 2);
-  op_mpi_wait_all_grouped(nargs, args, 2);
+  op_mpi_halo_exchanges_grouped(faces, nargs, args, 2, 0);
+  op_mpi_wait_all_grouped(nargs, args, 2, 0);
   op_mpi_set_dirtybit_cuda(nargs, args);
 
   const int map_size = faces->size + faces->exec_size;
@@ -144,8 +144,8 @@ void DGMesh3D::update_custom_map() {
     op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
     op_arg_dat(fmaskR, -1, OP_ID, DG_NPF, "int", OP_READ),
   };
-  op_mpi_halo_exchanges_grouped(faces, nargs, args, 2);
-  op_mpi_wait_all_grouped(nargs, args, 2);
+  op_mpi_halo_exchanges_grouped(faces, nargs, args, 2, 0);
+  op_mpi_wait_all_grouped(nargs, args, 2, 0);
   op_mpi_set_dirtybit_cuda(nargs, args);
 
   const int dg_npf = DG_CONSTANTS_TK[(order_int - 1) * DG_NUM_CONSTANTS + 1];

@@ -31,15 +31,6 @@ void custom_kernel_mass(const int order, char const *name, op_set set,
   op_arg arg2,
   op_arg arg3);
 
-void custom_kernel_grad_3d_he(const int order, DGMesh3D *mesh,
-  op_arg arg1,
-  op_arg arg2,
-  op_arg arg3,
-  op_arg arg4,
-  op_arg arg5,
-  op_arg arg6,
-  op_arg arg7);
-
 void DGMesh3D::grad(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
 #if defined(OP2_DG_CUDA) && !defined(DG_OP2_SOA)
 custom_kernel_grad_3d(order_int, "grad_3d",cells,
@@ -405,21 +396,8 @@ void DGMesh3D::grad_halo_exchange(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
   op2_gemv_halo_exchange(this, false, 1.0, DGConstants::DS, u, 0.0, tmp_s.dat);
   op2_gemv_halo_exchange(this, false, 1.0, DGConstants::DT, u, 0.0, tmp_t.dat);
 
-  #if defined(DG_OP2_SOA)
-  custom_kernel_grad_3d_he(order_int, this,
-                           op_arg_dat(geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
-                           op_arg_dat(tmp_r.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-                           op_arg_dat(tmp_s.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-                           op_arg_dat(tmp_t.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-                           op_arg_dat(ux, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
-                           op_arg_dat(uy, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
-                           op_arg_dat(uz, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
-  #else
-  throw std::runtime_error("grad_halo_exchange not fully supported yet\n");
-  #endif
-  /*
-  op_par_loop(grad_3d_he, "grad_3d_he", cells,
-              op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
+  op_par_loop(grad_3d_he, "grad_3d_he:force_halo_exchange", cells,
+              op_arg_gbl(&order_int, 1, "int", OP_READ),
               op_arg_dat(geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
               op_arg_dat(tmp_r.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(tmp_s.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
@@ -427,7 +405,7 @@ void DGMesh3D::grad_halo_exchange(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
               op_arg_dat(ux, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(uy, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(uz, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
-  */
+
   dg_dat_pool->releaseTempDatCells(tmp_r);
   dg_dat_pool->releaseTempDatCells(tmp_s);
   dg_dat_pool->releaseTempDatCells(tmp_t);

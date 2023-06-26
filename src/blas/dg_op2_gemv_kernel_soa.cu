@@ -17,7 +17,7 @@ void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, cons
     op_arg_dat(y, -1, OP_ID, y->dim, DG_FP_STR, OP_RW)
   };
 
-  int set_size = op_mpi_halo_exchanges_grouped(set, nargs, args, 2);
+  int set_size = op_mpi_halo_exchanges_grouped(set, nargs, args, 2, 0);
   if (set_size > 0) {
     //set CUDA execution parameters
     int nthread = 256;
@@ -112,24 +112,16 @@ void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, cons
   cutilSafeCall(cudaDeviceSynchronize());
 }
 
-void custom_kernel_gemv_halo_exchange(DGMesh *mesh, const bool t, const int m, const int n, const DG_FP alpha,
+void custom_kernel_gemv_halo_exchange(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
   const DG_FP beta, const DG_FP *matrix, op_dat x, op_dat y) {
 
-  int nargs = 4;
-  op_arg args[4];
-  if(beta == 0.0) {
-    args[0] = op_arg_dat(x, 0, mesh->face2cells, x->dim, DG_FP_STR, OP_READ);
-    args[1] = op_arg_dat(x, 1, mesh->face2cells, x->dim, DG_FP_STR, OP_READ);
-    args[2] = op_arg_dat(y, 0, mesh->face2cells, y->dim, DG_FP_STR, OP_WRITE);
-    args[3] = op_arg_dat(y, 1, mesh->face2cells, y->dim, DG_FP_STR, OP_WRITE);
-  } else {
-    args[0] = op_arg_dat(x, 0, mesh->face2cells, x->dim, DG_FP_STR, OP_READ);
-    args[1] = op_arg_dat(x, 1, mesh->face2cells, x->dim, DG_FP_STR, OP_READ);
-    args[2] = op_arg_dat(y, 0, mesh->face2cells, y->dim, DG_FP_STR, OP_RW);
-    args[3] = op_arg_dat(y, 1, mesh->face2cells, y->dim, DG_FP_STR, OP_RW);
-  }
+  int nargs = 2;
+  op_arg args[2] = {
+    op_arg_dat(x, -1, OP_ID, x->dim, DG_FP_STR, OP_READ),
+    op_arg_dat(y, -1, OP_ID, y->dim, DG_FP_STR, beta == 0.0 ? OP_WRITE : OP_RW)
+  };
 
-  int set_size = op_mpi_halo_exchanges_grouped(mesh->faces, nargs, args, 2);
+  int set_size = op_mpi_halo_exchanges_grouped(set, nargs, args, 2, 1);
   if (set_size > 0) {
     //set CUDA execution parameters
     const int strideX = getSetSizeFromOpArg(&args[0]);
@@ -137,15 +129,15 @@ void custom_kernel_gemv_halo_exchange(DGMesh *mesh, const bool t, const int m, c
 
     for ( int round=0; round<2; round++ ){
       if (round==1) {
-        op_mpi_wait_all_grouped(nargs, args, 2);
+        op_mpi_wait_all_grouped(nargs, args, 2, 1);
       }
 
-      int start = round==0 ? 0 : mesh->cells->core_size;
-      int end = round==0 ? mesh->cells->core_size : mesh->cells->size + mesh->cells->exec_size + mesh->cells->nonexec_size;
+      int start = round==0 ? 0 : set->core_size;
+      int end = round==0 ? set->core_size : set->size + set->exec_size + set->nonexec_size;
       if(end - start <= 0) continue;
 
       const double *x_ptr = (double *)args[0].data_d + start;
-      double *y_ptr = (double *)args[2].data_d + start;
+      double *y_ptr = (double *)args[1].data_d + start;
 
       const int nthread = 256;
       const int nblocks = (end - start) / nthread + 1;
@@ -220,8 +212,6 @@ void custom_kernel_gemv_halo_exchange(DGMesh *mesh, const bool t, const int m, c
       }
     }
   }
-  // op_mpi_set_dirtybit_cuda(nargs, args);
-  y->dirtybit = 0;
-  y->dirty_hd = 2;
+  op_mpi_set_dirtybit_force_halo_exchange(nargs, args, 2);
   cutilSafeCall(cudaDeviceSynchronize());
 }

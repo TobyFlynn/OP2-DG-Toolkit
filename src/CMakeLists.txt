@@ -29,7 +29,6 @@ list(APPEND GPU_SRC dg_operators/custom_kernels/custom_grad_3d.cu)
 list(APPEND GPU_SRC dg_operators/custom_kernels/custom_mass.cu)
 list(APPEND GPU_SRC dg_operators/custom_kernels/custom_avg_3d.cu)
 list(APPEND GPU_SRC dg_operators/custom_kernels/custom_jump_3d.cu)
-list(APPEND GPU_SRC dg_operators/custom_kernels/custom_grad_3d_he.cu)
 endif()
 
 # Only needs to be built once

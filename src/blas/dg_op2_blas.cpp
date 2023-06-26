@@ -90,7 +90,7 @@ void op2_cpu_gemm(const int m, const int n, const int k,
 #else
 void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
   const DG_FP beta, const DG_FP *matrix, op_dat arg4, op_dat arg5);
-void custom_kernel_gemv_halo_exchange(DGMesh *mesh, const bool t, const int m, const int n, const DG_FP alpha,
+void custom_kernel_gemv_halo_exchange(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
   const DG_FP beta, const DG_FP *matrix, op_dat arg4, op_dat arg5);
 #endif
 
@@ -400,7 +400,7 @@ void op2_gemv_np_np_halo_exchange(DGMesh *mesh, bool transpose, const DG_FP alph
     const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
     const int k = m;
     const DG_FP *A = matrix + (order - 1) * DG_NP * DG_NP;
-    custom_kernel_gemv_halo_exchange(mesh, false, m, k, alpha, beta, A, x, y);
+    custom_kernel_gemv_halo_exchange(mesh->cells, false, m, k, alpha, beta, A, x, y);
     #else
     throw std::runtime_error("gemv_halo_exchange not fully supported yet\n");
     #endif
