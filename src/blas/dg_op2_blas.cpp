@@ -153,7 +153,7 @@ void op2_cpu_gemm_halo_exchange(const int m, const int k,
     }
     #endif
   }
-  op_mpi_set_dirtybit(2, args);
+  op_mpi_set_dirtybit_force_halo_exchange(2, args, 1);
 }
 
 #else
