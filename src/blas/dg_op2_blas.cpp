@@ -95,11 +95,11 @@ void op2_cpu_gemm_halo_exchange(const int m, const int k,
     op_arg_dat(b_dat, -1, OP_ID, b_dat->dim, DG_FP_STR, OP_READ),
     op_arg_dat(c_dat, -1, OP_ID, c_dat->dim, DG_FP_STR, OP_RW)
   };
-  op_mpi_halo_exchanges_grouped(b_dat->set, 2, args, 1, 1);
+  op_mpi_halo_exchanges_force_halo_exchange(b_dat->set, 2, args);
 
   for(int round = 0; round < 2; round++) {
     if(round == 1)
-      op_mpi_wait_all_grouped(2, args, 1, 1);
+      op_mpi_wait_all(2, args);
     const int n = round == 0 ? b_dat->set->core_size : b_dat->set->size + b_dat->set->exec_size + b_dat->set->nonexec_size;
     const int start = round == 0 ? 0 : b_dat->set->core_size;
     const int round_size = n - start;
