@@ -132,8 +132,8 @@ void custom_kernel_gemv_halo_exchange(op_set set, const bool t, const int m, con
         op_mpi_wait_all_grouped(nargs, args, 2, 1);
       }
 
-      int start = round==0 ? 0 : set->core_size;
-      int end = round==0 ? set->core_size : set->size + set->exec_size + set->nonexec_size;
+      int start = round==0 ? 0 : set->size;
+      int end = round==0 ? set->size : set->size + set->exec_size + set->nonexec_size;
       if(end - start <= 0) continue;
 
       const double *x_ptr = (double *)args[0].data_d + start;

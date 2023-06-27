@@ -100,8 +100,8 @@ void op2_cpu_gemm_halo_exchange(const int m, const int k,
   for(int round = 0; round < 2; round++) {
     if(round == 1)
       op_mpi_wait_all_grouped(2, args, 1, 1);
-    const int n = round == 0 ? b_dat->set->core_size : b_dat->set->size + b_dat->set->exec_size + b_dat->set->nonexec_size;
-    const int start = round == 0 ? 0 : b_dat->set->core_size;
+    const int n = round == 0 ? b_dat->set->size : b_dat->set->size + b_dat->set->exec_size + b_dat->set->nonexec_size;
+    const int start = round == 0 ? 0 : b_dat->set->size;
     const int round_size = n - start;
     const DG_FP *B = (DG_FP *)b_dat->data + start * ldb;
     DG_FP *C = (DG_FP *)c_dat->data + start * ldc;
