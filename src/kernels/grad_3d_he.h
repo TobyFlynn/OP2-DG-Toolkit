@@ -1,6 +1,6 @@
-inline void grad_3d_geof(const int *p, const DG_FP *geof, const DG_FP *ur,
-                         const DG_FP *us, const DG_FP *ut, DG_FP *ux, DG_FP *uy,
-                         DG_FP *uz) {
+inline void grad_3d_he(const int *p, const DG_FP *geof, const DG_FP *ur,
+                       const DG_FP *us, const DG_FP *ut, DG_FP *ux, DG_FP *uy,
+                       DG_FP *uz) {
   const int dg_np = DG_CONSTANTS_TK[(*p - 1) * DG_NUM_CONSTANTS];
 
   for(int m = 0; m < dg_np; m++) {
