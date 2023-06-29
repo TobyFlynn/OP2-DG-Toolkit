@@ -5,6 +5,7 @@
 #include <string>
 #include <memory>
 #include <iostream>
+#include <stdexcept>
 
 #include "dg_compiler_defs.h"
 #include "dg_op2_blas.h"
@@ -203,6 +204,9 @@ DGMesh2D::DGMesh2D(std::string &meshFile, bool overInt) {
   op_decl_const(DG_ORDER * DG_GF_NP, DG_FP_STR, gaussW_g_TK);
 
   if(over_integrate) {
+    #ifdef DG_OP2_SOA
+    throw std::runtime_error("2D over integrate not implemented for SoA");
+    #endif
     cubature = new DGCubatureData(this);
     gauss = new DGGaussData(this);
   }

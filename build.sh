@@ -27,6 +27,10 @@ python3 preprocessor.py 2 $ORDER
 
 python3 preprocessor.py 3 $ORDER
 
+if [ $SOA = 1 ]; then
+  export OP_AUTO_SOA=1
+fi
+
 cd gen_2d
 
 python3 $OP2_TRANSLATOR \
@@ -46,17 +50,10 @@ sed -i "2i #include \"cblas.h\"" seq/dg_tookit_seqkernels.cpp
 
 cd ../gen_3d
 
-if [ $SOA = 1 ]; then
-  OP_AUTO_SOA=1 python3 $OP2_TRANSLATOR \
-    dg_tookit.cpp dg_mesh/dg_mesh_3d.cpp \
-    blas/dg_op2_blas.cpp dg_operators/dg_operators_3d.cpp \
-    kernels/
-else
-  python3 $OP2_TRANSLATOR \
-    dg_tookit.cpp dg_mesh/dg_mesh_3d.cpp \
-    blas/dg_op2_blas.cpp dg_operators/dg_operators_3d.cpp \
-    kernels/
-fi
+python3 $OP2_TRANSLATOR \
+  dg_tookit.cpp dg_mesh/dg_mesh_3d.cpp \
+  blas/dg_op2_blas.cpp dg_operators/dg_operators_3d.cpp \
+  kernels/
 
 # Add compiler definitions to every kernel
 sed -i "16i #include \"dg_compiler_defs.h\"" cuda/dg_tookit_kernels.cu

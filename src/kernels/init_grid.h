@@ -8,18 +8,21 @@ inline void init_grid(const int *p, DG_FP *rx, DG_FP *ry, DG_FP *sx,
   // Calculate normals
   // Face 0
   for(int i = 0; i < dg_nfp; i++) {
-    nx[i] = ry[fmask[i]];
-    ny[i] = -rx[fmask[i]];
+    const int fmask_ind = fmask[i];
+    nx[i] = ry[fmask_ind];
+    ny[i] = -rx[fmask_ind];
   }
   // Face 1
   for(int i = 0; i < dg_nfp; i++) {
-    nx[dg_nfp + i] = sy[fmask[dg_nfp + i]] - ry[fmask[dg_nfp + i]];
-    ny[dg_nfp + i] = rx[fmask[dg_nfp + i]] - sx[fmask[dg_nfp + i]];
+    const int fmask_ind = fmask[dg_nfp + i];
+    nx[dg_nfp + i] = sy[fmask_ind] - ry[fmask_ind];
+    ny[dg_nfp + i] = rx[fmask_ind] - sx[fmask_ind];
   }
   // Face 2
   for(int i = 0; i < dg_nfp; i++) {
-    nx[2 * dg_nfp + i] = -sy[fmask[2 * dg_nfp + i]];
-    ny[2 * dg_nfp + i] = sx[fmask[2 * dg_nfp + i]];
+    const int fmask_ind = fmask[2 * dg_nfp + i];
+    nx[2 * dg_nfp + i] = -sy[fmask_ind];
+    ny[2 * dg_nfp + i] = sx[fmask_ind];
   }
 
   // J = -xs.*yr + xr.*ys
@@ -44,6 +47,7 @@ inline void init_grid(const int *p, DG_FP *rx, DG_FP *ry, DG_FP *sx,
     sJ[i] = sqrt(nx[i] * nx[i] + ny[i] * ny[i]);
     nx[i] = nx[i] / sJ[i];
     ny[i] = ny[i] / sJ[i];
-    fscale[i] = sJ[i] / J[fmask[i]];
+    const int fmask_ind = fmask[i];
+    fscale[i] = sJ[i] / J[fmask_ind];
   }
 }
