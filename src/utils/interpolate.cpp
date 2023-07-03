@@ -63,6 +63,45 @@ void DGUtils::grad_at_pt_3d(const DG_FP r, const DG_FP s, const DG_FP t,
   }
 }
 
+std::vector<DG_FP> DGUtils::val_at_pt_N_1_3d_get_simplexes(const std::vector<DG_FP> &r,
+                      const std::vector<DG_FP> &s, const std::vector<DG_FP> &t,
+                      const int N) {
+  std::vector<DG_FP> a, b, c;
+  for(int i = 0; i < r.size(); i++) {
+    if(s[i] + t[i] != 0.0)
+      a.push_back(2.0 * (1.0 + r[i]) / (-s[i] - t[i]) - 1.0);
+    else
+      a.push_back(-1.0);
+
+    if(t[i] != 1.0)
+      b.push_back(2.0 * (1.0 + s[i]) / (1.0 - t[i]) - 1.0);
+    else
+      b.push_back(-1.0);
+
+    c.push_back(t[i]);
+  }
+
+  std::vector<DG_FP> result;
+
+  for(int i = 0; i < r.size(); i++) {
+    DG_FP new_val = 0.0;
+    arma::vec a_(1), b_(1), c_(1), ans;
+    a_(0) = a[i]; b_(0) = b[i]; c_(0) = c[i];
+    for(int i = 0; i < N + 1; i++) {
+      for(int j = 0; j < N - i + 1; j++) {
+        for(int k = 0; k < N - i - j + 1; k++) {
+          if(i + j + k < N) {
+            ans = simplex3DP(a_, b_, c_, i, j, k);
+            result.push_back(ans(0));
+          }
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
 DG_FP DGUtils::val_at_pt_N_1_3d(const DG_FP r, const DG_FP s, const DG_FP t,
                                 const DG_FP *modal, const int N) {
   DG_FP a, b, c;
