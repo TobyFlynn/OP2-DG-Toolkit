@@ -93,6 +93,8 @@ std::vector<DG_FP> DGUtils::val_at_pt_N_1_3d_get_simplexes(const std::vector<DG_
           if(i + j + k < N) {
             ans = simplex3DP(a_, b_, c_, i, j, k);
             result.push_back(ans(0));
+          } else {
+            result.push_back(0.0);
           }
         }
       }
