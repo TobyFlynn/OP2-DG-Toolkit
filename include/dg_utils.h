@@ -95,6 +95,11 @@ namespace DGUtils {
                         const arma::mat &v, const int N, arma::mat &face0,
                         arma::mat &face1, arma::mat &face2, arma::mat &face3);
 
+  // Calculate a filter matrix that targets modes of degree Nc and above
+  arma::mat filterMatrix3D(const arma::mat &v, const arma::mat &invV,
+                           const int N, const int Nc, const int s,
+                           const DG_FP alpha);
+
   /*********************************
   * Calculating nodes
   **********************************/

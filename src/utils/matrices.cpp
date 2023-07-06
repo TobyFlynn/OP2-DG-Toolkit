@@ -151,3 +151,23 @@ void DGUtils::faceMassMatrix3D(const arma::vec &r, const arma::vec &s,
   vFace = vandermonde2D(faceR, faceS, N);
   face3.submat(fmask(arma::span(3 * Nfp, 4 * Nfp - 1)), fmask(arma::span(3 * Nfp, 4 * Nfp - 1))) += arma::inv(vFace * vFace.t());
 }
+
+arma::mat DGUtils::filterMatrix3D(const arma::mat &v, const arma::mat &invV,
+                                  const int N, const int Nc, const int s,
+                                  const DG_FP alpha) {
+  int diag_ind = 0;
+  arma::mat tmp(v.n_rows, v.n_rows, arma::fill::zeros);
+  for(int i = 0; i < N + 1; i++) {
+    for(int j = 0; j < N - i + 1; j++) {
+      for(int k = 0; k < N - i - j + 1; k++) {
+        if(i + j + k >= Nc) {
+          tmp(diag_ind, diag_ind) = exp(-alpha * pow(((i + j + k - Nc + 1)/(N - Nc + 1)),s));
+        } else {
+          tmp(diag_ind, diag_ind) = 1.0;
+        }
+        diag_ind++;
+      }
+    }
+  }
+  return v * tmp * invV;
+}
