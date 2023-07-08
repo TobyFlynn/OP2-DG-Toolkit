@@ -35,8 +35,6 @@ public:
 
   void grad_halo_exchange(op_dat u, op_dat ux, op_dat uy, op_dat uz);
 
-  int order_int;
-
   // OP2 stuff
   op_dat node_coords, nodeX, nodeY, nodeZ, x, y, z;
   op_dat rx, ry, rz, sx, sy, sz, tx, ty, tz;
