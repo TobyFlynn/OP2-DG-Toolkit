@@ -23,7 +23,7 @@ private:
 
   DG_FP *r_ptr, *s_ptr, *t_ptr;
   DG_FP *Dr_ptr, *Ds_ptr, *Dt_ptr, *Drw_ptr, *Dsw_ptr, *Dtw_ptr;
-  DG_FP *mass_ptr, *invMass_ptr, *invV_ptr, *lift_ptr;
+  DG_FP *mass_ptr, *invMass_ptr, *invV_ptr, *v_ptr, *lift_ptr;
   DG_FP *mmF0_ptr, *mmF1_ptr, *mmF2_ptr, *mmF3_ptr, *eMat_ptr;
   // Effectively a 2D array of interp matrices. Size [DG_ORDER][DG_ORDER]
   // To get an interp array:

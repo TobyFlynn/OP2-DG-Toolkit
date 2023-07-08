@@ -47,6 +47,7 @@ DGConstants3D::DGConstants3D(const int n_) {
   mass_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
   invMass_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
   invV_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
+  v_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
   lift_ptr = (DG_FP *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(DG_FP));
   mmF0_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
   mmF1_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
@@ -99,6 +100,7 @@ DGConstants3D::DGConstants3D(const int n_) {
     save_mat(mass_ptr, mass_, N, Np_max * Np_max);
     save_mat(invMass_ptr, inv_mass_, N, Np_max * Np_max);
     save_mat(invV_ptr, invV_, N, Np_max * Np_max);
+    save_mat(v_ptr, v_, N, Np_max * Np_max);
     save_mat(lift_ptr, lift_, N, DG_NUM_FACES * Nfp_max * Np_max);
     save_mat(mmF0_ptr, mmF0_, N, Np_max * Np_max);
     save_mat(mmF1_ptr, mmF1_, N, Np_max * Np_max);
@@ -216,6 +218,8 @@ DG_FP* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
       return invMass_ptr;
     case INV_V:
       return invV_ptr;
+    case V:
+      return v_ptr;
     case LIFT:
       return lift_ptr;
     case MM_F0:
@@ -251,6 +255,7 @@ DGConstants3D::~DGConstants3D() {
   free(mass_ptr);
   free(invMass_ptr);
   free(invV_ptr);
+  free(v_ptr);
   free(lift_ptr);
   free(mmF0_ptr);
   free(mmF1_ptr);

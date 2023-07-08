@@ -36,6 +36,15 @@ inline void face_check_3d(const int *order, const int *faceNum,
          !fp_equal(z[0][fmaskL_ind], z[1][fmaskR_ind]))
         (*num)++;
     }
+
+    for(int i = 0; i < dg_npf; i++) {
+      const int fmaskL_ind = fmaskL_corrected[i];
+      const int fmaskR_ind = fmaskR[i];
+      if(!fp_equal(x[0][fmaskL_ind], x[1][fmaskR_ind]) ||
+         !fp_equal(y[0][fmaskL_ind], y[1][fmaskR_ind]) ||
+         !fp_equal(z[0][fmaskL_ind], z[1][fmaskR_ind]))
+        (*num)++;
+    }
   } else if(*periodicFace == 1) {
     for(int i = 0; i < dg_npf; i++) {
       fmaskR_corrected[i] = 0;
@@ -57,6 +66,14 @@ inline void face_check_3d(const int *order, const int *faceNum,
     for(int i = 0; i < dg_npf; i++) {
       const int fmaskL_ind = fmaskL[i];
       const int fmaskR_ind = fmaskR_corrected[i];
+      if(!fp_equal(y[0][fmaskL_ind], y[1][fmaskR_ind]) ||
+         !fp_equal(z[0][fmaskL_ind], z[1][fmaskR_ind]))
+        (*num)++;
+    }
+
+    for(int i = 0; i < dg_npf; i++) {
+      const int fmaskL_ind = fmaskL_corrected[i];
+      const int fmaskR_ind = fmaskR[i];
       if(!fp_equal(y[0][fmaskL_ind], y[1][fmaskR_ind]) ||
          !fp_equal(z[0][fmaskL_ind], z[1][fmaskR_ind]))
         (*num)++;
@@ -86,6 +103,14 @@ inline void face_check_3d(const int *order, const int *faceNum,
          !fp_equal(z[0][fmaskL_ind], z[1][fmaskR_ind]))
         (*num)++;
     }
+
+    for(int i = 0; i < dg_npf; i++) {
+      const int fmaskL_ind = fmaskL_corrected[i];
+      const int fmaskR_ind = fmaskR[i];
+      if(!fp_equal(x[0][fmaskL_ind], x[1][fmaskR_ind]) ||
+         !fp_equal(z[0][fmaskL_ind], z[1][fmaskR_ind]))
+        (*num)++;
+    }
   } else if(*periodicFace == 3) {
     for(int i = 0; i < dg_npf; i++) {
       fmaskR_corrected[i] = 0;
@@ -107,6 +132,14 @@ inline void face_check_3d(const int *order, const int *faceNum,
     for(int i = 0; i < dg_npf; i++) {
       const int fmaskL_ind = fmaskL[i];
       const int fmaskR_ind = fmaskR_corrected[i];
+      if(!fp_equal(x[0][fmaskL_ind], x[1][fmaskR_ind]) ||
+         !fp_equal(y[0][fmaskL_ind], y[1][fmaskR_ind]))
+        (*num)++;
+    }
+
+    for(int i = 0; i < dg_npf; i++) {
+      const int fmaskL_ind = fmaskL_corrected[i];
+      const int fmaskR_ind = fmaskR[i];
       if(!fp_equal(x[0][fmaskL_ind], x[1][fmaskR_ind]) ||
          !fp_equal(y[0][fmaskL_ind], y[1][fmaskR_ind]))
         (*num)++;

@@ -101,6 +101,11 @@ namespace DGUtils {
                         const arma::mat &v, const int N, arma::mat &face0,
                         arma::mat &face1, arma::mat &face2, arma::mat &face3);
 
+  // Calculate a filter matrix that targets modes of degree Nc and above
+  arma::mat filterMatrix3D(const arma::mat &v, const arma::mat &invV,
+                           const int N, const int Nc, const int s,
+                           const DG_FP alpha);
+
   /*********************************
   * Calculating nodes
   **********************************/
@@ -152,6 +157,9 @@ namespace DGUtils {
                      DG_FP &ds, DG_FP &dt);
   DG_FP val_at_pt_N_1_3d(const DG_FP r, const DG_FP s, const DG_FP t,
                           const DG_FP *modal, const int N);
+  std::vector<DG_FP> val_at_pt_N_1_3d_get_simplexes(const std::vector<DG_FP> &r,
+                        const std::vector<DG_FP> &s, const std::vector<DG_FP> &t,
+                        const int N);
 }
 
 #endif

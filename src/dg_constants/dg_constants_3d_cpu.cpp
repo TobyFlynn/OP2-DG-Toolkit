@@ -14,6 +14,7 @@ DG_FP *dg_Dtw_kernel;
 DG_FP *dg_Mass_kernel;
 DG_FP *dg_InvMass_kernel;
 DG_FP *dg_InvV_kernel;
+DG_FP *dg_V_kernel;
 DG_FP *dg_Lift_kernel;
 DG_FP *dg_MM_F0_kernel;
 DG_FP *dg_MM_F1_kernel;
@@ -35,6 +36,7 @@ void DGConstants3D::transfer_kernel_ptrs() {
   dg_Mass_kernel = mass_ptr;
   dg_InvMass_kernel = invMass_ptr;
   dg_InvV_kernel = invV_ptr;
+  dg_V_kernel = v_ptr;
   dg_Lift_kernel = lift_ptr;
   dg_MM_F0_kernel = mmF0_ptr;
   dg_MM_F1_kernel = mmF1_ptr;
@@ -74,6 +76,8 @@ DG_FP* DGConstants3D::get_mat_ptr_kernel(Constant_Matrix matrix) {
       return dg_InvMass_kernel;
     case INV_V:
       return dg_InvV_kernel;
+    case V:
+      return dg_V_kernel;
     case LIFT:
       return dg_Lift_kernel;
     case MM_F0:
