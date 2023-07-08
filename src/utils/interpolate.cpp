@@ -137,3 +137,27 @@ DG_FP DGUtils::val_at_pt_N_1_3d(const DG_FP r, const DG_FP s, const DG_FP t,
 
   return new_val;
 }
+
+std::vector<DG_FP> DGUtils::val_at_pt_N_1_2d_get_simplexes(const std::vector<DG_FP> &r,
+                      const std::vector<DG_FP> &s, const int N) {
+  std::vector<DG_FP> result;
+  for(int i = 0; i < r.size(); i++) {
+    arma::vec r_vec(1), s_vec(1), a_vec(1), b_vec(1);
+    r_vec(0) = r[i];
+    s_vec(0) = s[i];
+    rs2ab(r_vec, s_vec, a_vec, b_vec);
+
+    for(int i = 0; i < N + 1; i++) {
+      for(int j = 0; j < N + 1 - i; j++) {
+        if(i + j < N) {
+          arma::vec ans = simplex2DP(a_vec, b_vec, i, j);
+          result.push_back(ans(0));
+        } else {
+          result.push_back(0.0);
+        }
+      }
+    }
+  }
+
+  return result;
+}

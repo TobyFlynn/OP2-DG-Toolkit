@@ -13,6 +13,7 @@ extern DG_FP *dg_Dsw_d;
 extern DG_FP *dg_Mass_d;
 extern DG_FP *dg_InvMass_d;
 extern DG_FP *dg_InvV_d;
+extern DG_FP *dg_V_d;
 extern DG_FP *dg_Lift_d;
 extern DG_FP *dg_Interp_d;
 extern DG_FP *dg_MM_F0_d;

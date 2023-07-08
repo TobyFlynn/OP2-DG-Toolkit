@@ -160,6 +160,8 @@ namespace DGUtils {
   std::vector<DG_FP> val_at_pt_N_1_3d_get_simplexes(const std::vector<DG_FP> &r,
                         const std::vector<DG_FP> &s, const std::vector<DG_FP> &t,
                         const int N);
+  std::vector<DG_FP> val_at_pt_N_1_2d_get_simplexes(const std::vector<DG_FP> &r,
+                        const std::vector<DG_FP> &s, const int N);
 }
 
 #endif

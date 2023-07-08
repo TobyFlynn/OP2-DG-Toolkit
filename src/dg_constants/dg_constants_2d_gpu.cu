@@ -13,6 +13,7 @@ __constant__ DG_FP *dg_Dsw_kernel;
 __constant__ DG_FP *dg_Mass_kernel;
 __constant__ DG_FP *dg_InvMass_kernel;
 __constant__ DG_FP *dg_InvV_kernel;
+__constant__ DG_FP *dg_V_kernel;
 __constant__ DG_FP *dg_Lift_kernel;
 __constant__ DG_FP *dg_Interp_kernel;
 __constant__ DG_FP *dg_MM_F0_kernel;
@@ -29,6 +30,7 @@ DG_FP *dg_Dsw_d;
 DG_FP *dg_Mass_d;
 DG_FP *dg_InvMass_d;
 DG_FP *dg_InvV_d;
+DG_FP *dg_V_d;
 DG_FP *dg_Lift_d;
 DG_FP *dg_Interp_d;
 DG_FP *dg_MM_F0_d;
@@ -47,6 +49,7 @@ void DGConstants2D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMalloc(&dg_Mass_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
   cutilSafeCall(cudaMalloc(&dg_InvMass_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
   cutilSafeCall(cudaMalloc(&dg_InvV_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(cudaMalloc(&dg_V_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
   cutilSafeCall(cudaMalloc(&dg_Lift_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP)));
   cutilSafeCall(cudaMalloc(&dg_Interp_d, N_max * N_max * Np_max * Np_max * sizeof(DG_FP)));
   cutilSafeCall(cudaMalloc(&dg_MM_F0_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
@@ -64,6 +67,7 @@ void DGConstants2D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMemcpy(dg_Mass_d, mass_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
   cutilSafeCall(cudaMemcpy(dg_InvMass_d, invMass_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
   cutilSafeCall(cudaMemcpy(dg_InvV_d, invV_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_V_d, v_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
   cutilSafeCall(cudaMemcpy(dg_Lift_d, lift_ptr, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
   cutilSafeCall(cudaMemcpy(dg_Interp_d, order_interp_ptr, N_max * N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
   cutilSafeCall(cudaMemcpy(dg_MM_F0_d, mmF0_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
@@ -80,6 +84,8 @@ void DGConstants2D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMemcpyToSymbol(dg_Dsw_kernel, &dg_Dsw_d, sizeof(dg_Dsw_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_Mass_kernel, &dg_Mass_d, sizeof(dg_Mass_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_InvMass_kernel, &dg_InvMass_d, sizeof(dg_InvMass_d)));
+  cutilSafeCall(cudaMemcpyToSymbol(dg_InvV_kernel, &dg_InvV_d, sizeof(dg_InvV_d)));
+  cutilSafeCall(cudaMemcpyToSymbol(dg_V_kernel, &dg_V_d, sizeof(dg_V_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_Lift_kernel, &dg_Lift_d, sizeof(dg_Lift_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_Interp_kernel, &dg_Interp_d, sizeof(dg_Interp_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_MM_F0_kernel, &dg_MM_F0_d, sizeof(dg_MM_F0_d)));
@@ -98,6 +104,7 @@ void DGConstants2D::clean_up_kernel_ptrs() {
   cudaFree(dg_Mass_d);
   cudaFree(dg_InvMass_d);
   cudaFree(dg_InvV_d);
+  cudaFree(dg_V_d);
   cudaFree(dg_Lift_d);
   cudaFree(dg_Interp_d);
   cudaFree(dg_MM_F0_kernel);
@@ -126,6 +133,8 @@ DG_FP* DGConstants2D::get_mat_ptr_kernel(Constant_Matrix matrix) {
       return dg_InvMass_d;
     case INV_V:
       return dg_InvV_d;
+    case V:
+      return dg_V_d;
     case LIFT:
       return dg_Lift_d;
     case INTERP_MATRIX_ARRAY:
