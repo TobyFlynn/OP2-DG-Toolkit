@@ -465,3 +465,36 @@ void DGMesh2D::inv_mass(op_dat u) {
 
   op2_gemv(this, false, 1.0, DGConstants::INV_MASS, op_tmp[0], 0.0, u);
 }
+
+void DGMesh2D::avg(op_dat in, op_dat out) {
+  op_par_loop(avg_2d, "avg_2d", faces,
+              op_arg_gbl(&order_int, 1, "int", OP_READ),
+              op_arg_dat(edgeNum, -1, OP_ID, 2, "int", OP_READ),
+              op_arg_dat(reverse, -1, OP_ID, 1, "bool", OP_READ),
+              op_arg_dat(in,  -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(out, -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
+}
+
+void DGMesh2D::jump(op_dat in, op_dat out) {
+  op_par_loop(jump_2d, "jump_2d", faces,
+              op_arg_gbl(&order_int, 1, "int", OP_READ),
+              op_arg_dat(edgeNum, -1, OP_ID, 2, "int", OP_READ),
+              op_arg_dat(reverse, -1, OP_ID, 1, "bool", OP_READ),
+              op_arg_dat(in,  -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(out, -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
+}
+
+void DGMesh2D::interp_dat_between_orders(int old_order, int new_order, op_dat in, op_dat out) {
+  op2_gemv_interp(this, old_order, new_order, in, out);
+}
+
+void DGMesh2D::interp_dat_between_orders(int old_order, int new_order, op_dat in) {
+  DGTempDat tmp_0 = dg_dat_pool->requestTempDatCells(DG_NP);
+  op2_gemv_interp(this, old_order, new_order, in, tmp_0.dat);
+
+  op_par_loop(copy_dg_np_tk, "copy_dg_np_tk", cells,
+              op_arg_dat(tmp_0.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(in, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+
+  dg_dat_pool->releaseTempDatCells(tmp_0);
+}

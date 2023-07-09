@@ -70,6 +70,10 @@ public:
   void cub_div_weak_with_central_flux(op_dat u, op_dat v, op_dat res);
   void mass(op_dat u);
   void inv_mass(op_dat u);
+  void avg(op_dat in, op_dat out);
+  void jump(op_dat in, op_dat out);
+  void interp_dat_between_orders(int old_order, int new_order, op_dat in, op_dat out);
+  void interp_dat_between_orders(int old_order, int new_order, op_dat in);
 
   // OP2 stuff
   op_dat node_coords, nodeX, nodeY, x, y, rx, ry, sx, sy;
