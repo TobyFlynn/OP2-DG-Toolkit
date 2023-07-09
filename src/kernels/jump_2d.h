@@ -11,6 +11,6 @@ inline void jump_2d(const int *order, const int *faceNum, const bool *reverse,
     out[0][faceNumL * dg_npf + j] = in[0][fmaskL_ind] - in[1][fmaskR_ind_corr];
 
     const int r_out_ind = *reverse ? faceNumR * dg_npf + dg_npf - j - 1 : faceNumR * dg_npf + j;
-    out[1][r_out_ind] = in[1][fmaskL_ind] - in[0][fmaskR_ind_corr];
+    out[1][r_out_ind] = in[1][fmaskR_ind_corr] - in[0][fmaskL_ind];
   }
 }

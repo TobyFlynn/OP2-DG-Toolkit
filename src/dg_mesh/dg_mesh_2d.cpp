@@ -181,6 +181,12 @@ DGMesh2D::DGMesh2D(std::string &meshFile, bool overInt) {
   J        = op_decl_dat(cells, DG_NP, DG_FP_STR, (DG_FP *)NULL, "J");
   sJ_c     = op_decl_dat(cells, 3 * DG_NPF, DG_FP_STR, (DG_FP *)NULL, "sJ_c");
   fscale_c = op_decl_dat(cells, 3 * DG_NPF, DG_FP_STR, (DG_FP *)NULL, "fscale_c");
+  // New normals and face constants on cell set
+  nx_c_new = op_decl_dat(cells, DG_NUM_FACES, DG_FP_STR, (DG_FP *)NULL, "nx_c_new");
+  ny_c_new = op_decl_dat(cells, DG_NUM_FACES, DG_FP_STR, (DG_FP *)NULL, "ny_c_new");
+  sJ_c_new = op_decl_dat(cells, DG_NUM_FACES, DG_FP_STR, (DG_FP *)NULL, "sJ_c_new");
+  fscale_c_new = op_decl_dat(cells, DG_NUM_FACES, DG_FP_STR, (DG_FP *)NULL, "fscale_c_new");
+
   reverse = op_decl_dat(faces, 1, "bool", (bool *)NULL, "reverse");
   nx = op_decl_dat(faces, 2, DG_FP_STR, (DG_FP *)NULL, "nx");
   ny = op_decl_dat(faces, 2, DG_FP_STR, (DG_FP *)NULL, "ny");
@@ -257,7 +263,11 @@ void DGMesh2D::init() {
               op_arg_dat(ny_c,  -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE),
               op_arg_dat(J,     -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(sJ_c,  -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE),
-              op_arg_dat(fscale_c, -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE));
+              op_arg_dat(fscale_c, -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE),
+              op_arg_dat(nx_c_new,  -1, OP_ID, DG_NUM_FACES, DG_FP_STR, OP_WRITE),
+              op_arg_dat(ny_c_new,  -1, OP_ID, DG_NUM_FACES, DG_FP_STR, OP_WRITE),
+              op_arg_dat(sJ_c_new,  -1, OP_ID, DG_NUM_FACES, DG_FP_STR, OP_WRITE),
+              op_arg_dat(fscale_c_new, -1, OP_ID, DG_NUM_FACES, DG_FP_STR, OP_WRITE));
 
   op_par_loop(init_edges, "init_edges", faces,
               op_arg_dat(edgeNum, -1, OP_ID, 2, "int", OP_READ),
@@ -330,7 +340,11 @@ void DGMesh2D::update_mesh_constants() {
               op_arg_dat(ny_c,  -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE),
               op_arg_dat(J,     -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(sJ_c,  -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE),
-              op_arg_dat(fscale_c, -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE));
+              op_arg_dat(fscale_c, -1, OP_ID, 3 * DG_NPF, DG_FP_STR, OP_WRITE),
+              op_arg_dat(nx_c_new,  -1, OP_ID, DG_NUM_FACES, DG_FP_STR, OP_WRITE),
+              op_arg_dat(ny_c_new,  -1, OP_ID, DG_NUM_FACES, DG_FP_STR, OP_WRITE),
+              op_arg_dat(sJ_c_new,  -1, OP_ID, DG_NUM_FACES, DG_FP_STR, OP_WRITE),
+              op_arg_dat(fscale_c_new, -1, OP_ID, DG_NUM_FACES, DG_FP_STR, OP_WRITE));
 
   op_par_loop(copy_normals_2d, "copy_normals_2d", faces,
               op_arg_dat(order, -2, face2cells, 1, "int", OP_READ),

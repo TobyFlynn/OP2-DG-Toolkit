@@ -1,6 +1,7 @@
 inline void init_grid(const int *p, DG_FP *rx, DG_FP *ry, DG_FP *sx,
                       DG_FP *sy, DG_FP *nx, DG_FP *ny, DG_FP *J, DG_FP *sJ,
-                      DG_FP *fscale) {
+                      DG_FP *fscale, DG_FP *nx_c, DG_FP *ny_c, DG_FP *sJ_c,
+                      DG_FP *fscale_c) {
   // Get constants for this element's order
   const int *fmask = &FMASK_TK[(*p - 1) * 3 * DG_NPF];
   const int dg_np  = DG_CONSTANTS_TK[(*p - 1) * 5];
@@ -49,5 +50,12 @@ inline void init_grid(const int *p, DG_FP *rx, DG_FP *ry, DG_FP *sx,
     ny[i] = ny[i] / sJ[i];
     const int fmask_ind = fmask[i];
     fscale[i] = sJ[i] / J[fmask_ind];
+  }
+
+  for(int i = 0; i < 3; i++) {
+    nx_c[i] = nx[i * dg_nfp];
+    ny_c[i] = ny[i * dg_nfp];
+    sJ_c[i] = sJ[i * dg_nfp];
+    fscale_c[i] = fscale[i * dg_nfp];
   }
 }

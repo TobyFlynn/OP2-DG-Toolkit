@@ -80,6 +80,7 @@ public:
   op_dat nx, ny, sJ, fscale, bnx, bny, bsJ, bfscale;
   op_dat bedge_type, edgeNum, bedgeNum, reverse;
   op_dat nx_c, ny_c, sJ_c, fscale_c;
+  op_dat nx_c_new, ny_c_new, sJ_c_new, fscale_c_new;
   op_dat op_tmp[4];
 
   DGCubatureData *cubature;
