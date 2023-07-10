@@ -20,6 +20,9 @@ public:
   DGTempDat requestTempDatCells(const int dim);
   void releaseTempDatCells(DGTempDat tempDat);
 
+  DGTempDat requestTempDatCellsSP(const int dim);
+  void releaseTempDatCellsSP(DGTempDat tempDat);
+
   DGTempDat requestTempDatFaces(const int dim);
   void releaseTempDatFaces(DGTempDat tempDat);
 
@@ -34,6 +37,7 @@ private:
 
   std::vector<DatWrapper> cell_dats;
   std::vector<DatWrapper> face_dats;
+  std::vector<DatWrapper> cell_dats_sp;
 };
 
 #endif

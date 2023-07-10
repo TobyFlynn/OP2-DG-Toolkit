@@ -7,6 +7,127 @@
 
 #include "kernels/non_templated_soa.h"
 #include "kernels/templated_soa.h"
+#include "kernels/non_templated_soa_sp.h"
+#include "kernels/templated_soa_sp.h"
+
+void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
+  const DG_FP beta, const DG_FP *matrix, op_dat x, op_dat y) {
+
+  int nargs = 2;
+  op_arg args[2] = {
+    op_arg_dat(x, -1, OP_ID, x->dim, "float", OP_READ),
+    op_arg_dat(y, -1, OP_ID, y->dim, "float", OP_RW)
+  };
+
+  DG_FP *A_h = (DG_FP *)calloc(m * n, sizeof(DG_FP));
+  cudaMemcpy(A_h, matrix, m * n * sizeof(DG_FP), cudaMemcpyDeviceToHost);
+  float *A_sp_h = (float *)calloc(m * n, sizeof(float));
+  for(int i = 0; i < m * n; i++) {
+    A_sp_h[i] = (float)A_h[i];
+  }
+
+  float *A_sp;
+  cudaMalloc(&A_sp, m * n * sizeof(float));
+  cudaMemcpy(A_sp, A_sp_h, m * n * sizeof(float), cudaMemcpyHostToDevice);
+  free(A_sp_h);
+  free(A_h);
+
+  int set_size = op_mpi_halo_exchanges_grouped(set, nargs, args, 2, 0);
+  if (set_size > 0) {
+    //set CUDA execution parameters
+    int nthread = 256;
+    const int nblocks = set->size / nthread + 1;
+    const int strideX = getSetSizeFromOpArg(&args[0]);
+    const int strideY = getSetSizeFromOpArg(&args[1]);
+
+    if(t) {
+      switch(m) {
+        // The number of nodes for each order
+        case 4:
+          templated_cuda_gemm_T_gpu_sp<4><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
+                                              strideX, strideY, (float)alpha, (float)beta,
+                                              A_sp, (float *) args[0].data_d,
+                                              (float *) args[1].data_d, set->size);
+          break;
+        case 10:
+          templated_cuda_gemm_T_gpu_sp<10><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
+                                              strideX, strideY, (float)alpha, (float)beta,
+                                              A_sp, (float *) args[0].data_d,
+                                              (float *) args[1].data_d, set->size);
+          break;
+        case 20:
+          templated_cuda_gemm_T_gpu_sp<20><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
+                                              strideX, strideY, (float)alpha, (float)beta,
+                                              A_sp, (float *) args[0].data_d,
+                                              (float *) args[1].data_d, set->size);
+          break;
+        // The number of face nodes for each order
+        case 12:
+          templated_cuda_gemm_T_gpu_sp<12><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
+                                              strideX, strideY, (float)alpha, (float)beta,
+                                              A_sp, (float *) args[0].data_d,
+                                              (float *) args[1].data_d, set->size);
+          break;
+        case 24:
+          templated_cuda_gemm_T_gpu_sp<24><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
+                                              strideX, strideY, (float)alpha, (float)beta,
+                                              A_sp, (float *) args[0].data_d,
+                                              (float *) args[1].data_d, set->size);
+          break;
+        case 40:
+          templated_cuda_gemm_T_gpu_sp<40><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
+                                              strideX, strideY, (float)alpha, (float)beta,
+                                              A_sp, (float *) args[0].data_d,
+                                              (float *) args[1].data_d, set->size);
+          break;
+        default:
+          cuda_gemm_T_gpu_sp<<<nblocks,nthread,m*n*sizeof(float)>>>(m, n, strideX, strideY, (float)alpha, (float)beta,
+                                               A_sp, (float *) args[0].data_d,
+                                               (float *) args[1].data_d, set->size);
+      }
+    } else {
+      if(m == 4 && n == 4) {
+        templated_cuda_gemm_gpu_sp<4,4><<<nblocks,nthread,m*sizeof(float)>>>(
+                                            strideX, strideY, (float)alpha, (float)beta,
+                                            A_sp, (float *) args[0].data_d,
+                                            (float *) args[1].data_d, set->size);
+      } else if(m == 10 && n == 10) {
+        templated_cuda_gemm_gpu_sp<10,10><<<nblocks,nthread,m*sizeof(float)>>>(
+                                            strideX, strideY, (float)alpha, (float)beta,
+                                            A_sp, (float *) args[0].data_d,
+                                            (float *) args[1].data_d, set->size);
+      } else if(m == 20 && n == 20) {
+        templated_cuda_gemm_gpu_sp<20,20><<<nblocks,nthread,m*sizeof(float)>>>(
+                                            strideX, strideY, (float)alpha, (float)beta,
+                                            A_sp, (float *) args[0].data_d,
+                                            (float *) args[1].data_d, set->size);
+      } else if(m == 4 && n == 12) {
+        templated_cuda_gemm_gpu_sp<4,12><<<nblocks,nthread,m*sizeof(float)>>>(
+                                            strideX, strideY, (float)alpha, (float)beta,
+                                            A_sp, (float *) args[0].data_d,
+                                            (float *) args[1].data_d, set->size);
+      } else if(m == 10 && n == 24) {
+        templated_cuda_gemm_gpu_sp<10,24><<<nblocks,nthread,m*sizeof(float)>>>(
+                                            strideX, strideY, (float)alpha, (float)beta,
+                                            A_sp, (float *) args[0].data_d,
+                                            (float *) args[1].data_d, set->size);
+      } else if(m == 20 && n == 40) {
+        templated_cuda_gemm_gpu_sp<20,40><<<nblocks,nthread,m*sizeof(float)>>>(
+                                            strideX, strideY, (float)alpha, (float)beta,
+                                            A_sp, (float *) args[0].data_d,
+                                            (float *) args[1].data_d, set->size);
+      } else {
+        cuda_gemm_gpu_sp<<<nblocks,nthread,m*n*sizeof(float)>>>(m, n, strideX, strideY, (float)alpha, (float)beta,
+                                           A_sp, (float *) args[0].data_d,
+                                           (float *) args[1].data_d, set->size);
+      }
+    }
+  }
+
+  cudaFree(A_sp);
+  op_mpi_set_dirtybit_cuda(nargs, args);
+  cutilSafeCall(cudaDeviceSynchronize());
+}
 
 void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
   const DG_FP beta, const DG_FP *matrix, op_dat x, op_dat y) {

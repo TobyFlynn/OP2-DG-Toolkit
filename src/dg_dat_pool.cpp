@@ -46,6 +46,32 @@ void DGDatPool::releaseTempDatCells(DGTempDat tempDat) {
   cell_dats[tempDat.ind].in_use = false;
 }
 
+DGTempDat DGDatPool::requestTempDatCellsSP(const int dim) {
+  for(int i = 0; i < cell_dats_sp.size(); i++) {
+    if(cell_dats_sp[i].dat->dim == dim && !cell_dats_sp[i].in_use) {
+      cell_dats_sp[i].in_use = true;
+      DGTempDat tmp;
+      tmp.dat = cell_dats_sp[i].dat;
+      tmp.ind = i;
+      return tmp;
+    }
+  }
+
+  std::string tmp_dat_name = "dg_dat_pool_sp_cells_" + std::to_string(cell_dats_sp.size());
+  op_dat tmp_dat = op_decl_dat_temp(mesh->cells, dim, "float", (float *)NULL, tmp_dat_name.c_str());
+
+  cell_dats_sp.push_back({tmp_dat, true});
+
+  DGTempDat tmp;
+  tmp.dat = tmp_dat;
+  tmp.ind = cell_dats_sp.size() - 1;
+  return tmp;
+}
+
+void DGDatPool::releaseTempDatCellsSP(DGTempDat tempDat) {
+  cell_dats_sp[tempDat.ind].in_use = false;
+}
+
 DGTempDat DGDatPool::requestTempDatFaces(const int dim) {
   for(int i = 0; i < face_dats.size(); i++) {
     if(face_dats[i].dat->dim == dim && !face_dats[i].in_use) {
