@@ -9,6 +9,11 @@
 
 #include <stdexcept>
 
+void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
+  const DG_FP beta, const DG_FP *matrix, op_dat arg4, op_dat arg5) {
+  throw std::runtime_error("SP");
+}
+
 void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
   const DG_FP beta, const DG_FP *matrix, op_dat x, op_dat y) {
 

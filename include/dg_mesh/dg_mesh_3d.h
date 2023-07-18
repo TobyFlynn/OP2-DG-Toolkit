@@ -26,12 +26,15 @@ public:
   void div_weak_with_central_flux(op_dat u, op_dat v, op_dat w, op_dat res);
   void curl(op_dat u, op_dat v, op_dat w, op_dat resx, op_dat resy, op_dat resz);
   void mass(op_dat u);
+  void mass_sp(op_dat u);
   void inv_mass(op_dat u);
   void interp_dat_between_orders(int old_order, int new_order, op_dat in, op_dat out);
   void interp_dat_between_orders(int old_order, int new_order, op_dat in);
 
   void avg(op_dat in, op_dat out);
   void jump(op_dat in, op_dat out);
+  void avg_sp(op_dat in, op_dat out);
+  void jump_sp(op_dat in, op_dat out);
 
   void grad_halo_exchange(op_dat u, op_dat ux, op_dat uy, op_dat uz);
 

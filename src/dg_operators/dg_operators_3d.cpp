@@ -319,6 +319,19 @@ void DGMesh3D::mass(op_dat u) {
   #endif
 }
 
+void DGMesh3D::mass_sp(op_dat u) {
+  DGTempDat tmp_0 = dg_dat_pool->requestTempDatCellsSP(DG_NP);
+
+  op2_gemv_sp(this, false, 1.0, DGConstants::MASS, u, 0.0, tmp_0.dat);
+  op_par_loop(J_3d_sp, "J_3d_sp", cells,
+              op_arg_gbl(&order_int, 1, "int", OP_READ),
+              op_arg_dat(J, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_0.dat, -1, OP_ID, DG_NP, "float", OP_READ),
+              op_arg_dat(u, -1, OP_ID, DG_NP, "float", OP_WRITE));
+
+  dg_dat_pool->releaseTempDatCellsSP(tmp_0);
+}
+
 void DGMesh3D::inv_mass(op_dat u) {
   op_par_loop(inv_mass, "inv_mass", cells,
               op_arg_gbl(&order_int, 1, "int", OP_READ),
