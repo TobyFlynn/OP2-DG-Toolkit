@@ -130,12 +130,12 @@ bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
   coarse_mat->getHYPRERanges(&ilower, &iupper, &jlower, &jupper);
 
   timer->startTimer("HYPREAMGSolver - Transfer vec");
-  DG_FP *rhs_ptr = getOP2PtrHost(rhs, OP_READ);
-  DG_FP *ans_ptr = getOP2PtrHost(ans, OP_READ);
+  float *rhs_ptr = getOP2PtrHostSP(rhs, OP_READ);
+  float *ans_ptr = getOP2PtrHostSP(ans, OP_READ);
 
   const int num_unknowns_l = coarse_mat->getUnknowns();
-  DG_FP *rhs_ptr_h = (DG_FP *)malloc(num_unknowns_l * sizeof(DG_FP));
-  DG_FP *ans_ptr_h = (DG_FP *)malloc(num_unknowns_l * sizeof(DG_FP));
+  float *rhs_ptr_h = (float *)malloc(num_unknowns_l * sizeof(float));
+  float *ans_ptr_h = (float *)malloc(num_unknowns_l * sizeof(float));
   int *ind_ptr_h = (int *)malloc(num_unknowns_l * sizeof(int));
 
   for(int i = 0; i < mesh->cells->size; i++) {
@@ -146,18 +146,18 @@ bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
     }
   }
 
-  releaseOP2PtrHost(rhs, OP_READ, rhs_ptr);
-  releaseOP2PtrHost(ans, OP_READ, ans_ptr);
+  releaseOP2PtrHostSP(rhs, OP_READ, rhs_ptr);
+  releaseOP2PtrHostSP(ans, OP_READ, ans_ptr);
 
   #ifdef OP2_DG_CUDA
-  DG_FP *data_rhs_ptr;
-  cudaMalloc(&data_rhs_ptr, num_unknowns_l * sizeof(DG_FP));
-  DG_FP *data_ans_ptr;
-  cudaMalloc(&data_ans_ptr, num_unknowns_l * sizeof(DG_FP));
+  float *data_rhs_ptr;
+  cudaMalloc(&data_rhs_ptr, num_unknowns_l * sizeof(float));
+  float *data_ans_ptr;
+  cudaMalloc(&data_ans_ptr, num_unknowns_l * sizeof(float));
   int *data_ind_ptr;
   cudaMalloc(&data_ind_ptr, num_unknowns_l * sizeof(int));
-  cudaMemcpy(data_rhs_ptr, rhs_ptr_h, num_unknowns_l * sizeof(DG_FP), cudaMemcpyHostToDevice);
-  cudaMemcpy(data_ans_ptr, ans_ptr_h, num_unknowns_l * sizeof(DG_FP), cudaMemcpyHostToDevice);
+  cudaMemcpy(data_rhs_ptr, rhs_ptr_h, num_unknowns_l * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(data_ans_ptr, ans_ptr_h, num_unknowns_l * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(data_ind_ptr, ind_ptr_h, num_unknowns_l * sizeof(int), cudaMemcpyHostToDevice);
 
   // Maybe need to transfer to device
@@ -190,21 +190,21 @@ bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
   timer->endTimer("HYPREAMGSolver - Run solver");
 
   int num_iterations;
-  double final_res_norm;
+  float final_res_norm;
   HYPRE_PCGGetNumIterations(solver, &num_iterations);
   HYPRE_PCGGetFinalRelativeResidualNorm(solver, &final_res_norm);
 
-  op_printf("\n");
-  op_printf("Iterations = %d\n", num_iterations);
-  op_printf("Final Relative Residual Norm = %e\n", final_res_norm);
-  op_printf("\n");
+  // op_printf("\n");
+  // op_printf("Iterations = %d\n", num_iterations);
+  // op_printf("Final Relative Residual Norm = %e\n", final_res_norm);
+  // op_printf("\n");
 
   timer->startTimer("HYPREAMGSolver - Transfer vec");
-  DG_FP *ans_ptr_w = getOP2PtrHost(ans, OP_WRITE);
+  float *ans_ptr_w = getOP2PtrHostSP(ans, OP_WRITE);
 
   #ifdef OP2_DG_CUDA
   HYPRE_IJVectorGetValues(x, num_unknowns_l, data_ind_ptr, data_ans_ptr);
-  cudaMemcpy(ans_ptr_h, data_ans_ptr, num_unknowns_l * sizeof(DG_FP), cudaMemcpyDeviceToHost);
+  cudaMemcpy(ans_ptr_h, data_ans_ptr, num_unknowns_l * sizeof(float), cudaMemcpyDeviceToHost);
   cudaFree(data_ans_ptr);
   cudaFree(data_ind_ptr);
   #else
@@ -217,7 +217,7 @@ bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
     }
   }
 
-  releaseOP2PtrHost(ans, OP_WRITE, ans_ptr_w);
+  releaseOP2PtrHostSP(ans, OP_WRITE, ans_ptr_w);
 
   free(ans_ptr_h);
   free(ind_ptr_h);

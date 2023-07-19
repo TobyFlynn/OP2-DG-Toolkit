@@ -1,7 +1,7 @@
 #ifndef __DG_HYPRE_AMG_H
 #define __DG_HYPRE_AMG_H
 
-#if defined(OP2_DG_BUILD_WITH_HYPRE)
+#if defined(INS_BUILD_WITH_HYPRE)
 
 #include "op_seq.h"
 #include "linear_solver.h"

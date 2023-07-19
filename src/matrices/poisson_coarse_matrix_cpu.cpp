@@ -160,7 +160,7 @@ void PoissonCoarseMatrix::setHYPREMatrix() {
   const int faces_set_size = _mesh->faces->size + _mesh->faces->exec_size + _mesh->faces->nonexec_size;
   int nnz = cell_set_size * DG_NP_N1 * DG_NP_N1 + faces_set_size * DG_NP_N1 * DG_NP_N1 * 2;
 
-  DG_FP *data_buf_ptr_h = (DG_FP *)malloc(nnz * sizeof(DG_FP));
+  float *data_buf_ptr_h = (float *)malloc(nnz * sizeof(float));
   int *col_buf_ptr_h = (int *)malloc(nnz * sizeof(int));
   int *row_num_ptr_h = (int *)malloc(local_size * sizeof(int));
   int *num_col_ptr_h = (int *)malloc(local_size * sizeof(int));
@@ -197,17 +197,17 @@ void PoissonCoarseMatrix::setHYPREMatrix() {
     hypre_mat_init = true;
   }
 
-  std::map<int,std::vector<std::pair<int,DG_FP>>> mat_buffer;
+  std::map<int,std::vector<std::pair<int,float>>> mat_buffer;
 
   for(int c = 0; c < cell_set_size; c++) {
     // Add diagonal block to buffer
     int diag_base_col = glb[c];
     DG_FP *diag_data_ptr = op1_data + c * DG_NP_N1 * DG_NP_N1;
     for(int i = 0; i < DG_NP_N1; i++) {
-      std::vector<std::pair<int,DG_FP>> row_buf;
+      std::vector<std::pair<int,float>> row_buf;
       for(int j = 0; j < DG_NP_N1; j++) {
         int ind = i + j * DG_NP_N1;
-        row_buf.push_back({diag_base_col + j, diag_data_ptr[ind]});
+        row_buf.push_back({diag_base_col + j, (float)diag_data_ptr[ind]});
       }
       mat_buffer.insert({diag_base_col + i, row_buf});
     }
@@ -218,10 +218,10 @@ void PoissonCoarseMatrix::setHYPREMatrix() {
       int base_col = glb_r[k];
       DG_FP *face_data_ptr = op2L_data + k * DG_NP_N1 * DG_NP_N1;
       for(int i = 0; i < DG_NP_N1; i++) {
-        std::vector<std::pair<int,DG_FP>> &row_buf = mat_buffer.at(glb_l[k] + i);
+        std::vector<std::pair<int,float>> &row_buf = mat_buffer.at(glb_l[k] + i);
         for(int j = 0; j < DG_NP_N1; j++) {
           int ind = i + j * DG_NP_N1;
-          row_buf.push_back({base_col + j, face_data_ptr[ind]});
+          row_buf.push_back({base_col + j, (float)face_data_ptr[ind]});
         }
       }
     }
@@ -232,10 +232,10 @@ void PoissonCoarseMatrix::setHYPREMatrix() {
       int base_col = glb_l[k];
       DG_FP *face_data_ptr = op2R_data + k * DG_NP_N1 * DG_NP_N1;
       for(int i = 0; i < DG_NP_N1; i++) {
-        std::vector<std::pair<int,DG_FP>> &row_buf = mat_buffer.at(glb_r[k] + i);
+        std::vector<std::pair<int,float>> &row_buf = mat_buffer.at(glb_r[k] + i);
         for(int j = 0; j < DG_NP_N1; j++) {
           int ind = i + j * DG_NP_N1;
-          row_buf.push_back({base_col + j, face_data_ptr[ind]});
+          row_buf.push_back({base_col + j, (float)face_data_ptr[ind]});
         }
       }
     }
@@ -251,12 +251,12 @@ void PoissonCoarseMatrix::setHYPREMatrix() {
     row_num_ptr_h[current_row] = it->first;
     int num_this_col = 0;
     for(int i = 0; i < it->second.size(); i++) {
-      if(fabs(it->second[i].second) > 1e-8) {
+      // if(fabs(it->second[i].second) > 1e-8) {
         col_buf_ptr_h[current_nnz] = it->second[i].first;
         data_buf_ptr_h[current_nnz] = it->second[i].second;
         num_this_col++;
         current_nnz++;
-      }
+      // }
     }
     num_col_ptr_h[current_row] = num_this_col;
     current_row++;
