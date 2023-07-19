@@ -47,6 +47,10 @@ void PoissonMatrix::mult(op_dat in, op_dat out) {
   timer->endTimer("PoissonMatrix - mult");
 }
 
+void PoissonMatrix::mult_sp(op_dat in, op_dat out) {
+  throw std::runtime_error("mult_sp not implemented");
+}
+
 void PoissonMatrix::multJacobi(op_dat in, op_dat out) {
   timer->startTimer("PoissonMatrix - multJacobi");
   mult(in, out);
@@ -56,4 +60,8 @@ void PoissonMatrix::multJacobi(op_dat in, op_dat out) {
               op_arg_dat(op1, -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(out, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
   timer->endTimer("PoissonMatrix - multJacobi");
+}
+
+void PoissonMatrix::multJacobi_sp(op_dat in, op_dat out) {
+  throw std::runtime_error("multJacobi_sp not implemented");
 }

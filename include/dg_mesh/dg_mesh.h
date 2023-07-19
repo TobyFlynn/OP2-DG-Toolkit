@@ -12,6 +12,7 @@ public:
   virtual void init() = 0;
 
   virtual void update_order(int new_order, std::vector<op_dat> &dats_to_interp) = 0;
+  virtual void update_order_sp(int new_order, std::vector<op_dat> &dats_to_interp) = 0;
 
   int order_int;
 

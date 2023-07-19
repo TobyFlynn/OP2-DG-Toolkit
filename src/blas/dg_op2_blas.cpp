@@ -576,3 +576,25 @@ void op2_gemv_sp(DGMesh *mesh, bool transpose, const DG_FP alpha,
       exit(2);
   }
 }
+
+void op2_gemv_interp_sp(DGMesh *mesh, const int from_N, const int to_N, op_dat x, op_dat y) {
+  if(from_N == to_N) {
+    op_par_loop(copy_dg_np_sp_tk, "copy_dg_np_sp_tk", mesh->cells,
+                op_arg_dat(x, -1, OP_ID, DG_NP, "float", OP_READ),
+                op_arg_dat(y, -1, OP_ID, DG_NP, "float", OP_WRITE));
+    return;
+  }
+
+  const int from_NP = DG_CONSTANTS_TK[(from_N - 1) * DG_NUM_CONSTANTS];
+  const int to_NP = DG_CONSTANTS_TK[(to_N - 1) * DG_NUM_CONSTANTS];
+  const int m = to_NP;
+  const int n = mesh->cells->size;
+  const int k = from_NP;
+  const DG_FP *A = constants->get_mat_ptr_kernel(DGConstants::INTERP_MATRIX_ARRAY) + ((from_N - 1) * DG_ORDER + (to_N - 1)) * DG_NP * DG_NP;
+
+  #if defined(OP2_DG_CUDA)
+  custom_kernel_gemv_sp(mesh->cells, false, m, k, 1.0, 0.0, A, x, y);
+  #else
+  op2_cpu_gemm_sp(m, n, k, 1.0, false, A, m, x, DG_NP, 0.0, y, DG_NP);
+  #endif
+}

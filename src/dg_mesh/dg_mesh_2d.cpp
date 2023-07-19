@@ -409,6 +409,10 @@ void DGMesh2D::update_order(op_dat new_orders, std::vector<op_dat> &dats_to_inte
   update_mesh_constants();
 }
 
+void DGMesh2D::update_order_sp(int new_order, std::vector<op_dat> &dats_to_interp) {
+  throw std::runtime_error("update_order_sp not implemented");
+}
+
 void DGMesh2D::update_order(int new_order, std::vector<op_dat> &dats_to_interp) {
   // Interpolate dats first (assumes all these dats are of size DG_NP)
   for(int i = 0; i < dats_to_interp.size(); i++) {

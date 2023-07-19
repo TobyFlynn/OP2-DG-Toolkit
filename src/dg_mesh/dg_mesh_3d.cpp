@@ -350,3 +350,23 @@ void DGMesh3D::update_order(int new_order, std::vector<op_dat> &dats_to_interp) 
 
   calc_mesh_constants();
 }
+
+void DGMesh3D::update_order_sp(int new_order, std::vector<op_dat> &dats_to_interp) {
+  for(int i = 0; i < dats_to_interp.size(); i++) {
+    if(dats_to_interp[i]->dim != DG_NP) {
+      std::cerr << "Interpolating between orders for non DG_NP dim dats is not implemented ...  exiting" << std::endl;
+      exit(-1);
+    }
+
+    interp_dat_between_orders_sp(order_int, new_order, dats_to_interp[i]);
+  }
+
+  order_int = new_order;
+
+  // Copy across new orders
+  op_par_loop(copy_new_orders_int, "copy_new_orders_int", cells,
+              op_arg_gbl(&new_order, 1, "int", OP_READ),
+              op_arg_dat(order, -1, OP_ID, 1, "int", OP_WRITE));
+
+  calc_mesh_constants();
+}

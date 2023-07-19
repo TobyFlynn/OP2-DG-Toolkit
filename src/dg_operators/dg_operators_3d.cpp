@@ -354,6 +354,17 @@ void DGMesh3D::interp_dat_between_orders(int old_order, int new_order, op_dat in
   dg_dat_pool->releaseTempDatCells(tmp_0);
 }
 
+void DGMesh3D::interp_dat_between_orders_sp(int old_order, int new_order, op_dat in) {
+  DGTempDat tmp_0 = dg_dat_pool->requestTempDatCellsSP(DG_NP);
+  op2_gemv_interp_sp(this, old_order, new_order, in, tmp_0.dat);
+
+  op_par_loop(copy_dg_np_sp_tk, "copy_dg_np_tk", cells,
+              op_arg_dat(tmp_0.dat, -1, OP_ID, DG_NP, "float", OP_READ),
+              op_arg_dat(in, -1, OP_ID, DG_NP, "float", OP_WRITE));
+
+  dg_dat_pool->releaseTempDatCellsSP(tmp_0);
+}
+
 #if FALSE
 void DGMesh3D::avg(op_dat in, op_dat out) {
   op_par_loop(avg_3d, "avg_3d", faces,

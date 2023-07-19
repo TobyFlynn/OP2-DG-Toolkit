@@ -235,17 +235,17 @@ void PETScUtils::create_vec_coarse(Vec *v, op_set set) {
 void PETScUtils::copy_vec_to_dat_coarse(op_dat dat, const DG_FP *dat_d) {
   timer->startTimer("PETScUtils - copy_vec_to_dat_coarse");
   op_arg copy_args[] = {
-    op_arg_dat(dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE)
+    op_arg_dat(dat, -1, OP_ID, DG_NP, "float", OP_WRITE)
   };
   op_mpi_halo_exchanges(dat->set, 1, copy_args);
 
-  DG_FP *op2_dat_ptr = (DG_FP *)dat->data;
+  float *op2_dat_ptr = (float *)dat->data;
 
   #pragma omp parallel for
   for(int i = 0; i < dat->set->size; i++) {
     #pragma unroll
     for(int j = 0; j < DG_NP_N1; j++) {
-      op2_dat_ptr[i * DG_NP + j] = dat_d[i * DG_NP_N1 + j];
+      op2_dat_ptr[i * DG_NP + j] = (float)dat_d[i * DG_NP_N1 + j];
     }
   }
 
@@ -257,17 +257,17 @@ void PETScUtils::copy_vec_to_dat_coarse(op_dat dat, const DG_FP *dat_d) {
 void PETScUtils::copy_dat_to_vec_coarse(op_dat dat, DG_FP *dat_d) {
   timer->startTimer("PETScUtils - copy_dat_to_vec_coarse");
   op_arg copy_args[] = {
-    op_arg_dat(dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ)
+    op_arg_dat(dat, -1, OP_ID, DG_NP, "float", OP_READ)
   };
   op_mpi_halo_exchanges(dat->set, 1, copy_args);
 
-  DG_FP *op2_dat_ptr = (DG_FP *)dat->data;
+  float *op2_dat_ptr = (float *)dat->data;
 
   #pragma omp parallel for
   for(int i = 0; i < dat->set->size; i++) {
     #pragma unroll
     for(int j = 0; j < DG_NP_N1; j++) {
-      dat_d[i * DG_NP_N1 + j] = op2_dat_ptr[i * DG_NP + j];
+      dat_d[i * DG_NP_N1 + j] = (double)op2_dat_ptr[i * DG_NP + j];
     }
   }
 

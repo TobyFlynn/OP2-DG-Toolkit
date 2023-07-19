@@ -40,10 +40,27 @@ void PoissonMatrixFreeDiag3D::mult(op_dat in, op_dat out) {
   timer->endTimer("PoissonMatrixFreeDiag3D - mult");
 }
 
+void PoissonMatrixFreeDiag3D::mult_sp(op_dat in, op_dat out) {
+  timer->startTimer("PoissonMatrixFreeDiag3D - mult sp");
+  mat_free_mult_sp(in, out);
+  timer->endTimer("PoissonMatrixFreeDiag3D - mult sp");
+}
+
+void PoissonMatrixFreeDiag3D::multJacobi_sp(op_dat in, op_dat out) {
+  timer->startTimer("PoissonMatrixFreeDiag3D - multJacobi sp");
+  mat_free_mult_sp(in, out);
+
+  op_par_loop(poisson_diag_mult_jacobi_sp, "poisson_diag_mult_jacobi_sp", _mesh->cells,
+              op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
+              op_arg_dat(diag, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(out, -1, OP_ID, DG_NP, "float", OP_RW));
+  timer->endTimer("PoissonMatrixFreeDiag3D - multJacobi sp");
+}
+
 void PoissonMatrixFreeDiag3D::calc_op1() {
   timer->startTimer("PoissonMatrixFreeDiag3D - calc_op1");
   op_par_loop(poisson_matrix_3d_op1_diag, "poisson_matrix_3d_op1_diag", mesh->cells,
-              op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+              op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(mesh->rx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(mesh->sx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
               op_arg_dat(mesh->tx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
@@ -62,7 +79,7 @@ void PoissonMatrixFreeDiag3D::calc_op2() {
   timer->startTimer("PoissonMatrixFreeDiag3D - calc_op2");
   // TODO full p-adaptivity
   op_par_loop(poisson_matrix_3d_op2_partial_diag, "poisson_matrix_3d_op2_partial_diag", mesh->faces,
-              op_arg_dat(mesh->order, -2, mesh->face2cells, 1, "int", OP_READ),
+              op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(mesh->faceNum, -1, OP_ID, 2, "int", OP_READ),
               op_arg_dat(mesh->fmaskL,  -1, OP_ID, DG_NPF, "int", OP_READ),
               op_arg_dat(mesh->fmaskR,  -1, OP_ID, DG_NPF, "int", OP_READ),
@@ -89,7 +106,7 @@ void PoissonMatrixFreeDiag3D::calc_opbc() {
   timer->startTimer("PoissonMatrixFreeDiag3D - calc_opbc");
   if(mesh->bface2cells) {
     op_par_loop(poisson_matrix_3d_bop_diag, "poisson_matrix_3d_bop_diag", mesh->bfaces,
-                op_arg_dat(mesh->order, 0, mesh->bface2cells, 1, "int", OP_READ),
+                op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
                 op_arg_dat(mesh->bfaceNum, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_dat(bc_types, -1, OP_ID, 1, "int", OP_READ),
                 op_arg_dat(mesh->bnx, -1, OP_ID, 1, DG_FP_STR, OP_READ),

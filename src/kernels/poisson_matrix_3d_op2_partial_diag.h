@@ -1,4 +1,4 @@
-inline void poisson_matrix_3d_op2_partial_diag(const int **order,
+inline void poisson_matrix_3d_op2_partial_diag(const int *order,
                                   const int *faceNum, const int *fmaskL_corrected,
                                   const int *fmaskR_corrected, const DG_FP *nx,
                                   const DG_FP *ny, const DG_FP *nz,
@@ -8,7 +8,7 @@ inline void poisson_matrix_3d_op2_partial_diag(const int **order,
                                   const DG_FP **sy, const DG_FP **ty,
                                   const DG_FP **rz, const DG_FP **sz,
                                   const DG_FP **tz, DG_FP *diagL, DG_FP *diagR) {
-  const int p = order[0][0];
+  const int p = *order;
   const DG_FP *dr_mat = &dg_Dr_kernel[(p - 1) * DG_NP * DG_NP];
   const DG_FP *ds_mat = &dg_Ds_kernel[(p - 1) * DG_NP * DG_NP];
   const DG_FP *dt_mat = &dg_Dt_kernel[(p - 1) * DG_NP * DG_NP];
