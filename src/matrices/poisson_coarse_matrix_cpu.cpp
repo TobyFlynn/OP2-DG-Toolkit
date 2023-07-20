@@ -166,24 +166,17 @@ void PoissonCoarseMatrix::setHYPREMatrix() {
   int *num_col_ptr_h = (int *)malloc(local_size * sizeof(int));
 
   // Exchange halos
-  DGMesh3D *mesh = dynamic_cast<DGMesh3D*>(_mesh);
   op_arg args[] = {
-    op_arg_dat(op2[0], 0, mesh->face2cells, op2[0]->dim, DG_FP_STR, OP_RW),
-    op_arg_dat(op2[0], 1, mesh->face2cells, op2[0]->dim, DG_FP_STR, OP_RW),
-    op_arg_dat(op2[1], 0, mesh->face2cells, op2[1]->dim, DG_FP_STR, OP_RW),
-    op_arg_dat(op2[1], 1, mesh->face2cells, op2[1]->dim, DG_FP_STR, OP_RW),
-    op_arg_dat(glb_indL, 0, mesh->face2cells, glb_indL->dim, "int", OP_RW),
-    op_arg_dat(glb_indL, 1, mesh->face2cells, glb_indL->dim, "int", OP_RW),
-    op_arg_dat(glb_indR, 0, mesh->face2cells, glb_indR->dim, "int", OP_RW),
-    op_arg_dat(glb_indR, 1, mesh->face2cells, glb_indR->dim, "int", OP_RW)
+    op_arg_dat(glb_indL, -1, OP_ID, glb_indL->dim, "int", OP_RW),
+    op_arg_dat(glb_indR, -1, OP_ID, glb_indR->dim, "int", OP_RW)
   };
-  op_mpi_halo_exchanges(mesh->faces, 8, args);
-  op_mpi_wait_all(8, args);
+  op_mpi_halo_exchanges_grouped(_mesh->faces, 2, args, 1, 1);
+  op_mpi_wait_all_grouped(2, args, 1, 1);
 
   // Get data from OP2
-  DG_FP *op1_data = getOP2PtrHost(op1, OP_READ);
-  DG_FP *op2L_data = getOP2PtrHost(op2[0], OP_READ);
-  DG_FP *op2R_data = getOP2PtrHost(op2[1], OP_READ);
+  DG_FP *op1_data = getOP2PtrHostHE(op1, OP_READ);
+  DG_FP *op2L_data = getOP2PtrHostHE(op2[0], OP_READ);
+  DG_FP *op2R_data = getOP2PtrHostHE(op2[1], OP_READ);
   const int *glb   = (int *)glb_ind->data;
   const int *glb_l = (int *)glb_indL->data;
   const int *glb_r = (int *)glb_indR->data;
@@ -270,9 +263,9 @@ void PoissonCoarseMatrix::setHYPREMatrix() {
   free(row_num_ptr_h);
   free(num_col_ptr_h);
 
-  releaseOP2PtrHost(op1, OP_READ, op1_data);
-  releaseOP2PtrHost(op2[0], OP_READ, op2L_data);
-  releaseOP2PtrHost(op2[1], OP_READ, op2R_data);
+  releaseOP2PtrHostHE(op1, OP_READ, op1_data);
+  releaseOP2PtrHostHE(op2[0], OP_READ, op2L_data);
+  releaseOP2PtrHostHE(op2[1], OP_READ, op2R_data);
 
   HYPRE_IJMatrixAssemble(hypre_mat);
 }
