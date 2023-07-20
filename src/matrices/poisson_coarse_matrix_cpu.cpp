@@ -186,9 +186,11 @@ void PoissonCoarseMatrix::setHYPREMatrix() {
     const int iupper = glb[0] + local_size - 1;
     HYPRE_IJMatrixCreate(MPI_COMM_WORLD, ilower, iupper, ilower, iupper, &hypre_mat);
     HYPRE_IJMatrixSetObjectType(hypre_mat, HYPRE_PARCSR);
-    HYPRE_IJMatrixInitialize(hypre_mat);
+    // HYPRE_IJMatrixInitialize(hypre_mat);
     hypre_mat_init = true;
   }
+
+  HYPRE_IJMatrixInitialize(hypre_mat);
 
   std::map<int,std::vector<std::pair<int,float>>> mat_buffer;
 

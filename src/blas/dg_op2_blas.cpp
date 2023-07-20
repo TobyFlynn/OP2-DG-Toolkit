@@ -192,12 +192,61 @@ void op2_cpu_gemm_sp(const int m, const int n, const int k,
   op_mpi_set_dirtybit(2, args);
 }
 
+void op2_cpu_gemm_halo_exchange_sp(const int m, const int k,
+                  const float alpha, const bool trans, const DG_FP *A,
+                  const int lda, op_dat b_dat, const int ldb, const float beta,
+                  op_dat c_dat, const int ldc) {
+  op_arg args[] = {
+    op_arg_dat(b_dat, -1, OP_ID, b_dat->dim, DG_FP_STR, OP_READ),
+    op_arg_dat(c_dat, -1, OP_ID, c_dat->dim, DG_FP_STR, beta == 0.0 ? OP_WRITE : OP_RW)
+  };
+  op_mpi_halo_exchanges_grouped(b_dat->set, 2, args, 1, 1);
+
+  const float *B = (float *)b_dat->data;
+  float *C = (float *)c_dat->data;
+
+  float *A_sp = (float *)calloc(m * k, sizeof(float));
+  for(int i = 0; i < m * k; i++) {
+    A_sp[i] = (float)A[i];
+  }
+
+  for(int round = 0; round < 2; round++) {
+    if(round == 1)
+      op_mpi_wait_all_grouped(2, args, 1, 1);
+
+    const int n = round == 0 ? b_dat->set->size : b_dat->set->size + b_dat->set->exec_size + b_dat->set->nonexec_size;
+    const int start = round == 0 ? 0 : b_dat->set->size;
+    const int round_size = n - start;
+
+    const float *B = (float *)b_dat->data + start * ldb;
+    float *C = (float *)c_dat->data + start * ldc;
+
+    const int batch_size = round_size / 32;
+    const int num_batches = round_size / batch_size;
+    const CBLAS_TRANSPOSE transA = trans ? CblasTrans : CblasNoTrans;
+    #pragma omp parallel for
+    for(int i = 0; i < num_batches; i++) {
+      cblas_sgemm(CblasColMajor, transA, CblasNoTrans, m, batch_size, k, alpha, A_sp, lda, B + i * batch_size * ldb, ldb, beta, C + i * batch_size * ldc, ldc);
+    }
+    if(round_size != batch_size * num_batches) {
+      const int left_over_n = round_size - batch_size * num_batches;
+      cblas_sgemm(CblasColMajor, transA, CblasNoTrans, m, left_over_n, k, alpha, A_sp, lda, B + num_batches * batch_size * ldb, ldb, beta, C + num_batches * batch_size * ldc, ldc);
+    }
+  }
+
+  free(A_sp);
+
+  op_mpi_set_dirtybit_force_halo_exchange(2, args, 1);
+}
+
 #else
 void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
   const DG_FP beta, const DG_FP *matrix, op_dat arg4, op_dat arg5);
 void custom_kernel_gemv_halo_exchange(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
   const DG_FP beta, const DG_FP *matrix, op_dat arg4, op_dat arg5);
 void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
+  const DG_FP beta, const DG_FP *matrix, op_dat arg4, op_dat arg5);
+void custom_kernel_gemv_halo_exchange_sp(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
   const DG_FP beta, const DG_FP *matrix, op_dat arg4, op_dat arg5);
 #endif
 
@@ -573,6 +622,41 @@ void op2_gemv_sp(DGMesh *mesh, bool transpose, const DG_FP alpha,
       break;
     default:
       std::cerr << "op2_gemv_sp call not implemented for this matrix ... exiting" << std::endl;
+      exit(2);
+  }
+}
+
+void op2_gemv_np_np_halo_exchange_sp(DGMesh *mesh, bool transpose, const DG_FP alpha,
+                    const DG_FP *matrix, op_dat x, const DG_FP beta,
+                    op_dat y) {
+  #if defined(USE_OP2_KERNELS) || (defined(OP2_DG_CUDA) && DG_DIM == 2)
+  throw std::runtime_error("gemv_halo_exchange not fully supported yet\n");
+  #elif defined(OP2_DG_CUDA)
+  const int order = mesh->order_int;
+  const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
+  const int k = m;
+  const DG_FP *A = matrix + (order - 1) * DG_NP * DG_NP;
+  custom_kernel_gemv_halo_exchange_sp(mesh->cells, transpose, m, k, alpha, beta, A, x, y);
+  #else
+  const int order = mesh->order_int;
+  const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
+  const int k = m;
+  const DG_FP *A = matrix + (order - 1) * DG_NP * DG_NP;
+  op2_cpu_gemm_halo_exchange_sp(m, k, alpha, transpose, A, m, x, DG_NP, beta, y, DG_NP);
+  #endif
+}
+
+void op2_gemv_halo_exchange_sp(DGMesh *mesh, bool transpose, const DG_FP alpha,
+              DGConstants::Constant_Matrix matrix, op_dat x, const DG_FP beta,
+              op_dat y) {
+  switch(matrix) {
+    case DGConstants::DR:
+    case DGConstants::DS:
+    case DGConstants::DT:
+      op2_gemv_np_np_halo_exchange_sp(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
+      break;
+    default:
+      std::cerr << "op2_gemv call not implemented for this matrix ... exiting" << std::endl;
       exit(2);
   }
 }
