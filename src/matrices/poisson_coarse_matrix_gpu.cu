@@ -212,7 +212,7 @@ extern AMGX_config_handle amgx_config_handle;
 
 void PoissonCoarseMatrix::setAmgXMatrix() {
   if(!amgx_mat_init) {
-    AMGX_matrix_create(&amgx_mat, amgx_res_handle, AMGX_mode_dDDI);
+    AMGX_matrix_create(&amgx_mat, amgx_res_handle, AMGX_mode_dFFI);
   }
 
   int global_size = getUnknowns();
@@ -232,28 +232,21 @@ void PoissonCoarseMatrix::setAmgXMatrix() {
   #else
   int *col_inds = (int *)malloc(nnz * sizeof(int));
   #endif
-  DG_FP *data_ptr = (DG_FP *)malloc(nnz * sizeof(DG_FP));
+  float *data_ptr = (float *)malloc(nnz * sizeof(float));
 
   // Exchange halos
-  DGMesh3D *mesh = dynamic_cast<DGMesh3D*>(_mesh);
   op_arg args[] = {
-    op_arg_dat(op2[0], 0, mesh->face2cells, op2[0]->dim, DG_FP_STR, OP_RW),
-    op_arg_dat(op2[0], 1, mesh->face2cells, op2[0]->dim, DG_FP_STR, OP_RW),
-    op_arg_dat(op2[1], 0, mesh->face2cells, op2[1]->dim, DG_FP_STR, OP_RW),
-    op_arg_dat(op2[1], 1, mesh->face2cells, op2[1]->dim, DG_FP_STR, OP_RW),
-    op_arg_dat(glb_indL, 0, mesh->face2cells, glb_indL->dim, "int", OP_RW),
-    op_arg_dat(glb_indL, 1, mesh->face2cells, glb_indL->dim, "int", OP_RW),
-    op_arg_dat(glb_indR, 0, mesh->face2cells, glb_indR->dim, "int", OP_RW),
-    op_arg_dat(glb_indR, 1, mesh->face2cells, glb_indR->dim, "int", OP_RW)
+    op_arg_dat(glb_indL, -1, OP_ID, glb_indL->dim, "int", OP_RW),
+    op_arg_dat(glb_indR, -1, OP_ID, glb_indR->dim, "int", OP_RW)
   };
-  op_mpi_halo_exchanges_grouped(mesh->faces, 8, args, 2, 0);
-  op_mpi_wait_all_grouped(8, args, 2, 0);
+  op_mpi_halo_exchanges_grouped(_mesh->faces, 2, args, 2, 1);
+  op_mpi_wait_all_grouped(2, args, 2, 1);
   cudaDeviceSynchronize();
 
   // Get data from OP2
-  DG_FP *op1_data = getOP2PtrHost(op1, OP_READ);
-  DG_FP *op2L_data = getOP2PtrHost(op2[0], OP_READ);
-  DG_FP *op2R_data = getOP2PtrHost(op2[1], OP_READ);
+  DG_FP *op1_data = getOP2PtrHostHE(op1, OP_READ);
+  DG_FP *op2L_data = getOP2PtrHostHE(op2[0], OP_READ);
+  DG_FP *op2R_data = getOP2PtrHostHE(op2[1], OP_READ);
   int *glb   = (int *)malloc(cell_set_size * sizeof(int));
   cudaMemcpy(glb, glb_ind->data_d, cell_set_size * sizeof(int), cudaMemcpyDeviceToHost);
   int *glb_l = (int *)malloc(faces_set_size * sizeof(int));
@@ -261,16 +254,16 @@ void PoissonCoarseMatrix::setAmgXMatrix() {
   cudaMemcpy(glb_l, glb_indL->data_d, faces_set_size * sizeof(int), cudaMemcpyDeviceToHost);
   cudaMemcpy(glb_r, glb_indR->data_d, faces_set_size * sizeof(int), cudaMemcpyDeviceToHost);
 
-  std::map<int,std::vector<std::pair<int,DG_FP>>> mat_buffer;
+  std::map<int,std::vector<std::pair<int,float>>> mat_buffer;
   for(int c = 0; c < cell_set_size; c++) {
     // Add diagonal block to buffer
     int diag_base_col = glb[c];
     DG_FP *diag_data_ptr = op1_data + c * DG_NP_N1 * DG_NP_N1;
     for(int i = 0; i < DG_NP_N1; i++) {
-      std::vector<std::pair<int,DG_FP>> row_buf;
+      std::vector<std::pair<int,float>> row_buf;
       for(int j = 0; j < DG_NP_N1; j++) {
         int ind = i + j * DG_NP_N1;
-        row_buf.push_back({diag_base_col + j, diag_data_ptr[ind]});
+        row_buf.push_back({diag_base_col + j, (float)diag_data_ptr[ind]});
       }
       mat_buffer.insert({diag_base_col + i, row_buf});
     }
@@ -281,10 +274,10 @@ void PoissonCoarseMatrix::setAmgXMatrix() {
       int base_col = glb_r[k];
       DG_FP *face_data_ptr = op2L_data + k * DG_NP_N1 * DG_NP_N1;
       for(int i = 0; i < DG_NP_N1; i++) {
-        std::vector<std::pair<int,DG_FP>> &row_buf = mat_buffer.at(glb_l[k] + i);
+        std::vector<std::pair<int,float>> &row_buf = mat_buffer.at(glb_l[k] + i);
         for(int j = 0; j < DG_NP_N1; j++) {
           int ind = i + j * DG_NP_N1;
-          row_buf.push_back({base_col + j, face_data_ptr[ind]});
+          row_buf.push_back({base_col + j, (float)face_data_ptr[ind]});
         }
       }
     }
@@ -295,10 +288,10 @@ void PoissonCoarseMatrix::setAmgXMatrix() {
       int base_col = glb_l[k];
       DG_FP *face_data_ptr = op2R_data + k * DG_NP_N1 * DG_NP_N1;
       for(int i = 0; i < DG_NP_N1; i++) {
-        std::vector<std::pair<int,DG_FP>> &row_buf = mat_buffer.at(glb_r[k] + i);
+        std::vector<std::pair<int,float>> &row_buf = mat_buffer.at(glb_r[k] + i);
         for(int j = 0; j < DG_NP_N1; j++) {
           int ind = i + j * DG_NP_N1;
-          row_buf.push_back({base_col + j, face_data_ptr[ind]});
+          row_buf.push_back({base_col + j, (float)face_data_ptr[ind]});
         }
       }
     }
@@ -311,11 +304,11 @@ void PoissonCoarseMatrix::setAmgXMatrix() {
 
     row_ptr[current_row] = current_nnz;
     for(int i = 0; i < it->second.size(); i++) {
-      if(fabs(it->second[i].second) > 1e-8) {
+      // if(fabs(it->second[i].second) > 1e-8) {
         col_inds[current_nnz] = it->second[i].first;
         data_ptr[current_nnz] = it->second[i].second;
         current_nnz++;
-      }
+      // }
     }
     current_row++;
   }
@@ -332,7 +325,7 @@ void PoissonCoarseMatrix::setAmgXMatrix() {
 
   AMGX_SAFE_CALL(AMGX_pin_memory(row_ptr, (local_size + 1) * sizeof(int)));
   AMGX_SAFE_CALL(AMGX_pin_memory(col_inds, nnz * sizeof(int)));
-  AMGX_SAFE_CALL(AMGX_pin_memory(data_ptr, nnz * sizeof(DG_FP)));
+  AMGX_SAFE_CALL(AMGX_pin_memory(data_ptr, nnz * sizeof(float)));
 
   if(!amgx_mat_init) {
     #ifdef DG_MPI

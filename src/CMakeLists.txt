@@ -137,7 +137,7 @@ endif()
 endif()
 
 # Only needs to be built once
-if(DIM EQUAL 2)
+if(DIM EQUAL 3)
   add_library(dgtoolkit STATIC ${TOOLKIT_SRC})
   target_link_libraries(dgtoolkit ${ARMA_LIB} ${OPENBLAS_LIB} ${EXTRA_LIBS})
   set(DG_LIBS dgtoolkit)

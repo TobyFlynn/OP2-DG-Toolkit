@@ -1,4 +1,8 @@
 cmake_minimum_required(VERSION 3.18)
+
+set(CMAKE_C_COMPILER mpicc)
+set(CMAKE_CXX_COMPILER mpicxx)
+
 project(libop2dgtoolkit CXX)
 
 # Import compiler flags for all build types
@@ -53,7 +57,7 @@ if(NOT ARMA_DIR)
   message(FATAL_ERROR "ARMA_DIR is not specified")
 endif()
 include_directories(${ARMA_DIR}/include)
-set(ARMA_LIB "-L${ARMA_DIR}/lib -larmadillo")
+set(ARMA_LIB "-L${ARMA_DIR}/lib64 -larmadillo")
 list(APPEND COMMON_LIBS ${ARMA_LIB})
 
 if(NOT AMGX_DIR)
@@ -95,7 +99,7 @@ if(BUILD_GPU)
   find_package(CUDAToolkit)
   include_directories(${CUDAToolkit_INCLUDE_DIRS})
   set(CMAKE_CUDA_COMPILER ${CUDAToolkit_NVCC_EXECUTABLE})
-  set(CMAKE_CUDA_ARCHITECTURES 70 75)
+  set(CMAKE_CUDA_ARCHITECTURES 70)
 endif()
 
 # Install headers
@@ -177,11 +181,11 @@ install(FILES ${HEADERS_MATRICES_3D} DESTINATION include/dg_matrices/3d)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Invoke subprojects
-set(DIM 2)
-add_subdirectory(gen_2d)
+#set(DIM 2)
+#add_subdirectory(gen_2d)
 set(DIM 3)
 add_subdirectory(gen_3d)
-add_subdirectory(tools)
+#add_subdirectory(tools)
 if(BUILD_TESTS)
   add_subdirectory(tests)
 endif()

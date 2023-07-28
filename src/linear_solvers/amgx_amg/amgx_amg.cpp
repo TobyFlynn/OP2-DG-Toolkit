@@ -47,9 +47,9 @@ AmgXAMGSolver::AmgXAMGSolver(DGMesh *m) {
   AMGX_resources_create_simple(&amgx_res_handle, amgx_config_handle);
   #endif
 
-  AMGX_vector_create(&rhs_amgx, amgx_res_handle, AMGX_mode_dDDI);
-  AMGX_vector_create(&soln_amgx, amgx_res_handle, AMGX_mode_dDDI);
-  AMGX_solver_create(&solver_amgx, amgx_res_handle, AMGX_mode_dDDI, amgx_config_handle);
+  AMGX_vector_create(&rhs_amgx, amgx_res_handle, AMGX_mode_dFFI);
+  AMGX_vector_create(&soln_amgx, amgx_res_handle, AMGX_mode_dFFI);
+  AMGX_solver_create(&solver_amgx, amgx_res_handle, AMGX_mode_dFFI, amgx_config_handle);
 }
 
 AmgXAMGSolver::~AmgXAMGSolver() {
@@ -81,11 +81,11 @@ bool AmgXAMGSolver::solve(op_dat rhs, op_dat ans) {
   timer->endTimer("AmgXAMGSolver - Get matrix and setup");
 
   timer->startTimer("AmgXAMGSolver - Transfer vec");
-  DG_FP *rhs_ptr = getOP2PtrHost(rhs, OP_READ);
-  DG_FP *ans_ptr = getOP2PtrHost(ans, OP_READ);
+  float *rhs_ptr = getOP2PtrHostSP(rhs, OP_READ);
+  float *ans_ptr = getOP2PtrHostSP(ans, OP_READ);
 
-  DG_FP *rhs_amgx_ptr = (DG_FP *)malloc(coarse_mat->getUnknowns() * sizeof(DG_FP));
-  DG_FP *ans_amgx_ptr = (DG_FP *)malloc(coarse_mat->getUnknowns() * sizeof(DG_FP));
+  float *rhs_amgx_ptr = (float *)malloc(coarse_mat->getUnknowns() * sizeof(float));
+  float *ans_amgx_ptr = (float *)malloc(coarse_mat->getUnknowns() * sizeof(float));
 
   for(int i = 0; i < mesh->cells->size; i++) {
     for(int j = 0; j < DG_NP_N1; j++) {
@@ -94,11 +94,11 @@ bool AmgXAMGSolver::solve(op_dat rhs, op_dat ans) {
     }
   }
 
-  releaseOP2PtrHost(rhs, OP_READ, rhs_ptr);
-  releaseOP2PtrHost(ans, OP_READ, ans_ptr);
+  releaseOP2PtrHostSP(rhs, OP_READ, rhs_ptr);
+  releaseOP2PtrHostSP(ans, OP_READ, ans_ptr);
 
-  AMGX_SAFE_CALL(AMGX_pin_memory(rhs_amgx_ptr, coarse_mat->getUnknowns() * sizeof(DG_FP)));
-  AMGX_SAFE_CALL(AMGX_pin_memory(ans_amgx_ptr, coarse_mat->getUnknowns() * sizeof(DG_FP)));
+  AMGX_SAFE_CALL(AMGX_pin_memory(rhs_amgx_ptr, coarse_mat->getUnknowns() * sizeof(float)));
+  AMGX_SAFE_CALL(AMGX_pin_memory(ans_amgx_ptr, coarse_mat->getUnknowns() * sizeof(float)));
 
   AMGX_vector_upload(rhs_amgx,  coarse_mat->getUnknowns(), 1, rhs_amgx_ptr);
   AMGX_vector_upload(soln_amgx, coarse_mat->getUnknowns(), 1, ans_amgx_ptr);
@@ -130,8 +130,8 @@ bool AmgXAMGSolver::solve(op_dat rhs, op_dat ans) {
   }
 
   timer->startTimer("AmgXAMGSolver - Transfer vec");
-  DG_FP *ans_ptr_w = getOP2PtrHost(ans, OP_WRITE);
-  DG_FP *ans_amgx_ptr_w = (DG_FP *)malloc(coarse_mat->getUnknowns() * sizeof(DG_FP));
+  float *ans_ptr_w = getOP2PtrHostSP(ans, OP_WRITE);
+  float *ans_amgx_ptr_w = (float *)malloc(coarse_mat->getUnknowns() * sizeof(float));
 
   AMGX_vector_download(soln_amgx, ans_amgx_ptr_w);
 
@@ -142,7 +142,7 @@ bool AmgXAMGSolver::solve(op_dat rhs, op_dat ans) {
   }
 
   free(ans_amgx_ptr_w);
-  releaseOP2PtrHost(ans, OP_WRITE, ans_ptr_w);
+  releaseOP2PtrHostSP(ans, OP_WRITE, ans_ptr_w);
   timer->endTimer("AmgXAMGSolver - Transfer vec");
 
   timer->endTimer("AmgXAMGSolver - solve");

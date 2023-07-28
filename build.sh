@@ -56,7 +56,7 @@ mkdir -p blas/kernels
 cd ..
 
 ORDER=3
-SOA=0
+SOA=1
 
 python3 preprocessor.py 2 $ORDER
 
@@ -166,14 +166,17 @@ mkdir build
 cd build
 
 cmake .. \
-  -DOP2_DIR=/home/u1717021/Code/PhD/OP2-Common/op2 \
-  -DOPENBLAS_DIR=/opt/OpenBLAS \
-  -DPART_LIB_NAME=PARMETIS \
-  -DPARMETIS_DIR=/home/u1717021/Code/PhD/ParMetis_Libs \
-  -DARMA_DIR=/home/u1717021/Code/PhD/armadillo-10.5.3/build \
-  -DHDF5_DIR=/usr/local/module-software/hdf5-1.12.0-parallel \
-  -DHIGHFIVE_DIR=/home/u1717021/Code/PhD/HighFive/include \
-  -DBUILD_CPU=ON \
+  -DOP2_DIR=$OP2_DIR \
+  -DOPENBLAS_DIR=$OPENBLAS_DIR \
+  -DPART_LIB_NAME=PTSCOTCH \
+  -DPTSCOTCH_DIR=$PTSCOTCH_DIR \
+  -DARMA_DIR=$ARMA_DIR \
+  -DHDF5_DIR=$HDF5_DIR \
+  -DPETSC_DIR=$PETSC_DIR \
+  -DINIPP_DIR=$INIPP_DIR \
+  -DHYPRE_DIR=/work/e01/e01/tflynne01/code/hypre-sp-install \
+  -DEXTRA_LIBS="/work/e01/e01/tflynne01/code/mpitrace-dummy-lib/build/libdummy_mpitrace.so" \
+  -DBUILD_CPU=OFF \
   -DBUILD_SN=ON \
   -DBUILD_MPI=ON \
   -DBUILD_GPU=ON \
@@ -182,6 +185,6 @@ cmake .. \
   -DSOA=$SOA \
   -DCMAKE_INSTALL_PREFIX=$(pwd)
 
-make -j 8
+make -j 4
 
 make install

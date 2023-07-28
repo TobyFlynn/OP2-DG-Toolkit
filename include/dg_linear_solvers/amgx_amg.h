@@ -1,7 +1,7 @@
 #ifndef __DG_AMGX_AMG_H
 #define __DG_AMGX_AMG_H
 
-#if defined(OP2_DG_BUILD_WITH_AMGX) && defined(OP2_DG_CUDA)
+#if defined(INS_BUILD_WITH_AMGX) && defined(OP2_DG_CUDA)
 
 #include "op_seq.h"
 #include "linear_solver.h"
