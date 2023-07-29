@@ -173,7 +173,7 @@ endif()
 
 if(BUILD_SN AND BUILD_GPU)
   add_library(${DG_LIB_PREFIX}_cuda STATIC ${COMMON_SRC} ${GPU_SRC} cuda/dg_tookit_kernels.cu)
-  target_link_libraries(${DG_LIB_PREFIX}_cuda dgtoolkit -L${OP2_DIR}/lib -lop2_cuda -lop2_hdf5 ${COMMON_LIBS} ${EXTRA_LIBS})
+  target_link_libraries(${DG_LIB_PREFIX}_cuda dgtoolkit -L${OP2_DIR}/lib -lop2_cuda -lop2_hdf5 ${COMMON_LIBS} ${EXTRA_LIBS} CUDA::cublas)
   target_compile_definitions(${DG_LIB_PREFIX}_cuda PRIVATE ${DG_COMPILER_DEFS} OP2_DG_CUDA ${DG_COMPILER_DEFS} DG_ORDER=${ORDER} DG_DIM=${DIM} DG_COL_MAJ MAX_CONST_SIZE=1024 ${COMMON_COMPILER_DEFS})
 
   set_property(TARGET ${DG_LIB_PREFIX}_cuda PROPERTY CUDA_SEPARABLE_COMPILATION ON)
@@ -195,7 +195,7 @@ endif()
 
 if(BUILD_MPI AND BUILD_GPU)
   add_library(${DG_LIB_PREFIX}_mpi_cuda STATIC ${COMMON_SRC} ${GPU_SRC} ${MPI_SRC} cuda/dg_tookit_kernels.cu)
-  target_link_libraries(${DG_LIB_PREFIX}_mpi_cuda dgtoolkit -L${OP2_DIR}/lib -lop2_mpi_cuda ${COMMON_LIBS} ${PART_LIB} ${EXTRA_LIBS})
+  target_link_libraries(${DG_LIB_PREFIX}_mpi_cuda dgtoolkit -L${OP2_DIR}/lib -lop2_mpi_cuda ${COMMON_LIBS} ${PART_LIB} ${EXTRA_LIBS} CUDA::cublas)
   target_compile_definitions(${DG_LIB_PREFIX}_mpi_cuda PRIVATE ${DG_COMPILER_DEFS} DG_MPI OP2_DG_CUDA ${DG_COMPILER_DEFS} DG_ORDER=${ORDER} DG_DIM=${DIM} DG_COL_MAJ MAX_CONST_SIZE=1024 ${COMMON_COMPILER_DEFS})
 
   set_property(TARGET ${DG_LIB_PREFIX}_mpi_cuda PROPERTY CUDA_SEPARABLE_COMPILATION ON)

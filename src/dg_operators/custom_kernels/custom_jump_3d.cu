@@ -16,13 +16,13 @@ __global__ void jump_3d_kerenel(
   const int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if (tid + start < end) {
     const int n = tid + start;
-    const int writeIndL = map[n + set_size * 0];
-    const int writeIndR = map[n + set_size * 1];
-    const int readIndL  = map[n + set_size * 2];
-    const int readIndR  = map[n + set_size * 3];
-    const double jump = in[readIndL] - in[readIndR];
-    out[writeIndL] = jump;
-    out[writeIndR] = -jump;
+    const int writeIndL = __ldg(map + n + set_size * 0);
+    const int writeIndR = __ldg(map + n + set_size * 1);
+    const int readIndL  = __ldg(map + n + set_size * 2);
+    const int readIndR  = __ldg(map + n + set_size * 3);
+    const double jump = __ldg(in + readIndL) - __ldg(in + readIndR);
+    __stwt(out + writeIndL, jump);
+    __stwt(out + writeIndR, -jump);
   }
 }
 
@@ -85,13 +85,13 @@ __global__ void jump_3d_sp_kerenel(
   const int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if (tid + start < end) {
     const int n = tid + start;
-    const int writeIndL = map[n + set_size * 0];
-    const int writeIndR = map[n + set_size * 1];
-    const int readIndL  = map[n + set_size * 2];
-    const int readIndR  = map[n + set_size * 3];
-    const float jump = in[readIndL] - in[readIndR];
-    out[writeIndL] = jump;
-    out[writeIndR] = -jump;
+    const int writeIndL = __ldg(map + n + set_size * 0);
+    const int writeIndR = __ldg(map + n + set_size * 1);
+    const int readIndL  = __ldg(map + n + set_size * 2);
+    const int readIndR  = __ldg(map + n + set_size * 3);
+    const float jump = __ldg(in + readIndL) - __ldg(in + readIndR);
+    __stwt(out + writeIndL, jump);
+    __stwt(out + writeIndR, -jump);
   }
 }
 

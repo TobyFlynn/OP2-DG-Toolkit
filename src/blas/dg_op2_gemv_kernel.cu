@@ -9,8 +9,18 @@
 
 #include <stdexcept>
 
-void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
-  const DG_FP beta, const DG_FP *matrix, op_dat arg4, op_dat arg5) {
+cublasHandle_t cublas_handle;
+
+void init_op2_gemv_cublas() {
+  cublasCreate(&cublas_handle);
+}
+
+void destroy_op2_gemv_cublas() {
+  cublasDestroy(cublas_handle);
+}
+
+void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, const float alpha,
+  const float beta, const DG_FP *matrix, op_dat arg4, op_dat arg5) {
   throw std::runtime_error("SP");
 }
 

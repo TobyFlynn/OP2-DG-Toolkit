@@ -23,7 +23,7 @@ PETScPMultigrid::PETScPMultigrid(DGMesh *m) {
   pmultigridSolver = new PMultigridPoissonSolver(mesh);
 
   KSPCreate(PETSC_COMM_WORLD, &ksp);
-  KSPSetType(ksp, KSPFGMRES);
+  KSPSetType(ksp, KSPFCG);
   double r_tol, a_tol;
   if(std::is_same<DG_FP,double>::value) {
     r_tol = 1e-8;

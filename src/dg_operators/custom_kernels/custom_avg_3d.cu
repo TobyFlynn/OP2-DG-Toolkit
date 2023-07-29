@@ -16,13 +16,13 @@ __global__ void avg_3d_kerenel(
   const int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if (tid + start < end) {
     const int n = tid + start;
-    const int writeIndL = map[n + set_size * 0];
-    const int writeIndR = map[n + set_size * 1];
-    const int readIndL  = map[n + set_size * 2];
-    const int readIndR  = map[n + set_size * 3];
-    const double avg = 0.5 * (in[readIndL] + in[readIndR]);
-    out[writeIndL] = avg;
-    out[writeIndR] = avg;
+    const int writeIndL = __ldg(map + n + set_size * 0);
+    const int writeIndR = __ldg(map + n + set_size * 1);
+    const int readIndL  = __ldg(map + n + set_size * 2);
+    const int readIndR  = __ldg(map + n + set_size * 3);
+    const double avg = 0.5 * (__ldg(in + readIndL) + __ldg(in + readIndR));
+    __stwt(out + writeIndL, avg);
+    __stwt(out + writeIndR, avg);
   }
 }
 
@@ -86,13 +86,13 @@ __global__ void avg_3d_sp_kerenel(
   const int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if (tid + start < end) {
     const int n = tid + start;
-    const int writeIndL = map[n + set_size * 0];
-    const int writeIndR = map[n + set_size * 1];
-    const int readIndL  = map[n + set_size * 2];
-    const int readIndR  = map[n + set_size * 3];
-    const float avg = 0.5 * (in[readIndL] + in[readIndR]);
-    out[writeIndL] = avg;
-    out[writeIndR] = avg;
+    const int writeIndL = __ldg(map + n + set_size * 0);
+    const int writeIndR = __ldg(map + n + set_size * 1);
+    const int readIndL  = __ldg(map + n + set_size * 2);
+    const int readIndR  = __ldg(map + n + set_size * 3);
+    const float avg = 0.5 * (__ldg(in + readIndL) + __ldg(in + readIndR));
+    __stwt(out + writeIndL, avg);
+    __stwt(out + writeIndR, avg);
   }
 }
 

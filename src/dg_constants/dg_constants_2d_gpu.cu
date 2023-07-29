@@ -152,3 +152,8 @@ DG_FP* DGConstants2D::get_mat_ptr_kernel(Constant_Matrix matrix) {
       return nullptr;
   }
 }
+
+float* DGConstants2D::get_mat_ptr_kernel_sp(Constant_Matrix matrix) {
+  throw std::runtime_error("get_mat_ptr_kernel_sp is not implemented yet for 2D\n");
+  return nullptr;
+}

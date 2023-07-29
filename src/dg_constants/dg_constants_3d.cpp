@@ -189,6 +189,42 @@ void DGConstants3D::calc_interp_mats() {
   //   }
   // }
 
+  Dr_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
+  Ds_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
+  Dt_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
+  Drw_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
+  Dsw_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
+  Dtw_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
+  mass_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
+  invMass_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
+  invV_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
+  v_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
+  lift_ptr_sp = (float *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(float));
+  eMat_ptr_sp = (float *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(float));
+  order_interp_ptr_sp = (float *)calloc(N_max * N_max * Np_max * Np_max, sizeof(float));
+
+  for(int i = 0; i < N_max * Np_max * Np_max; i++) {
+    Dr_ptr_sp[i] = (float)Dr_ptr[i];
+    Ds_ptr_sp[i] = (float)Ds_ptr[i];
+    Dt_ptr_sp[i] = (float)Dt_ptr[i];
+    Drw_ptr_sp[i] = (float)Drw_ptr[i];
+    Dsw_ptr_sp[i] = (float)Dsw_ptr[i];
+    Dtw_ptr_sp[i] = (float)Dtw_ptr[i];
+    mass_ptr_sp[i] = (float)mass_ptr[i];
+    invMass_ptr_sp[i] = (float)invMass_ptr[i];
+    invV_ptr_sp[i] = (float)invV_ptr[i];
+    v_ptr_sp[i] = (float)v_ptr[i];
+  }
+
+  for(int i = 0; i < N_max * DG_NUM_FACES * Nfp_max * Np_max; i++) {
+    lift_ptr_sp[i] = (float)lift_ptr[i];
+    eMat_ptr_sp[i] = (float)eMat_ptr[i];
+  }
+
+  for(int i = 0; i < N_max * N_max * Np_max * Np_max; i++) {
+    order_interp_ptr_sp[i] = (float)order_interp_ptr[i];
+  }
+
   transfer_kernel_ptrs();
 }
 
@@ -263,4 +299,18 @@ DGConstants3D::~DGConstants3D() {
   free(mmF3_ptr);
   free(eMat_ptr);
   free(order_interp_ptr);
+
+  free(Dr_ptr_sp);
+  free(Ds_ptr_sp);
+  free(Dt_ptr_sp);
+  free(Drw_ptr_sp);
+  free(Dsw_ptr_sp);
+  free(Dtw_ptr_sp);
+  free(mass_ptr_sp);
+  free(invMass_ptr_sp);
+  free(invV_ptr_sp);
+  free(v_ptr_sp);
+  free(lift_ptr_sp);
+  free(eMat_ptr_sp);
+  free(order_interp_ptr_sp);
 }

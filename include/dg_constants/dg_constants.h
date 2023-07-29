@@ -29,6 +29,7 @@ public:
   virtual void calc_interp_mats() = 0;
   virtual DG_FP* get_mat_ptr(Constant_Matrix matrix) = 0;
   virtual DG_FP* get_mat_ptr_kernel(Constant_Matrix matrix) = 0;
+  virtual float* get_mat_ptr_kernel_sp(Constant_Matrix matrix) = 0;
 
   int N_max, Np_max, Nfp_max;
 };

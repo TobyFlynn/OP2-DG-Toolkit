@@ -16,6 +16,11 @@
 #endif
 #endif
 
+#ifdef OP2_DG_CUDA
+void init_op2_gemv_cublas();
+void destroy_op2_gemv_cublas();
+#endif
+
 DGConstants *constants;
 DGDatPool *dg_dat_pool;
 
@@ -24,6 +29,10 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   #ifdef OP2_DG_USE_LIBXSMM
   libxsmm_init();
   #endif
+  #endif
+
+  #ifdef OP2_DG_CUDA
+  init_op2_gemv_cublas();
   #endif
   // Sets
   nodes   = op_decl_set_hdf5(meshFile.c_str(), "nodes");
@@ -131,6 +140,9 @@ DGMesh3D::~DGMesh3D() {
   #ifdef OP2_DG_USE_LIBXSMM
   libxsmm_finalize();
   #endif
+  #endif
+  #ifdef OP2_DG_CUDA
+  destroy_op2_gemv_cublas();
   #endif
 }
 

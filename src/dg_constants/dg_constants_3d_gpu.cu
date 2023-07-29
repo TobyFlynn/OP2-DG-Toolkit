@@ -46,6 +46,20 @@ DG_FP *dg_MM_F3_d;
 DG_FP *dg_Emat_d;
 DG_FP *dg_Interp_d;
 
+float *dg_Dr_sp_d;
+float *dg_Ds_sp_d;
+float *dg_Dt_sp_d;
+float *dg_Drw_sp_d;
+float *dg_Dsw_sp_d;
+float *dg_Dtw_sp_d;
+float *dg_Mass_sp_d;
+float *dg_InvMass_sp_d;
+float *dg_InvV_sp_d;
+float *dg_V_sp_d;
+float *dg_Lift_sp_d;
+float *dg_Emat_sp_d;
+float *dg_Interp_sp_d;
+
 void DGConstants3D::transfer_kernel_ptrs() {
   // Allocate device memory
   cutilSafeCall(cudaMalloc(&dg_r_d, N_max * Np_max * sizeof(DG_FP)));
@@ -112,6 +126,34 @@ void DGConstants3D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMemcpyToSymbol(dg_MM_F3_kernel, &dg_MM_F3_d, sizeof(dg_MM_F3_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_Emat_kernel, &dg_Emat_d, sizeof(dg_Emat_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_Interp_kernel, &dg_Interp_d, sizeof(dg_Interp_d)));
+
+  cutilSafeCall(cudaMalloc(&dg_Dr_sp_d, N_max * Np_max * Np_max * sizeof(float)));
+  cutilSafeCall(cudaMalloc(&dg_Ds_sp_d, N_max * Np_max * Np_max * sizeof(float)));
+  cutilSafeCall(cudaMalloc(&dg_Dt_sp_d, N_max * Np_max * Np_max * sizeof(float)));
+  cutilSafeCall(cudaMalloc(&dg_Drw_sp_d, N_max * Np_max * Np_max * sizeof(float)));
+  cutilSafeCall(cudaMalloc(&dg_Dsw_sp_d, N_max * Np_max * Np_max * sizeof(float)));
+  cutilSafeCall(cudaMalloc(&dg_Dtw_sp_d, N_max * Np_max * Np_max * sizeof(float)));
+  cutilSafeCall(cudaMalloc(&dg_Mass_sp_d, N_max * Np_max * Np_max * sizeof(float)));
+  cutilSafeCall(cudaMalloc(&dg_InvMass_sp_d, N_max * Np_max * Np_max * sizeof(float)));
+  cutilSafeCall(cudaMalloc(&dg_InvV_sp_d, N_max * Np_max * Np_max * sizeof(float)));
+  cutilSafeCall(cudaMalloc(&dg_V_sp_d, N_max * Np_max * Np_max * sizeof(float)));
+  cutilSafeCall(cudaMalloc(&dg_Lift_sp_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(float)));
+  cutilSafeCall(cudaMalloc(&dg_Emat_sp_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(float)));
+  cutilSafeCall(cudaMalloc(&dg_Interp_sp_d, N_max * N_max * Np_max * Np_max * sizeof(float)));
+
+  cutilSafeCall(cudaMemcpy(dg_Dr_sp_d, Dr_ptr_sp, N_max * Np_max * Np_max * sizeof(float), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_Ds_sp_d, Ds_ptr_sp, N_max * Np_max * Np_max * sizeof(float), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_Dt_sp_d, Dt_ptr_sp, N_max * Np_max * Np_max * sizeof(float), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_Drw_sp_d, Drw_ptr_sp, N_max * Np_max * Np_max * sizeof(float), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_Dsw_sp_d, Dsw_ptr_sp, N_max * Np_max * Np_max * sizeof(float), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_Dtw_sp_d, Dtw_ptr_sp, N_max * Np_max * Np_max * sizeof(float), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_Mass_sp_d, mass_ptr_sp, N_max * Np_max * Np_max * sizeof(float), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_InvMass_sp_d, invMass_ptr_sp, N_max * Np_max * Np_max * sizeof(float), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_InvV_sp_d, invV_ptr_sp, N_max * Np_max * Np_max * sizeof(float), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_V_sp_d, v_ptr_sp, N_max * Np_max * Np_max * sizeof(float), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_Lift_sp_d, lift_ptr_sp, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(float), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_Emat_sp_d, eMat_ptr_sp, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(float), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_Interp_sp_d, order_interp_ptr_sp, N_max * N_max * Np_max * Np_max * sizeof(float), cudaMemcpyHostToDevice));
 }
 
 void DGConstants3D::clean_up_kernel_ptrs() {
@@ -135,6 +177,20 @@ void DGConstants3D::clean_up_kernel_ptrs() {
   cudaFree(dg_MM_F3_d);
   cudaFree(dg_Emat_d);
   cudaFree(dg_Interp_d);
+
+  cudaFree(dg_Dr_sp_d);
+  cudaFree(dg_Ds_sp_d);
+  cudaFree(dg_Dt_sp_d);
+  cudaFree(dg_Drw_sp_d);
+  cudaFree(dg_Dsw_sp_d);
+  cudaFree(dg_Dtw_sp_d);
+  cudaFree(dg_Mass_sp_d);
+  cudaFree(dg_InvMass_sp_d);
+  cudaFree(dg_InvV_sp_d);
+  cudaFree(dg_V_sp_d);
+  cudaFree(dg_Lift_sp_d);
+  cudaFree(dg_Emat_sp_d);
+  cudaFree(dg_Interp_sp_d);
 }
 
 DG_FP* DGConstants3D::get_mat_ptr_kernel(Constant_Matrix matrix) {
@@ -181,6 +237,40 @@ DG_FP* DGConstants3D::get_mat_ptr_kernel(Constant_Matrix matrix) {
       return dg_Interp_d;
     default:
       throw std::runtime_error("This constant matrix is not supported by DGConstants3D\n");
+      return nullptr;
+  }
+}
+
+float* DGConstants3D::get_mat_ptr_kernel_sp(Constant_Matrix matrix) {
+  switch(matrix) {
+    case DR:
+      return dg_Dr_sp_d;
+    case DS:
+      return dg_Ds_sp_d;
+    case DT:
+      return dg_Dt_sp_d;
+    case DRW:
+      return dg_Drw_sp_d;
+    case DSW:
+      return dg_Dsw_sp_d;
+    case DTW:
+      return dg_Dtw_sp_d;
+    case MASS:
+      return dg_Mass_sp_d;
+    case INV_MASS:
+      return dg_InvMass_sp_d;
+    case INV_V:
+      return dg_InvV_sp_d;
+    case V:
+      return dg_V_sp_d;
+    case LIFT:
+      return dg_Lift_sp_d;
+    case EMAT:
+      return dg_Emat_sp_d;
+    case INTERP_MATRIX_ARRAY:
+      return dg_Interp_sp_d;
+    default:
+      throw std::runtime_error("This sp constant matrix is not supported by DGConstants3D\n");
       return nullptr;
   }
 }

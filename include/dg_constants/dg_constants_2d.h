@@ -16,6 +16,7 @@ public:
   void calc_interp_mats() override;
   DG_FP* get_mat_ptr(Constant_Matrix matrix) override;
   DG_FP* get_mat_ptr_kernel(Constant_Matrix matrix) override;
+  float* get_mat_ptr_kernel_sp(Constant_Matrix matrix) override;
 
   int cNp_max, gNp_max, gNfp_max;
 

@@ -23,6 +23,20 @@ DG_FP *dg_MM_F3_kernel;
 DG_FP *dg_Emat_kernel;
 DG_FP *dg_Interp_kernel;
 
+float *dg_Dr_kernel_sp;
+float *dg_Ds_kernel_sp;
+float *dg_Dt_kernel_sp;
+float *dg_Drw_kernel_sp;
+float *dg_Dsw_kernel_sp;
+float *dg_Dtw_kernel_sp;
+float *dg_Mass_kernel_sp;
+float *dg_InvMass_kernel_sp;
+float *dg_InvV_kernel_sp;
+float *dg_V_kernel_sp;
+float *dg_Lift_kernel_sp;
+float *dg_Emat_kernel_sp;
+float *dg_Interp_kernel_sp;
+
 void DGConstants3D::transfer_kernel_ptrs() {
   dg_r_kernel = r_ptr;
   dg_s_kernel = s_ptr;
@@ -44,6 +58,20 @@ void DGConstants3D::transfer_kernel_ptrs() {
   dg_MM_F3_kernel = mmF3_ptr;
   dg_Emat_kernel = eMat_ptr;
   dg_Interp_kernel = order_interp_ptr;
+
+  dg_Dr_kernel_sp = Dr_ptr_sp;
+  dg_Ds_kernel_sp = Ds_ptr_sp;
+  dg_Dt_kernel_sp = Dt_ptr_sp;
+  dg_Drw_kernel_sp = Drw_ptr_sp;
+  dg_Dsw_kernel_sp = Dsw_ptr_sp;
+  dg_Dtw_kernel_sp = Dtw_ptr_sp;
+  dg_Mass_kernel_sp = mass_ptr_sp;
+  dg_InvMass_kernel_sp = invMass_ptr_sp;
+  dg_InvV_kernel_sp = invV_ptr_sp;
+  dg_V_kernel_sp = v_ptr_sp;
+  dg_Lift_kernel_sp = lift_ptr_sp;
+  dg_Emat_kernel_sp = eMat_ptr_sp;
+  dg_Interp_kernel_sp = order_interp_ptr_sp;
 }
 
 void DGConstants3D::clean_up_kernel_ptrs() {
@@ -94,6 +122,40 @@ DG_FP* DGConstants3D::get_mat_ptr_kernel(Constant_Matrix matrix) {
       return dg_Interp_kernel;
     default:
       throw std::runtime_error("This constant matrix is not supported by DGConstants3D\n");
+      return nullptr;
+  }
+}
+
+float* DGConstants3D::get_mat_ptr_kernel_sp(Constant_Matrix matrix) {
+  switch(matrix) {
+    case DR:
+      return dg_Dr_kernel_sp;
+    case DS:
+      return dg_Ds_kernel_sp;
+    case DT:
+      return dg_Dt_kernel_sp;
+    case DRW:
+      return dg_Drw_kernel_sp;
+    case DSW:
+      return dg_Dsw_kernel_sp;
+    case DTW:
+      return dg_Dtw_kernel_sp;
+    case MASS:
+      return dg_Mass_kernel_sp;
+    case INV_MASS:
+      return dg_InvMass_kernel_sp;
+    case INV_V:
+      return dg_InvV_kernel_sp;
+    case V:
+      return dg_V_kernel_sp;
+    case LIFT:
+      return dg_Lift_kernel_sp;
+    case EMAT:
+      return dg_Emat_kernel_sp;
+    case INTERP_MATRIX_ARRAY:
+      return dg_Interp_kernel_sp;
+    default:
+      throw std::runtime_error("This sp constant matrix is not supported by DGConstants3D\n");
       return nullptr;
   }
 }

@@ -5,13 +5,93 @@
 #include "dg_compiler_defs.h"
 #include "dg_mesh/dg_mesh.h"
 
-#include "kernels/non_templated_soa.h"
 #include "kernels/templated_soa.h"
-#include "kernels/non_templated_soa_sp.h"
 #include "kernels/templated_soa_sp.h"
 
-void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
-  const DG_FP beta, const DG_FP *matrix, op_dat x, op_dat y) {
+#include "cublas_v2.h"
+
+cublasHandle_t cublas_handle;
+
+void init_op2_gemv_cublas() {
+  cublasCreate(&cublas_handle);
+}
+
+void destroy_op2_gemv_cublas() {
+  cublasDestroy(cublas_handle);
+}
+
+template<int m, int n>
+void templated_wrapper_sp(bool trans, int nblocks, int nthread, int sh_mem_size,
+                          const int strideX, const int strideY,
+                          const float alpha, const float beta,
+                          const float * __restrict__ matrix,
+                          const float * __restrict__ x_ptr,
+                          float * __restrict__ y_ptr, const int set_size) {
+  if(trans) {
+    if(beta == 0.0) {
+      if(alpha == 1.0) {
+        templated_cuda_gemm_T_gpu_1_alpha_0_beta_sp<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY,
+                                              matrix, x_ptr, y_ptr, set_size);
+      } else {
+        templated_cuda_gemm_T_gpu_0_beta_sp<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY, alpha,
+                                              matrix, x_ptr, y_ptr, set_size);
+      }
+    } else if(beta == 1.0) {
+      if(alpha == 1.0) {
+        templated_cuda_gemm_T_gpu_1_alpha_1_beta_sp<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY,
+                                              matrix, x_ptr, y_ptr, set_size);
+      } else {
+        templated_cuda_gemm_T_gpu_1_beta_sp<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY, alpha,
+                                              matrix, x_ptr, y_ptr, set_size);
+      }
+    } else if (alpha == 1.0) {
+      templated_cuda_gemm_T_gpu_1_alpha_sp<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                            strideX, strideY, beta,
+                                            matrix, x_ptr, y_ptr, set_size);
+    } else {
+      templated_cuda_gemm_T_gpu_sp<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                            strideX, strideY, alpha, beta,
+                                            matrix, x_ptr, y_ptr, set_size);
+    }
+  } else {
+    if(beta == 0.0) {
+      if(alpha == 1.0) {
+        templated_cuda_gemm_gpu_1_alpha_0_beta_sp<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY,
+                                              matrix, x_ptr, y_ptr, set_size);
+      } else {
+        templated_cuda_gemm_gpu_0_beta_sp<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY, alpha,
+                                              matrix, x_ptr, y_ptr, set_size);
+      }
+    } else if(beta == 1.0) {
+      if(alpha == 1.0) {
+        templated_cuda_gemm_gpu_1_alpha_1_beta_sp<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY,
+                                              matrix, x_ptr, y_ptr, set_size);
+      } else {
+        templated_cuda_gemm_gpu_1_beta_sp<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY, alpha,
+                                              matrix, x_ptr, y_ptr, set_size);
+      }
+    } else if (alpha == 1.0) {
+      templated_cuda_gemm_gpu_1_alpha_sp<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                            strideX, strideY, alpha,
+                                            matrix, x_ptr, y_ptr, set_size);
+    } else {
+      templated_cuda_gemm_gpu_sp<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                            strideX, strideY, alpha, beta,
+                                            matrix, x_ptr, y_ptr, set_size);
+    }
+  }
+}
+
+void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, const float alpha,
+  const float beta, const float *A_sp, op_dat x, op_dat y) {
 
   int nargs = 2;
   op_arg args[2] = {
@@ -19,118 +99,73 @@ void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, c
     op_arg_dat(y, -1, OP_ID, y->dim, "float", OP_RW)
   };
 
-  DG_FP *A_h = (DG_FP *)calloc(m * n, sizeof(DG_FP));
-  cudaMemcpy(A_h, matrix, m * n * sizeof(DG_FP), cudaMemcpyDeviceToHost);
-  float *A_sp_h = (float *)calloc(m * n, sizeof(float));
-  for(int i = 0; i < m * n; i++) {
-    A_sp_h[i] = (float)A_h[i];
-  }
-
-  float *A_sp;
-  cudaMalloc(&A_sp, m * n * sizeof(float));
-  cudaMemcpy(A_sp, A_sp_h, m * n * sizeof(float), cudaMemcpyHostToDevice);
-  free(A_sp_h);
-  free(A_h);
-
   int set_size = op_mpi_halo_exchanges_grouped(set, nargs, args, 2, 0);
   if (set_size > 0) {
     //set CUDA execution parameters
     int nthread = 256;
-    const int nblocks = set->size / nthread + 1;
+    const int nblocks = (set->size - 1) / nthread + 1;
     const int strideX = getSetSizeFromOpArg(&args[0]);
     const int strideY = getSetSizeFromOpArg(&args[1]);
 
-    if(t) {
-      switch(m) {
-        // The number of nodes for each order
-        case 4:
-          templated_cuda_gemm_T_gpu_sp<4><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
-                                              strideX, strideY, (float)alpha, (float)beta,
-                                              A_sp, (float *) args[0].data_d,
-                                              (float *) args[1].data_d, set->size);
-          break;
-        case 10:
-          templated_cuda_gemm_T_gpu_sp<10><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
-                                              strideX, strideY, (float)alpha, (float)beta,
-                                              A_sp, (float *) args[0].data_d,
-                                              (float *) args[1].data_d, set->size);
-          break;
-        case 20:
-          templated_cuda_gemm_T_gpu_sp<20><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
-                                              strideX, strideY, (float)alpha, (float)beta,
-                                              A_sp, (float *) args[0].data_d,
-                                              (float *) args[1].data_d, set->size);
-          break;
-        // The number of face nodes for each order
-        case 12:
-          templated_cuda_gemm_T_gpu_sp<12><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
-                                              strideX, strideY, (float)alpha, (float)beta,
-                                              A_sp, (float *) args[0].data_d,
-                                              (float *) args[1].data_d, set->size);
-          break;
-        case 24:
-          templated_cuda_gemm_T_gpu_sp<24><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
-                                              strideX, strideY, (float)alpha, (float)beta,
-                                              A_sp, (float *) args[0].data_d,
-                                              (float *) args[1].data_d, set->size);
-          break;
-        case 40:
-          templated_cuda_gemm_T_gpu_sp<40><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
-                                              strideX, strideY, (float)alpha, (float)beta,
-                                              A_sp, (float *) args[0].data_d,
-                                              (float *) args[1].data_d, set->size);
-          break;
-        default:
-          cuda_gemm_T_gpu_sp<<<nblocks,nthread,m*n*sizeof(float)>>>(m, n, strideX, strideY, (float)alpha, (float)beta,
-                                               A_sp, (float *) args[0].data_d,
-                                               (float *) args[1].data_d, set->size);
-      }
+    if(m == 4 && n == 4) {
+      templated_wrapper_sp<4,4>(t, nblocks,nthread, n*m*sizeof(float),
+                                strideX, strideY, alpha, beta, A_sp,
+                                (float *) args[0].data_d,
+                                (float *) args[1].data_d, set->size);
+    } else if(m == 10 && n == 10) {
+      templated_wrapper_sp<10,10>(t, nblocks,nthread, n*m*sizeof(float),
+                                  strideX, strideY, alpha, beta, A_sp,
+                                  (float *) args[0].data_d,
+                                  (float *) args[1].data_d, set->size);
+    } else if(m == 20 && n == 20) {
+      templated_wrapper_sp<20,20>(t, nblocks,nthread, n*m*sizeof(float),
+                                  strideX, strideY, alpha, beta, A_sp,
+                                  (float *) args[0].data_d,
+                                  (float *) args[1].data_d, set->size);
+    } else if(m == 4 && n == 12) {
+      templated_wrapper_sp<4,12>(t, nblocks,nthread, n*m*sizeof(float),
+                                 strideX, strideY, alpha, beta, A_sp,
+                                 (float *) args[0].data_d,
+                                 (float *) args[1].data_d, set->size);
+    } else if(m == 10 && n == 24) {
+      templated_wrapper_sp<10,24>(t, nblocks,nthread, n*m*sizeof(float),
+                                  strideX, strideY, alpha, beta, A_sp,
+                                  (float *) args[0].data_d,
+                                  (float *) args[1].data_d, set->size);
+    } else if(m == 20 && n == 40) {
+      templated_wrapper_sp<20,40>(t, nblocks,nthread, n*m*sizeof(float),
+                                  strideX, strideY, alpha, beta, A_sp,
+                                  (float *) args[0].data_d,
+                                  (float *) args[1].data_d, set->size);
+    } else if(m == 20 && n == 4) {
+      templated_wrapper_sp<20,4>(t, nblocks,nthread, n*m*sizeof(float),
+                                 strideX, strideY, alpha, beta, A_sp,
+                                 (float *) args[0].data_d,
+                                 (float *) args[1].data_d, set->size);
+    } else if(m == 4 && n == 20) {
+      templated_wrapper_sp<4,20>(t, nblocks,nthread, n*m*sizeof(float),
+                                 strideX, strideY, alpha, beta, A_sp,
+                                 (float *) args[0].data_d,
+                                 (float *) args[1].data_d, set->size);
     } else {
-      if(m == 4 && n == 4) {
-        templated_cuda_gemm_gpu_sp<4,4><<<nblocks,nthread,m*sizeof(float)>>>(
-                                            strideX, strideY, (float)alpha, (float)beta,
-                                            A_sp, (float *) args[0].data_d,
-                                            (float *) args[1].data_d, set->size);
-      } else if(m == 10 && n == 10) {
-        templated_cuda_gemm_gpu_sp<10,10><<<nblocks,nthread,m*sizeof(float)>>>(
-                                            strideX, strideY, (float)alpha, (float)beta,
-                                            A_sp, (float *) args[0].data_d,
-                                            (float *) args[1].data_d, set->size);
-      } else if(m == 20 && n == 20) {
-        templated_cuda_gemm_gpu_sp<20,20><<<nblocks,nthread,m*sizeof(float)>>>(
-                                            strideX, strideY, (float)alpha, (float)beta,
-                                            A_sp, (float *) args[0].data_d,
-                                            (float *) args[1].data_d, set->size);
-      } else if(m == 4 && n == 12) {
-        templated_cuda_gemm_gpu_sp<4,12><<<nblocks,nthread,m*sizeof(float)>>>(
-                                            strideX, strideY, (float)alpha, (float)beta,
-                                            A_sp, (float *) args[0].data_d,
-                                            (float *) args[1].data_d, set->size);
-      } else if(m == 10 && n == 24) {
-        templated_cuda_gemm_gpu_sp<10,24><<<nblocks,nthread,m*sizeof(float)>>>(
-                                            strideX, strideY, (float)alpha, (float)beta,
-                                            A_sp, (float *) args[0].data_d,
-                                            (float *) args[1].data_d, set->size);
-      } else if(m == 20 && n == 40) {
-        templated_cuda_gemm_gpu_sp<20,40><<<nblocks,nthread,m*sizeof(float)>>>(
-                                            strideX, strideY, (float)alpha, (float)beta,
-                                            A_sp, (float *) args[0].data_d,
-                                            (float *) args[1].data_d, set->size);
+      if(t) {
+        cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, set->size, n, m,
+                      &alpha, (float *)args[0].data_d, strideX, A_sp, m,
+                      &beta, (float *)args[1].data_d, strideY);
       } else {
-        cuda_gemm_gpu_sp<<<nblocks,nthread,m*n*sizeof(float)>>>(m, n, strideX, strideY, (float)alpha, (float)beta,
-                                           A_sp, (float *) args[0].data_d,
-                                           (float *) args[1].data_d, set->size);
+        cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, set->size, m, n,
+                    &alpha, (float *)args[0].data_d, strideX, A_sp, m, &beta,
+                    (float *)args[1].data_d, strideY);
       }
     }
   }
 
-  cudaFree(A_sp);
   op_mpi_set_dirtybit_cuda(nargs, args);
   cutilSafeCall(cudaDeviceSynchronize());
 }
 
-void custom_kernel_gemv_halo_exchange_sp(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
-  const DG_FP beta, const DG_FP *matrix, op_dat x, op_dat y) {
+void custom_kernel_gemv_halo_exchange_sp(op_set set, const bool t, const int m, const int n, const float alpha,
+  const float beta, const float *A_sp, op_dat x, op_dat y) {
 
   int nargs = 2;
   op_arg args[2] = {
@@ -139,19 +174,6 @@ void custom_kernel_gemv_halo_exchange_sp(op_set set, const bool t, const int m, 
   };
 
   int set_size = op_mpi_halo_exchanges_grouped(set, nargs, args, 2, 1);
-
-  DG_FP *A_h = (DG_FP *)calloc(m * n, sizeof(DG_FP));
-  cudaMemcpy(A_h, matrix, m * n * sizeof(DG_FP), cudaMemcpyDeviceToHost);
-  float *A_sp_h = (float *)calloc(m * n, sizeof(float));
-  for(int i = 0; i < m * n; i++) {
-    A_sp_h[i] = (float)A_h[i];
-  }
-
-  float *A_sp;
-  cudaMalloc(&A_sp, m * n * sizeof(float));
-  cudaMemcpy(A_sp, A_sp_h, m * n * sizeof(float), cudaMemcpyHostToDevice);
-  free(A_sp_h);
-  free(A_h);
 
   if (set_size > 0) {
 
@@ -173,99 +195,128 @@ void custom_kernel_gemv_halo_exchange_sp(op_set set, const bool t, const int m, 
       const int nthread = 256;
       const int nblocks = (end - start) / nthread + 1;
 
-      if(t) {
-        switch(m) {
-          // The number of nodes for each order
-          case 4:
-            templated_cuda_gemm_T_gpu_sp<4><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
-                                                strideX, strideY, (float)alpha, (float)beta,
-                                                A_sp, x_ptr,
-                                                y_ptr, end - start);
-            break;
-          case 10:
-            templated_cuda_gemm_T_gpu_sp<10><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
-                                                strideX, strideY, (float)alpha, (float)beta,
-                                                A_sp, x_ptr,
-                                                y_ptr, end - start);
-            break;
-          case 20:
-            templated_cuda_gemm_T_gpu_sp<20><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
-                                                strideX, strideY, (float)alpha, (float)beta,
-                                                A_sp, x_ptr,
-                                                y_ptr, end - start);
-            break;
-          // The number of face nodes for each order
-          case 12:
-            templated_cuda_gemm_T_gpu_sp<12><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
-                                                strideX, strideY, (float)alpha, (float)beta,
-                                                A_sp, x_ptr,
-                                                y_ptr, end - start);
-            break;
-          case 24:
-            templated_cuda_gemm_T_gpu_sp<24><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
-                                                strideX, strideY, (float)alpha, (float)beta,
-                                                A_sp, x_ptr,
-                                                y_ptr, end - start);
-            break;
-          case 40:
-            templated_cuda_gemm_T_gpu_sp<40><<<nblocks,nthread,m*n*sizeof(float)>>>(n,
-                                                strideX, strideY, (float)alpha, (float)beta,
-                                                A_sp, x_ptr,
-                                                y_ptr, end - start);
-            break;
-          default:
-            cuda_gemm_T_gpu_sp<<<nblocks,nthread,m*n*sizeof(float)>>>(m, n, strideX, strideY, (float)alpha, (float)beta,
-                                                 A_sp, x_ptr,
-                                                 y_ptr, end - start);
-        }
+      if(m == 4 && n == 4) {
+        templated_wrapper_sp<4,4>(t, nblocks,nthread, n*m*sizeof(float),
+                                  strideX, strideY, alpha, beta, A_sp,
+                                  x_ptr, y_ptr, end - start);
+      } else if(m == 10 && n == 10) {
+        templated_wrapper_sp<10,10>(t, nblocks,nthread, n*m*sizeof(float),
+                                    strideX, strideY, alpha, beta, A_sp,
+                                    x_ptr, y_ptr, end - start);
+      } else if(m == 20 && n == 20) {
+        templated_wrapper_sp<20,20>(t, nblocks,nthread, n*m*sizeof(float),
+                                    strideX, strideY, alpha, beta, A_sp,
+                                    x_ptr, y_ptr, end - start);
+      } else if(m == 4 && n == 12) {
+        templated_wrapper_sp<4,12>(t, nblocks,nthread, n*m*sizeof(float),
+                                   strideX, strideY, alpha, beta, A_sp,
+                                   x_ptr, y_ptr, end - start);
+      } else if(m == 10 && n == 24) {
+        templated_wrapper_sp<10,24>(t, nblocks,nthread, n*m*sizeof(float),
+                                    strideX, strideY, alpha, beta, A_sp,
+                                    x_ptr, y_ptr, end - start);
+      } else if(m == 20 && n == 40) {
+        templated_wrapper_sp<20,40>(t, nblocks,nthread, n*m*sizeof(float),
+                                    strideX, strideY, alpha, beta, A_sp,
+                                    x_ptr, y_ptr, end - start);
+      } else if(m == 20 && n == 4) {
+        templated_wrapper_sp<20,4>(t, nblocks,nthread, n*m*sizeof(float),
+                                   strideX, strideY, alpha, beta, A_sp,
+                                   x_ptr, y_ptr, end - start);
+      } else if(m == 4 && n == 20) {
+        templated_wrapper_sp<4,20>(t, nblocks,nthread, n*m*sizeof(float),
+                                   strideX, strideY, alpha, beta, A_sp,
+                                   x_ptr, y_ptr, end - start);
       } else {
-        if(m == 4 && n == 4) {
-          templated_cuda_gemm_gpu_sp<4,4><<<nblocks,nthread,m*sizeof(float)>>>(
-                                              strideX, strideY, (float)alpha, (float)beta,
-                                              A_sp, x_ptr,
-                                              y_ptr, end - start);
-        } else if(m == 10 && n == 10) {
-          templated_cuda_gemm_gpu_sp<10,10><<<nblocks,nthread,m*sizeof(float)>>>(
-                                              strideX, strideY, (float)alpha, (float)beta,
-                                              A_sp, x_ptr,
-                                              y_ptr, end - start);
-        } else if(m == 20 && n == 20) {
-          templated_cuda_gemm_gpu_sp<20,20><<<nblocks,nthread,m*sizeof(float)>>>(
-                                              strideX, strideY, (float)alpha, (float)beta,
-                                              A_sp, x_ptr,
-                                              y_ptr, end - start);
-        } else if(m == 4 && n == 12) {
-          templated_cuda_gemm_gpu_sp<4,12><<<nblocks,nthread,m*sizeof(float)>>>(
-                                              strideX, strideY, (float)alpha, (float)beta,
-                                              A_sp, x_ptr,
-                                              y_ptr, end - start);
-        } else if(m == 10 && n == 24) {
-          templated_cuda_gemm_gpu_sp<10,24><<<nblocks,nthread,m*sizeof(float)>>>(
-                                              strideX, strideY, (float)alpha, (float)beta,
-                                              A_sp, x_ptr,
-                                              y_ptr, end - start);
-        } else if(m == 20 && n == 40) {
-          templated_cuda_gemm_gpu_sp<20,40><<<nblocks,nthread,m*sizeof(float)>>>(
-                                              strideX, strideY, (float)alpha, (float)beta,
-                                              A_sp, x_ptr,
-                                              y_ptr, end - start);
+        if(t) {
+          cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, end - start, n,
+                      m, &alpha, x_ptr, strideX, A_sp, m, &beta, y_ptr,
+                      strideY);
         } else {
-          cuda_gemm_gpu_sp<<<nblocks,nthread,m*n*sizeof(float)>>>(m, n, strideX, strideY, (float)alpha, (float)beta,
-                                             A_sp, x_ptr,
-                                             y_ptr, end - start);
+          cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, end - start, m,
+                      n, &alpha, x_ptr, strideX, A_sp, m, &beta, y_ptr,
+                      strideY);
         }
       }
     }
   }
 
-  cudaFree(A_sp);
   op_mpi_set_dirtybit_force_halo_exchange(nargs, args, 2);
   cutilSafeCall(cudaDeviceSynchronize());
 }
 
+template<int m, int n>
+void templated_wrapper_dp(bool trans, int nblocks, int nthread, int sh_mem_size,
+                          const int strideX, const int strideY,
+                          const double alpha, const double beta,
+                          const double * __restrict__ matrix,
+                          const double * __restrict__ x_ptr,
+                          double * __restrict__ y_ptr, const int set_size) {
+  if(trans) {
+    if(beta == 0.0) {
+      if(alpha == 1.0) {
+        templated_cuda_gemm_T_gpu_1_alpha_0_beta<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY,
+                                              matrix, x_ptr, y_ptr, set_size);
+      } else {
+        templated_cuda_gemm_T_gpu_0_beta<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY, alpha,
+                                              matrix, x_ptr, y_ptr, set_size);
+      }
+    } else if(beta == 1.0) {
+      if(alpha == 1.0) {
+        templated_cuda_gemm_T_gpu_1_alpha_1_beta<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY,
+                                              matrix, x_ptr, y_ptr, set_size);
+      } else {
+        templated_cuda_gemm_T_gpu_1_beta<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY, alpha,
+                                              matrix, x_ptr, y_ptr, set_size);
+      }
+    } else if (alpha == 1.0) {
+      templated_cuda_gemm_T_gpu_1_alpha<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                            strideX, strideY, beta,
+                                            matrix, x_ptr, y_ptr, set_size);
+    } else {
+      templated_cuda_gemm_T_gpu<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                            strideX, strideY, alpha, beta,
+                                            matrix, x_ptr, y_ptr, set_size);
+    }
+  } else {
+    if(beta == 0.0) {
+      if(alpha == 1.0) {
+        templated_cuda_gemm_gpu_1_alpha_0_beta<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY,
+                                              matrix, x_ptr, y_ptr, set_size);
+      } else {
+        templated_cuda_gemm_gpu_0_beta<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY, alpha,
+                                              matrix, x_ptr, y_ptr, set_size);
+      }
+    } else if(beta == 1.0) {
+      if(alpha == 1.0) {
+        templated_cuda_gemm_gpu_1_alpha_1_beta<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY,
+                                              matrix, x_ptr, y_ptr, set_size);
+      } else {
+        templated_cuda_gemm_gpu_1_beta<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                              strideX, strideY, alpha,
+                                              matrix, x_ptr, y_ptr, set_size);
+      }
+    } else if (alpha == 1.0) {
+      templated_cuda_gemm_gpu_1_alpha<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                            strideX, strideY, alpha,
+                                            matrix, x_ptr, y_ptr, set_size);
+    } else {
+      templated_cuda_gemm_gpu<m,n><<<nblocks,nthread,sh_mem_size>>>(
+                                            strideX, strideY, alpha, beta,
+                                            matrix, x_ptr, y_ptr, set_size);
+    }
+  }
+}
+
 void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
   const DG_FP beta, const DG_FP *matrix, op_dat x, op_dat y) {
-
   int nargs = 2;
   op_arg args[2] = {
     op_arg_dat(x, -1, OP_ID, x->dim, DG_FP_STR, OP_READ),
@@ -276,90 +327,59 @@ void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, cons
   if (set_size > 0) {
     //set CUDA execution parameters
     int nthread = 256;
-    const int nblocks = set->size / nthread + 1;
+    const int nblocks = (set->size - 1) / nthread + 1;
     const int strideX = getSetSizeFromOpArg(&args[0]);
     const int strideY = getSetSizeFromOpArg(&args[1]);
 
-    if(t) {
-      switch(m) {
-        // The number of nodes for each order
-        case 4:
-          templated_cuda_gemm_T_gpu<4><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
-                                              strideX, strideY, alpha, beta,
-                                              matrix, (double *) args[0].data_d,
-                                              (double *) args[1].data_d, set->size);
-          break;
-        case 10:
-          templated_cuda_gemm_T_gpu<10><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
-                                              strideX, strideY, alpha, beta,
-                                              matrix, (double *) args[0].data_d,
-                                              (double *) args[1].data_d, set->size);
-          break;
-        case 20:
-          templated_cuda_gemm_T_gpu<20><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
-                                              strideX, strideY, alpha, beta,
-                                              matrix, (double *) args[0].data_d,
-                                              (double *) args[1].data_d, set->size);
-          break;
-        // The number of face nodes for each order
-        case 12:
-          templated_cuda_gemm_T_gpu<12><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
-                                              strideX, strideY, alpha, beta,
-                                              matrix, (double *) args[0].data_d,
-                                              (double *) args[1].data_d, set->size);
-          break;
-        case 24:
-          templated_cuda_gemm_T_gpu<24><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
-                                              strideX, strideY, alpha, beta,
-                                              matrix, (double *) args[0].data_d,
-                                              (double *) args[1].data_d, set->size);
-          break;
-        case 40:
-          templated_cuda_gemm_T_gpu<40><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
-                                              strideX, strideY, alpha, beta,
-                                              matrix, (double *) args[0].data_d,
-                                              (double *) args[1].data_d, set->size);
-          break;
-        default:
-          cuda_gemm_T_gpu<<<nblocks,nthread,m*n*sizeof(double)>>>(m, n, strideX, strideY, alpha, beta,
-                                               matrix, (double *) args[0].data_d,
-                                               (double *) args[1].data_d, set->size);
-      }
+    if(m == 4 && n == 4) {
+      templated_wrapper_dp<4,4>(t, nblocks,nthread, n*m*sizeof(double),
+                                strideX, strideY, alpha, beta, matrix,
+                                (double *) args[0].data_d,
+                                (double *) args[1].data_d, set->size);
+    } else if(m == 10 && n == 10) {
+      templated_wrapper_dp<10,10>(t, nblocks,nthread, n*m*sizeof(double),
+                                  strideX, strideY, alpha, beta, matrix,
+                                  (double *) args[0].data_d,
+                                  (double *) args[1].data_d, set->size);
+    } else if(m == 20 && n == 20) {
+      templated_wrapper_dp<20,20>(t, nblocks,nthread, n*m*sizeof(double),
+                                  strideX, strideY, alpha, beta, matrix,
+                                  (double *) args[0].data_d,
+                                  (double *) args[1].data_d, set->size);
+    } else if(m == 4 && n == 12) {
+      templated_wrapper_dp<4,12>(t, nblocks,nthread, n*m*sizeof(double),
+                                 strideX, strideY, alpha, beta, matrix,
+                                 (double *) args[0].data_d,
+                                 (double *) args[1].data_d, set->size);
+    } else if(m == 10 && n == 24) {
+      templated_wrapper_dp<10,24>(t, nblocks,nthread, n*m*sizeof(double),
+                                  strideX, strideY, alpha, beta, matrix,
+                                  (double *) args[0].data_d,
+                                  (double *) args[1].data_d, set->size);
+    } else if(m == 20 && n == 40) {
+      templated_wrapper_dp<20,40>(t, nblocks,nthread, n*m*sizeof(double),
+                                  strideX, strideY, alpha, beta, matrix,
+                                  (double *) args[0].data_d,
+                                  (double *) args[1].data_d, set->size);
+    } else if(m == 20 && n == 4) {
+      templated_wrapper_dp<20,4>(t, nblocks,nthread, n*m*sizeof(double),
+                                 strideX, strideY, alpha, beta, matrix,
+                                 (double *) args[0].data_d,
+                                 (double *) args[1].data_d, set->size);
+    } else if(m == 4 && n == 20) {
+      templated_wrapper_dp<4,20>(t, nblocks,nthread, n*m*sizeof(double),
+                                 strideX, strideY, alpha, beta, matrix,
+                                 (double *) args[0].data_d,
+                                 (double *) args[1].data_d, set->size);
     } else {
-      if(m == 4 && n == 4) {
-        templated_cuda_gemm_gpu<4,4><<<nblocks,nthread,m*sizeof(double)>>>(
-                                            strideX, strideY, alpha, beta,
-                                            matrix, (double *) args[0].data_d,
-                                            (double *) args[1].data_d, set->size);
-      } else if(m == 10 && n == 10) {
-        templated_cuda_gemm_gpu<10,10><<<nblocks,nthread,m*sizeof(double)>>>(
-                                            strideX, strideY, alpha, beta,
-                                            matrix, (double *) args[0].data_d,
-                                            (double *) args[1].data_d, set->size);
-      } else if(m == 20 && n == 20) {
-        templated_cuda_gemm_gpu<20,20><<<nblocks,nthread,m*sizeof(double)>>>(
-                                            strideX, strideY, alpha, beta,
-                                            matrix, (double *) args[0].data_d,
-                                            (double *) args[1].data_d, set->size);
-      } else if(m == 4 && n == 12) {
-        templated_cuda_gemm_gpu<4,12><<<nblocks,nthread,m*sizeof(double)>>>(
-                                            strideX, strideY, alpha, beta,
-                                            matrix, (double *) args[0].data_d,
-                                            (double *) args[1].data_d, set->size);
-      } else if(m == 10 && n == 24) {
-        templated_cuda_gemm_gpu<10,24><<<nblocks,nthread,m*sizeof(double)>>>(
-                                            strideX, strideY, alpha, beta,
-                                            matrix, (double *) args[0].data_d,
-                                            (double *) args[1].data_d, set->size);
-      } else if(m == 20 && n == 40) {
-        templated_cuda_gemm_gpu<20,40><<<nblocks,nthread,m*sizeof(double)>>>(
-                                            strideX, strideY, alpha, beta,
-                                            matrix, (double *) args[0].data_d,
-                                            (double *) args[1].data_d, set->size);
+      if(t) {
+        cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, set->size, n, m,
+                      &alpha, (double *)args[0].data_d, strideX, matrix, m,
+                      &beta, (double *)args[1].data_d, strideY);
       } else {
-        cuda_gemm_gpu<<<nblocks,nthread,m*n*sizeof(double)>>>(m, n, strideX, strideY, alpha, beta,
-                                           matrix, (double *) args[0].data_d,
-                                           (double *) args[1].data_d, set->size);
+        cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, set->size, m, n,
+                    &alpha, (double *)args[0].data_d, strideX, matrix, m, &beta,
+                    (double *)args[1].data_d, strideY);
       }
     }
   }
@@ -397,72 +417,47 @@ void custom_kernel_gemv_halo_exchange(op_set set, const bool t, const int m, con
       const int nthread = 256;
       const int nblocks = (end - start) / nthread + 1;
 
-      if(t) {
-        switch(m) {
-          // The number of nodes for each order
-          case 4:
-            templated_cuda_gemm_T_gpu<4><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
-                                                strideX, strideY, alpha, beta,
-                                                matrix, x_ptr, y_ptr, end - start);
-            break;
-          case 10:
-            templated_cuda_gemm_T_gpu<10><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
-                                                strideX, strideY, alpha, beta,
-                                                matrix, x_ptr, y_ptr, end - start);
-            break;
-          case 20:
-            templated_cuda_gemm_T_gpu<20><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
-                                                strideX, strideY, alpha, beta,
-                                                matrix, x_ptr, y_ptr, end - start);
-            break;
-          // The number of face nodes for each order
-          case 12:
-            templated_cuda_gemm_T_gpu<12><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
-                                                strideX, strideY, alpha, beta,
-                                                matrix, x_ptr, y_ptr, end - start);
-            break;
-          case 24:
-            templated_cuda_gemm_T_gpu<24><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
-                                                strideX, strideY, alpha, beta,
-                                                matrix, x_ptr, y_ptr, end - start);
-            break;
-          case 40:
-            templated_cuda_gemm_T_gpu<40><<<nblocks,nthread,m*n*sizeof(double)>>>(n,
-                                                strideX, strideY, alpha, beta,
-                                                matrix, x_ptr, y_ptr, end - start);
-            break;
-          default:
-            cuda_gemm_T_gpu<<<nblocks,nthread,m*n*sizeof(double)>>>(m, n, strideX, strideY, alpha, beta,
-                                                 matrix, x_ptr, y_ptr, end - start);
-        }
+      if(m == 4 && n == 4) {
+        templated_wrapper_dp<4,4>(t, nblocks,nthread, n*m*sizeof(double),
+                                  strideX, strideY, alpha, beta, matrix,
+                                  x_ptr, y_ptr, end - start);
+      } else if(m == 10 && n == 10) {
+        templated_wrapper_dp<10,10>(t, nblocks,nthread, n*m*sizeof(double),
+                                    strideX, strideY, alpha, beta, matrix,
+                                    x_ptr, y_ptr, end - start);
+      } else if(m == 20 && n == 20) {
+        templated_wrapper_dp<20,20>(t, nblocks,nthread, n*m*sizeof(double),
+                                    strideX, strideY, alpha, beta, matrix,
+                                    x_ptr, y_ptr, end - start);
+      } else if(m == 4 && n == 12) {
+        templated_wrapper_dp<4,12>(t, nblocks,nthread, n*m*sizeof(double),
+                                   strideX, strideY, alpha, beta, matrix,
+                                   x_ptr, y_ptr, end - start);
+      } else if(m == 10 && n == 24) {
+        templated_wrapper_dp<10,24>(t, nblocks,nthread, n*m*sizeof(double),
+                                    strideX, strideY, alpha, beta, matrix,
+                                    x_ptr, y_ptr, end - start);
+      } else if(m == 20 && n == 40) {
+        templated_wrapper_dp<20,40>(t, nblocks,nthread, n*m*sizeof(double),
+                                    strideX, strideY, alpha, beta, matrix,
+                                    x_ptr, y_ptr, end - start);
+      } else if(m == 20 && n == 4) {
+        templated_wrapper_dp<20,4>(t, nblocks,nthread, n*m*sizeof(double),
+                                   strideX, strideY, alpha, beta, matrix,
+                                   x_ptr, y_ptr, end - start);
+      } else if(m == 4 && n == 20) {
+        templated_wrapper_dp<4,20>(t, nblocks,nthread, n*m*sizeof(double),
+                                   strideX, strideY, alpha, beta, matrix,
+                                   x_ptr, y_ptr, end - start);
       } else {
-        if(m == 4 && n == 4) {
-          templated_cuda_gemm_gpu<4,4><<<nblocks,nthread,m*sizeof(double)>>>(
-                                              strideX, strideY, alpha, beta,
-                                              matrix, x_ptr, y_ptr, end - start);
-        } else if(m == 10 && n == 10) {
-          templated_cuda_gemm_gpu<10,10><<<nblocks,nthread,m*sizeof(double)>>>(
-                                              strideX, strideY, alpha, beta,
-                                              matrix, x_ptr, y_ptr, end - start);
-        } else if(m == 20 && n == 20) {
-          templated_cuda_gemm_gpu<20,20><<<nblocks,nthread,m*sizeof(double)>>>(
-                                              strideX, strideY, alpha, beta,
-                                              matrix, x_ptr, y_ptr, end - start);
-        } else if(m == 4 && n == 12) {
-          templated_cuda_gemm_gpu<4,12><<<nblocks,nthread,m*sizeof(double)>>>(
-                                              strideX, strideY, alpha, beta,
-                                              matrix, x_ptr, y_ptr, end - start);
-        } else if(m == 10 && n == 24) {
-          templated_cuda_gemm_gpu<10,24><<<nblocks,nthread,m*sizeof(double)>>>(
-                                              strideX, strideY, alpha, beta,
-                                              matrix, x_ptr, y_ptr, end - start);
-        } else if(m == 20 && n == 40) {
-          templated_cuda_gemm_gpu<20,40><<<nblocks,nthread,m*sizeof(double)>>>(
-                                              strideX, strideY, alpha, beta,
-                                              matrix, x_ptr, y_ptr, end - start);
+        if(t) {
+          cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, end - start, n,
+                      m, &alpha, x_ptr, strideX, matrix, m, &beta, y_ptr,
+                      strideY);
         } else {
-          cuda_gemm_gpu<<<nblocks,nthread,m*n*sizeof(double)>>>(m, n, strideX, strideY, alpha, beta,
-                                             matrix, x_ptr, y_ptr, end - start);
+          cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, end - start, m,
+                      n, &alpha, x_ptr, strideX, matrix, m, &beta, y_ptr,
+                      strideY);
         }
       }
     }

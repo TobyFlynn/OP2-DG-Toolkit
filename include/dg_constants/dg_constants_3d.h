@@ -16,6 +16,7 @@ public:
   void calc_interp_mats() override;
   DG_FP* get_mat_ptr(Constant_Matrix matrix) override;
   DG_FP* get_mat_ptr_kernel(Constant_Matrix matrix) override;
+  float* get_mat_ptr_kernel_sp(Constant_Matrix matrix) override;
 
 private:
   void transfer_kernel_ptrs();
@@ -29,6 +30,10 @@ private:
   // To get an interp array:
   // int ind = ((order_from - 1) * DG_ORDER + (order_to - 1)) * DG_NP * DG_NP
   DG_FP *order_interp_ptr;
+
+  float *Dr_ptr_sp, *Ds_ptr_sp, *Dt_ptr_sp, *Drw_ptr_sp, *Dsw_ptr_sp, *Dtw_ptr_sp;
+  float *mass_ptr_sp, *invMass_ptr_sp, *invV_ptr_sp, *v_ptr_sp, *lift_ptr_sp, *eMat_ptr_sp;
+  float *order_interp_ptr_sp;
 };
 
 #endif
