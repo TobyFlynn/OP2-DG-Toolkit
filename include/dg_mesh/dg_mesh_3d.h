@@ -20,6 +20,7 @@ public:
 
   // Operators
   void grad(op_dat u, op_dat ux, op_dat uy, op_dat uz);
+  void grad_weak(op_dat u, op_dat ux, op_dat uy, op_dat uz);
   void grad_with_central_flux(op_dat u, op_dat ux, op_dat uy, op_dat uz);
   void div(op_dat u, op_dat v, op_dat w, op_dat res);
   void div_with_central_flux(op_dat u, op_dat v, op_dat w, op_dat res);

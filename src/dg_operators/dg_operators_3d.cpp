@@ -92,6 +92,29 @@ custom_kernel_grad_3d(order_int, "grad_3d",cells,
 #endif
 }
 
+void DGMesh3D::grad_weak(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
+  DGTempDat tmp_r = dg_dat_pool->requestTempDatCells(DG_NP);
+  DGTempDat tmp_s = dg_dat_pool->requestTempDatCells(DG_NP);
+  DGTempDat tmp_t = dg_dat_pool->requestTempDatCells(DG_NP);
+
+  op2_gemv(this, false, 1.0, DGConstants::DRW, u, 0.0, tmp_r.dat);
+  op2_gemv(this, false, 1.0, DGConstants::DSW, u, 0.0, tmp_s.dat);
+  op2_gemv(this, false, 1.0, DGConstants::DTW, u, 0.0, tmp_t.dat);
+  op_par_loop(grad_3d_geof, "grad_3d_geof", cells,
+              op_arg_gbl(&order_int, 1, "int", OP_READ),
+              op_arg_dat(geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_r.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_s.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_t.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(ux, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(uy, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(uz, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+
+  dg_dat_pool->releaseTempDatCells(tmp_r);
+  dg_dat_pool->releaseTempDatCells(tmp_s);
+  dg_dat_pool->releaseTempDatCells(tmp_t);
+}
+
 void DGMesh3D::grad_with_central_flux(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
   grad(u, ux, uy, uz);
 

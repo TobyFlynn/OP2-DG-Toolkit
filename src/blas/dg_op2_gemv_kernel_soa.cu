@@ -80,7 +80,7 @@ void templated_wrapper_sp(bool trans, int nblocks, int nthread, int sh_mem_size,
       }
     } else if (alpha == 1.0) {
       templated_cuda_gemm_gpu_1_alpha_sp<m,n><<<nblocks,nthread,sh_mem_size>>>(
-                                            strideX, strideY, alpha,
+                                            strideX, strideY, beta,
                                             matrix, x_ptr, y_ptr, set_size);
     } else {
       templated_cuda_gemm_gpu_sp<m,n><<<nblocks,nthread,sh_mem_size>>>(
@@ -305,7 +305,7 @@ void templated_wrapper_dp(bool trans, int nblocks, int nthread, int sh_mem_size,
       }
     } else if (alpha == 1.0) {
       templated_cuda_gemm_gpu_1_alpha<m,n><<<nblocks,nthread,sh_mem_size>>>(
-                                            strideX, strideY, alpha,
+                                            strideX, strideY, beta,
                                             matrix, x_ptr, y_ptr, set_size);
     } else {
       templated_cuda_gemm_gpu<m,n><<<nblocks,nthread,sh_mem_size>>>(
