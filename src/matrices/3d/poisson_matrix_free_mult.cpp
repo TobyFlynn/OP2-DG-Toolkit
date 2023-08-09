@@ -179,10 +179,10 @@ void PoissonMatrixFreeMult3D::mat_free_mult_sp(op_dat in, op_dat out) {
   DGTempDat tmp_s = dg_dat_pool->requestTempDatCellsSP(DG_NP);
   DGTempDat tmp_t = dg_dat_pool->requestTempDatCellsSP(DG_NP);
 
-  op2_gemv_sp(mesh, false, 1.0, DGConstants::DR, in, 0.0, tmp_r.dat);
-  op2_gemv_sp(mesh, false, 1.0, DGConstants::DS, in, 0.0, tmp_s.dat);
-  op2_gemv_sp(mesh, false, 1.0, DGConstants::DT, in, 0.0, tmp_t.dat);
-  op_par_loop(grad_3d_geof_sp, "grad_3d_geof_sp", mesh->cells,
+  op2_gemv_halo_exchange_sp(mesh, false, 1.0, DGConstants::DR, in, 0.0, tmp_r.dat);
+  op2_gemv_halo_exchange_sp(mesh, false, 1.0, DGConstants::DS, in, 0.0, tmp_s.dat);
+  op2_gemv_halo_exchange_sp(mesh, false, 1.0, DGConstants::DT, in, 0.0, tmp_t.dat);
+  op_par_loop(grad_3d_geof_sp, "grad_3d_geof_sp:force_halo_exchange", mesh->cells,
               op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(mesh->geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
               op_arg_dat(tmp_r.dat, -1, OP_ID, DG_NP, "float", OP_READ),
