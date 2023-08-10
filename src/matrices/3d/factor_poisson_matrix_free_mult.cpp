@@ -112,11 +112,11 @@ void FactorPoissonMatrixFreeMult3D::mat_free_apply_bc(op_dat rhs, op_dat bc) {
 
 void FactorPoissonMatrixFreeMult3D::mat_free_mult(op_dat in, op_dat out) {
   check_current_order();
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult");
   DGTempDat tmp_grad0 = dg_dat_pool->requestTempDatCells(DG_NP);
   DGTempDat tmp_grad1 = dg_dat_pool->requestTempDatCells(DG_NP);
   DGTempDat tmp_grad2 = dg_dat_pool->requestTempDatCells(DG_NP);
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult grad");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult grad");
   #if defined(OP2_DG_CUDA) && !defined(DG_OP2_SOA)
   custom_kernel_fpmf_grad_3d(mesh->order_int, "fpmf_grad_3d", mesh->cells,
                        op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
@@ -138,7 +138,7 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult(op_dat in, op_dat out) {
               op_arg_dat(tmp_grad1.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
               op_arg_dat(tmp_grad2.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
   #endif
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult grad");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult grad");
 
   DGTempDat tmp_npf0 = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_NPF);
   DGTempDat tmp_npf1 = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_NPF);
@@ -153,14 +153,14 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult(op_dat in, op_dat out) {
               op_arg_dat(tmp_npf2.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE),
               op_arg_dat(tmp_npf3.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
 
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult faces");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult faces");
   mesh->jump(in, tmp_npf0.dat);
   mesh->avg(tmp_grad0.dat, tmp_npf1.dat);
   mesh->avg(tmp_grad1.dat, tmp_npf2.dat);
   mesh->avg(tmp_grad2.dat, tmp_npf3.dat);
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult faces");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult faces");
 
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult bfaces");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult bfaces");
   if(mesh->bface2cells) {
     op_par_loop(pmf_3d_mult_avg_jump, "pmf_3d_mult_avg_jump", mesh->bfaces,
                 op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
@@ -175,9 +175,9 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult(op_dat in, op_dat out) {
                 op_arg_dat(tmp_npf2.dat, 0, mesh->bface2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC),
                 op_arg_dat(tmp_npf3.dat, 0, mesh->bface2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_INC));
   }
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult bfaces");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult bfaces");
 
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - finish flux");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " finish flux");
     op_par_loop(fpmf_3d_mult_flux, "fpmf_3d_mult_flux", mesh->cells,
                 op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
                 op_arg_dat(mesh->nx_c, -1, OP_ID, 4, DG_FP_STR, OP_READ),
@@ -190,9 +190,9 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult(op_dat in, op_dat out) {
                 op_arg_dat(tmp_npf1.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW),
                 op_arg_dat(tmp_npf2.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW),
                 op_arg_dat(tmp_npf3.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW));
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - finish flux");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " finish flux");
 
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult cells");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult cells");
   #if defined(OP2_DG_CUDA) && !defined(DG_OP2_SOA)
   custom_kernel_pmf_3d_mult_cells_merged(mesh->order_int, "pmf_3d_mult_cells_merged", mesh->cells,
               op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
@@ -206,20 +206,20 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult(op_dat in, op_dat out) {
               op_arg_dat(tmp_grad2.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(out, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
   #else
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult cells MM");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult cells MM");
   mesh->mass(tmp_grad0.dat);
   mesh->mass(tmp_grad1.dat);
   mesh->mass(tmp_grad2.dat);
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult cells MM");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult cells MM");
 
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult cells Emat");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult cells Emat");
   op2_gemv(mesh, false, 1.0, DGConstants::EMAT, tmp_npf1.dat, 1.0, tmp_grad0.dat);
   op2_gemv(mesh, false, 1.0, DGConstants::EMAT, tmp_npf2.dat, 1.0, tmp_grad1.dat);
   op2_gemv(mesh, false, 1.0, DGConstants::EMAT, tmp_npf3.dat, 1.0, tmp_grad2.dat);
   op2_gemv(mesh, false, 1.0, DGConstants::EMAT, tmp_npf0.dat, 0.0, out);
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult cells Emat");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult cells Emat");
 
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult cells cells");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult cells cells");
   op_par_loop(pmf_3d_mult_cells_geof, "pmf_3d_mult_cells_geof", mesh->cells,
               op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(mesh->geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
@@ -230,9 +230,9 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult(op_dat in, op_dat out) {
   op2_gemv(mesh, true, 1.0, DGConstants::DR, tmp_grad0.dat, 1.0, out);
   op2_gemv(mesh, true, 1.0, DGConstants::DS, tmp_grad1.dat, 1.0, out);
   op2_gemv(mesh, true, 1.0, DGConstants::DT, tmp_grad2.dat, 1.0, out);
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult cells cells");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult cells cells");
   #endif
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult cells");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult cells");
   dg_dat_pool->releaseTempDatCells(tmp_grad0);
   dg_dat_pool->releaseTempDatCells(tmp_grad1);
   dg_dat_pool->releaseTempDatCells(tmp_grad2);
@@ -240,16 +240,16 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult(op_dat in, op_dat out) {
   dg_dat_pool->releaseTempDatCells(tmp_npf1);
   dg_dat_pool->releaseTempDatCells(tmp_npf2);
   dg_dat_pool->releaseTempDatCells(tmp_npf3);
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult");
 }
 
 void FactorPoissonMatrixFreeMult3D::mat_free_mult_sp(op_dat in, op_dat out) {
   check_current_order();
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult");
   DGTempDat tmp_grad0 = dg_dat_pool->requestTempDatCellsSP(DG_NP);
   DGTempDat tmp_grad1 = dg_dat_pool->requestTempDatCellsSP(DG_NP);
   DGTempDat tmp_grad2 = dg_dat_pool->requestTempDatCellsSP(DG_NP);
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult grad");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult grad");
   op2_gemv_halo_exchange_sp(mesh, false, 1.0, DGConstants::DR, in, 0.0, tmp_grad0.dat);
   op2_gemv_halo_exchange_sp(mesh, false, 1.0, DGConstants::DS, in, 0.0, tmp_grad1.dat);
   op2_gemv_halo_exchange_sp(mesh, false, 1.0, DGConstants::DT, in, 0.0, tmp_grad2.dat);
@@ -260,7 +260,7 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult_sp(op_dat in, op_dat out) {
               op_arg_dat(tmp_grad0.dat, -1, OP_ID, DG_NP, "float", OP_RW),
               op_arg_dat(tmp_grad1.dat, -1, OP_ID, DG_NP, "float", OP_RW),
               op_arg_dat(tmp_grad2.dat, -1, OP_ID, DG_NP, "float", OP_RW));
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult grad");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult grad");
 
   DGTempDat tmp_npf0 = dg_dat_pool->requestTempDatCellsSP(DG_NUM_FACES * DG_NPF);
   DGTempDat tmp_npf1 = dg_dat_pool->requestTempDatCellsSP(DG_NUM_FACES * DG_NPF);
@@ -275,14 +275,14 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult_sp(op_dat in, op_dat out) {
               op_arg_dat(tmp_npf2.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_WRITE),
               op_arg_dat(tmp_npf3.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_WRITE));
 
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult faces");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult faces");
   mesh->jump_sp(in, tmp_npf0.dat);
   mesh->avg_sp(tmp_grad0.dat, tmp_npf1.dat);
   mesh->avg_sp(tmp_grad1.dat, tmp_npf2.dat);
   mesh->avg_sp(tmp_grad2.dat, tmp_npf3.dat);
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult faces");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult faces");
 
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult bfaces");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult bfaces");
   if(mesh->bface2cells) {
     op_par_loop(pmf_3d_mult_avg_jump_sp, "pmf_3d_mult_avg_jump_sp", mesh->bfaces,
                 op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
@@ -297,9 +297,9 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult_sp(op_dat in, op_dat out) {
                 op_arg_dat(tmp_npf2.dat, 0, mesh->bface2cells, DG_NUM_FACES * DG_NPF, "float", OP_INC),
                 op_arg_dat(tmp_npf3.dat, 0, mesh->bface2cells, DG_NUM_FACES * DG_NPF, "float", OP_INC));
   }
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult bfaces");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult bfaces");
 
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - finish flux");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " finish flux");
     op_par_loop(fpmf_3d_mult_flux_sp, "fpmf_3d_mult_flux_sp", mesh->cells,
                 op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
                 op_arg_dat(mesh->nx_c, -1, OP_ID, 4, DG_FP_STR, OP_READ),
@@ -312,23 +312,23 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult_sp(op_dat in, op_dat out) {
                 op_arg_dat(tmp_npf1.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW),
                 op_arg_dat(tmp_npf2.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW),
                 op_arg_dat(tmp_npf3.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW));
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - finish flux");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " finish flux");
 
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult cells");
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult cells MM");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult cells");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult cells MM");
   mesh->mass_sp(tmp_grad0.dat);
   mesh->mass_sp(tmp_grad1.dat);
   mesh->mass_sp(tmp_grad2.dat);
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult cells MM");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult cells MM");
 
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult cells Emat");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult cells Emat");
   op2_gemv_sp(mesh, false, 1.0, DGConstants::EMAT, tmp_npf1.dat, 1.0, tmp_grad0.dat);
   op2_gemv_sp(mesh, false, 1.0, DGConstants::EMAT, tmp_npf2.dat, 1.0, tmp_grad1.dat);
   op2_gemv_sp(mesh, false, 1.0, DGConstants::EMAT, tmp_npf3.dat, 1.0, tmp_grad2.dat);
   op2_gemv_sp(mesh, false, 1.0, DGConstants::EMAT, tmp_npf0.dat, 0.0, out);
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult cells Emat");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult cells Emat");
 
-  timer->startTimer("FactorPoissonMatrixFreeMult3D - mult cells cells");
+  timer->startTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult cells cells");
   op_par_loop(pmf_3d_mult_cells_geof_sp, "pmf_3d_mult_cells_geof_sp", mesh->cells,
               op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(mesh->geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
@@ -339,8 +339,8 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult_sp(op_dat in, op_dat out) {
   op2_gemv_sp(mesh, true, 1.0, DGConstants::DR, tmp_grad0.dat, 1.0, out);
   op2_gemv_sp(mesh, true, 1.0, DGConstants::DS, tmp_grad1.dat, 1.0, out);
   op2_gemv_sp(mesh, true, 1.0, DGConstants::DT, tmp_grad2.dat, 1.0, out);
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult cells cells");
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult cells");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult cells cells");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult cells");
   dg_dat_pool->releaseTempDatCellsSP(tmp_grad0);
   dg_dat_pool->releaseTempDatCellsSP(tmp_grad1);
   dg_dat_pool->releaseTempDatCellsSP(tmp_grad2);
@@ -348,5 +348,5 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult_sp(op_dat in, op_dat out) {
   dg_dat_pool->releaseTempDatCellsSP(tmp_npf1);
   dg_dat_pool->releaseTempDatCellsSP(tmp_npf2);
   dg_dat_pool->releaseTempDatCellsSP(tmp_npf3);
-  timer->endTimer("FactorPoissonMatrixFreeMult3D - mult");
+  timer->endTimer("FactorPoissonMatrixFreeMult3D sp" + std::to_string(mesh->order_int) + " mult");
 }
