@@ -19,6 +19,7 @@ public:
   float* get_mat_ptr_kernel_sp(Constant_Matrix matrix) override;
 
 private:
+  void getCubatureData(arma::vec &cubr, arma::vec &cubs, arma::vec &cubt, arma::vec &cubw);
   void transfer_kernel_ptrs();
   void clean_up_kernel_ptrs();
 
@@ -30,6 +31,7 @@ private:
   // To get an interp array:
   // int ind = ((order_from - 1) * DG_ORDER + (order_to - 1)) * DG_NP * DG_NP
   DG_FP *order_interp_ptr;
+  DG_FP *cubInterp_ptr, *cubProj_ptr, *cubPDrT_ptr, *cubPDsT_ptr, *cubPDtT_ptr;
 
   float *Dr_ptr_sp, *Ds_ptr_sp, *Dt_ptr_sp, *Drw_ptr_sp, *Dsw_ptr_sp, *Dtw_ptr_sp;
   float *mass_ptr_sp, *invMass_ptr_sp, *invV_ptr_sp, *v_ptr_sp, *lift_ptr_sp, *eMat_ptr_sp;

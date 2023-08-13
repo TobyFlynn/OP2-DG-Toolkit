@@ -24,6 +24,11 @@ extern __constant__ DG_FP *dg_MM_F2_kernel;
 extern __constant__ DG_FP *dg_MM_F3_kernel;
 extern __constant__ DG_FP *dg_Emat_kernel;
 extern __constant__ DG_FP *dg_Interp_kernel;
+extern __constant__ DG_FP *dg_cub3d_Interp_kernel;
+extern __constant__ DG_FP *dg_cub3d_Proj_kernel;
+extern __constant__ DG_FP *dg_cub3d_PDr_kernel;
+extern __constant__ DG_FP *dg_cub3d_PDs_kernel;
+extern __constant__ DG_FP *dg_cub3d_PDt_kernel;
 #else
 extern DG_FP *dg_r_kernel;
 extern DG_FP *dg_s_kernel;
@@ -45,6 +50,11 @@ extern DG_FP *dg_MM_F2_kernel;
 extern DG_FP *dg_MM_F3_kernel;
 extern DG_FP *dg_Emat_kernel;
 extern DG_FP *dg_Interp_kernel;
+extern DG_FP *dg_cub3d_Interp_kernel;
+extern DG_FP *dg_cub3d_Proj_kernel;
+extern DG_FP *dg_cub3d_PDr_kernel;
+extern DG_FP *dg_cub3d_PDs_kernel;
+extern DG_FP *dg_cub3d_PDt_kernel;
 #endif
 
 #endif

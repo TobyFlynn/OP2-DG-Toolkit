@@ -24,6 +24,11 @@ __constant__ DG_FP *dg_MM_F2_kernel;
 __constant__ DG_FP *dg_MM_F3_kernel;
 __constant__ DG_FP *dg_Emat_kernel;
 __constant__ DG_FP *dg_Interp_kernel;
+__constant__ DG_FP *dg_cub3d_Interp_kernel;
+__constant__ DG_FP *dg_cub3d_Proj_kernel;
+__constant__ DG_FP *dg_cub3d_PDr_kernel;
+__constant__ DG_FP *dg_cub3d_PDs_kernel;
+__constant__ DG_FP *dg_cub3d_PDt_kernel;
 
 DG_FP *dg_r_d;
 DG_FP *dg_s_d;
@@ -45,6 +50,11 @@ DG_FP *dg_MM_F2_d;
 DG_FP *dg_MM_F3_d;
 DG_FP *dg_Emat_d;
 DG_FP *dg_Interp_d;
+DG_FP *dg_cub3d_Interp_d;
+DG_FP *dg_cub3d_Proj_d;
+DG_FP *dg_cub3d_PDr_d;
+DG_FP *dg_cub3d_PDs_d;
+DG_FP *dg_cub3d_PDt_d;
 
 float *dg_Dr_sp_d;
 float *dg_Ds_sp_d;
@@ -82,6 +92,11 @@ void DGConstants3D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMalloc(&dg_MM_F3_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
   cutilSafeCall(cudaMalloc(&dg_Emat_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP)));
   cutilSafeCall(cudaMalloc(&dg_Interp_d, N_max * N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(cudaMalloc(&dg_cub3d_Interp_d, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP)));
+  cutilSafeCall(cudaMalloc(&dg_cub3d_Proj_d, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP)));
+  cutilSafeCall(cudaMalloc(&dg_cub3d_PDr_d, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP)));
+  cutilSafeCall(cudaMalloc(&dg_cub3d_PDs_d, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP)));
+  cutilSafeCall(cudaMalloc(&dg_cub3d_PDt_d, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP)));
 
   // Transfer matrices to device
   cutilSafeCall(cudaMemcpy(dg_r_d, r_ptr, N_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
@@ -104,6 +119,11 @@ void DGConstants3D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMemcpy(dg_MM_F3_d, mmF3_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
   cutilSafeCall(cudaMemcpy(dg_Emat_d, eMat_ptr, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
   cutilSafeCall(cudaMemcpy(dg_Interp_d, order_interp_ptr, N_max * N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_cub3d_Interp_d, cubInterp_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_cub3d_Proj_d, cubProj_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_cub3d_PDr_d, cubPDr_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_cub3d_PDs_d, cubPDs_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_cub3d_PDt_d, cubPDt_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), cudaMemcpyHostToDevice));
 
   // Set up pointers that are accessible from the device
   cutilSafeCall(cudaMemcpyToSymbol(dg_r_kernel, &dg_r_d, sizeof(dg_r_d)));
@@ -126,6 +146,11 @@ void DGConstants3D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMemcpyToSymbol(dg_MM_F3_kernel, &dg_MM_F3_d, sizeof(dg_MM_F3_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_Emat_kernel, &dg_Emat_d, sizeof(dg_Emat_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_Interp_kernel, &dg_Interp_d, sizeof(dg_Interp_d)));
+  cutilSafeCall(cudaMemcpyToSymbol(dg_cub3d_Interp_kernel, &dg_cub3d_Interp_d, sizeof(dg_cub3d_Interp_d)));
+  cutilSafeCall(cudaMemcpyToSymbol(dg_cub3d_Proj_kernel, &dg_cub3d_Proj_d, sizeof(dg_cub3d_Proj_d)));
+  cutilSafeCall(cudaMemcpyToSymbol(dg_cub3d_PDr_kernel, &dg_cub3d_PDr_d, sizeof(dg_cub3d_Interp_d)));
+  cutilSafeCall(cudaMemcpyToSymbol(dg_cub3d_PDs_kernel, &dg_cub3d_PDs_d, sizeof(dg_cub3d_PDs_d)));
+  cutilSafeCall(cudaMemcpyToSymbol(dg_cub3d_PDt_kernel, &dg_cub3d_PDt_d, sizeof(dg_cub3d_PDt_d)));
 
   cutilSafeCall(cudaMalloc(&dg_Dr_sp_d, N_max * Np_max * Np_max * sizeof(float)));
   cutilSafeCall(cudaMalloc(&dg_Ds_sp_d, N_max * Np_max * Np_max * sizeof(float)));
@@ -235,6 +260,16 @@ DG_FP* DGConstants3D::get_mat_ptr_kernel(Constant_Matrix matrix) {
       return dg_Emat_d;
     case INTERP_MATRIX_ARRAY:
       return dg_Interp_d;
+    case CUB3D_INTERP:
+      return dg_cub3d_Interp_d;
+    case CUB3D_PROJ:
+      return dg_cub3d_Proj_d;
+    case CUB3D_PDR:
+      return dg_cub3d_PDr_d;
+    case CUB3D_PDS:
+      return dg_cub3d_PDs_d;
+    case CUB3D_PDT:
+      return dg_cub3d_PDt_d;
     default:
       throw std::runtime_error("This constant matrix is not supported by DGConstants3D\n");
       return nullptr;

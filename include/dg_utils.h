@@ -101,6 +101,14 @@ namespace DGUtils {
                         const arma::mat &v, const int N, arma::mat &face0,
                         arma::mat &face1, arma::mat &face2, arma::mat &face3);
 
+  arma::mat cubaturePMat3D(const arma::vec &r, const arma::vec &s, const arma::vec &t, 
+                           const arma::vec &cubr, const arma::vec &cubs,
+                           const arma::vec &cubt, const int N);
+  
+  void cubaturePDwMat3D(const arma::vec &r, const arma::vec &s, const arma::vec &t, 
+                        const arma::vec &cubr, const arma::vec &cubs, const arma::vec &cubt, 
+                        const int N, arma::mat &cubDrw, arma::mat &cubDsw, arma::mat &cubDtw);
+
   // Calculate a filter matrix that targets modes of degree Nc and above
   arma::mat filterMatrix3D(const arma::mat &v, const arma::mat &invV,
                            const int N, const int Nc, const int s,

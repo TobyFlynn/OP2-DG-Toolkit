@@ -405,6 +405,34 @@ void op2_gemv_cub_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha,
   }
 }
 
+void op2_gemv_cub3d_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha, const DG_FP *matrix, 
+                          op_dat x, const DG_FP beta, op_dat y) {
+  const int m = DG_CUB_3D_NP;
+  const int k = DG_NP;
+  #if defined(USE_OP2_KERNELS)
+  throw std::runtime_error("op2_gemv_cub3d_np_np does not have a OP2 kernel implementation");
+  #elif defined(OP2_DG_CUDA)
+  custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, matrix, x, y);
+  #else
+  const int n = mesh->cells->size;
+  op2_cpu_gemm(m, n, k, alpha, transpose, matrix, m, x, x->dim, beta, y, y->dim);
+  #endif
+}
+
+void op2_gemv_np_cub3d_np(DGMesh *mesh, bool transpose, const DG_FP alpha, const DG_FP *matrix, 
+                          op_dat x, const DG_FP beta, op_dat y) {
+  const int m = DG_NP;
+  const int k = DG_CUB_3D_NP;
+  #if defined(USE_OP2_KERNELS)
+  throw std::runtime_error("op2_gemv_cub3d_np_np does not have a OP2 kernel implementation");
+  #elif defined(OP2_DG_CUDA)
+  custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, matrix, x, y);
+  #else
+  const int n = mesh->cells->size;
+  op2_cpu_gemm(m, n, k, alpha, transpose, matrix, m, x, x->dim, beta, y, y->dim);
+  #endif
+}
+
 void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
               DGConstants::Constant_Matrix matrix, op_dat x, const DG_FP beta,
               op_dat y) {
@@ -434,23 +462,26 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
     case DGConstants::EMAT:
       op2_gemv_emat(mesh, transpose, alpha, x, beta, y);
       break;
-    case DGConstants::CUB_VDR:
-      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr(matrix), x, beta, y);
-      break;
-    case DGConstants::CUB_VDS:
-      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr(matrix), x, beta, y);
-      break;
     case DGConstants::INV_MASS_GAUSS_INTERP_T:
       op2_gemv_inv_mass_gass_interpT(mesh, transpose, alpha, x, beta, y);
       break;
     case DGConstants::GAUSS_INTERP:
       op2_gemv_gauss_interp(mesh, transpose, alpha, x, beta, y);
       break;
+    case DGConstants::CUB_VDR:
+    case DGConstants::CUB_VDS:
     case DGConstants::CUB_DR:
-      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr(matrix), x, beta, y);
-      break;
     case DGConstants::CUB_DS:
       op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr(matrix), x, beta, y);
+      break;
+    case DGConstants::CUB3D_INTERP:
+      op2_gemv_cub3d_np_np(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
+      break;
+    case DGConstants::CUB3D_PROJ:
+    case DGConstants::CUB3D_PDR:
+    case DGConstants::CUB3D_PDS:
+    case DGConstants::CUB3D_PDT:
+      op2_gemv_np_cub3d_np(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
       break;
     default:
       std::cerr << "op2_gemv call not implemented for this matrix ... exiting" << std::endl;

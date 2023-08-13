@@ -117,6 +117,70 @@ DGConstants3D::DGConstants3D(const int n_) {
     DG_CONSTANTS_TK[(N - 1) * DG_NUM_CONSTANTS]     = Np;
     DG_CONSTANTS_TK[(N - 1) * DG_NUM_CONSTANTS + 1] = Nfp;
   }
+
+  printf("pre pre\n");
+
+  // 3D volume cubature stuff
+  int Np, Nfp;
+  DGUtils::numNodes3D(DG_ORDER, &Np, &Nfp);
+  arma::vec x_, y_, z_, r_, s_, t_;
+  DGUtils::setRefXYZ(DG_ORDER, x_, y_, z_);
+  DGUtils::xyz2rst(x_, y_, z_, r_, s_, t_);
+  arma::mat v_    = DGUtils::vandermonde3D(r_, s_, t_, DG_ORDER);
+  arma::mat invV_ = arma::inv(v_);
+
+  arma::vec cubr, cubs, cubt, cubw;
+  getCubatureData(cubr, cubs, cubt, cubw);
+  printf("pre\n");
+  arma::mat cubInterp = DGUtils::interpMatrix3D(cubr, cubs, cubt, invV_, DG_ORDER); printf("0\n");
+  arma::mat cubProj   = DGUtils::cubaturePMat3D(r_, s_, t_, cubr, cubs, cubt, DG_ORDER); printf("1\n");
+  arma::mat cubPDrT, cubPDsT, cubPDtT;
+  DGUtils::cubaturePDwMat3D(r_, s_, t_, cubr, cubs, cubt, DG_ORDER, cubPDrT, cubPDsT, cubPDtT); printf("2\n");
+  const int cubNp = cubr.n_elem;
+  arma::mat diag_w(cubNp, cubNp);
+  diag_w.zeros();
+  for(int i = 0; i < cubNp; i++) {
+    diag_w(i,i) = cubw(i);
+  }
+  printf("3\n");
+  cubProj = cubProj * diag_w;
+  printf("3.5\n");
+  cubPDrT = cubPDrT * diag_w;
+  cubPDsT = cubPDsT * diag_w;
+  cubPDtT = cubPDtT * diag_w;
+  printf("4\n");
+  printf("%dx%d\n", cubInterp.n_rows, cubInterp.n_cols);
+  printf("%dx%d\n", cubProj.n_rows, cubProj.n_cols);
+  printf("%dx%d\n", cubPDrT.n_rows, cubPDrT.n_cols);
+
+  cubInterp_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
+  cubProj_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
+  cubPDrT_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
+  cubPDsT_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
+  cubPDtT_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
+
+  save_mat(cubInterp_ptr, cubInterp, 1, DG_NP * DG_CUB_3D_NP);
+  save_mat(cubProj_ptr, cubProj, 1, DG_NP * DG_CUB_3D_NP);
+  save_mat(cubPDrT_ptr, cubPDrT, 1, DG_NP * DG_CUB_3D_NP);
+  save_mat(cubPDsT_ptr, cubPDsT, 1, DG_NP * DG_CUB_3D_NP);
+  save_mat(cubPDtT_ptr, cubPDtT, 1, DG_NP * DG_CUB_3D_NP);
+}
+
+void DGConstants3D::getCubatureData(arma::vec &cubr, arma::vec &cubs, arma::vec &cubt, arma::vec &cubw) {
+  const double cubR6[23] = {-9.223278313102310e-01,-8.704611261398938e-01,-8.704496791057892e-01,-4.441926613398445e-01,-8.678026751706386e-01,-3.497606828459493e-01,-3.616114393021378e-01,-3.432236575375570e-01,-8.898019550185483e-01,-7.507000727250277e-01,-8.681501536799804e-01,-9.852909523238611e-01, 2.349114402945376e-01,-4.411598941080236e-01,-4.245498103470715e-01, 1.894346037515911e-01,-8.664208004365244e-01, 2.530804034177644e-01,-8.799788339594619e-01,-4.484273990602982e-01,-8.973495876695942e-01,-9.188478978663642e-01, 8.075400026643635e-01};
+  const double cubS6[23] = {-9.513620515037141e-01,-4.643116036328488e-01,-9.530644088538914e-01,-8.725342094100046e-01,-8.326423718798897e-01,-3.412405629016029e-01,-3.916614693004364e-01,-9.234226585235092e-01,-2.961216053305913e-01,-6.957923773801387e-01, 2.486427271068594e-01,-5.774046828368271e-01,-8.736000381148603e-01,-4.883584314700274e-01, 1.546915627794538e-01,-8.696440144732590e-01, 6.012655096203365e-02,-5.031009197622103e-01,-5.739176335276283e-01,-8.920077183281708e-01, 6.822779033246367e-01,-9.824360844449622e-01,-9.542683523719533e-01};
+  const double cubT6[23] = { 8.058575980272226e-01, 2.735350171170275e-01,-2.182758986579757e-01, 1.898193780435916e-01, 2.601091102219790e-01,-3.463329907619084e-01,-9.112333112855833e-01,-3.594251326046153e-01,-2.378313821873799e-01,-5.975308652711581e-01,-4.928126505135995e-01,-4.976310094449407e-01,-4.831017020321489e-01,-4.608601407334560e-01,-8.707587238532627e-01,-8.667934039847933e-01,-8.460145657980651e-01,-8.757689336328026e-01,-9.483146274785937e-01,-8.799677016676628e-01,-9.254704957232888e-01,-8.227992990621793e-01,-9.413285578336420e-01};
+  const double cubW6[23] = { 9.461059802212705e-03, 4.201254651027517e-02, 3.230838250325908e-02, 6.518676786992283e-02, 7.071109854422583e-02, 5.765239559396446e-02, 8.951442161674263e-02, 7.976179688190549e-02, 8.348596704174839e-02, 8.577869596411661e-02, 5.812053074750553e-02, 3.008755637085715e-02, 6.215084550210757e-02, 1.501325393254235e-01, 7.191334750441594e-02, 6.635817345535235e-02, 8.408848251402726e-02, 6.286404062968159e-02, 3.400576568938985e-02, 5.295213019877631e-02, 2.123397224667169e-02, 1.389778096492792e-02, 9.655035855822626e-03};
+
+  arma::vec r_tmp(cubR6, 23);
+  arma::vec s_tmp(cubS6, 23);
+  arma::vec t_tmp(cubT6, 23);
+  arma::vec w_tmp(cubW6, 23);
+
+  cubr = r_tmp;
+  cubs = s_tmp;
+  cubt = t_tmp;
+  cubw = w_tmp;
 }
 
 void DGConstants3D::calc_interp_mats() {
@@ -270,6 +334,16 @@ DG_FP* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
       return eMat_ptr;
     case INTERP_MATRIX_ARRAY:
       return order_interp_ptr;
+    case CUB3D_INTERP:
+      return cubInterp_ptr;
+    case CUB3D_PROJ:
+      return cubProj_ptr;
+    case CUB3D_PDR:
+      return cubPDrT_ptr;
+    case CUB3D_PDS:
+      return cubPDsT_ptr;
+    case CUB3D_PDT:
+      return cubPDtT_ptr;
     default:
       throw std::runtime_error("This constant matrix is not supported by DGConstants3D\n");
       return nullptr;
@@ -299,6 +373,11 @@ DGConstants3D::~DGConstants3D() {
   free(mmF3_ptr);
   free(eMat_ptr);
   free(order_interp_ptr);
+  free(cubInterp_ptr);
+  free(cubProj_ptr);
+  free(cubPDrT_ptr);
+  free(cubPDsT_ptr);
+  free(cubPDtT_ptr);
 
   free(Dr_ptr_sp);
   free(Ds_ptr_sp);

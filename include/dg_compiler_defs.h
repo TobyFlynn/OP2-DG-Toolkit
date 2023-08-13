@@ -105,6 +105,8 @@
 #define DG_G_NP 1
 #define DG_GF_NP 1
 
+#define DG_CUB_3D_NP 23
+
 #if DG_ORDER == 8
 
 // Number of points per element
