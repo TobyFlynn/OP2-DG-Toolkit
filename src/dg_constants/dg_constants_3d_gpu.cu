@@ -121,9 +121,9 @@ void DGConstants3D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMemcpy(dg_Interp_d, order_interp_ptr, N_max * N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
   cutilSafeCall(cudaMemcpy(dg_cub3d_Interp_d, cubInterp_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), cudaMemcpyHostToDevice));
   cutilSafeCall(cudaMemcpy(dg_cub3d_Proj_d, cubProj_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_cub3d_PDr_d, cubPDr_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_cub3d_PDs_d, cubPDs_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_cub3d_PDt_d, cubPDt_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_cub3d_PDr_d, cubPDrT_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_cub3d_PDs_d, cubPDsT_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), cudaMemcpyHostToDevice));
+  cutilSafeCall(cudaMemcpy(dg_cub3d_PDt_d, cubPDtT_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), cudaMemcpyHostToDevice));
 
   // Set up pointers that are accessible from the device
   cutilSafeCall(cudaMemcpyToSymbol(dg_r_kernel, &dg_r_d, sizeof(dg_r_d)));
