@@ -24,6 +24,11 @@ extern DG_FP *dg_MM_F2_d;
 extern DG_FP *dg_MM_F3_d;
 extern DG_FP *dg_Emat_d;
 extern DG_FP *dg_Interp_d;
+extern DG_FP *dg_cub3d_Interp_d;
+extern DG_FP *dg_cub3d_Proj_d;
+extern DG_FP *dg_cub3d_PDr_d;
+extern DG_FP *dg_cub3d_PDs_d;
+extern DG_FP *dg_cub3d_PDt_d;
 #endif
 
 #endif
