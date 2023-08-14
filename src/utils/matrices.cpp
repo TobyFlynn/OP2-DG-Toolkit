@@ -228,3 +228,81 @@ void DGUtils::cubaturePDwMat3D(const arma::vec &r, const arma::vec &s, const arm
   cubDsw = V * cubVs.t();
   cubDtw = V * cubVt.t();
 }
+
+void DGUtils::cubatureSurface3d(const arma::vec &r, const arma::vec &s, const arma::vec &t, 
+                         const arma::uvec &fmask, const arma::vec &cubr, const arma::vec &cubs,
+                         const arma::vec &cubw, const int N, arma::mat &interp, arma::mat &lift) {
+  const int npf_cub = cubr.n_elem; 
+  int np, npf;
+  numNodes3D(N, &np, &npf);
+/*
+  // interp will be sparse and inefficient - TODO do this differently
+  interp.zeros(npf_cub * 4, npf * 4);
+
+  arma::vec faceR = r(fmask(arma::span(0, npf - 1)));
+  arma::vec faceS = s(fmask(arma::span(0, npf - 1)));
+  arma::mat invVFace = arma::inv(vandermonde2D(faceR, faceS, N));
+  interp.submat(arma::span(0, npf_cub - 1), arma::span(0, npf - 1)) = interpMatrix2D(cubr, cubs, invVFace, N);
+
+  faceR = r(fmask(arma::span(npf, 2 * npf - 1)));
+  faceS = t(fmask(arma::span(npf, 2 * npf - 1)));
+  invVFace = arma::inv(vandermonde2D(faceR, faceS, N));
+  interp.submat(arma::span(npf_cub, 2 * npf_cub - 1), arma::span(npf, 2 * npf - 1)) = interpMatrix2D(cubr, cubs, invVFace, N);
+
+  faceR = s(fmask(arma::span(2 * npf, 3 * npf - 1)));
+  faceS = t(fmask(arma::span(2 * npf, 3 * npf - 1)));
+  invVFace = arma::inv(vandermonde2D(faceR, faceS, N));
+  interp.submat(arma::span(2 * npf_cub, 3 * npf_cub - 1), arma::span(2 * npf, 3 * npf - 1)) = interpMatrix2D(cubr, cubs, invVFace, N);
+
+  faceR = s(fmask(arma::span(3 * npf, 4 * npf - 1)));
+  faceS = t(fmask(arma::span(3 * npf, 4 * npf - 1)));
+  invVFace = arma::inv(vandermonde2D(faceR, faceS, N));
+  interp.submat(arma::span(3 * npf_cub, 4 * npf_cub - 1), arma::span(3 * npf, 4 * npf - 1)) = interpMatrix2D(cubr, cubs, invVFace, N);
+*/
+  arma::vec ir(npf_cub * 4);
+  arma::vec is(npf_cub * 4);
+  arma::vec it(npf_cub * 4);
+  arma::vec iw(npf_cub * 4);
+
+  for(int i = 0; i < npf_cub; i++) {
+    ir(i)               = cubr(i);
+    ir(i + npf_cub)     = cubr(i);
+    ir(i + 2 * npf_cub) = cubr(i);
+    ir(i + 3 * npf_cub) = -1.0;
+
+    is(i)               = cubs(i);
+    is(i + npf_cub)     = -1.0;
+    is(i + 2 * npf_cub) = cubs(i);
+    is(i + 3 * npf_cub) = cubr(i);
+
+    it(i)               = -1.0;
+    it(i + npf_cub)     = cubs(i);
+    it(i + 2 * npf_cub) = -(1.0 + cubr(i) + cubs(i));
+    it(i + 3 * npf_cub) = cubs(i);
+
+    iw(i)               = cubw(i);
+    iw(i + npf_cub)     = cubw(i);
+    iw(i + 2 * npf_cub) = cubw(i);
+    iw(i + 3 * npf_cub) = cubw(i);
+  }
+
+  arma::mat V = vandermonde3D(r, s, t, N);
+  arma::mat tmp_interp = DGUtils::interpMatrix3D(ir, is, it, arma::inv(V), N);
+
+  // interp will be sparse and inefficient - TODO do this differently
+  interp.zeros(npf_cub * 4, npf * 4);
+  for(int face = 0; face < 4; face++) {
+    for(int cub_pt = 0; cub_pt < npf_cub; cub_pt++) {
+      for(int nodal_pt = 0; nodal_pt < npf; nodal_pt++) {
+        interp(face * npf_cub + cub_pt, face * npf + nodal_pt) = tmp_interp(face * npf_cub + cub_pt, fmask(face * npf + nodal_pt));
+      }
+    }
+  }
+
+  arma::mat diagW(npf_cub * 4, npf_cub * 4);
+  diagW.zeros();
+  for(int i = 0; i < npf_cub * 4; i++) {
+    diagW(i,i) = iw(i);
+  }
+  lift = V * V.t() * tmp_interp.t() * diagW;
+}

@@ -27,6 +27,8 @@ DG_FP *dg_cub3d_Proj_kernel;
 DG_FP *dg_cub3d_PDr_kernel;
 DG_FP *dg_cub3d_PDs_kernel;
 DG_FP *dg_cub3d_PDt_kernel;
+DG_FP *dg_cubSurf3d_Interp_kernel;
+DG_FP *dg_cubSurf3d_Lift_kernel;
 
 float *dg_Dr_kernel_sp;
 float *dg_Ds_kernel_sp;
@@ -68,6 +70,8 @@ void DGConstants3D::transfer_kernel_ptrs() {
   dg_cub3d_PDr_kernel = cubPDrT_ptr;
   dg_cub3d_PDs_kernel = cubPDsT_ptr;
   dg_cub3d_PDt_kernel = cubPDtT_ptr;
+  dg_cubSurf3d_Interp_kernel = cubInterpSurf_ptr;
+  dg_cubSurf3d_Lift_kernel = cubLiftSurf_ptr;
 
   dg_Dr_kernel_sp = Dr_ptr_sp;
   dg_Ds_kernel_sp = Ds_ptr_sp;
@@ -140,6 +144,10 @@ DG_FP* DGConstants3D::get_mat_ptr_kernel(Constant_Matrix matrix) {
       return dg_cub3d_PDs_kernel;
     case CUB3D_PDT:
       return dg_cub3d_PDt_kernel;
+    case CUBSURF3D_INTERP:
+      return dg_cubSurf3d_Interp_kernel;
+    case CUBSURF3D_LIFT:
+      return dg_cubSurf3d_Lift_kernel;
     default:
       throw std::runtime_error("This constant matrix is not supported by DGConstants3D\n");
       return nullptr;

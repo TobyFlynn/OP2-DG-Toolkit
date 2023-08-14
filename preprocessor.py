@@ -127,8 +127,9 @@ dg_gf_np     = "1"
 dg_order     = "1"
 dg_num_faces = ""
 dg_np_n1     = ""
-dg_npf_n1     = ""
+dg_npf_n1    = ""
 dg_cub_3d_np = ""
+dg_cub_surf_3d_np = ""
 
 fp_type = "d"
 
@@ -169,6 +170,7 @@ elif dim == "3":
     dg_npf_n1 = str(int((1 + 1) * (1 + 2) / 2))
     dg_num_faces = "4"
     dg_cub_3d_np = "23"
+    dg_cub_surf_3d_np = "12"
 
 
 inputfiles = []
@@ -208,6 +210,7 @@ for f in inputfiles:
         newdata = newdata.replace("DG_GF_NP", dg_gf_np)
         newdata = newdata.replace("DG_NUM_FACES", dg_num_faces)
         newdata = newdata.replace("DG_CUB_3D_NP", dg_cub_3d_np)
+        newdata = newdata.replace("DG_CUB_SURF_3D_NP", dg_cub_surf_3d_np)
 
     if dim == "2":
         with open("gen_2d/" + f, "w") as file:

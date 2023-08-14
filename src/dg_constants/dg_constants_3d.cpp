@@ -118,8 +118,6 @@ DGConstants3D::DGConstants3D(const int n_) {
     DG_CONSTANTS_TK[(N - 1) * DG_NUM_CONSTANTS + 1] = Nfp;
   }
 
-  printf("pre pre\n");
-
   // 3D volume cubature stuff
   int Np, Nfp;
   DGUtils::numNodes3D(DG_ORDER, &Np, &Nfp);
@@ -128,30 +126,29 @@ DGConstants3D::DGConstants3D(const int n_) {
   DGUtils::xyz2rst(x_, y_, z_, r_, s_, t_);
   arma::mat v_    = DGUtils::vandermonde3D(r_, s_, t_, DG_ORDER);
   arma::mat invV_ = arma::inv(v_);
+  arma::uvec fmask1_ = arma::find(arma::abs(1 + t_)  < 1e-12);
+  arma::uvec fmask2_ = arma::find(arma::abs(1 + s_) < 1e-12);
+  arma::uvec fmask3_ = arma::find(arma::abs(1 + r_ + s_ + t_)  < 1e-12);
+  arma::uvec fmask4_ = arma::find(arma::abs(1 + r_)  < 1e-12);
+  arma::uvec fmask_  = arma::join_cols(fmask1_, fmask2_, fmask3_, fmask4_);
 
   arma::vec cubr, cubs, cubt, cubw;
   getCubatureData(cubr, cubs, cubt, cubw);
-  printf("pre\n");
-  arma::mat cubInterp = DGUtils::interpMatrix3D(cubr, cubs, cubt, invV_, DG_ORDER); printf("0\n");
-  arma::mat cubProj   = DGUtils::cubaturePMat3D(r_, s_, t_, cubr, cubs, cubt, DG_ORDER); printf("1\n");
+  arma::mat cubInterp = DGUtils::interpMatrix3D(cubr, cubs, cubt, invV_, DG_ORDER);
+  arma::mat cubProj   = DGUtils::cubaturePMat3D(r_, s_, t_, cubr, cubs, cubt, DG_ORDER);
   arma::mat cubPDrT, cubPDsT, cubPDtT;
-  DGUtils::cubaturePDwMat3D(r_, s_, t_, cubr, cubs, cubt, DG_ORDER, cubPDrT, cubPDsT, cubPDtT); printf("2\n");
+  DGUtils::cubaturePDwMat3D(r_, s_, t_, cubr, cubs, cubt, DG_ORDER, cubPDrT, cubPDsT, cubPDtT);
   const int cubNp = cubr.n_elem;
   arma::mat diag_w(cubNp, cubNp);
   diag_w.zeros();
   for(int i = 0; i < cubNp; i++) {
     diag_w(i,i) = cubw(i);
   }
-  printf("3\n");
+
   cubProj = cubProj * diag_w;
-  printf("3.5\n");
   cubPDrT = cubPDrT * diag_w;
   cubPDsT = cubPDsT * diag_w;
   cubPDtT = cubPDtT * diag_w;
-  printf("4\n");
-  printf("%dx%d\n", cubInterp.n_rows, cubInterp.n_cols);
-  printf("%dx%d\n", cubProj.n_rows, cubProj.n_cols);
-  printf("%dx%d\n", cubPDrT.n_rows, cubPDrT.n_cols);
 
   cubInterp_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
   cubProj_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
@@ -164,6 +161,19 @@ DGConstants3D::DGConstants3D(const int n_) {
   save_mat(cubPDrT_ptr, cubPDrT, 1, DG_NP * DG_CUB_3D_NP);
   save_mat(cubPDsT_ptr, cubPDsT, 1, DG_NP * DG_CUB_3D_NP);
   save_mat(cubPDtT_ptr, cubPDtT, 1, DG_NP * DG_CUB_3D_NP);
+
+  // 3D surface cubatures
+  arma::vec cub_surf_r, cub_surf_s, cub_surf_w;
+  DGUtils::cubature2D(6, cub_surf_r, cub_surf_s, cub_surf_w);
+  arma::mat interp_cub_surf, lift_cub_surf;
+  DGUtils::cubatureSurface3d(r_, s_, t_, fmask_, cub_surf_r, cub_surf_s,
+                             cub_surf_w, DG_ORDER, interp_cub_surf, lift_cub_surf);
+
+  cubInterpSurf_ptr = (DG_FP *)calloc(DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_3D_NP, sizeof(DG_FP));
+  cubLiftSurf_ptr   = (DG_FP *)calloc(DG_NP * DG_NUM_FACES * DG_CUB_SURF_3D_NP, sizeof(DG_FP));
+
+  save_mat(cubInterpSurf_ptr, interp_cub_surf, 1, DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_3D_NP);
+  save_mat(cubLiftSurf_ptr, lift_cub_surf, 1, DG_NP * DG_NUM_FACES * DG_CUB_SURF_3D_NP);
 }
 
 void DGConstants3D::getCubatureData(arma::vec &cubr, arma::vec &cubs, arma::vec &cubt, arma::vec &cubw) {
@@ -344,6 +354,10 @@ DG_FP* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
       return cubPDsT_ptr;
     case CUB3D_PDT:
       return cubPDtT_ptr;
+    case CUBSURF3D_INTERP:
+      return cubInterpSurf_ptr;
+    case CUBSURF3D_LIFT:
+      return cubLiftSurf_ptr;
     default:
       throw std::runtime_error("This constant matrix is not supported by DGConstants3D\n");
       return nullptr;
@@ -378,6 +392,8 @@ DGConstants3D::~DGConstants3D() {
   free(cubPDrT_ptr);
   free(cubPDsT_ptr);
   free(cubPDtT_ptr);
+  free(cubInterpSurf_ptr);
+  free(cubLiftSurf_ptr);
 
   free(Dr_ptr_sp);
   free(Ds_ptr_sp);

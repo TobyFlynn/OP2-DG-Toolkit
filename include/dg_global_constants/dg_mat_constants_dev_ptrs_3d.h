@@ -29,6 +29,8 @@ extern DG_FP *dg_cub3d_Proj_d;
 extern DG_FP *dg_cub3d_PDr_d;
 extern DG_FP *dg_cub3d_PDs_d;
 extern DG_FP *dg_cub3d_PDt_d;
+extern DG_FP *dg_cubSurf3d_Interp_d;
+extern DG_FP *dg_cubSurf3d_Lift_d;
 #endif
 
 #endif

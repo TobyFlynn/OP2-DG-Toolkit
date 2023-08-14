@@ -32,6 +32,7 @@ private:
   // int ind = ((order_from - 1) * DG_ORDER + (order_to - 1)) * DG_NP * DG_NP
   DG_FP *order_interp_ptr;
   DG_FP *cubInterp_ptr, *cubProj_ptr, *cubPDrT_ptr, *cubPDsT_ptr, *cubPDtT_ptr;
+  DG_FP *cubInterpSurf_ptr, *cubLiftSurf_ptr;
 
   float *Dr_ptr_sp, *Ds_ptr_sp, *Dt_ptr_sp, *Drw_ptr_sp, *Dsw_ptr_sp, *Dtw_ptr_sp;
   float *mass_ptr_sp, *invMass_ptr_sp, *invV_ptr_sp, *v_ptr_sp, *lift_ptr_sp, *eMat_ptr_sp;

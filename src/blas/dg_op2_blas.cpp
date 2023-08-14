@@ -483,6 +483,32 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
     case DGConstants::CUB3D_PDT:
       op2_gemv_np_cub3d_np(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
       break;
+    case DGConstants::CUBSURF3D_INTERP: {
+      const int m = DG_CUB_SURF_3D_NP * DG_NUM_FACES;
+      const int k = DG_NPF * DG_NUM_FACES;
+      #if defined(USE_OP2_KERNELS)
+      throw std::runtime_error("DGConstants::CUBSURF3D_INTERP does not have a OP2 kernel implementation");
+      #elif defined(OP2_DG_CUDA)
+      custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_kernel(matrix), x, y);
+      #else
+      const int n = mesh->cells->size;
+      op2_cpu_gemm(m, n, k, alpha, transpose, constants->get_mat_ptr_kernel(matrix), m, x, x->dim, beta, y, y->dim);
+      #endif
+      }
+      break;
+    case DGConstants::CUBSURF3D_LIFT: {
+      const int m = DG_NP;
+      const int k = DG_CUB_SURF_3D_NP * DG_NUM_FACES;
+      #if defined(USE_OP2_KERNELS)
+      throw std::runtime_error("DGConstants::CUBSURF3D_LIFT does not have a OP2 kernel implementation");
+      #elif defined(OP2_DG_CUDA)
+      custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_kernel(matrix), x, y);
+      #else
+      const int n = mesh->cells->size;
+      op2_cpu_gemm(m, n, k, alpha, transpose, constants->get_mat_ptr_kernel(matrix), m, x, x->dim, beta, y, y->dim);
+      #endif
+      }
+      break;
     default:
       std::cerr << "op2_gemv call not implemented for this matrix ... exiting" << std::endl;
       exit(2);

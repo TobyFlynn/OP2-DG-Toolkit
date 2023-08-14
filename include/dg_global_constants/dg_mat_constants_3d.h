@@ -29,6 +29,8 @@ extern __constant__ DG_FP *dg_cub3d_Proj_kernel;
 extern __constant__ DG_FP *dg_cub3d_PDr_kernel;
 extern __constant__ DG_FP *dg_cub3d_PDs_kernel;
 extern __constant__ DG_FP *dg_cub3d_PDt_kernel;
+extern __constant__ DG_FP *dg_cubSurf3d_Interp_kernel;
+extern __constant__ DG_FP *dg_cubSurf3d_Lift_kernel;
 #else
 extern DG_FP *dg_r_kernel;
 extern DG_FP *dg_s_kernel;
@@ -55,6 +57,8 @@ extern DG_FP *dg_cub3d_Proj_kernel;
 extern DG_FP *dg_cub3d_PDr_kernel;
 extern DG_FP *dg_cub3d_PDs_kernel;
 extern DG_FP *dg_cub3d_PDt_kernel;
+extern DG_FP *dg_cubSurf3d_Interp_kernel;
+extern DG_FP *dg_cubSurf3d_Lift_kernel;
 #endif
 
 #endif
