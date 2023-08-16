@@ -96,6 +96,7 @@ bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
       HYPRE_ParCSRPCGCreate(MPI_COMM_WORLD, &solver);
       HYPRE_PCGSetMaxIter(solver, max_pcg_iter);
       HYPRE_PCGSetTol(solver, pcg_tol);
+      HYPRE_PCGSetAbsoluteTol(solver, 0.1 * pcg_tol);
       HYPRE_PCGSetTwoNorm(solver, 1);
       HYPRE_PCGSetPrintLevel(solver, pcg_print_level);
       HYPRE_PCGSetLogging(solver, pcg_logging);
