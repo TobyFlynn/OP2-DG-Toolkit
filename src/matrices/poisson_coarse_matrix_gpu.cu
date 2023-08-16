@@ -537,13 +537,13 @@ void PoissonCoarseMatrix::setHYPREMatrix() {
       row_num_ptr_h[current_row] = it->first + i;
       int num_this_col = 0;
       for(int elem = 0; elem < it->second.size(); elem++) {
-	      DG_FP *data_ptr = it->second[elem].second;
-	      int base_col_ind = it->second[elem].first; 
+        DG_FP *data_ptr = it->second[elem].second;
+        int base_col_ind = it->second[elem].first; 
         for(int j = 0; j < DG_NP_N1; j++) {
           col_buf_ptr_h[current_nnz] = base_col_ind + j;
-	        data_buf_ptr_h[current_nnz] = data_ptr[i + j * DG_NP_N1];
-	        num_this_col++;
-	        urrent_nnz++;
+          data_buf_ptr_h[current_nnz] = data_ptr[i + j * DG_NP_N1];
+          num_this_col++;
+          current_nnz++;
         }
       }
       num_col_ptr_h[current_row] = num_this_col;
