@@ -28,6 +28,7 @@ protected:
 
   bool pMatInit;
   bool vec_init;
+  bool hypre_tmps_init = false;
 
   HYPRE_IJVector b;
   HYPRE_ParVector par_b;
@@ -43,6 +44,13 @@ protected:
   int amg_coarsen_type, amg_relax_type, amg_num_sweeps, amg_iter;
   int amg_keep_transpose, amg_rap2, amg_module_rap2;
   double pcg_tol, amg_strong_threshold, amg_trunc_factor;
+
+  float *rhs_ptr_h, *ans_ptr_h;
+  int *ind_ptr_h;
+  #ifdef OP2_DG_CUDA
+  float *data_rhs_ptr, *data_ans_ptr;
+  int *data_ind_ptr;
+  #endif
 };
 
 #endif

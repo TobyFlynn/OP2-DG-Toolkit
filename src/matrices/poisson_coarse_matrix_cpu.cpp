@@ -191,7 +191,7 @@ void PoissonCoarseMatrix::setHYPREMatrix() {
   }
 
   HYPRE_IJMatrixInitialize(hypre_mat);
-
+/*
   std::map<int,std::vector<std::pair<int,float>>> mat_buffer;
 
   for(int c = 0; c < cell_set_size; c++) {
@@ -256,7 +256,67 @@ void PoissonCoarseMatrix::setHYPREMatrix() {
     num_col_ptr_h[current_row] = num_this_col;
     current_row++;
   }
+*/
 
+  std::map<int,std::vector<std::pair<int,DG_FP*>>> mat_buffer;
+
+  timer->startTimer("HYPRE - map0");
+  for(int c = 0; c < cell_set_size; c++) {
+    // Add diagonal block to buffer
+    int diag_base_col = glb[c];
+    std::vector<std::pair<int,DG_FP*>> row_buf;
+    row_buf.push_back({diag_base_col, op1_data + c * DG_NP_N1 * DG_NP_N1});
+    mat_buffer.insert({diag_base_col, row_buf});
+  }
+  timer->endTimer("HYPRE - map0");
+
+  timer->startTimer("HYPRE - map1");
+  for(int k = 0; k < faces_set_size; k++) {
+    if(glb_l[k] >= glb[0] && glb_l[k] < glb[0] + local_size) {
+      int base_col = glb_r[k];
+      DG_FP *face_data_ptr = op2L_data + k * DG_NP_N1 * DG_NP_N1;
+      std::vector<std::pair<int,DG_FP*>> &row_buf = mat_buffer.at(glb_l[k]);
+      row_buf.push_back({base_col, face_data_ptr});
+    }
+  }
+  timer->endTimer("HYPRE - map1");
+
+  timer->startTimer("HYPRE - map2");
+  for(int k = 0; k < faces_set_size; k++) {
+    if(glb_r[k] >= glb[0] && glb_r[k] < glb[0] + local_size) {
+      int base_col = glb_l[k];
+      DG_FP *face_data_ptr = op2R_data + k * DG_NP_N1 * DG_NP_N1;
+      std::vector<std::pair<int,DG_FP*>> &row_buf = mat_buffer.at(glb_r[k]);
+      row_buf.push_back({base_col, face_data_ptr});
+    }
+  }
+  timer->endTimer("HYPRE - map2");
+  timer->endTimer("HYPRE - map");
+
+  timer->startTimer("HYPRE - convert format");
+  int current_nnz = 0;
+  int current_row = 0;
+  for(auto it = mat_buffer.begin(); it != mat_buffer.end(); it++) {
+    std::sort(it->second.begin(), it->second.end());
+
+    for(int i = 0; i < DG_NP_N1; i++) {
+      row_num_ptr_h[current_row] = it->first + i;
+      int num_this_col = 0;
+      for(int elem = 0; elem < it->second.size(); elem++) {
+	      DG_FP *data_ptr = it->second[elem].second;
+	      int base_col_ind = it->second[elem].first; 
+        for(int j = 0; j < DG_NP_N1; j++) {
+          col_buf_ptr_h[current_nnz] = base_col_ind + j;
+	        data_buf_ptr_h[current_nnz] = data_ptr[i + j * DG_NP_N1];
+	        num_this_col++;
+	        current_nnz++;
+        }
+      }
+      num_col_ptr_h[current_row] = num_this_col;
+      current_row++;
+    }
+  }
+  timer->endTimer("HYPRE - convert format");
 
   HYPRE_IJMatrixSetValues(hypre_mat, local_size, num_col_ptr_h, row_num_ptr_h, col_buf_ptr_h, data_buf_ptr_h);
 

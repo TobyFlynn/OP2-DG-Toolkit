@@ -70,6 +70,17 @@ HYPREAMGSolver::~HYPREAMGSolver() {
     HYPRE_BoomerAMGDestroy(precond);
   }
   HYPRE_Finalize();
+
+  if(hypre_tmps_init) {
+    free(rhs_ptr_h);
+    free(ans_ptr_h);
+    free(ind_ptr_h);
+    #ifdef OP2_DG_CUDA
+    cudaFree(data_rhs_ptr);
+    cudaFree(data_ans_ptr);
+    cudaFree(data_ind_ptr);
+    #endif
+  }
 }
 
 bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
@@ -79,6 +90,19 @@ bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
   }
 
   PoissonCoarseMatrix *coarse_mat = dynamic_cast<PoissonCoarseMatrix*>(matrix);
+  const int num_unknowns_l = coarse_mat->getUnknowns();
+
+  if(!hypre_tmps_init) {
+    rhs_ptr_h = (float *)malloc(num_unknowns_l * sizeof(float));
+    ans_ptr_h = (float *)malloc(num_unknowns_l * sizeof(float));
+    ind_ptr_h = (int *)malloc(num_unknowns_l * sizeof(int));
+    #ifdef OP2_DG_CUDA
+    cudaMalloc(&data_rhs_ptr, num_unknowns_l * sizeof(float));
+    cudaMalloc(&data_ans_ptr, num_unknowns_l * sizeof(float));
+    cudaMalloc(&data_ind_ptr, num_unknowns_l * sizeof(int));
+    #endif
+    hypre_tmps_init = true;
+  }
 
   HYPRE_ParCSRMatrix *hypre_mat;
   bool setup_solver = false;
@@ -134,11 +158,7 @@ bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
   float *rhs_ptr = getOP2PtrHostSP(rhs, OP_READ);
   float *ans_ptr = getOP2PtrHostSP(ans, OP_READ);
 
-  const int num_unknowns_l = coarse_mat->getUnknowns();
-  float *rhs_ptr_h = (float *)malloc(num_unknowns_l * sizeof(float));
-  float *ans_ptr_h = (float *)malloc(num_unknowns_l * sizeof(float));
-  int *ind_ptr_h = (int *)malloc(num_unknowns_l * sizeof(int));
-
+  #pragma omp parallel for
   for(int i = 0; i < mesh->cells->size; i++) {
     for(int j = 0; j < DG_NP_N1; j++) {
       rhs_ptr_h[i * DG_NP_N1 + j] = rhs_ptr[i * DG_NP + j];
@@ -151,12 +171,6 @@ bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
   releaseOP2PtrHostSP(ans, OP_READ, ans_ptr);
 
   #ifdef OP2_DG_CUDA
-  float *data_rhs_ptr;
-  cudaMalloc(&data_rhs_ptr, num_unknowns_l * sizeof(float));
-  float *data_ans_ptr;
-  cudaMalloc(&data_ans_ptr, num_unknowns_l * sizeof(float));
-  int *data_ind_ptr;
-  cudaMalloc(&data_ind_ptr, num_unknowns_l * sizeof(int));
   cudaMemcpy(data_rhs_ptr, rhs_ptr_h, num_unknowns_l * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(data_ans_ptr, ans_ptr_h, num_unknowns_l * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(data_ind_ptr, ind_ptr_h, num_unknowns_l * sizeof(int), cudaMemcpyHostToDevice);
@@ -164,14 +178,10 @@ bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
   // Maybe need to transfer to device
   HYPRE_IJVectorSetValues(b, num_unknowns_l, data_ind_ptr, data_rhs_ptr);
   HYPRE_IJVectorSetValues(x, num_unknowns_l, data_ind_ptr, data_ans_ptr);
-
-  cudaFree(data_rhs_ptr);
   #else
   HYPRE_IJVectorSetValues(b, num_unknowns_l, ind_ptr_h, rhs_ptr_h);
   HYPRE_IJVectorSetValues(x, num_unknowns_l, ind_ptr_h, ans_ptr_h);
   #endif
-
-  free(rhs_ptr_h);
 
   HYPRE_IJVectorAssemble(b);
   HYPRE_IJVectorGetObject(b, (void **) &par_b);
@@ -206,12 +216,11 @@ bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
   #ifdef OP2_DG_CUDA
   HYPRE_IJVectorGetValues(x, num_unknowns_l, data_ind_ptr, data_ans_ptr);
   cudaMemcpy(ans_ptr_h, data_ans_ptr, num_unknowns_l * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaFree(data_ans_ptr);
-  cudaFree(data_ind_ptr);
   #else
   HYPRE_IJVectorGetValues(x, num_unknowns_l, ind_ptr_h, ans_ptr_h);
   #endif
 
+  #pragma omp parallel for
   for(int i = 0; i < mesh->cells->size; i++) {
     for(int j = 0; j < DG_NP_N1; j++) {
       ans_ptr_w[i * DG_NP + j] = ans_ptr_h[i * DG_NP_N1 + j];
@@ -219,9 +228,6 @@ bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
   }
 
   releaseOP2PtrHostSP(ans, OP_WRITE, ans_ptr_w);
-
-  free(ans_ptr_h);
-  free(ind_ptr_h);
   timer->endTimer("HYPREAMGSolver - Transfer vec");
 
   return true;
