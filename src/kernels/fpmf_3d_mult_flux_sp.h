@@ -17,7 +17,7 @@ inline void fpmf_3d_mult_flux_sp(const int *order, const DG_FP *nx, const DG_FP 
                        + _nz * avg_z[i * dg_npf + j];
       jump[i * dg_npf + j]  = _sJ * (_tau * _jump - _sum);
       const int factor_ind = FMASK_TK[(*order - 1) * 4 * DG_NPF + i * dg_npf + j];
-      const DG_FP fact = factor[factor_ind];
+      const float fact = factor[factor_ind];
       avg_x[i * dg_npf + j] = _nx * _sJ * fact * -_jump;
       avg_y[i * dg_npf + j] = _ny * _sJ * fact * -_jump;
       avg_z[i * dg_npf + j] = _nz * _sJ * fact * -_jump;

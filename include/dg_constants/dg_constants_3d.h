@@ -19,7 +19,7 @@ public:
   float* get_mat_ptr_kernel_sp(Constant_Matrix matrix) override;
 
 private:
-  void getCubatureData(arma::vec &cubr, arma::vec &cubs, arma::vec &cubt, arma::vec &cubw);
+  void getCubatureData(const int N, arma::vec &cubr, arma::vec &cubs, arma::vec &cubt, arma::vec &cubw);
   void transfer_kernel_ptrs();
   void clean_up_kernel_ptrs();
 

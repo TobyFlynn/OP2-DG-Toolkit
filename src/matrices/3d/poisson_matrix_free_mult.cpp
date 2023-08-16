@@ -182,7 +182,7 @@ void PoissonMatrixFreeMult3D::mat_free_mult_sp(op_dat in, op_dat out) {
   op2_gemv_halo_exchange_sp(mesh, false, 1.0, DGConstants::DR, in, 0.0, tmp_r.dat);
   op2_gemv_halo_exchange_sp(mesh, false, 1.0, DGConstants::DS, in, 0.0, tmp_s.dat);
   op2_gemv_halo_exchange_sp(mesh, false, 1.0, DGConstants::DT, in, 0.0, tmp_t.dat);
-  op_par_loop(grad_3d_geof_sp, "grad_3d_geof_sp:force_halo_exchange", mesh->cells,
+  op_par_loop(grad_3d_geof_sp, "grad_3d_geof_sp:force_halo_compute", mesh->cells,
               op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(mesh->geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
               op_arg_dat(tmp_r.dat, -1, OP_ID, DG_NP, "float", OP_READ),
