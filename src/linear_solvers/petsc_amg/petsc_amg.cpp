@@ -17,8 +17,8 @@ PETScAMGSolver::PETScAMGSolver(DGMesh *m) {
   pMatInit = false;
 
   KSPCreate(PETSC_COMM_WORLD, &ksp);
-  // KSPSetType(ksp, KSPFGMRES);
-  KSPSetType(ksp, KSPFCG);
+  KSPSetType(ksp, KSPGMRES);
+  // KSPSetType(ksp, KSPFCG);
   KSPSetInitialGuessNonzero(ksp, PETSC_TRUE);
   double r_tol, a_tol;
   if(std::is_same<DG_FP,double>::value) {
