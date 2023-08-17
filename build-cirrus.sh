@@ -184,7 +184,10 @@ cmake .. \
   -DBUILD_TESTS=ON \
   -DORDER=$ORDER \
   -DSOA=$SOA \
-  -DCMAKE_INSTALL_PREFIX=$(pwd)
+  -DCMAKE_INSTALL_PREFIX=$(pwd) \
+  -DBUILD_TOOLS=OFF \
+  -DCMAKE_C_COMPILER=mpicc \
+  -DCMAKE_CXX_COMPILER=mpicxx
 
 make -j 4
 

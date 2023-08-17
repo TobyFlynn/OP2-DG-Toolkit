@@ -175,6 +175,7 @@ cmake .. \
   -DPETSC_DIR=$PETSC_DIR \
   -DINIPP_DIR=$INIPP_DIR \
   -DHYPRE_DIR=/work/e01/e01/tflynne01/code/hypre-sp-install \
+  -DAMGX_DIR=/work/e01/e01/tflynne01/code/AMGX-install \
   -DEXTRA_LIBS="/work/e01/e01/tflynne01/code/mpitrace-dummy-lib/build/libdummy_mpitrace.so" \
   -DBUILD_CPU=OFF \
   -DBUILD_SN=ON \

@@ -17,7 +17,7 @@ PETScAMGSolver::PETScAMGSolver(DGMesh *m) {
   pMatInit = false;
 
   KSPCreate(PETSC_COMM_WORLD, &ksp);
-  // KSPSetType(ksp, KSPGMRES);
+  // KSPSetType(ksp, KSPFGMRES);
   KSPSetType(ksp, KSPFCG);
   KSPSetInitialGuessNonzero(ksp, PETSC_TRUE);
   double r_tol, a_tol;
