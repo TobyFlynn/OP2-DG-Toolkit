@@ -82,6 +82,7 @@ if(NOT HDF5_DIR)
 else()
   include_directories(${HDF5_DIR}/include)
   set(HDF5_LIB "-L${HDF5_DIR}/lib -lhdf5")
+  list(APPEND COMMON_LIBS ${HDF5_LIB})
 endif()
 
 if(LIBXSMM_DIR)
