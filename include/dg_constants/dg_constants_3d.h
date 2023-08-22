@@ -31,6 +31,7 @@ private:
   // To get an interp array:
   // int ind = ((order_from - 1) * DG_ORDER + (order_to - 1)) * DG_NP * DG_NP
   DG_FP *order_interp_ptr;
+  DG_FP *cub_r_ptr, *cub_s_ptr, *cub_t_ptr, *cub_w_ptr;
   DG_FP *cubInterp_ptr, *cubProj_ptr, *cubPDrT_ptr, *cubPDsT_ptr, *cubPDtT_ptr;
   DG_FP *cubInterpSurf_ptr, *cubLiftSurf_ptr;
 

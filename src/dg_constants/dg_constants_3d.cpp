@@ -150,12 +150,20 @@ DGConstants3D::DGConstants3D(const int n_) {
   cubPDsT = cubPDsT * diag_w;
   cubPDtT = cubPDtT * diag_w;
 
+  cub_r_ptr = (DG_FP *)calloc(DG_CUB_3D_NP, sizeof(DG_FP));
+  cub_s_ptr = (DG_FP *)calloc(DG_CUB_3D_NP, sizeof(DG_FP));
+  cub_t_ptr = (DG_FP *)calloc(DG_CUB_3D_NP, sizeof(DG_FP));
+  cub_w_ptr = (DG_FP *)calloc(DG_CUB_3D_NP, sizeof(DG_FP));
   cubInterp_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
   cubProj_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
   cubPDrT_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
   cubPDsT_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
   cubPDtT_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
 
+  save_vec(cub_r_ptr, cubr, 1, DG_CUB_3D_NP);
+  save_vec(cub_s_ptr, cubs, 1, DG_CUB_3D_NP);
+  save_vec(cub_t_ptr, cubt, 1, DG_CUB_3D_NP);
+  save_vec(cub_w_ptr, cubw, 1, DG_CUB_3D_NP);
   save_mat(cubInterp_ptr, cubInterp, 1, DG_NP * DG_CUB_3D_NP);
   save_mat(cubProj_ptr, cubProj, 1, DG_NP * DG_CUB_3D_NP);
   save_mat(cubPDrT_ptr, cubPDrT, 1, DG_NP * DG_CUB_3D_NP);
@@ -419,6 +427,14 @@ DG_FP* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
       return eMat_ptr;
     case INTERP_MATRIX_ARRAY:
       return order_interp_ptr;
+    case CUB3D_R:
+      return cub_r_ptr;
+    case CUB3D_S:
+      return cub_s_ptr;
+    case CUB3D_T:
+      return cub_t_ptr;
+    case CUB3D_W:
+      return cub_w_ptr;
     case CUB3D_INTERP:
       return cubInterp_ptr;
     case CUB3D_PROJ:
