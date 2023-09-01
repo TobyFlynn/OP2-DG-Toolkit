@@ -15,8 +15,8 @@ public:
 
   void calc_interp_mats() override;
   DG_FP* get_mat_ptr(Constant_Matrix matrix) override;
-  DG_FP* get_mat_ptr_kernel(Constant_Matrix matrix) override;
-  float* get_mat_ptr_kernel_sp(Constant_Matrix matrix) override;
+  DG_FP* get_mat_ptr_device(Constant_Matrix matrix) override;
+  float* get_mat_ptr_device_sp(Constant_Matrix matrix) override;
 
 private:
   void getCubatureData(const int N, arma::vec &cubr, arma::vec &cubs, arma::vec &cubt, arma::vec &cubw);

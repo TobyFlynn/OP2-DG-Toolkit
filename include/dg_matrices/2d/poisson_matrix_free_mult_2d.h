@@ -12,10 +12,12 @@ public:
   virtual void mat_free_set_bc_types(op_dat bc_ty);
   virtual void mat_free_apply_bc(op_dat rhs, op_dat bc);
   virtual void mat_free_mult(op_dat in, op_dat out);
+  virtual void mat_free_mult_sp(op_dat in, op_dat out);
+  virtual void mat_free_pre_compute_tau();
 
 protected:
   DGMesh2D *mesh;
-  op_dat mat_free_bcs;
+  op_dat mat_free_bcs, mat_free_tau_c, mat_free_tau_c_sp;
 };
 
 #endif

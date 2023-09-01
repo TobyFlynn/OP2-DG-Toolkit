@@ -130,6 +130,8 @@ dg_np_n1     = "1"
 dg_npf_n1    = "1"
 dg_cub_3d_np = "1"
 dg_cub_surf_3d_np = "1"
+dg_cub_2d_np = "1"
+dg_cub_surf_2d_np = "1"
 
 fp_type = "d"
 
@@ -142,6 +144,9 @@ if dim == "2":
     dg_npf    = str(order_int + 1)
     dg_npf_n1 = str(1 + 1)
     dg_num_faces = "3"
+    # TODO update
+    dg_cub_2d_np = "12"
+    dg_cub_surf_2d_np = "7"
     if order == "1":
         dg_cub_np    = "12"
         dg_g_np      = "9"
@@ -169,6 +174,7 @@ elif dim == "3":
     dg_npf    = str(int((order_int + 1) * (order_int + 2) / 2))
     dg_npf_n1 = str(int((1 + 1) * (1 + 2) / 2))
     dg_num_faces = "4"
+    # TODO update
     dg_cub_3d_np = "23"
     dg_cub_surf_3d_np = "12"
 
@@ -211,6 +217,8 @@ for f in inputfiles:
         newdata = newdata.replace("DG_NUM_FACES", dg_num_faces)
         newdata = newdata.replace("DG_CUB_3D_NP", dg_cub_3d_np)
         newdata = newdata.replace("DG_CUB_SURF_3D_NP", dg_cub_surf_3d_np)
+        newdata = newdata.replace("DG_CUB_2D_NP", dg_cub_2d_np)
+        newdata = newdata.replace("DG_CUB_SURF_2D_NP", dg_cub_surf_2d_np)
 
     if dim == "2":
         with open("gen_2d/" + f, "w") as file:

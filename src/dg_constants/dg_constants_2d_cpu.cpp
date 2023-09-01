@@ -42,7 +42,7 @@ void DGConstants2D::clean_up_kernel_ptrs() {
   // Do nothing for CPU
 }
 
-DG_FP* DGConstants2D::get_mat_ptr_kernel(Constant_Matrix matrix) {
+DG_FP* DGConstants2D::get_mat_ptr_device(Constant_Matrix matrix) {
   switch(matrix) {
     case R:
       return dg_r_kernel;
@@ -76,13 +76,50 @@ DG_FP* DGConstants2D::get_mat_ptr_kernel(Constant_Matrix matrix) {
       return dg_MM_F2_kernel;
     case EMAT:
       return dg_Emat_kernel;
+    case CUB2D_INTERP:
+      return cubInterp_ptr;
+    case CUB2D_PROJ:
+      return cubProj_ptr;
+    case CUB2D_PDR:
+      return cubPDrT_ptr;
+    case CUB2D_PDS:
+      return cubPDsT_ptr;
+    case CUBSURF2D_INTERP:
+      return cubInterpSurf_ptr;
+    case CUBSURF2D_LIFT:
+      return cubLiftSurf_ptr;
     default:
       throw std::runtime_error("This constant matrix is not supported by DGConstants2D\n");
       return nullptr;
   }
 }
 
-float* DGConstants2D::get_mat_ptr_kernel_sp(Constant_Matrix matrix) {
-  throw std::runtime_error("get_mat_ptr_kernel_sp is not implemented yet for 2D\n");
-  return nullptr;
+float* DGConstants2D::get_mat_ptr_device_sp(Constant_Matrix matrix) {
+ switch(matrix) {
+    case DR:
+      return Dr_ptr_sp;
+    case DS:
+      return Ds_ptr_sp;
+    case DRW:
+      return Drw_ptr_sp;
+    case DSW:
+      return Dsw_ptr_sp;
+    case MASS:
+      return mass_ptr_sp;
+    case INV_MASS:
+      return invMass_ptr_sp;
+    case INV_V:
+      return invV_ptr_sp;
+    case V:
+      return v_ptr_sp;
+    case LIFT:
+      return lift_ptr_sp;
+    case EMAT:
+      return eMat_ptr_sp;
+    case INTERP_MATRIX_ARRAY:
+      return order_interp_ptr_sp;
+    default:
+      throw std::runtime_error("This sp constant matrix is not supported by DGConstants2D\n");
+      return nullptr;
+  }
 }

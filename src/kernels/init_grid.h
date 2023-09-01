@@ -49,6 +49,7 @@ inline void init_grid(const int *p, DG_FP *rx, DG_FP *ry, DG_FP *sx,
     nx[i] = nx[i] / sJ[i];
     ny[i] = ny[i] / sJ[i];
     const int fmask_ind = fmask[i];
+    // sJ[i] /= 2.0;
     fscale[i] = sJ[i] / J[fmask_ind];
   }
 

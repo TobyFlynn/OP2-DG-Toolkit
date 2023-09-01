@@ -207,6 +207,26 @@ arma::mat DGUtils::filterMatrix3D(const arma::mat &v, const arma::mat &invV,
   return v * tmp * invV;
 }
 
+arma::mat DGUtils::cubaturePMat2D(const arma::vec &r, const arma::vec &s, 
+                                  const arma::vec &cubr, const arma::vec &cubs,
+                                  const int N) {
+  arma::mat V = vandermonde2D(r, s, N);
+  arma::mat cubV = vandermonde2D(cubr, cubs, N);
+
+  return V * cubV.t();
+}
+
+void DGUtils::cubaturePDwMat2D(const arma::vec &r, const arma::vec &s,
+                    const arma::vec &cubr, const arma::vec &cubs,
+                    const int N, arma::mat &cubDrw, arma::mat &cubDsw) {
+  arma::mat V = vandermonde2D(r, s, N);
+  arma::mat cubVr, cubVs;
+  gradVandermonde2D(cubr, cubs, N, cubVr, cubVs);
+
+  cubDrw = V * cubVr.t();
+  cubDsw = V * cubVs.t();
+}
+
 arma::mat DGUtils::cubaturePMat3D(const arma::vec &r, const arma::vec &s, 
                                   const arma::vec &t, const arma::vec &cubr, 
                                   const arma::vec &cubs, const arma::vec &cubt, 

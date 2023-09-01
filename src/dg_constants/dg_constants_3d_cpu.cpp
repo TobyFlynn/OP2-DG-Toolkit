@@ -92,7 +92,7 @@ void DGConstants3D::clean_up_kernel_ptrs() {
   // Do nothing for CPU
 }
 
-DG_FP* DGConstants3D::get_mat_ptr_kernel(Constant_Matrix matrix) {
+DG_FP* DGConstants3D::get_mat_ptr_device(Constant_Matrix matrix) {
   switch(matrix) {
     case R:
       return dg_r_kernel;
@@ -154,7 +154,7 @@ DG_FP* DGConstants3D::get_mat_ptr_kernel(Constant_Matrix matrix) {
   }
 }
 
-float* DGConstants3D::get_mat_ptr_kernel_sp(Constant_Matrix matrix) {
+float* DGConstants3D::get_mat_ptr_device_sp(Constant_Matrix matrix) {
   switch(matrix) {
     case DR:
       return dg_Dr_kernel_sp;

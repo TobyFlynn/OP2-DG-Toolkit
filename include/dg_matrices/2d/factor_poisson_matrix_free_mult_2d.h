@@ -10,12 +10,13 @@ public:
   FactorPoissonMatrixFreeMult2D(DGMesh2D *m);
 
   // op_dat bc_types - 0 for Dirichlet, 1 for Neumann
-  virtual void mat_free_apply_bc(op_dat rhs, op_dat bc);
-  virtual void mat_free_mult(op_dat in, op_dat out);
+  virtual void mat_free_apply_bc(op_dat rhs, op_dat bc) override;
+  virtual void mat_free_mult(op_dat in, op_dat out) override;
+  virtual void mat_free_mult_sp(op_dat in, op_dat out) override;
   virtual void mat_free_set_factor(op_dat f);
 
 protected:
-  op_dat mat_free_factor, mat_free_factor_copy, mat_free_gtau;
+  op_dat mat_free_factor, mat_free_factor_copy;
 
   void check_current_order();
   void calc_tau();

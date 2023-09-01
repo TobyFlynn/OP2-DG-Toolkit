@@ -100,6 +100,14 @@ namespace DGUtils {
                         const arma::vec &t, const arma::uvec &fmask,
                         const arma::mat &v, const int N, arma::mat &face0,
                         arma::mat &face1, arma::mat &face2, arma::mat &face3);
+  
+  arma::mat cubaturePMat2D(const arma::vec &r, const arma::vec &s,
+                           const arma::vec &cubr, const arma::vec &cubs,
+                           const int N);
+  
+  void cubaturePDwMat2D(const arma::vec &r, const arma::vec &s,
+                        const arma::vec &cubr, const arma::vec &cubs,
+                        const int N, arma::mat &cubDrw, arma::mat &cubDsw);
 
   arma::mat cubaturePMat3D(const arma::vec &r, const arma::vec &s, const arma::vec &t, 
                            const arma::vec &cubr, const arma::vec &cubs,

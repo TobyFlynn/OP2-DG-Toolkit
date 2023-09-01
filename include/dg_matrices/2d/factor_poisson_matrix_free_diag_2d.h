@@ -14,6 +14,8 @@ public:
   virtual void set_bc_types(op_dat bc_ty) override;
   virtual void apply_bc(op_dat rhs, op_dat bc) override;
   virtual void mult(op_dat in, op_dat out) override;
+  virtual void mult_sp(op_dat in, op_dat out) override;
+  virtual void multJacobi_sp(op_dat in, op_dat out) override;
   virtual void calc_mat_partial() override;
   void set_factor(op_dat f);
 

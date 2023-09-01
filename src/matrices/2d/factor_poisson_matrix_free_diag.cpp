@@ -36,6 +36,23 @@ void FactorPoissonMatrixFreeDiag2D::mult(op_dat in, op_dat out) {
   timer->endTimer("FactorPoissonMatrixFreeDiag2D - mult");
 }
 
+void FactorPoissonMatrixFreeDiag2D::mult_sp(op_dat in, op_dat out) {
+  timer->startTimer("FactorPoissonMatrixFreeDiag2D - mult sp");
+  mat_free_mult_sp(in, out);
+  timer->endTimer("FactorPoissonMatrixFreeDiag2D - mult sp");
+}
+
+void FactorPoissonMatrixFreeDiag2D::multJacobi_sp(op_dat in, op_dat out) {
+  timer->startTimer("FactorPoissonMatrixFreeDiag2D - multJacobi sp");
+  mat_free_mult_sp(in, out);
+
+  op_par_loop(poisson_diag_mult_jacobi_sp, "poisson_diag_mult_jacobi_sp", mesh->cells,
+              op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
+              op_arg_dat(diag, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(out, -1, OP_ID, DG_NP, "float", OP_RW));
+  timer->endTimer("FactorPoissonMatrixFreeDiag2D - multJacobi sp");
+}
+
 void FactorPoissonMatrixFreeDiag2D::calc_mat_partial() {
   timer->startTimer("FactorPoissonMatrixFreeDiag2D - calc_mat_partial");
   check_current_order();

@@ -236,44 +236,6 @@ void custom_kernel_gemv_halo_exchange_sp(op_set set, const bool t, const int m, 
   const float beta, const float *matrix, op_dat arg4, op_dat arg5);
 #endif
 
-void op2_gemv_inv_mass_gass_interpT(DGMesh *mesh, bool transpose,
-                                    const DG_FP alpha, op_dat x,
-                                    const DG_FP beta, op_dat y) {
-  if(transpose) {
-    std::cerr << "op2_gemv_inv_mass_gass_interpT not implemented for transpose ... exiting" << std::endl;
-  } else {
-    op_par_loop(gemv_inv_mass_gauss_interpT, "gemv_inv_mass_gauss_interpT", mesh->cells,
-                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
-                op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
-                op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
-                op_arg_gbl(constants->get_mat_ptr(DGConstants::INV_MASS_GAUSS_INTERP_T), DG_ORDER * DG_G_NP * DG_NP, DG_FP_STR, OP_READ),
-                op_arg_dat(mesh->J, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-                op_arg_dat(x, -1, OP_ID, DG_G_NP, DG_FP_STR, OP_READ),
-                op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
-  }
-}
-
-void op2_gemv_gauss_interp(DGMesh *mesh, bool transpose, const DG_FP alpha,
-                           op_dat x, const DG_FP beta, op_dat y) {
-  if(transpose) {
-    op_par_loop(gemv_gauss_interpT, "gemv_gauss_interpT", mesh->cells,
-                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
-                op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
-                op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
-                op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_INTERP), DG_ORDER * DG_G_NP * DG_NP, DG_FP_STR, OP_READ),
-                op_arg_dat(x, -1, OP_ID, DG_G_NP, DG_FP_STR, OP_READ),
-                op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
-  } else {
-    op_par_loop(gemv_gauss_interp, "gemv_gauss_interp", mesh->cells,
-                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
-                op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
-                op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
-                op_arg_gbl(constants->get_mat_ptr(DGConstants::GAUSS_INTERP), DG_ORDER * DG_G_NP * DG_NP, DG_FP_STR, OP_READ),
-                op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-                op_arg_dat(y, -1, OP_ID, DG_G_NP, DG_FP_STR, OP_RW));
-  }
-}
-
 void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                    const DG_FP beta, op_dat y) {
   #if defined(USE_OP2_KERNELS)
@@ -298,14 +260,14 @@ void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
   const int order = mesh->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
   const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
-  const DG_FP *A = constants->get_mat_ptr_kernel(DGConstants::LIFT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
+  const DG_FP *A = constants->get_mat_ptr_device(DGConstants::LIFT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
   custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, A, x, y);
   #else
   const int order = mesh->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
   const int n = mesh->cells->size;
   const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
-  const DG_FP *A = constants->get_mat_ptr_kernel(DGConstants::LIFT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
+  const DG_FP *A = constants->get_mat_ptr_device(DGConstants::LIFT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
   op2_cpu_gemm(m, n, k, alpha, transpose, A, m, x, DG_NUM_FACES * DG_NPF, beta, y, DG_NP);
   #endif
 }
@@ -334,14 +296,14 @@ void op2_gemv_emat(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
   const int order = mesh->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
   const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
-  const DG_FP *A = constants->get_mat_ptr_kernel(DGConstants::EMAT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
+  const DG_FP *A = constants->get_mat_ptr_device(DGConstants::EMAT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
   custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, A, x, y);
   #else
   const int order = mesh->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
   const int n = mesh->cells->size;
   const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
-  const DG_FP *A = constants->get_mat_ptr_kernel(DGConstants::EMAT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
+  const DG_FP *A = constants->get_mat_ptr_device(DGConstants::EMAT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
   op2_cpu_gemm(m, n, k, alpha, transpose, A, m, x, DG_NUM_FACES * DG_NPF, beta, y, DG_NP);
   #endif
 }
@@ -381,28 +343,6 @@ void op2_gemv_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha,
   const DG_FP *A = matrix + (order - 1) * DG_NP * DG_NP;
   op2_cpu_gemm(m, n, k, alpha, transpose, A, m, x, DG_NP, beta, y, DG_NP);
   #endif
-}
-
-void op2_gemv_cub_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha,
-                        const DG_FP *matrix, op_dat x, const DG_FP beta,
-                        op_dat y) {
-  if(transpose) {
-    op_par_loop(gemv_cub_np_npT, "gemv_cub_np_npT", mesh->cells,
-                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
-                op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
-                op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
-                op_arg_gbl(matrix, DG_ORDER * DG_CUB_NP * DG_NP, DG_FP_STR, OP_READ),
-                op_arg_dat(x, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-                op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
-  } else {
-    op_par_loop(gemv_cub_np_np, "gemv_cub_np_np", mesh->cells,
-                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
-                op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
-                op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
-                op_arg_gbl(matrix, DG_ORDER * DG_CUB_NP * DG_NP, DG_FP_STR, OP_READ),
-                op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-                op_arg_dat(y, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_RW));
-  }
 }
 
 void op2_gemv_cub3d_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha, const DG_FP *matrix, 
@@ -447,14 +387,7 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
     case DGConstants::INV_MASS:
     case DGConstants::V:
     case DGConstants::INV_V:
-      op2_gemv_np_np(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
-      break;
-    case DGConstants::CUB_V:
-      #if DG_DIM == 2
-      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr(matrix), x, beta, y);
-      #else
-      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
-      #endif
+      op2_gemv_np_np(mesh, transpose, alpha, constants->get_mat_ptr_device(matrix), x, beta, y);
       break;
     case DGConstants::LIFT:
       op2_gemv_lift(mesh, transpose, alpha, x, beta, y);
@@ -462,26 +395,14 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
     case DGConstants::EMAT:
       op2_gemv_emat(mesh, transpose, alpha, x, beta, y);
       break;
-    case DGConstants::INV_MASS_GAUSS_INTERP_T:
-      op2_gemv_inv_mass_gass_interpT(mesh, transpose, alpha, x, beta, y);
-      break;
-    case DGConstants::GAUSS_INTERP:
-      op2_gemv_gauss_interp(mesh, transpose, alpha, x, beta, y);
-      break;
-    case DGConstants::CUB_VDR:
-    case DGConstants::CUB_VDS:
-    case DGConstants::CUB_DR:
-    case DGConstants::CUB_DS:
-      op2_gemv_cub_np_np(mesh, transpose, alpha, constants->get_mat_ptr(matrix), x, beta, y);
-      break;
     case DGConstants::CUB3D_INTERP:
-      op2_gemv_cub3d_np_np(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
+      op2_gemv_cub3d_np_np(mesh, transpose, alpha, constants->get_mat_ptr_device(matrix), x, beta, y);
       break;
     case DGConstants::CUB3D_PROJ:
     case DGConstants::CUB3D_PDR:
     case DGConstants::CUB3D_PDS:
     case DGConstants::CUB3D_PDT:
-      op2_gemv_np_cub3d_np(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
+      op2_gemv_np_cub3d_np(mesh, transpose, alpha, constants->get_mat_ptr_device(matrix), x, beta, y);
       break;
     case DGConstants::CUBSURF3D_INTERP: {
       const int m = DG_CUB_SURF_3D_NP * DG_NUM_FACES;
@@ -489,10 +410,10 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
       #if defined(USE_OP2_KERNELS)
       throw std::runtime_error("DGConstants::CUBSURF3D_INTERP does not have a OP2 kernel implementation");
       #elif defined(OP2_DG_CUDA)
-      custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_kernel(matrix), x, y);
+      custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device(matrix), x, y);
       #else
       const int n = mesh->cells->size;
-      op2_cpu_gemm(m, n, k, alpha, transpose, constants->get_mat_ptr_kernel(matrix), m, x, x->dim, beta, y, y->dim);
+      op2_cpu_gemm(m, n, k, alpha, transpose, constants->get_mat_ptr_device(matrix), m, x, x->dim, beta, y, y->dim);
       #endif
       }
       break;
@@ -502,10 +423,64 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
       #if defined(USE_OP2_KERNELS)
       throw std::runtime_error("DGConstants::CUBSURF3D_LIFT does not have a OP2 kernel implementation");
       #elif defined(OP2_DG_CUDA)
-      custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_kernel(matrix), x, y);
+      custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device(matrix), x, y);
       #else
       const int n = mesh->cells->size;
-      op2_cpu_gemm(m, n, k, alpha, transpose, constants->get_mat_ptr_kernel(matrix), m, x, x->dim, beta, y, y->dim);
+      op2_cpu_gemm(m, n, k, alpha, transpose, constants->get_mat_ptr_device(matrix), m, x, x->dim, beta, y, y->dim);
+      #endif
+      }
+      break;
+    case DGConstants::CUB2D_INTERP: {
+      const int m = DG_CUB_2D_NP;
+      const int k = DG_NP;
+      #if defined(USE_OP2_KERNELS)
+      throw std::runtime_error("DGConstants::CUB2D_INTERP does not have a OP2 kernel implementation");
+      #elif defined(OP2_DG_CUDA)
+      custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device(matrix), x, y);
+      #else
+      const int n = mesh->cells->size;
+      op2_cpu_gemm(m, n, k, alpha, transpose, constants->get_mat_ptr_device(matrix), m, x, x->dim, beta, y, y->dim);
+      #endif
+      }
+      break;
+    case DGConstants::CUB2D_PROJ:
+    case DGConstants::CUB2D_PDR:
+    case DGConstants::CUB2D_PDS: {
+      const int m = DG_NP;
+      const int k = DG_CUB_2D_NP;
+      #if defined(USE_OP2_KERNELS)
+      throw std::runtime_error("DGConstants::CUB2D_PROJ does not have a OP2 kernel implementation");
+      #elif defined(OP2_DG_CUDA)
+      custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device(matrix), x, y);
+      #else
+      const int n = mesh->cells->size;
+      op2_cpu_gemm(m, n, k, alpha, transpose, constants->get_mat_ptr_device(matrix), m, x, x->dim, beta, y, y->dim);
+      #endif
+      }
+      break;
+    case DGConstants::CUBSURF2D_INTERP: {
+      const int m = DG_CUB_SURF_2D_NP * DG_NUM_FACES;
+      const int k = DG_NUM_FACES * DG_NPF;
+      #if defined(USE_OP2_KERNELS)
+      throw std::runtime_error("DGConstants::CUBSURF2D_INTERP does not have a OP2 kernel implementation");
+      #elif defined(OP2_DG_CUDA)
+      custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device(matrix), x, y);
+      #else
+      const int n = mesh->cells->size;
+      op2_cpu_gemm(m, n, k, alpha, transpose, constants->get_mat_ptr_device(matrix), m, x, x->dim, beta, y, y->dim);
+      #endif
+      }
+      break;
+    case DGConstants::CUBSURF2D_LIFT: {
+      const int m = DG_NP;
+      const int k = DG_CUB_SURF_2D_NP * DG_NUM_FACES;
+      #if defined(USE_OP2_KERNELS)
+      throw std::runtime_error("DGConstants::CUBSURF2D_LIFT does not have a OP2 kernel implementation");
+      #elif defined(OP2_DG_CUDA)
+      custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device(matrix), x, y);
+      #else
+      const int n = mesh->cells->size;
+      op2_cpu_gemm(m, n, k, alpha, transpose, constants->get_mat_ptr_device(matrix), m, x, x->dim, beta, y, y->dim);
       #endif
       }
       break;
@@ -528,12 +503,12 @@ void op2_gemv_interp(DGMesh *mesh, const int from_N, const int to_N, op_dat x, o
   const int m = to_NP;
   const int n = mesh->cells->size;
   const int k = from_NP;
-  const DG_FP *A = constants->get_mat_ptr_kernel(DGConstants::INTERP_MATRIX_ARRAY) + ((from_N - 1) * DG_ORDER + (to_N - 1)) * DG_NP * DG_NP;
+  const DG_FP *A = constants->get_mat_ptr_device(DGConstants::INTERP_MATRIX_ARRAY) + ((from_N - 1) * DG_ORDER + (to_N - 1)) * DG_NP * DG_NP;
 
   // TODO 2D
   #if defined(USE_OP2_KERNELS)
   op_par_loop(interp_dat_to_new_order_3d_copy, "interp_dat_to_new_order_3d_copy", mesh->cells,
-              op_arg_gbl(constants->get_mat_ptr_kernel(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
+              op_arg_gbl(constants->get_mat_ptr_device(DGConstants::INTERP_MATRIX_ARRAY), DG_ORDER * DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
               op_arg_gbl(&from_N, 1, "int", OP_READ),
               op_arg_gbl(&to_N, 1, "int", OP_READ),
               op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
@@ -572,7 +547,7 @@ void op2_gemv_halo_exchange(DGMesh *mesh, bool transpose, const DG_FP alpha,
     case DGConstants::DR:
     case DGConstants::DS:
     case DGConstants::DT:
-      op2_gemv_np_np_halo_exchange(mesh, transpose, alpha, constants->get_mat_ptr_kernel(matrix), x, beta, y);
+      op2_gemv_np_np_halo_exchange(mesh, transpose, alpha, constants->get_mat_ptr_device(matrix), x, beta, y);
       break;
     default:
       std::cerr << "op2_gemv call not implemented for this matrix ... exiting" << std::endl;
@@ -588,14 +563,14 @@ void op2_gemv_lift_sp(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
   const int order = mesh->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
   const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
-  const float *A = constants->get_mat_ptr_kernel_sp(DGConstants::LIFT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
+  const float *A = constants->get_mat_ptr_device_sp(DGConstants::LIFT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
   custom_kernel_gemv_sp(mesh->cells, transpose, m, k, alpha, beta, A, x, y);
   #else
   const int order = mesh->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
   const int n = mesh->cells->size;
   const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
-  const float *A = constants->get_mat_ptr_kernel_sp(DGConstants::LIFT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
+  const float *A = constants->get_mat_ptr_device_sp(DGConstants::LIFT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
   op2_cpu_gemm_sp(m, n, k, alpha, transpose, A, m, x, DG_NUM_FACES * DG_NPF, beta, y, DG_NP);
   #endif
 }
@@ -608,14 +583,14 @@ void op2_gemv_emat_sp(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
   const int order = mesh->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
   const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
-  const float *A = constants->get_mat_ptr_kernel_sp(DGConstants::EMAT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
+  const float *A = constants->get_mat_ptr_device_sp(DGConstants::EMAT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
   custom_kernel_gemv_sp(mesh->cells, transpose, m, k, alpha, beta, A, x, y);
   #else
   const int order = mesh->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
   const int n = mesh->cells->size;
   const int k = DG_NUM_FACES * DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS + 1];
-  const float *A = constants->get_mat_ptr_kernel_sp(DGConstants::EMAT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
+  const float *A = constants->get_mat_ptr_device_sp(DGConstants::EMAT) + (order - 1) * DG_NUM_FACES * DG_NPF * DG_NP;
   op2_cpu_gemm_sp(m, n, k, alpha, transpose, A, m, x, DG_NUM_FACES * DG_NPF, beta, y, DG_NP);
   #endif
 }
@@ -655,7 +630,7 @@ void op2_gemv_sp(DGMesh *mesh, bool transpose, const DG_FP alpha,
     case DGConstants::INV_MASS:
     case DGConstants::V:
     case DGConstants::INV_V:
-      op2_gemv_np_np_sp(mesh, transpose, alpha, constants->get_mat_ptr_kernel_sp(matrix), x, beta, y);
+      op2_gemv_np_np_sp(mesh, transpose, alpha, constants->get_mat_ptr_device_sp(matrix), x, beta, y);
       break;
     case DGConstants::LIFT:
       op2_gemv_lift_sp(mesh, transpose, alpha, x, beta, y);
@@ -696,7 +671,7 @@ void op2_gemv_halo_exchange_sp(DGMesh *mesh, bool transpose, const DG_FP alpha,
     case DGConstants::DR:
     case DGConstants::DS:
     case DGConstants::DT:
-      op2_gemv_np_np_halo_exchange_sp(mesh, transpose, alpha, constants->get_mat_ptr_kernel_sp(matrix), x, beta, y);
+      op2_gemv_np_np_halo_exchange_sp(mesh, transpose, alpha, constants->get_mat_ptr_device_sp(matrix), x, beta, y);
       break;
     default:
       std::cerr << "op2_gemv call not implemented for this matrix ... exiting" << std::endl;
@@ -717,7 +692,7 @@ void op2_gemv_interp_sp(DGMesh *mesh, const int from_N, const int to_N, op_dat x
   const int m = to_NP;
   const int n = mesh->cells->size;
   const int k = from_NP;
-  const float *A = constants->get_mat_ptr_kernel_sp(DGConstants::INTERP_MATRIX_ARRAY) + ((from_N - 1) * DG_ORDER + (to_N - 1)) * DG_NP * DG_NP;
+  const float *A = constants->get_mat_ptr_device_sp(DGConstants::INTERP_MATRIX_ARRAY) + ((from_N - 1) * DG_ORDER + (to_N - 1)) * DG_NP * DG_NP;
 
   #if defined(OP2_DG_CUDA)
   custom_kernel_gemv_sp(mesh->cells, false, m, k, 1.0, 0.0, A, x, y);

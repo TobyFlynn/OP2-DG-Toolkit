@@ -85,33 +85,6 @@ void DGMesh2D::div_with_central_flux(op_dat u, op_dat v, op_dat res) {
   dg_dat_pool->releaseTempDatCells(tmp_0);
 }
 
-void DGMesh2D::div_with_central_flux_over_int(op_dat u, op_dat v, op_dat res) {
-  if(!over_integrate) {
-    throw std::runtime_error("DGMesh2D was initialised without over integration");
-  }
-
-  div(u, v, res);
-
-  // Central flux
-  op2_gemv(this, false, 1.0, DGConstants::GAUSS_INTERP, u, 0.0, gauss->op_tmp[0]);
-  op2_gemv(this, false, 1.0, DGConstants::GAUSS_INTERP, v, 0.0, gauss->op_tmp[1]);
-
-  op_par_loop(zero_g_np, "zero_g_np", cells,
-              op_arg_dat(gauss->op_tmp[2], -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE));
-
-  op_par_loop(div_2d_central_flux_over_int, "div_2d_central_flux_over_int", faces,
-              op_arg_dat(edgeNum,   -1, OP_ID, 2, "int", OP_READ),
-              op_arg_dat(reverse,   -1, OP_ID, 1, "bool", OP_READ),
-              op_arg_dat(gauss->nx, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->ny, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->sJ, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[0], -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[1], -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[2], -2, face2cells, DG_G_NP, DG_FP_STR, OP_INC));
-
-  op2_gemv(this, false, -1.0, DGConstants::INV_MASS_GAUSS_INTERP_T, gauss->op_tmp[2], 1.0, res);
-}
-
 void DGMesh2D::curl(op_dat u, op_dat v, op_dat res) {
   // Same matrix multiplications as div
   op2_gemv(this, false, 1.0, DGConstants::DR, u, 0.0, op_tmp[0]);
@@ -193,259 +166,6 @@ void DGMesh2D::grad_with_central_flux(op_dat u, op_dat ux, op_dat uy) {
   dg_dat_pool->releaseTempDatCells(tmp_1);
 }
 
-void DGMesh2D::grad_with_central_flux_over_int(op_dat u, op_dat ux, op_dat uy) {
-  if(!over_integrate) {
-    throw std::runtime_error("DGMesh2D was initialised without over integration");
-  }
-
-  grad(u, ux, uy);
-
-  // Central flux
-  op2_gemv(this, false, 1.0, DGConstants::GAUSS_INTERP, u, 0.0, gauss->op_tmp[0]);
-
-  op_par_loop(zero_g_np_2, "zero_g_np_2", cells,
-              op_arg_dat(gauss->op_tmp[1], -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE),
-              op_arg_dat(gauss->op_tmp[2], -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE));
-
-  op_par_loop(grad_2d_central_flux_over_int, "grad_2d_central_flux_over_int", faces,
-              op_arg_dat(edgeNum,   -1, OP_ID, 2, "int", OP_READ),
-              op_arg_dat(reverse,   -1, OP_ID, 1, "bool", OP_READ),
-              op_arg_dat(gauss->nx, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->ny, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->sJ, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[0], -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[1], -2, face2cells, DG_G_NP, DG_FP_STR, OP_INC),
-              op_arg_dat(gauss->op_tmp[2], -2, face2cells, DG_G_NP, DG_FP_STR, OP_INC));
-
-  op2_gemv(this, false, -1.0, DGConstants::INV_MASS_GAUSS_INTERP_T, gauss->op_tmp[1], 1.0, ux);
-  op2_gemv(this, false, -1.0, DGConstants::INV_MASS_GAUSS_INTERP_T, gauss->op_tmp[2], 1.0, uy);
-}
-
-void DGMesh2D::cub_grad(op_dat u, op_dat ux, op_dat uy) {
-  if(!over_integrate) {
-    throw std::runtime_error("DGMesh2D was initialised without over integration");
-  }
-
-  op2_gemv(this, false, 1.0, DGConstants::CUB_DR, u, 0.0, cubature->op_tmp[0]);
-  op2_gemv(this, false, 1.0, DGConstants::CUB_DS, u, 0.0, cubature->op_tmp[1]);
-
-  op_par_loop(cub_grad_2d, "cub_grad_2d", cells,
-              op_arg_dat(order,        -1, OP_ID, 1, "int", OP_READ),
-              op_arg_dat(cubature->rx, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->sx, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->ry, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->sy, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->J,  -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->op_tmp[0], -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_RW),
-              op_arg_dat(cubature->op_tmp[1], -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_RW));
-
-  op2_gemv(this, true, 1.0, DGConstants::CUB_V, cubature->op_tmp[0], 0.0, ux);
-  op2_gemv(this, true, 1.0, DGConstants::CUB_V, cubature->op_tmp[1], 0.0, uy);
-}
-
-void DGMesh2D::cub_grad_with_central_flux(op_dat u, op_dat ux, op_dat uy) {
-  if(!over_integrate) {
-    throw std::runtime_error("DGMesh2D was initialised without over integration");
-  }
-
-  cub_grad(u, ux, uy);
-
-  // Central flux
-  op2_gemv(this, false, 1.0, DGConstants::GAUSS_INTERP, u, 0.0, gauss->op_tmp[0]);
-
-  op_par_loop(zero_g_np_2, "zero_g_np_2", cells,
-              op_arg_dat(gauss->op_tmp[1], -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE),
-              op_arg_dat(gauss->op_tmp[2], -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE));
-
-  op_par_loop(grad_2d_central_flux_over_int, "grad_2d_central_flux_over_int", faces,
-              op_arg_dat(edgeNum,   -1, OP_ID, 2, "int", OP_READ),
-              op_arg_dat(reverse,   -1, OP_ID, 1, "bool", OP_READ),
-              op_arg_dat(gauss->nx, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->ny, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->sJ, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[0], -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[1], -2, face2cells, DG_G_NP, DG_FP_STR, OP_INC),
-              op_arg_dat(gauss->op_tmp[2], -2, face2cells, DG_G_NP, DG_FP_STR, OP_INC));
-
-  op2_gemv(this, true, -1.0, DGConstants::GAUSS_INTERP, gauss->op_tmp[1], 1.0, ux);
-  op2_gemv(this, true, -1.0, DGConstants::GAUSS_INTERP, gauss->op_tmp[2], 1.0, uy);
-
-  inv_mass(ux);
-  inv_mass(uy);
-}
-
-void DGMesh2D::cub_div(op_dat u, op_dat v, op_dat res) {
-  if(!over_integrate) {
-    throw std::runtime_error("DGMesh2D was initialised without over integration");
-  }
-
-  op2_gemv(this, false, 1.0, DGConstants::CUB_DR, u, 0.0, cubature->op_tmp[0]);
-  op2_gemv(this, false, 1.0, DGConstants::CUB_DS, u, 0.0, cubature->op_tmp[1]);
-  op2_gemv(this, false, 1.0, DGConstants::CUB_DR, v, 0.0, cubature->op_tmp[2]);
-  op2_gemv(this, false, 1.0, DGConstants::CUB_DS, v, 0.0, cubature->op_tmp[3]);
-
-  op_par_loop(cub_div_2d, "cub_div_2d", cells,
-              op_arg_dat(order,        -1, OP_ID, 1, "int", OP_READ),
-              op_arg_dat(cubature->rx, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->sx, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->ry, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->sy, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->J, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->op_tmp[0], -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_RW),
-              op_arg_dat(cubature->op_tmp[1], -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->op_tmp[2], -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->op_tmp[3], -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ));
-
-  op2_gemv(this, true, 1.0, DGConstants::CUB_V, cubature->op_tmp[0], 0.0, res);
-}
-
-void DGMesh2D::cub_div_with_central_flux_no_inv_mass(op_dat u, op_dat v, op_dat res) {
-  if(!over_integrate) {
-    throw std::runtime_error("DGMesh2D was initialised without over integration");
-  }
-
-  cub_div(u, v, res);
-
-  // Central flux
-  op2_gemv(this, false, 1.0, DGConstants::GAUSS_INTERP, u, 0.0, gauss->op_tmp[0]);
-  op2_gemv(this, false, 1.0, DGConstants::GAUSS_INTERP, v, 0.0, gauss->op_tmp[1]);
-
-  op_par_loop(zero_g_np, "zero_g_np", cells,
-              op_arg_dat(gauss->op_tmp[2], -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE));
-
-  op_par_loop(div_2d_central_flux_over_int, "div_2d_central_flux_over_int", faces,
-              op_arg_dat(edgeNum,   -1, OP_ID, 2, "int", OP_READ),
-              op_arg_dat(reverse,   -1, OP_ID, 1, "bool", OP_READ),
-              op_arg_dat(gauss->nx, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->ny, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->sJ, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[0], -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[1], -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[2], -2, face2cells, DG_G_NP, DG_FP_STR, OP_INC));
-
-  op2_gemv(this, true, -1.0, DGConstants::GAUSS_INTERP, gauss->op_tmp[2], 1.0, res);
-}
-
-void DGMesh2D::cub_div_with_central_flux(op_dat u, op_dat v, op_dat res) {
-  if(!over_integrate) {
-    throw std::runtime_error("DGMesh2D was initialised without over integration");
-  }
-
-  cub_div_with_central_flux_no_inv_mass(u, v, res);
-
-  inv_mass(res);
-}
-
-void DGMesh2D::cub_grad_weak(op_dat u, op_dat ux, op_dat uy) {
-  if(!over_integrate) {
-    throw std::runtime_error("DGMesh2D was initialised without over integration");
-  }
-
-  op2_gemv(this, false, 1.0, DGConstants::CUB_V, u, 0.0, cubature->op_tmp[0]);
-
-  op_par_loop(cub_grad_weak_2d, "cub_grad_weak_2d", cells,
-              op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
-              op_arg_dat(cubature->op_tmp[0], -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_RW),
-              op_arg_dat(cubature->rx, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->sx, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->ry, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->sy, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->J,  -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->op_tmp[1], -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_WRITE),
-              op_arg_dat(cubature->op_tmp[2], -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_WRITE),
-              op_arg_dat(cubature->op_tmp[3], -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_WRITE));
-
-  op2_gemv(this, true, 1.0, DGConstants::CUB_DR, cubature->op_tmp[0], 0.0, ux);
-  op2_gemv(this, true, 1.0, DGConstants::CUB_DS, cubature->op_tmp[1], 1.0, ux);
-  op2_gemv(this, true, 1.0, DGConstants::CUB_DR, cubature->op_tmp[2], 0.0, uy);
-  op2_gemv(this, true, 1.0, DGConstants::CUB_DS, cubature->op_tmp[3], 1.0, uy);
-}
-
-void DGMesh2D::cub_grad_weak_with_central_flux(op_dat u, op_dat ux, op_dat uy) {
-  if(!over_integrate) {
-    throw std::runtime_error("DGMesh2D was initialised without over integration");
-  }
-
-  cub_grad_weak(u, ux, uy);
-
-  // Central flux
-  op2_gemv(this, false, 1.0, DGConstants::GAUSS_INTERP, u, 0.0, gauss->op_tmp[0]);
-
-  op_par_loop(zero_g_np_2, "zero_g_np_2", cells,
-              op_arg_dat(gauss->op_tmp[1], -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE),
-              op_arg_dat(gauss->op_tmp[2], -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE));
-
-  op_par_loop(grad_weak_2d_central_flux, "grad_weak_2d_central_flux", faces,
-              op_arg_dat(edgeNum,   -1, OP_ID, 2, "int", OP_READ),
-              op_arg_dat(reverse,   -1, OP_ID, 1, "bool", OP_READ),
-              op_arg_dat(gauss->nx, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->ny, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->sJ, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[0], -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[1], -2, face2cells, DG_G_NP, DG_FP_STR, OP_INC),
-              op_arg_dat(gauss->op_tmp[2], -2, face2cells, DG_G_NP, DG_FP_STR, OP_INC));
-
-  op2_gemv(this, true, 1.0, DGConstants::GAUSS_INTERP, gauss->op_tmp[1], -1.0, ux);
-  op2_gemv(this, true, 1.0, DGConstants::GAUSS_INTERP, gauss->op_tmp[2], -1.0, uy);
-
-  inv_mass(ux);
-  inv_mass(uy);
-}
-
-void DGMesh2D::cub_div_weak(op_dat u, op_dat v, op_dat res) {
-  if(!over_integrate) {
-    throw std::runtime_error("DGMesh2D was initialised without over integration");
-  }
-
-  op2_gemv(this, false, 1.0, DGConstants::CUB_V, u, 0.0, cubature->op_tmp[0]);
-  op2_gemv(this, false, 1.0, DGConstants::CUB_V, v, 0.0, cubature->op_tmp[1]);
-
-  op_par_loop(cub_div_weak_2d, "cub_div_weak_2d", cells,
-              op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
-              op_arg_dat(cubature->op_tmp[0], -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_RW),
-              op_arg_dat(cubature->op_tmp[1], -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_RW),
-              op_arg_dat(cubature->rx, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->sx, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->ry, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->sy, -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->J,  -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(cubature->op_tmp[2], -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_WRITE),
-              op_arg_dat(cubature->op_tmp[3], -1, OP_ID, DG_CUB_NP, DG_FP_STR, OP_WRITE));
-
-  op2_gemv(this, true, 1.0, DGConstants::CUB_DR, cubature->op_tmp[0], 0.0, res);
-  op2_gemv(this, true, 1.0, DGConstants::CUB_DS, cubature->op_tmp[1], 1.0, res);
-  op2_gemv(this, true, 1.0, DGConstants::CUB_DR, cubature->op_tmp[2], 1.0, res);
-  op2_gemv(this, true, 1.0, DGConstants::CUB_DS, cubature->op_tmp[3], 1.0, res);
-}
-
-void DGMesh2D::cub_div_weak_with_central_flux(op_dat u, op_dat v, op_dat res) {
-  if(!over_integrate) {
-    throw std::runtime_error("DGMesh2D was initialised without over integration");
-  }
-  cub_div_weak(u, v, res);
-
-  // Central flux
-  op2_gemv(this, false, 1.0, DGConstants::GAUSS_INTERP, u, 0.0, gauss->op_tmp[0]);
-  op2_gemv(this, false, 1.0, DGConstants::GAUSS_INTERP, v, 0.0, gauss->op_tmp[1]);
-
-  op_par_loop(zero_g_np, "zero_g_np", cells,
-              op_arg_dat(gauss->op_tmp[2], -1, OP_ID, DG_G_NP, DG_FP_STR, OP_WRITE));
-
-  op_par_loop(div_weak_2d_central_flux, "div_weak_2d_central_flux", faces,
-              op_arg_dat(edgeNum,   -1, OP_ID, 2, "int", OP_READ),
-              op_arg_dat(reverse,   -1, OP_ID, 1, "bool", OP_READ),
-              op_arg_dat(gauss->nx, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->ny, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->sJ, -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[0], -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[1], -2, face2cells, DG_G_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(gauss->op_tmp[2], -2, face2cells, DG_G_NP, DG_FP_STR, OP_INC));
-
-  op2_gemv(this, true, 1.0, DGConstants::GAUSS_INTERP, gauss->op_tmp[2], -1.0, res);
-
-  inv_mass(res);
-}
-
 void DGMesh2D::mass(op_dat u) {
   op_par_loop(J, "J", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),
@@ -454,6 +174,18 @@ void DGMesh2D::mass(op_dat u) {
               op_arg_dat(op_tmp[0], -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
 
   op2_gemv(this, false, 1.0, DGConstants::MASS, op_tmp[0], 0.0, u);
+}
+
+void DGMesh2D::mass_sp(op_dat u) {
+  DGTempDat tmp_dat = dg_dat_pool->requestTempDatCellsSP(DG_NP);
+  op_par_loop(J_sp, "J_sp", cells,
+              op_arg_gbl(&order_int, 1, "int", OP_READ),
+              op_arg_dat(geof, -1, OP_ID, 5, DG_FP_STR, OP_READ),
+              op_arg_dat(u, -1, OP_ID, DG_NP, "float", OP_READ),
+              op_arg_dat(tmp_dat.dat, -1, OP_ID, DG_NP, "float", OP_WRITE));
+
+  op2_gemv_sp(this, false, 1.0, DGConstants::MASS, tmp_dat.dat, 0.0, u);
+  dg_dat_pool->releaseTempDatCellsSP(tmp_dat);
 }
 
 void DGMesh2D::inv_mass(op_dat u) {
@@ -484,6 +216,24 @@ void DGMesh2D::jump(op_dat in, op_dat out) {
               op_arg_dat(out, -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
 }
 
+void DGMesh2D::avg_sp(op_dat in, op_dat out) {
+  op_par_loop(avg_2d_sp, "avg_2d_sp", faces,
+              op_arg_gbl(&order_int, 1, "int", OP_READ),
+              op_arg_dat(edgeNum, -1, OP_ID, 2, "int", OP_READ),
+              op_arg_dat(reverse, -1, OP_ID, 1, "bool", OP_READ),
+              op_arg_dat(in,  -2, face2cells, DG_NP, "float", OP_READ),
+              op_arg_dat(out, -2, face2cells, DG_NUM_FACES * DG_NPF, "float", OP_WRITE));
+}
+
+void DGMesh2D::jump_sp(op_dat in, op_dat out) {
+  op_par_loop(jump_2d_sp, "jump_2d_sp", faces,
+              op_arg_gbl(&order_int, 1, "int", OP_READ),
+              op_arg_dat(edgeNum, -1, OP_ID, 2, "int", OP_READ),
+              op_arg_dat(reverse, -1, OP_ID, 1, "bool", OP_READ),
+              op_arg_dat(in,  -2, face2cells, DG_NP, "float", OP_READ),
+              op_arg_dat(out, -2, face2cells, DG_NUM_FACES * DG_NPF, "float", OP_WRITE));
+}
+
 void DGMesh2D::interp_dat_between_orders(int old_order, int new_order, op_dat in, op_dat out) {
   op2_gemv_interp(this, old_order, new_order, in, out);
 }
@@ -497,4 +247,15 @@ void DGMesh2D::interp_dat_between_orders(int old_order, int new_order, op_dat in
               op_arg_dat(in, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
 
   dg_dat_pool->releaseTempDatCells(tmp_0);
+}
+
+void DGMesh2D::interp_dat_between_orders_sp(int old_order, int new_order, op_dat in) {
+  DGTempDat tmp_0 = dg_dat_pool->requestTempDatCellsSP(DG_NP);
+  op2_gemv_interp_sp(this, old_order, new_order, in, tmp_0.dat);
+
+  op_par_loop(copy_dg_np_sp_tk, "copy_dg_np_tk", cells,
+              op_arg_dat(tmp_0.dat, -1, OP_ID, DG_NP, "float", OP_READ),
+              op_arg_dat(in, -1, OP_ID, DG_NP, "float", OP_WRITE));
+
+  dg_dat_pool->releaseTempDatCellsSP(tmp_0);
 }
