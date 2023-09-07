@@ -89,6 +89,18 @@ PMultigridPoissonSolver::PMultigridPoissonSolver(DGMesh *m) {
     }
   }
 
+  std::string cheb_str;
+  if(config->getStr("p-multigrid", "cheb_orders", cheb_str)) {
+    cheb_orders = parseInts(cheb_str);
+    if(!(cheb_orders.size() == num_levels)) {
+      throw std::runtime_error("\nParsed Chebyshev orders for P-Multigrid does not match number of levels.\n");
+    }
+  } else {
+    for(int i = 0; i < num_levels; i++) {
+      cheb_orders.push_back(2);
+    }
+  }
+
   eigen_val_saftey_factor = 1.1;
   config->getDouble("p-multigrid", "eigen_val_saftey_factor", eigen_val_saftey_factor);
 
@@ -469,47 +481,37 @@ void PMultigridPoissonSolver::chebyshev_smoother(const int level) {
   timer->startTimer("PMultigridPoissonSolver - Relaxation - Mult");
   matrix->mult_sp(u_dat[level], RES);
   timer->endTimer("PMultigridPoissonSolver - Relaxation - Mult");
+
   op_par_loop(p_multigrid_relaxation_chebyshev_0, "p_multigrid_relaxation_chebyshev_0", mesh->cells,
               op_arg_gbl(&invTheta, 1, "float", OP_READ),
               op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(b_dat[level],     -1, OP_ID, DG_NP, "float", OP_READ),
               op_arg_dat(diag_dats[level], -1, OP_ID, DG_NP, "float", OP_READ),
               op_arg_dat(RES, -1, OP_ID, DG_NP, "float", OP_RW),
-              op_arg_dat(d,   -1, OP_ID, DG_NP, "float", OP_WRITE));
+              op_arg_dat(d,   -1, OP_ID, DG_NP, "float", OP_WRITE),
+              op_arg_dat(u_dat[level], -1, OP_ID, DG_NP, "float", OP_RW));
 
-  for(int i = 0; i < 2; i++) {
-    op_par_loop(p_multigrid_relaxation_chebyshev_1, "p_multigrid_relaxation_chebyshev_1", mesh->cells,
-                op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
-                op_arg_dat(d, -1, OP_ID, DG_NP, "float", OP_READ),
-                op_arg_dat(u_dat[level], -1, OP_ID, DG_NP, "float", OP_RW));
-
+  for(int i = 0; i < cheb_orders[level]; i++) {
     timer->startTimer("PMultigridPoissonSolver - Relaxation - Mult");
     matrix->mult_sp(d, Ad);
     timer->endTimer("PMultigridPoissonSolver - Relaxation - Mult");
-    op_par_loop(p_multigrid_relaxation_chebyshev_2, "p_multigrid_relaxation_chebyshev_2", mesh->cells,
-                op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
-                op_arg_dat(Ad, -1, OP_ID, DG_NP, "float", OP_READ),
-                op_arg_dat(diag_dats[level], -1, OP_ID, DG_NP, "float", OP_READ),
-                op_arg_dat(RES, -1, OP_ID, DG_NP, "float", OP_RW));
 
     rho_np1 = 1.0 / (2.0 * sigma - rho_n);
     float rhoDivDelta = 2.0 * rho_np1 / delta;
     float tmp = rho_np1 * rho_n;
 
-    op_par_loop(p_multigrid_relaxation_chebyshev_3, "p_multigrid_relaxation_chebyshev_3", mesh->cells,
+    op_par_loop(p_multigrid_relaxation_chebyshev_2, "p_multigrid_relaxation_chebyshev_2", mesh->cells,
+                op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
                 op_arg_gbl(&rhoDivDelta, 1, "float", OP_READ),
                 op_arg_gbl(&tmp, 1, "float", OP_READ),
-                op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
-                op_arg_dat(RES, -1, OP_ID, DG_NP, "float", OP_READ),
-                op_arg_dat(d, -1, OP_ID, DG_NP, "float", OP_RW));
+                op_arg_dat(Ad, -1, OP_ID, DG_NP, "float", OP_READ),
+                op_arg_dat(diag_dats[level], -1, OP_ID, DG_NP, "float", OP_READ),
+                op_arg_dat(RES, -1, OP_ID, DG_NP, "float", OP_RW),
+                op_arg_dat(d, -1, OP_ID, DG_NP, "float", OP_RW),
+                op_arg_dat(u_dat[level], -1, OP_ID, DG_NP, "float", OP_RW));
 
     rho_n = rho_np1;
   }
-
-  op_par_loop(p_multigrid_relaxation_chebyshev_1, "p_multigrid_relaxation_chebyshev_1", mesh->cells,
-              op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
-              op_arg_dat(d, -1, OP_ID, DG_NP, "float", OP_READ),
-              op_arg_dat(u_dat[level], -1, OP_ID, DG_NP, "float", OP_RW));
 
   dg_dat_pool->releaseTempDatCellsSP(tmp0);
   dg_dat_pool->releaseTempDatCellsSP(tmp1);

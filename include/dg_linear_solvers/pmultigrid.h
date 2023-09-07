@@ -59,6 +59,7 @@ private:
   std::vector<int> orders;
   std::vector<int> pre_it;
   std::vector<int> post_it;
+  std::vector<int> cheb_orders;
   std::vector<double> eig_vals;
   std::vector<op_dat> u_dat, b_dat, diag_dats, eigen_tmps;
   double eigen_val_saftey_factor;
