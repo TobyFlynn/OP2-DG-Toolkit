@@ -166,6 +166,62 @@ void DGMesh2D::grad_with_central_flux(op_dat u, op_dat ux, op_dat uy) {
   dg_dat_pool->releaseTempDatCells(tmp_1);
 }
 
+void DGMesh2D::grad_over_int_with_central_flux(op_dat u, op_dat ux, op_dat uy) {
+  DGTempDat vol_u = dg_dat_pool->requestTempDatCells(DG_CUB_2D_NP);
+  op2_gemv(this, false, 1.0, DGConstants::CUB2D_INTERP, u, 0.0, vol_u.dat);
+  
+  op2_gemv(this, false, 1.0, DGConstants::CUB2D_PDR, vol_u.dat, 0.0, ux);
+  op2_gemv(this, false, 1.0, DGConstants::CUB2D_PDS, vol_u.dat, 0.0, uy);
+
+  dg_dat_pool->releaseTempDatCells(vol_u);
+
+  op_par_loop(grad_over_int_2d_0, "grad_over_int_2d_0", cells,
+              op_arg_dat(geof, -1, OP_ID, 5, DG_FP_STR, OP_READ),
+              op_arg_dat(ux,   -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(uy,   -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
+
+  DGTempDat uM = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_NPF);
+  DGTempDat uP = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_NPF);
+
+  op_par_loop(grad_over_int_2d_1, "grad_over_int_2d_1", faces,
+              op_arg_dat(edgeNum, -1, OP_ID, 2, "int", OP_READ),
+              op_arg_dat(reverse, -1, OP_ID, 1, "bool", OP_READ),
+              op_arg_dat(u, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(uM.dat, -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE),
+              op_arg_dat(uP.dat, -2, face2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
+  
+  if(bface2cells) {
+    op_par_loop(grad_over_int_2d_2, "grad_over_int_2d_2", bfaces,
+                op_arg_dat(bedgeNum, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_dat(u, 0, bface2cells, DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(uM.dat, 0, bface2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW),
+                op_arg_dat(uP.dat, 0, bface2cells, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW));
+  }
+
+  DGTempDat uM_cub = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_CUB_SURF_2D_NP);
+  DGTempDat uP_cub = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_CUB_SURF_2D_NP);
+
+  op2_gemv(this, false, 1.0, DGConstants::CUBSURF2D_INTERP, uM.dat, 0.0, uM_cub.dat);
+  op2_gemv(this, false, 1.0, DGConstants::CUBSURF2D_INTERP, uP.dat, 0.0, uP_cub.dat);
+
+  dg_dat_pool->releaseTempDatCells(uM);
+  dg_dat_pool->releaseTempDatCells(uP);
+
+  op_par_loop(grad_over_int_2d_3, "grad_over_int_2d_3", cells,
+              op_arg_dat(nx_c_new, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(ny_c_new, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(sJ_c_new, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(geof, -1, OP_ID, 5, DG_FP_STR, OP_READ),
+              op_arg_dat(uM_cub.dat, -1, OP_ID, DG_NUM_FACES * DG_CUB_SURF_2D_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(uP_cub.dat, -1, OP_ID, DG_NUM_FACES * DG_CUB_SURF_2D_NP, DG_FP_STR, OP_RW));
+
+  op2_gemv(this, false, 1.0, DGConstants::CUBSURF2D_LIFT, uM_cub.dat, -1.0, ux);
+  op2_gemv(this, false, 1.0, DGConstants::CUBSURF2D_LIFT, uP_cub.dat, -1.0, uy);
+
+  dg_dat_pool->releaseTempDatCells(uM_cub);
+  dg_dat_pool->releaseTempDatCells(uP_cub);
+}
+
 void DGMesh2D::mass(op_dat u) {
   op_par_loop(J, "J", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ),

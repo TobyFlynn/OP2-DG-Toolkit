@@ -29,6 +29,7 @@ public:
   void curl(op_dat u, op_dat v, op_dat res);
   void grad(op_dat u, op_dat ux, op_dat uy);
   void grad_with_central_flux(op_dat u, op_dat ux, op_dat uy);
+  void grad_over_int_with_central_flux(op_dat u, op_dat ux, op_dat uy);
   void mass(op_dat u);
   void mass_sp(op_dat u);
   void inv_mass(op_dat u);

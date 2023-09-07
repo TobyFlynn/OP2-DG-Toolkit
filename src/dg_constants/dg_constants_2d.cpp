@@ -145,6 +145,23 @@ DGConstants2D::DGConstants2D(const int n_) {
 
   cubature(2 * DG_ORDER);
   gauss(2 * DG_ORDER);
+
+  arma::vec x_3, y_3, r_3, s_3;
+  DGUtils::setRefXY(DG_ORDER, x_3, y_3);
+  DGUtils::xy2rs(x_3, y_3, r_3, s_3);
+  arma::mat V_3 = DGUtils::vandermonde2D(r_3, s_3, DG_ORDER);
+  arma::mat invV_3 = arma::inv(V_3);
+
+  arma::vec x_2, y_2, r_2, s_2;
+  DGUtils::setRefXY(2, x_2, y_2);
+  DGUtils::xy2rs(x_2, y_2, r_2, s_2);
+  arma::mat V_2 = DGUtils::vandermonde2D(r_2, s_2, 2);
+  arma::mat invV_2 = arma::inv(V_2);
+
+  arma::mat decrease_order = DGUtils::interpMatrix2D(r_3, s_3, invV_2, 2) * DGUtils::interpMatrix2D(r_2, s_2, invV_3, DG_ORDER);
+
+  decrease_order_ptr = (DG_FP *)calloc(DG_NP * DG_NP, sizeof(DG_FP));
+  save_mat(decrease_order_ptr, decrease_order, 1, DG_NP * DG_NP);
 }
 
 void DGConstants2D::cubature(const int nCub) {
@@ -154,15 +171,15 @@ void DGConstants2D::cubature(const int nCub) {
   arma::mat V_ = DGUtils::vandermonde2D(r_, s_, DG_ORDER);
   arma::mat invV_ = arma::inv(V_);
 
-  // arma::vec cub_r, cub_s, cub_w;
-  // DGUtils::cubature2D(2 * DG_ORDER, cub_r, cub_s, cub_w);
-  const double cubTriR6[12] = {-5.611400349004336e-01, 1.222800698008678e-01,-5.611400349004341e-01,-3.972407177556988e-02,-3.972407177557002e-02,-9.205518564488601e-01,-7.167619681520639e-01, 6.780185194295818e-01,-9.612565512775184e-01, 6.780185194295824e-01,-7.167619681520634e-01,-9.612565512775182e-01};
-  const double cubTriS6[12] = {-5.611400349004347e-01,-5.611400349004335e-01, 1.222800698008681e-01,-9.205518564488602e-01,-3.972407177556986e-02,-3.972407177556986e-02,-9.612565512775185e-01,-7.167619681520636e-01, 6.780185194295830e-01,-9.612565512775185e-01, 6.780185194295830e-01,-7.167619681520636e-01};
-  const double cubTriW6[12] = { 3.426662483059627e-01, 3.426662483059627e-01, 3.426662483059627e-01, 1.614621791860623e-01, 1.614621791860623e-01, 1.614621791860623e-01, 8.126911958732136e-02, 8.126911958732136e-02, 8.126911958732136e-02, 8.126911958732136e-02, 8.126911958732136e-02, 8.126911958732136e-02};
+  arma::vec cub_r, cub_s, cub_w;
+  DGUtils::cubature2D(nCub, cub_r, cub_s, cub_w);
+  // const double cubTriR6[12] = {-5.611400349004336e-01, 1.222800698008678e-01,-5.611400349004341e-01,-3.972407177556988e-02,-3.972407177557002e-02,-9.205518564488601e-01,-7.167619681520639e-01, 6.780185194295818e-01,-9.612565512775184e-01, 6.780185194295824e-01,-7.167619681520634e-01,-9.612565512775182e-01};
+  // const double cubTriS6[12] = {-5.611400349004347e-01,-5.611400349004335e-01, 1.222800698008681e-01,-9.205518564488602e-01,-3.972407177556986e-02,-3.972407177556986e-02,-9.612565512775185e-01,-7.167619681520636e-01, 6.780185194295830e-01,-9.612565512775185e-01, 6.780185194295830e-01,-7.167619681520636e-01};
+  // const double cubTriW6[12] = { 3.426662483059627e-01, 3.426662483059627e-01, 3.426662483059627e-01, 1.614621791860623e-01, 1.614621791860623e-01, 1.614621791860623e-01, 8.126911958732136e-02, 8.126911958732136e-02, 8.126911958732136e-02, 8.126911958732136e-02, 8.126911958732136e-02, 8.126911958732136e-02};
 
-  arma::vec cub_r(cubTriR6, 12);
-  arma::vec cub_s(cubTriS6, 12);
-  arma::vec cub_w(cubTriW6, 12);
+  // arma::vec cub_r(cubTriR6, 12);
+  // arma::vec cub_s(cubTriS6, 12);
+  // arma::vec cub_w(cubTriW6, 12);
 
   arma::mat cubInterp = DGUtils::interpMatrix2D(cub_r, cub_s, invV_, DG_ORDER);
   arma::mat cubProj   = DGUtils::cubaturePMat2D(r_, s_, cub_r, cub_s, DG_ORDER);
@@ -529,6 +546,7 @@ DGConstants2D::~DGConstants2D() {
   free(mmF2_ptr);
   free(eMat_ptr);
   free(order_interp_ptr);
+  free(decrease_order_ptr);
 
   free(Dr_ptr_sp);
   free(Ds_ptr_sp);
