@@ -102,6 +102,11 @@ if(BUILD_GPU)
   set(CMAKE_CUDA_ARCHITECTURES 70)
 endif()
 
+if(BUILD_HIP)
+  enable_language(HIP)
+  set(HIP_ARCHITECTURES gfx908)
+endif()
+
 # Install headers
 set(HEADERS include/dg_compiler_defs.h include/dg_op2_blas.h include/dg_utils.h include/dg_dat_pool.h include/op2_utils.h include/timing.h include/config.h)
 install(FILES ${HEADERS} DESTINATION include)

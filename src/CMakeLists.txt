@@ -7,12 +7,17 @@ list(APPEND COMMON_SRC matrices_op/poisson_semi_matrix_free_op.cpp)
 list(APPEND COMMON_SRC matrices/poisson_matrix_free.cpp)
 list(APPEND COMMON_SRC matrices_op/poisson_matrix_free_diag_op.cpp)
 list(APPEND COMMON_SRC config.cpp)
+
 set(CPU_SRC op2_utils/utils.cpp matrices/poisson_matrix_cpu.cpp matrices/poisson_coarse_matrix_cpu.cpp)
 set(GPU_SRC op2_utils/utils.cu matrices/poisson_matrix_gpu.cu matrices/poisson_coarse_matrix_gpu.cu)
+set(HIP_SRC op2_utils/utils_hip.cpp matrices/poisson_matrix_hip.cpp matrices/poisson_coarse_matrix_hip.cpp)
+
 if(SOA EQUAL 1)
   list(APPEND GPU_SRC blas/dg_op2_gemv_kernel_soa.cu)
+  list(APPEND HIP_SRC blas/dg_op2_gemv_kernel_soa_hip.cpp)
 else()
   list(APPEND GPU_SRC blas/dg_op2_gemv_kernel.cu)
+  list(APPEND HIP_SRC blas/dg_op2_gemv_kernel_hip.cpp)
 endif()
 
 set(SEQ_CPU_SRC "")
@@ -51,6 +56,12 @@ if(NOT SOA EQUAL 1)
   list(APPEND LINEAR_SOLVER_GPU_SRC linear_solvers/petsc_jacobi/custom_kernels/custom_petsc_pre_jacobi.cu)
 endif()
 
+set(LINEAR_SOLVER_HIP_SRC linear_solvers/petsc_utils/utils_hip.cpp)
+list(APPEND LINEAR_SOLVER_HIP_SRC linear_solvers/petsc_block_jacobi/petsc_block_jacobi_hip.cpp)
+list(APPEND LINEAR_SOLVER_HIP_SRC linear_solvers/petsc_pmultigrid/petsc_pmultigrid_hip.cpp)
+list(APPEND LINEAR_SOLVER_HIP_SRC linear_solvers/petsc_inv_mass/petsc_inv_mass_hip.cpp)
+list(APPEND LINEAR_SOLVER_HIP_SRC linear_solvers/petsc_jacobi/petsc_jacobi_hip.cpp)
+
 if(DIM EQUAL 2)
 list(APPEND COMMON_SRC dg_constants/dg_constants_2d.cpp dg_mesh_op/dg_mesh_2d_op.cpp dg_operators_op/dg_operators_2d_op.cpp)
 list(APPEND COMMON_SRC matrices_op/2d/poisson_matrix_over_int_op.cpp)
@@ -87,6 +98,11 @@ list(APPEND CPU_SRC ${LINEAR_SOLVER_CPU_SRC})
 list(APPEND GPU_SRC dg_mesh/dg_mesh_2d_gpu.cu)
 list(APPEND GPU_SRC dg_constants/dg_constants_2d_gpu.cu)
 list(APPEND GPU_SRC ${LINEAR_SOLVER_GPU_SRC})
+
+list(APPEND HIP_SRC dg_mesh/dg_mesh_2d_hip.cpp)
+list(APPEND HIP_SRC dg_constants/dg_constants_2d_hip.cpp)
+list(APPEND HIP_SRC ${LINEAR_SOLVER_HIP_SRC})
+
 elseif(DIM EQUAL 3)
 list(APPEND COMMON_SRC dg_constants/dg_constants_3d.cpp dg_mesh_op/dg_mesh_3d_op.cpp dg_operators_op/dg_operators_3d_op.cpp)
 list(APPEND COMMON_SRC matrices_op/3d/poisson_matrix_op.cpp)
@@ -134,6 +150,14 @@ if(NOT SOA EQUAL 1)
   list(APPEND GPU_SRC linear_solvers/pmultigrid/custom_kernels/custom_p_multigrid_relaxation_chebyshev_2.cu)
   list(APPEND GPU_SRC linear_solvers/pmultigrid/custom_kernels/custom_p_multigrid_relaxation_chebyshev_3.cu)
 endif()
+
+list(APPEND HIP_SRC dg_constants/dg_constants_3d_hip.cpp)
+list(APPEND HIP_SRC dg_mesh/dg_mesh_3d_hip.cpp)
+#list(APPEND GPU_SRC dg_operators/custom_kernels/custom_grad_3d.cu)
+#list(APPEND GPU_SRC dg_operators/custom_kernels/custom_mass.cu)
+#list(APPEND GPU_SRC dg_operators/custom_kernels/custom_avg_3d.cu)
+#list(APPEND GPU_SRC dg_operators/custom_kernels/custom_jump_3d.cu)
+list(APPEND HIP_SRC ${LINEAR_SOLVER_HIP_SRC})
 endif()
 
 # Only needs to be built once
@@ -179,6 +203,16 @@ if(BUILD_SN AND BUILD_GPU)
   set_property(TARGET ${DG_LIB_PREFIX}_cuda PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
   list(APPEND DG_LIBS ${DG_LIB_PREFIX}_cuda)
+endif()
+
+if(BUILD_SN AND BUILD_HIP)
+  add_library(${DG_LIB_PREFIX}_hip STATIC ${COMMON_SRC} ${HIP_SRC} hip/dg_tookit_kernels.cpp)
+  target_link_libraries(${DG_LIB_PREFIX}_hip dgtoolkit -L${OP2_DIR}/lib -lop2_hip -lop2_hdf5 ${COMMON_LIBS} ${EXTRA_LIBS})
+  target_compile_definitions(${DG_LIB_PREFIX}_hip PRIVATE ${DG_COMPILER_DEFS} OP2_DG_CUDA ${DG_COMPILER_DEFS} DG_ORDER=${ORDER} DG_DIM=${DIM} DG_COL_MAJ MAX_CONST_SIZE=1024 ${COMMON_COMPILER_DEFS})
+
+  #set_property(TARGET ${DG_LIB_PREFIX}_hip PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+
+  list(APPEND DG_LIBS ${DG_LIB_PREFIX}_hip)
 endif()
 
 if(BUILD_MPI AND BUILD_CPU)
