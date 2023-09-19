@@ -206,6 +206,7 @@ if(BUILD_SN AND BUILD_GPU)
 endif()
 
 if(BUILD_SN AND BUILD_HIP)
+  set_source_files_properties(${HIP_SRC} PROPERTIES LANGUAGE HIP)
   add_library(${DG_LIB_PREFIX}_hip STATIC ${COMMON_SRC} ${HIP_SRC} hip/dg_tookit_kernels.cpp)
   target_link_libraries(${DG_LIB_PREFIX}_hip dgtoolkit -L${OP2_DIR}/lib -lop2_hip -lop2_hdf5 ${COMMON_LIBS} ${EXTRA_LIBS})
   target_compile_definitions(${DG_LIB_PREFIX}_hip PRIVATE ${DG_COMPILER_DEFS} OP2_DG_CUDA ${DG_COMPILER_DEFS} DG_ORDER=${ORDER} DG_DIM=${DIM} DG_COL_MAJ MAX_CONST_SIZE=1024 ${COMMON_COMPILER_DEFS})
