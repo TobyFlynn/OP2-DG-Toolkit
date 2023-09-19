@@ -221,7 +221,7 @@ DGMesh2D::DGMesh2D(std::string &meshFile, bool overInt) {
 }
 
 DGMesh2D::~DGMesh2D() {
-  delete constants;
+  delete (DGConstants2D *)constants;
   if(over_integrate) {
     delete cubature;
     delete gauss;

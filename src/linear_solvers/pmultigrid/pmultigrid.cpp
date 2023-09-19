@@ -155,7 +155,25 @@ PMultigridPoissonSolver::PMultigridPoissonSolver(DGMesh *m) {
 }
 
 PMultigridPoissonSolver::~PMultigridPoissonSolver() {
-  delete coarseSolver;
+  switch(coarseSolver_type) {
+    case PETSC:
+      delete (PETScAMGCoarseSolver *)coarseSolver;
+      break;
+    case AMGX:
+      #if defined(INS_BUILD_WITH_AMGX) && defined(OP2_DG_CUDA)
+      delete (AmgXAMGSolver *)coarseSolver;
+      #else
+      throw std::runtime_error("Not built with AmgX");
+      #endif
+      break;
+    case HYPRE:
+      #ifdef INS_BUILD_WITH_HYPRE
+      delete (HYPREAMGSolver *)coarseSolver;
+      #else
+      throw std::runtime_error("Not built with HYPRE");
+      #endif
+      break;
+  }
 }
 
 void PMultigridPoissonSolver::init() {

@@ -126,7 +126,7 @@ DGMesh3D::~DGMesh3D() {
     free_custom_map(node2node_custom_maps[i]);
   }
   delete dg_dat_pool;
-  delete constants;
+  delete (DGConstants3D *)constants;
   #ifndef OP2_DG_CUDA
   #ifdef OP2_DG_USE_LIBXSMM
   libxsmm_finalize();

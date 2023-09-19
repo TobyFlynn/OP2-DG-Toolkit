@@ -74,7 +74,7 @@ arma::vec DGUtils::warpFactor(const arma::vec &in, const int N) {
   arma::vec zeroF(in.n_elem);
   arma::vec sF(in.n_elem);
   for(int i = 0; i < in.n_elem; i++) {
-    zeroF[i] = abs(in[i]) < 1.0 - 1e-10 ? 1.0 : 0.0;
+    zeroF[i] = fabs(in[i]) < 1.0 - 1e-10 ? 1.0 : 0.0;
     sF[i]    = 1.0 - (zeroF[i] * in[i]) * (zeroF[i] * in[i]);
   }
 
