@@ -388,7 +388,6 @@ void DGMesh3D::interp_dat_between_orders_sp(int old_order, int new_order, op_dat
   dg_dat_pool->releaseTempDatCellsSP(tmp_0);
 }
 
-#if FALSE
 void DGMesh3D::avg(op_dat in, op_dat out) {
   op_par_loop(avg_3d, "avg_3d", faces,
               op_arg_dat(order, -2, face2cells, 1, "int", OP_READ),
@@ -428,7 +427,6 @@ void DGMesh3D::jump_sp(op_dat in, op_dat out) {
               op_arg_dat(in,  -2, face2cells, DG_NP, "float", OP_READ),
               op_arg_dat(out, -2, face2cells, DG_NUM_FACES * DG_NPF, "float", OP_WRITE));
 }
-#endif
 
 void DGMesh3D::grad_halo_exchange(op_dat u, op_dat ux, op_dat uy, op_dat uz) {
   DGTempDat tmp_r = dg_dat_pool->requestTempDatCells(DG_NP);
