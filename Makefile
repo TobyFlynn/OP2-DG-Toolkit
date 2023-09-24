@@ -11,10 +11,13 @@ BASE_OBJ_DIR := $(OBJ)/base
 2D_CUDA_OBJ_DIR := $(OBJ)/2d_cuda
 2D_MPI_SEQ_OBJ_DIR := $(OBJ)/2d_mpi_seq
 2D_MPI_OMP_OBJ_DIR := $(OBJ)/2d_mpi_omp
+2D_MPI_CUDA_OBJ_DIR := $(OBJ)/2d_mpi_cuda
 3D_SEQ_OBJ_DIR := $(OBJ)/3d_seq
 3D_OMP_OBJ_DIR := $(OBJ)/3d_omp
+3D_CUDA_OBJ_DIR := $(OBJ)/3d_cuda
 3D_MPI_SEQ_OBJ_DIR := $(OBJ)/3d_mpi_seq
 3D_MPI_OMP_OBJ_DIR := $(OBJ)/3d_mpi_omp
+3D_MPI_CUDA_OBJ_DIR := $(OBJ)/3d_mpi_cuda
 CONFIG_AR := ar rcs
 
 CC = mpicc
@@ -30,23 +33,25 @@ HDF5_DIR = /dcs/pg20/u1717021/PhD/apps
 PETSC_DIR = /dcs/pg20/u1717021/PhD/petsc-install
 INIPP_DIR = /dcs/pg20/u1717021/PhD/inipp/inipp
 HIGHFIVE_DIR = /dcs/pg20/u1717021/PhD/HighFive/include
+MPI_DIR := /dcs/pg20/u1717021/PhD/apps
 
 OP2_INC = -I$(OP2_DIR)/include
 OPENBLAS_INC = -I$(OPENBLAS_DIR)/include
 ARMA_INC = -I$(ARMA_DIR)/include
 PETSC_INC = -I$(PETSC_DIR)/include
 INIPP_INC = -I$(INIPP_DIR)
+MPI_INC = -I$(MPI_DIR)/include
 
 ORDER = 3
 SOA = true
 
 # Common compile flags
 OPENMP_FLAG := -fopenmp
-BASE_FLAGS := -fPIC -g -O3
+BASE_FLAGS := -g -O3
 SEQ_CPU_COMPILER_FLAGS := $(BASE_FLAGS)
 OMP_CPU_COMPILER_FLAGS := $(BASE_FLAGS) $(OPENMP_FLAG)
 CUDA_COMPILER_FLAGS := $(BASE_FLAGS) $(OPENMP_FLAG)
-NVCC_FLAGS := $(BASE_FLAGS) -gencode arch=compute_70,code=sm_70
+NVCC_FLAGS := $(BASE_FLAGS) -rdc=true -gencode arch=compute_70,code=sm_70 -Xcompiler $(OPENMP_FLAG) $(MPI_INC)
 COMMON_COMPILE_DEFS_2D := -DDG_ORDER=$(ORDER) -DDG_DIM=2 -DDG_COL_MAJ -DMAX_CONST_SIZE=1024
 COMMON_COMPILE_DEFS_3D := -DDG_ORDER=$(ORDER) -DDG_DIM=3 -DDG_COL_MAJ -DMAX_CONST_SIZE=1024
 CUDA_COMPILE_DEFS := -DOP2_DG_CUDA -DDG_OP2_SOA
@@ -58,12 +63,20 @@ all: base 2d 3d
 base: $(LIB)/libdgtoolkit.a
 
 2d: base $(LIB)/libop2dgtoolkit_2d_seq.a $(LIB)/libop2dgtoolkit_2d_openmp.a \
-	$(LIB)/libop2dgtoolkit_2d_mpi.a $(LIB)/libop2dgtoolkit_2d_mpi_openmp.a
+	$(LIB)/libop2dgtoolkit_2d_mpi.a $(LIB)/libop2dgtoolkit_2d_mpi_openmp.a \
+	$(LIB)/libop2dgtoolkit_2d_cuda.a $(LIB)/libop2dgtoolkit_2d_mpi_cuda.a
 
 3d: base $(LIB)/libop2dgtoolkit_3d_seq.a $(LIB)/libop2dgtoolkit_3d_openmp.a \
+	$(LIB)/libop2dgtoolkit_3d_mpi.a $(LIB)/libop2dgtoolkit_3d_mpi_openmp.a \
+	$(LIB)/libop2dgtoolkit_3d_cuda.a $(LIB)/libop2dgtoolkit_3d_mpi_cuda.a
+
+cpu: base $(LIB)/libop2dgtoolkit_2d_seq.a $(LIB)/libop2dgtoolkit_2d_openmp.a \
+	$(LIB)/libop2dgtoolkit_2d_mpi.a $(LIB)/libop2dgtoolkit_2d_mpi_openmp.a \
+	$(LIB)/libop2dgtoolkit_3d_seq.a $(LIB)/libop2dgtoolkit_3d_openmp.a \
 	$(LIB)/libop2dgtoolkit_3d_mpi.a $(LIB)/libop2dgtoolkit_3d_mpi_openmp.a
 
-cuda: base $(LIB)/libop2dgtoolkit_2d_cuda.a
+cuda: base $(LIB)/libop2dgtoolkit_2d_cuda.a $(LIB)/libop2dgtoolkit_2d_mpi_cuda.a \
+	$(LIB)/libop2dgtoolkit_3d_cuda.a $(LIB)/libop2dgtoolkit_3d_mpi_cuda.a
 
 clean:
 	-rm -rf $(OBJ)
@@ -97,6 +110,10 @@ $(2D_MPI_OMP_OBJ_DIR): $(OBJ)
 	@mkdir -p $@
 	@mkdir -p $(foreach dir,$(shell find gen_2d -maxdepth 3 -mindepth 1 | grep -v "\." | sed "s+gen_2d/++g"),$@/$(dir))
 
+$(2D_MPI_CUDA_OBJ_DIR): $(OBJ)
+	@mkdir -p $@
+	@mkdir -p $(foreach dir,$(shell find gen_2d -maxdepth 3 -mindepth 1 | grep -v "\." | sed "s+gen_2d/++g"),$@/$(dir))
+
 $(3D_SEQ_OBJ_DIR): $(OBJ)
 	@mkdir -p $@
 	@mkdir -p $(foreach dir,$(shell find gen_3d -maxdepth 3 -mindepth 1 | grep -v "\." | sed "s+gen_3d/++g"),$@/$(dir))
@@ -105,6 +122,10 @@ $(3D_OMP_OBJ_DIR): $(OBJ)
 	@mkdir -p $@
 	@mkdir -p $(foreach dir,$(shell find gen_3d -maxdepth 3 -mindepth 1 | grep -v "\." | sed "s+gen_3d/++g"),$@/$(dir))
 
+$(3D_CUDA_OBJ_DIR): $(OBJ)
+	@mkdir -p $@
+	@mkdir -p $(foreach dir,$(shell find gen_2d -maxdepth 3 -mindepth 1 | grep -v "\." | sed "s+gen_2d/++g"),$@/$(dir))
+
 $(3D_MPI_SEQ_OBJ_DIR): $(OBJ)
 	@mkdir -p $@
 	@mkdir -p $(foreach dir,$(shell find gen_3d -maxdepth 3 -mindepth 1 | grep -v "\." | sed "s+gen_3d/++g"),$@/$(dir))
@@ -112,6 +133,10 @@ $(3D_MPI_SEQ_OBJ_DIR): $(OBJ)
 $(3D_MPI_OMP_OBJ_DIR): $(OBJ)
 	@mkdir -p $@
 	@mkdir -p $(foreach dir,$(shell find gen_3d -maxdepth 3 -mindepth 1 | grep -v "\." | sed "s+gen_3d/++g"),$@/$(dir))
+
+$(3D_MPI_CUDA_OBJ_DIR): $(OBJ)
+	@mkdir -p $@
+	@mkdir -p $(foreach dir,$(shell find gen_2d -maxdepth 3 -mindepth 1 | grep -v "\." | sed "s+gen_2d/++g"),$@/$(dir))
 
 $(LIB):
 	@mkdir -p $@
@@ -305,7 +330,7 @@ $(2D_CUDA_OBJ_DIR)/%.o: gen_2d/%.cpp | $(2D_CUDA_OBJ_DIR)
 	$(CXX) $(CXXFLAGS) $(CUDA_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(CUDA_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 $(2D_CUDA_OBJ_DIR)/%.o: gen_2d/%.cu | $(2D_CUDA_OBJ_DIR)
-	$(NVCC) $(NVCCFLAGS) $(CUDA_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(CUDA_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
+	$(NVCC) $(NVCC_FLAGS) $(CUDA_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(CUDA_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 # Generic rules 2D MPI seq
 $(2D_MPI_SEQ_OBJ_DIR)/%.o: gen_2d/%.cpp | $(2D_MPI_SEQ_OBJ_DIR)
@@ -315,7 +340,12 @@ $(2D_MPI_SEQ_OBJ_DIR)/%.o: gen_2d/%.cpp | $(2D_MPI_SEQ_OBJ_DIR)
 $(2D_MPI_OMP_OBJ_DIR)/%.o: gen_2d/%.cpp | $(2D_MPI_OMP_OBJ_DIR)
 	$(CXX) $(CXXFLAGS) $(OMP_CPU_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
-# TODO Generic rules 2D MPI CUDA
+# Generic rules 2D MPI CUDA
+$(2D_MPI_CUDA_OBJ_DIR)/%.o: gen_2d/%.cpp | $(2D_MPI_CUDA_OBJ_DIR)
+	$(CXX) $(CXXFLAGS) $(CUDA_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(CUDA_COMPILE_DEFS) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
+
+$(2D_MPI_CUDA_OBJ_DIR)/%.o: gen_2d/%.cu | $(2D_MPI_CUDA_OBJ_DIR)
+	$(NVCC) $(NVCC_FLAGS) $(CUDA_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(CUDA_COMPILE_DEFS) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 # Generic rules 3D seq
 $(3D_SEQ_OBJ_DIR)/%.o: gen_3d/%.cpp | $(3D_SEQ_OBJ_DIR)
@@ -325,7 +355,12 @@ $(3D_SEQ_OBJ_DIR)/%.o: gen_3d/%.cpp | $(3D_SEQ_OBJ_DIR)
 $(3D_OMP_OBJ_DIR)/%.o: gen_3d/%.cpp | $(3D_OMP_OBJ_DIR)
 	$(CXX) $(CXXFLAGS) $(OMP_CPU_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
-# TODO Generic rules 3D CUDA
+# Generic rules 3D CUDA
+$(3D_CUDA_OBJ_DIR)/%.o: gen_3d/%.cpp | $(3D_CUDA_OBJ_DIR)
+	$(CXX) $(CXXFLAGS) $(CUDA_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(CUDA_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
+
+$(3D_CUDA_OBJ_DIR)/%.o: gen_3d/%.cu | $(3D_CUDA_OBJ_DIR)
+	$(NVCC) $(NVCC_FLAGS) $(CUDA_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(CUDA_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 # Generic rules 3D MPI seq
 $(3D_MPI_SEQ_OBJ_DIR)/%.o: gen_3d/%.cpp | $(3D_MPI_SEQ_OBJ_DIR)
@@ -335,7 +370,12 @@ $(3D_MPI_SEQ_OBJ_DIR)/%.o: gen_3d/%.cpp | $(3D_MPI_SEQ_OBJ_DIR)
 $(3D_MPI_OMP_OBJ_DIR)/%.o: gen_3d/%.cpp | $(3D_MPI_OMP_OBJ_DIR)
 	$(CXX) $(CXXFLAGS) $(OMP_CPU_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
-# TODO Generic rules 3D MPI CUDA
+# Generic rules 3D MPI CUDA
+$(3D_MPI_CUDA_OBJ_DIR)/%.o: gen_3d/%.cpp | $(3D_MPI_CUDA_OBJ_DIR)
+	$(CXX) $(CXXFLAGS) $(CUDA_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(CUDA_COMPILE_DEFS) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
+
+$(3D_MPI_CUDA_OBJ_DIR)/%.o: gen_3d/%.cu | $(3D_MPI_CUDA_OBJ_DIR)
+	$(NVCC) $(NVCC_FLAGS) $(CUDA_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(CUDA_COMPILE_DEFS) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 # 2D Seq OP2-DG library
 2D_SEQ_OBJ := $(addprefix $(2D_SEQ_OBJ_DIR)/,\
@@ -379,6 +419,15 @@ $(LIB)/libop2dgtoolkit_2d_mpi.a: $(2D_MPI_SEQ_OBJ) | $(LIB)
 $(LIB)/libop2dgtoolkit_2d_mpi_openmp.a: $(2D_MPI_OMP_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
+# 2D MPI CUDA OP2-DG library
+2D_MPI_CUDA_OBJ := $(addprefix $(2D_MPI_CUDA_OBJ_DIR)/,\
+	$(COMMON_2D_OBJ) \
+	$(CUDA_2D_OBJ) \
+	$(MPI_OBJ) \
+	cuda/dg_tookit_kernels.o)
+$(LIB)/libop2dgtoolkit_2d_mpi_cuda.a: $(2D_MPI_CUDA_OBJ) | $(LIB)
+	$(CONFIG_AR) $@ $^
+
 # 3D Seq OP2-DG library
 3D_SEQ_OBJ := $(addprefix $(3D_SEQ_OBJ_DIR)/,\
 	$(COMMON_3D_OBJ) \
@@ -393,6 +442,14 @@ $(LIB)/libop2dgtoolkit_3d_seq.a: $(3D_SEQ_OBJ) | $(LIB)
 	$(CPU_3D_OBJ) \
 	openmp/dg_tookit_kernels.o)
 $(LIB)/libop2dgtoolkit_3d_openmp.a: $(3D_OMP_OBJ) | $(LIB)
+	$(CONFIG_AR) $@ $^
+
+# 3D CUDA OP2-DG library
+3D_CUDA_OBJ := $(addprefix $(3D_CUDA_OBJ_DIR)/,\
+	$(COMMON_3D_OBJ) \
+	$(CUDA_3D_OBJ) \
+	cuda/dg_tookit_kernels.o)
+$(LIB)/libop2dgtoolkit_3d_cuda.a: $(3D_CUDA_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
 # 3D MPI Seq OP2-DG library
@@ -411,4 +468,13 @@ $(LIB)/libop2dgtoolkit_3d_mpi.a: $(3D_MPI_SEQ_OBJ) | $(LIB)
 	$(MPI_OBJ) \
 	openmp/dg_tookit_kernels.o)
 $(LIB)/libop2dgtoolkit_3d_mpi_openmp.a: $(3D_MPI_OMP_OBJ) | $(LIB)
+	$(CONFIG_AR) $@ $^
+
+# 3D MPI CUDA OP2-DG library
+3D_MPI_CUDA_OBJ := $(addprefix $(3D_MPI_CUDA_OBJ_DIR)/,\
+	$(COMMON_3D_OBJ) \
+	$(CUDA_3D_OBJ) \
+	$(MPI_OBJ) \
+	cuda/dg_tookit_kernels.o)
+$(LIB)/libop2dgtoolkit_3d_mpi_cuda.a: $(3D_MPI_CUDA_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^

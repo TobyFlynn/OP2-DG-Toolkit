@@ -107,9 +107,9 @@ void DGConstants2D::clean_up_kernel_ptrs() {
   cudaFree(dg_V_d);
   cudaFree(dg_Lift_d);
   cudaFree(dg_Interp_d);
-  cudaFree(dg_MM_F0_kernel);
-  cudaFree(dg_MM_F1_kernel);
-  cudaFree(dg_MM_F2_kernel);
+  cudaFree(dg_MM_F0_d);
+  cudaFree(dg_MM_F1_d);
+  cudaFree(dg_MM_F2_d);
   cudaFree(dg_Emat_d);
 }
 
