@@ -124,7 +124,7 @@ $(3D_OMP_OBJ_DIR): $(OBJ)
 
 $(3D_CUDA_OBJ_DIR): $(OBJ)
 	@mkdir -p $@
-	@mkdir -p $(foreach dir,$(shell find gen_2d -maxdepth 3 -mindepth 1 | grep -v "\." | sed "s+gen_2d/++g"),$@/$(dir))
+	@mkdir -p $(foreach dir,$(shell find gen_3d -maxdepth 3 -mindepth 1 | grep -v "\." | sed "s+gen_2d/++g"),$@/$(dir))
 
 $(3D_MPI_SEQ_OBJ_DIR): $(OBJ)
 	@mkdir -p $@
@@ -136,7 +136,7 @@ $(3D_MPI_OMP_OBJ_DIR): $(OBJ)
 
 $(3D_MPI_CUDA_OBJ_DIR): $(OBJ)
 	@mkdir -p $@
-	@mkdir -p $(foreach dir,$(shell find gen_2d -maxdepth 3 -mindepth 1 | grep -v "\." | sed "s+gen_2d/++g"),$@/$(dir))
+	@mkdir -p $(foreach dir,$(shell find gen_3d -maxdepth 3 -mindepth 1 | grep -v "\." | sed "s+gen_2d/++g"),$@/$(dir))
 
 $(LIB):
 	@mkdir -p $@
