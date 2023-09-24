@@ -213,7 +213,7 @@ void DGConstants3D::clean_up_kernel_ptrs() {
   cudaFree(dg_Emat_d);
   cudaFree(dg_Interp_d);
   cudaFree(dg_cub3d_Interp_d);
-  cudaFree(dg_cub3d_Proj_kernel);
+  cudaFree(dg_cub3d_Proj_d);
   cudaFree(dg_cub3d_PDr_d);
   cudaFree(dg_cub3d_PDs_d);
   cudaFree(dg_cub3d_PDt_d);
