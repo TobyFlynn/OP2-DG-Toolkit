@@ -674,7 +674,7 @@ void op2_gemv_np_np_halo_exchange_sp(DGMesh *mesh, bool transpose, const DG_FP a
                     op_dat y) {
   #if defined(USE_OP2_KERNELS) || ((defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)) && DG_DIM == 2)
   throw std::runtime_error("gemv_halo_exchange not fully supported yet\n");
-  #elif defined(OP2_DG_CUDA)
+  #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
   const int order = mesh->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
   const int k = m;
