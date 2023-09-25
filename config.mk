@@ -4,8 +4,8 @@ CXX = mpicxx
 NVCC = nvcc
 HIPCC = hipcc
 
-CUDA_ARCH =70
-HIP_ARCH =gfx908
+CUDA_ARCH = 70
+HIP_ARCH = gfx908
 
 OPENMP_FLAG := -fopenmp
 

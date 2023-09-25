@@ -38,7 +38,7 @@ SEQ_CPU_COMPILER_FLAGS := $(BASE_FLAGS)
 OMP_CPU_COMPILER_FLAGS := $(BASE_FLAGS) $(OPENMP_FLAG)
 CUDA_COMPILER_FLAGS := $(BASE_FLAGS) $(OPENMP_FLAG)
 NVCC_FLAGS := $(BASE_FLAGS) -rdc=true -gencode arch=compute_$(CUDA_ARCH),code=sm_$(CUDA_ARCH) -Xcompiler $(OPENMP_FLAG) $(MPI_INC)
-HIP_FLAGS := $(BASE_FLAGS) –fgpu-rdc --offload-arch=$(HIP_ARCH) -Xcompiler $(OPENMP_FLAG) $(MPI_INC)
+HIP_FLAGS := $(BASE_FLAGS) -fgpu-rdc --offload-arch=$(HIP_ARCH) $(OPENMP_FLAG) $(MPI_INC)
 COMMON_COMPILE_DEFS_2D := -DDG_ORDER=$(ORDER) -DDG_DIM=2 -DDG_COL_MAJ -DMAX_CONST_SIZE=1024
 COMMON_COMPILE_DEFS_3D := -DDG_ORDER=$(ORDER) -DDG_DIM=3 -DDG_COL_MAJ -DMAX_CONST_SIZE=1024
 HIP_COMPILE_DEFS := -DOP2_DG_CUDA -DDG_OP2_SOA
@@ -66,8 +66,10 @@ cpu: base $(LIB)/libop2dgtoolkit_2d_seq.a $(LIB)/libop2dgtoolkit_2d_openmp.a \
 cuda: base $(LIB)/libop2dgtoolkit_2d_cuda.a $(LIB)/libop2dgtoolkit_2d_mpi_cuda.a \
 	$(LIB)/libop2dgtoolkit_3d_cuda.a $(LIB)/libop2dgtoolkit_3d_mpi_cuda.a
 
-hip: base $(LIB)/libop2dgtoolkit_2d_hip.a $(LIB)/libop2dgtoolkit_2d_hip_cuda.a \
+hip: base $(LIB)/libop2dgtoolkit_2d_hip.a $(LIB)/libop2dgtoolkit_2d_mpi_hip.a \
 	$(LIB)/libop2dgtoolkit_3d_hip.a $(LIB)/libop2dgtoolkit_3d_mpi_hip.a
+
+hip_2d: base $(LIB)/libop2dgtoolkit_2d_hip.a $(LIB)/libop2dgtoolkit_2d_mpi_hip.a 
 
 clean:
 	-rm -rf $(OBJ)
@@ -353,6 +355,9 @@ $(2D_CUDA_OBJ_DIR)/%.o: gen_2d/%.cu | $(2D_CUDA_OBJ_DIR)
 	$(NVCC) $(NVCC_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(CUDA_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 # Generic rules 2D HIP
+$(2D_HIP_OBJ_DIR)/hip/dg_tookit_kernels.o: gen_2d/hip/dg_tookit_kernels.cpp | $(2D_HIP_OBJ_DIR)
+	$(HIPCC) $(HIP_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(HIP_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
+
 $(2D_HIP_OBJ_DIR)/%.o: gen_2d/%.cpp | $(2D_HIP_OBJ_DIR)
 	$(CXX) $(CXXFLAGS) $(HIP_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(HIP_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
@@ -375,6 +380,9 @@ $(2D_MPI_CUDA_OBJ_DIR)/%.o: gen_2d/%.cu | $(2D_MPI_CUDA_OBJ_DIR)
 	$(NVCC) $(NVCC_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(CUDA_COMPILE_DEFS) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 # Generic rules 2D MPI HIP
+$(2D_MPI_HIP_OBJ_DIR)/hip/dg_tookit_kernels.o: gen_2d/hip/dg_tookit_kernels.cpp | $(2D_MPI_HIP_OBJ_DIR)
+	$(HIPCC) $(HIP_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(HIP_COMPILE_DEFS) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
+
 $(2D_MPI_HIP_OBJ_DIR)/%.o: gen_2d/%.cpp | $(2D_MPI_HIP_OBJ_DIR)
 	$(CXX) $(CXXFLAGS) $(HIP_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(HIP_COMPILE_DEFS) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
@@ -397,6 +405,9 @@ $(3D_CUDA_OBJ_DIR)/%.o: gen_3d/%.cu | $(3D_CUDA_OBJ_DIR)
 	$(NVCC) $(NVCC_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(CUDA_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 # Generic rules 3D HIP
+$(3D_HIP_OBJ_DIR)/hip/dg_tookit_kernels.o: gen_3d/hip/dg_tookit_kernels.cpp | $(3D_HIP_OBJ_DIR)
+	$(HIPCC) $(HIP_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(HIP_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
+
 $(3D_HIP_OBJ_DIR)/%.o: gen_3d/%.cpp | $(3D_HIP_OBJ_DIR)
 	$(CXX) $(CXXFLAGS) $(HIP_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(HIP_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
@@ -419,6 +430,9 @@ $(3D_MPI_CUDA_OBJ_DIR)/%.o: gen_3d/%.cu | $(3D_MPI_CUDA_OBJ_DIR)
 	$(NVCC) $(NVCC_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(CUDA_COMPILE_DEFS) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 # Generic rules 3D MPI HIP
+$(3D_MPI_HIP_OBJ_DIR)/hip/dg_tookit_kernels.o: gen_3d/hip/dg_tookit_kernels.cpp | $(3D_MPI_HIP_OBJ_DIR)
+	$(HIPCC) $(HIP_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(HIP_COMPILE_DEFS) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
+
 $(3D_MPI_HIP_OBJ_DIR)/%.o: gen_3d/%.cpp | $(3D_MPI_HIP_OBJ_DIR)
 	$(CXX) $(CXXFLAGS) $(HIP_COMPILER_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(HIP_COMPILE_DEFS) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 

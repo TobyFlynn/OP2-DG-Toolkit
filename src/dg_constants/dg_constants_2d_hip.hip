@@ -1,6 +1,6 @@
 #include "dg_constants/dg_constants_2d.h"
 
-// #include "op_cuda_rt_support.h"
+#include "op_hip_rt_support.h"
 
 #include <stdexcept>
 
