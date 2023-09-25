@@ -10,7 +10,7 @@
 #include "dg_global_constants/dg_global_constants_3d.h"
 #include "dg_dat_pool.h"
 
-#ifndef OP2_DG_CUDA
+#if !defined(OP2_DG_CUDA) || !defined(OP2_DG_HIP)
 #ifdef OP2_DG_USE_LIBXSMM
 #include "libxsmm_source.h"
 #endif
@@ -25,7 +25,7 @@ DGConstants *constants;
 DGDatPool *dg_dat_pool;
 
 DGMesh3D::DGMesh3D(std::string &meshFile) {
-  #ifndef OP2_DG_CUDA
+  #if !defined(OP2_DG_CUDA) || !defined(OP2_DG_HIP)
   #ifdef OP2_DG_USE_LIBXSMM
   libxsmm_init();
   #endif
@@ -127,7 +127,7 @@ DGMesh3D::~DGMesh3D() {
   }
   delete dg_dat_pool;
   delete (DGConstants3D *)constants;
-  #ifndef OP2_DG_CUDA
+  #if !defined(OP2_DG_CUDA) || !defined(OP2_DG_HIP)
   #ifdef OP2_DG_USE_LIBXSMM
   libxsmm_finalize();
   #endif

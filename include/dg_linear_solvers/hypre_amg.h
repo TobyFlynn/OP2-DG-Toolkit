@@ -47,7 +47,7 @@ protected:
 
   float *rhs_ptr_h, *ans_ptr_h;
   int *ind_ptr_h;
-  #ifdef OP2_DG_CUDA
+  #if defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
   float *data_rhs_ptr, *data_ans_ptr;
   int *data_ind_ptr;
   #endif

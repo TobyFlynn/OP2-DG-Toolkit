@@ -12,27 +12,6 @@ extern DGConstants *constants;
 extern Timing *timer;
 extern DGDatPool *dg_dat_pool;
 
-void custom_kernel_fpmf_grad_3d(const int order, char const *name, op_set set,
-  op_arg arg0,
-  op_arg arg4,
-  op_arg argFactor,
-  op_arg argGeof,
-  op_arg arg14,
-  op_arg arg15,
-  op_arg arg16);
-
-void custom_kernel_pmf_3d_mult_cells_merged(const int order, char const *name, op_set set,
-  op_arg arg0,
-  op_arg argGeof,
-  op_arg arg16,
-  op_arg arg17,
-  op_arg arg18,
-  op_arg arg19,
-  op_arg arg20,
-  op_arg arg21,
-  op_arg arg22,
-  op_arg arg23);
-
 FactorPoissonMatrixFreeMult3D::FactorPoissonMatrixFreeMult3D(DGMesh3D *m) : PoissonMatrixFreeMult3D(m) {
   mat_free_gtau = op_decl_dat(mesh->cells, 4, DG_FP_STR, (DG_FP *)NULL, "poisson_matrix_free_tau");
   mat_free_factor_copy = op_decl_dat(mesh->cells, DG_NP, DG_FP_STR, (DG_FP *)NULL, "poisson_matrix_free_factor_copy");
@@ -117,16 +96,6 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult(op_dat in, op_dat out) {
   DGTempDat tmp_grad1 = dg_dat_pool->requestTempDatCells(DG_NP);
   DGTempDat tmp_grad2 = dg_dat_pool->requestTempDatCells(DG_NP);
   timer->startTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult grad");
-  #if defined(OP2_DG_CUDA) && !defined(DG_OP2_SOA)
-  custom_kernel_fpmf_grad_3d(mesh->order_int, "fpmf_grad_3d", mesh->cells,
-                       op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
-                       op_arg_dat(in,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-                       op_arg_dat(mat_free_factor_copy, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-                       op_arg_dat(mesh->geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
-                       op_arg_dat(tmp_grad0.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
-                       op_arg_dat(tmp_grad1.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
-                       op_arg_dat(tmp_grad2.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
-  #else
   op2_gemv_halo_exchange(mesh, false, 1.0, DGConstants::DR, in, 0.0, tmp_grad0.dat);
   op2_gemv_halo_exchange(mesh, false, 1.0, DGConstants::DS, in, 0.0, tmp_grad1.dat);
   op2_gemv_halo_exchange(mesh, false, 1.0, DGConstants::DT, in, 0.0, tmp_grad2.dat);
@@ -137,7 +106,6 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult(op_dat in, op_dat out) {
               op_arg_dat(tmp_grad0.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
               op_arg_dat(tmp_grad1.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
               op_arg_dat(tmp_grad2.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
-  #endif
   timer->endTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult grad");
 
   DGTempDat tmp_npf0 = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_NPF);
@@ -193,19 +161,6 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult(op_dat in, op_dat out) {
   timer->endTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " finish flux");
 
   timer->startTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult cells");
-  #if defined(OP2_DG_CUDA) && !defined(DG_OP2_SOA)
-  custom_kernel_pmf_3d_mult_cells_merged(mesh->order_int, "pmf_3d_mult_cells_merged", mesh->cells,
-              op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
-              op_arg_dat(mesh->geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp_npf1.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp_npf2.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp_npf3.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp_npf0.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp_grad0.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp_grad1.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp_grad2.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(out, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
-  #else
   timer->startTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult cells MM");
   mesh->mass(tmp_grad0.dat);
   mesh->mass(tmp_grad1.dat);
@@ -231,7 +186,6 @@ void FactorPoissonMatrixFreeMult3D::mat_free_mult(op_dat in, op_dat out) {
   op2_gemv(mesh, true, 1.0, DGConstants::DS, tmp_grad1.dat, 1.0, out);
   op2_gemv(mesh, true, 1.0, DGConstants::DT, tmp_grad2.dat, 1.0, out);
   timer->endTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult cells cells");
-  #endif
   timer->endTimer("FactorPoissonMatrixFreeMult3D " + std::to_string(mesh->order_int) + " mult cells");
   dg_dat_pool->releaseTempDatCells(tmp_grad0);
   dg_dat_pool->releaseTempDatCells(tmp_grad1);
