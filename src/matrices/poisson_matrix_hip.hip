@@ -4,6 +4,9 @@
 #include "mpi_helper_func.h"
 #endif
 
+#include <hip/hip_runtime.h>
+#include <hip/hip_runtime_api.h>
+
 #include "dg_utils.h"
 #include "dg_global_constants/dg_global_constants_2d.h"
 
@@ -16,16 +19,13 @@ void get_num_nodes(const int N, int *Np, int *Nfp) {
 }
 
 int PoissonMatrix::getUnknowns() {
-  throw std::runtime_error("PoissonMatrix::getUnknowns not implemented for HIP yet");
-  return 0;
-  /*
   op_arg op2_args[] = {
     op_arg_dat(_mesh->order, -1, OP_ID, 1, "int", OP_READ)
   };
   op_mpi_halo_exchanges_cuda(_mesh->order->set, 1, op2_args);
   const int setSize_ = _mesh->order->set->size;
   int *tempOrder_ = (int *)malloc(setSize_ * sizeof(int));
-  cudaMemcpy(tempOrder_, _mesh->order->data_d, setSize_ * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(tempOrder_, _mesh->order->data_d, setSize_ * sizeof(int), hipMemcpyDeviceToHost);
   int unknowns = 0;
   #pragma omp parallel for reduction(+:unknowns)
   for(int i = 0; i < setSize_; i++) {
@@ -36,12 +36,9 @@ int PoissonMatrix::getUnknowns() {
   free(tempOrder_);
   op_mpi_set_dirtybit_cuda(1, op2_args);
   return unknowns;
-  */
 }
 
 void PoissonMatrix::set_glb_ind() {
-  throw std::runtime_error("PoissonMatrix::set_glb_ind not implemented for HIP yet");
-  /*
   int unknowns = getUnknowns();
   int global_ind = 0;
   #ifdef DG_MPI
@@ -55,9 +52,9 @@ void PoissonMatrix::set_glb_ind() {
 
   const int setSize = _mesh->cells->size;
   int *tempOrder = (int *)malloc(setSize * sizeof(int));
-  cudaMemcpy(tempOrder, _mesh->order->data_d, setSize * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(tempOrder, _mesh->order->data_d, setSize * sizeof(int), hipMemcpyDeviceToHost);
   int *data_ptr = (int *)malloc(setSize * sizeof(int));
-  cudaMemcpy(data_ptr, glb_ind->data_d, setSize * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(data_ptr, glb_ind->data_d, setSize * sizeof(int), hipMemcpyDeviceToHost);
 
   int ind = global_ind;
   for(int i = 0; i < _mesh->cells->size; i++) {
@@ -67,17 +64,14 @@ void PoissonMatrix::set_glb_ind() {
     ind += Np;
   }
 
-  cudaMemcpy(glb_ind->data_d, data_ptr, setSize * sizeof(int), cudaMemcpyHostToDevice);
+  hipMemcpy(glb_ind->data_d, data_ptr, setSize * sizeof(int), hipMemcpyHostToDevice);
 
   op_mpi_set_dirtybit_cuda(2, args);
   free(data_ptr);
   free(tempOrder);
-  */
 }
 
 void PoissonMatrix::setPETScMatrix() {
-  throw std::runtime_error("PoissonMatrix::setPETScMatrix not implemented for HIP yet");
-  /*
   #ifdef DG_OP2_SOA
   throw std::runtime_error("setPETScMatrix not implemented for SoA");
   #endif
@@ -88,10 +82,18 @@ void PoissonMatrix::setPETScMatrix() {
     MatSetSizes(pMat, unknowns, unknowns, PETSC_DECIDE, PETSC_DECIDE);
 
     #ifdef DG_MPI
-    MatSetType(pMat, MATMPIAIJCUSPARSE);
+    #ifdef PETSC_COMPILED_WITH_HIP
+    MatSetType(pMat, MATMPIAIJHIPSPARSE);
+    #else
+    MatSetType(pMat, MATMPIAIJ);
+    #endif
     MatMPIAIJSetPreallocation(pMat, DG_NP * (DG_NUM_FACES + 1), NULL, 0, NULL);
     #else
-    MatSetType(pMat, MATSEQAIJCUSPARSE);
+    #ifdef PETSC_COMPILED_WITH_HIP
+    MatSetType(pMat, MATSEQAIJHIPSPARSE);
+    #else
+    MatSetType(pMat, MATSEQAIJ);
+    #endif
     MatSeqAIJSetPreallocation(pMat, DG_NP * (DG_NUM_FACES + 1), NULL);
     #endif
     MatSetOption(pMat, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
@@ -108,9 +110,9 @@ void PoissonMatrix::setPETScMatrix() {
   DG_FP *op1_data = (DG_FP *)malloc(DG_NP * DG_NP * setSize * sizeof(DG_FP));
   int *glb   = (int *)malloc(setSize * sizeof(int));
   int *order = (int *)malloc(setSize * sizeof(int));
-  cudaMemcpy(op1_data, op1->data_d, setSize * DG_NP * DG_NP * sizeof(DG_FP), cudaMemcpyDeviceToHost);
-  cudaMemcpy(glb, glb_ind->data_d, setSize * sizeof(int), cudaMemcpyDeviceToHost);
-  cudaMemcpy(order, _mesh->order->data_d, setSize * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(op1_data, op1->data_d, setSize * DG_NP * DG_NP * sizeof(DG_FP), hipMemcpyDeviceToHost);
+  hipMemcpy(glb, glb_ind->data_d, setSize * sizeof(int), hipMemcpyDeviceToHost);
+  hipMemcpy(order, _mesh->order->data_d, setSize * sizeof(int), hipMemcpyDeviceToHost);
   op_mpi_set_dirtybit_cuda(3, args);
 
   #ifdef DG_COL_MAJ
@@ -153,12 +155,12 @@ void PoissonMatrix::setPETScMatrix() {
   int *order_l = (int *)malloc(_mesh->faces->size * sizeof(int));
   int *order_r = (int *)malloc(_mesh->faces->size * sizeof(int));
 
-  cudaMemcpy(op2L_data, op2[0]->data_d, DG_NP * DG_NP * _mesh->faces->size * sizeof(DG_FP), cudaMemcpyDeviceToHost);
-  cudaMemcpy(op2R_data, op2[1]->data_d, DG_NP * DG_NP * _mesh->faces->size * sizeof(DG_FP), cudaMemcpyDeviceToHost);
-  cudaMemcpy(glb_l, glb_indL->data_d, _mesh->faces->size * sizeof(int), cudaMemcpyDeviceToHost);
-  cudaMemcpy(glb_r, glb_indR->data_d, _mesh->faces->size * sizeof(int), cudaMemcpyDeviceToHost);
-  cudaMemcpy(order_l, orderL->data_d, _mesh->faces->size * sizeof(int), cudaMemcpyDeviceToHost);
-  cudaMemcpy(order_r, orderR->data_d, _mesh->faces->size * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(op2L_data, op2[0]->data_d, DG_NP * DG_NP * _mesh->faces->size * sizeof(DG_FP), hipMemcpyDeviceToHost);
+  hipMemcpy(op2R_data, op2[1]->data_d, DG_NP * DG_NP * _mesh->faces->size * sizeof(DG_FP), hipMemcpyDeviceToHost);
+  hipMemcpy(glb_l, glb_indL->data_d, _mesh->faces->size * sizeof(int), hipMemcpyDeviceToHost);
+  hipMemcpy(glb_r, glb_indR->data_d, _mesh->faces->size * sizeof(int), hipMemcpyDeviceToHost);
+  hipMemcpy(order_l, orderL->data_d, _mesh->faces->size * sizeof(int), hipMemcpyDeviceToHost);
+  hipMemcpy(order_r, orderR->data_d, _mesh->faces->size * sizeof(int), hipMemcpyDeviceToHost);
 
   // Add Gauss OP and OPf to Poisson matrix
   for(int i = 0; i < _mesh->faces->size; i++) {
@@ -189,5 +191,4 @@ void PoissonMatrix::setPETScMatrix() {
 
   MatAssemblyBegin(pMat, MAT_FINAL_ASSEMBLY);
   MatAssemblyEnd(pMat, MAT_FINAL_ASSEMBLY);
-  */
 }

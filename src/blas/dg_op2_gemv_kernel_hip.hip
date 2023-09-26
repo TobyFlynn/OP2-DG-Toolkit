@@ -9,7 +9,7 @@
 
 #include <stdexcept>
 
-#include "hipblas.h"
+#include <hipblas/hipblas.h>
 
 hipblasHandle_t hipblas_handle;
 

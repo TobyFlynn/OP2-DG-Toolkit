@@ -212,28 +212,16 @@ ifeq ($(HYPRE),true)
 endif
 
 # Linear solver CPU object files
-LINEAR_SOLVER_CPU_OBJ := linear_solvers/petsc_utils/utils_cpu.o \
-	linear_solvers/petsc_block_jacobi/petsc_block_jacobi_cpu.o \
-	linear_solvers/petsc_pmultigrid/petsc_pmultigrid_cpu.o \
-	linear_solvers/petsc_inv_mass/petsc_inv_mass_cpu.o \
-	linear_solvers/petsc_jacobi/petsc_jacobi_cpu.o
+LINEAR_SOLVER_CPU_OBJ := linear_solvers/petsc_utils/utils_cpu.o
 
 # Linear solver CUDA object files
-LINEAR_SOLVER_CUDA_OBJ := linear_solvers/petsc_utils/utils_gpu.o \
-	linear_solvers/petsc_block_jacobi/petsc_block_jacobi_gpu.o \
-	linear_solvers/petsc_pmultigrid/petsc_pmultigrid_gpu.o \
-	linear_solvers/petsc_inv_mass/petsc_inv_mass_gpu.o \
-	linear_solvers/petsc_jacobi/petsc_jacobi_gpu.o
+LINEAR_SOLVER_CUDA_OBJ := linear_solvers/petsc_utils/utils_gpu.o
 ifeq ($(AMGX),true)
 	LINEAR_SOLVER_CUDA_OBJ += linear_solvers/amgx_amg/amgx_amg.o
 endif
 
 # Linear solver HIP object files
-LINEAR_SOLVER_HIP_OBJ := linear_solvers/petsc_utils/utils_hip.o \
-	linear_solvers/petsc_block_jacobi/petsc_block_jacobi_hip.o \
-	linear_solvers/petsc_pmultigrid/petsc_pmultigrid_hip.o \
-	linear_solvers/petsc_inv_mass/petsc_inv_mass_hip.o \
-	linear_solvers/petsc_jacobi/petsc_jacobi_hip.o
+LINEAR_SOLVER_HIP_OBJ := linear_solvers/petsc_utils/utils_hip.o
 
 # 2D Common object files
 COMMON_2D_OBJ := dg_constants/dg_constants_2d.o \

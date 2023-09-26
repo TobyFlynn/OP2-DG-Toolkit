@@ -8,6 +8,9 @@
 #include <algorithm>
 #include <map>
 
+#include <hip/hip_runtime.h>
+#include <hip/hip_runtime_api.h>
+
 #include "op2_utils.h"
 #include "dg_utils.h"
 #include "dg_global_constants/dg_global_constants_2d.h"
@@ -16,8 +19,6 @@
 extern Timing *timer;
 
 void PoissonCoarseMatrix::set_glb_ind() {
-  throw std::runtime_error("PoissonCoarseMatrix::set_glb_ind not implemented for HIP yet");
-  /*
   int unknowns = getUnknowns();
   int global_ind = 0;
   #ifdef DG_MPI
@@ -31,23 +32,20 @@ void PoissonCoarseMatrix::set_glb_ind() {
 
   const int setSize = _mesh->cells->size;
   int *data_ptr = (int *)malloc(setSize * sizeof(int));
-  cudaMemcpy(data_ptr, glb_ind->data_d, setSize * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(data_ptr, glb_ind->data_d, setSize * sizeof(int), hipMemcpyDeviceToHost);
 
   #pragma omp parallel for
   for(int i = 0; i < _mesh->cells->size; i++) {
     data_ptr[i] = global_ind + i * DG_NP_N1;
   }
 
-  cudaMemcpy(glb_ind->data_d, data_ptr, setSize * sizeof(int), cudaMemcpyHostToDevice);
+  hipMemcpy(glb_ind->data_d, data_ptr, setSize * sizeof(int), hipMemcpyHostToDevice);
 
   op_mpi_set_dirtybit_cuda(1, args);
   free(data_ptr);
-  */
 }
 
 void PoissonCoarseMatrix::setPETScMatrix() {
-  throw std::runtime_error("PoissonCoarseMatrix::setPETScMatrix not implemented for HIP yet");
-  /*
   if(!petscMatInit) {
     timer->startTimer("setPETScMatrix - Create Matrix");
     MatCreate(PETSC_COMM_WORLD, &pMat);
@@ -56,11 +54,19 @@ void PoissonCoarseMatrix::setPETScMatrix() {
     MatSetSizes(pMat, unknowns, unknowns, PETSC_DECIDE, PETSC_DECIDE);
 
     #ifdef DG_MPI
-    MatSetType(pMat, MATMPIAIJCUSPARSE);
+    #ifdef PETSC_COMPILED_WITH_HIP
+    MatSetType(pMat, MATMPIAIJHIPSPARSE);
+    #else
+    MatSetType(pMat, MATMPIAIJ);
+    #endif
     // Guess for the off diagonal preallocation at the moment
     MatMPIAIJSetPreallocation(pMat, DG_NP_N1 * (DG_NUM_FACES + 1), NULL, DG_NP_N1 * 2, NULL);
     #else
-    MatSetType(pMat, MATSEQAIJCUSPARSE);
+    #ifdef PETSC_COMPILED_WITH_HIP
+    MatSetType(pMat, MATSEQAIJHIPSPARSE);
+    #else
+    MatSetType(pMat, MATSEQAIJ);
+    #endif
     MatSeqAIJSetPreallocation(pMat, DG_NP_N1 * (DG_NUM_FACES + 1), NULL);
     #endif
     MatSetOption(pMat, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);
@@ -94,8 +100,8 @@ void PoissonCoarseMatrix::setPETScMatrix() {
   #endif
   DG_FP *op1_data = (DG_FP *)malloc(DG_NP_N1 * DG_NP_N1 * setSize * sizeof(DG_FP));
   int *glb   = (int *)malloc(setSize * sizeof(int));
-  cudaMemcpy(op1_data, op1->data_d, setSize * DG_NP_N1 * DG_NP_N1 * sizeof(DG_FP), cudaMemcpyDeviceToHost);
-  cudaMemcpy(glb, glb_ind->data_d, setSize * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(op1_data, op1->data_d, setSize * DG_NP_N1 * DG_NP_N1 * sizeof(DG_FP), hipMemcpyDeviceToHost);
+  hipMemcpy(glb, glb_ind->data_d, setSize * sizeof(int), hipMemcpyDeviceToHost);
   timer->endTimer("setPETScMatrix - Copy op1 to host");
   op_mpi_set_dirtybit_cuda(2, args);
 
@@ -152,10 +158,10 @@ void PoissonCoarseMatrix::setPETScMatrix() {
   int *glb_l = (int *)malloc(faces_set_size * sizeof(int));
   int *glb_r = (int *)malloc(faces_set_size * sizeof(int));
 
-  cudaMemcpy(op2L_data, op2[0]->data_d, DG_NP_N1 * DG_NP_N1 * faces_set_size * sizeof(DG_FP), cudaMemcpyDeviceToHost);
-  cudaMemcpy(op2R_data, op2[1]->data_d, DG_NP_N1 * DG_NP_N1 * faces_set_size * sizeof(DG_FP), cudaMemcpyDeviceToHost);
-  cudaMemcpy(glb_l, glb_indL->data_d, faces_set_size * sizeof(int), cudaMemcpyDeviceToHost);
-  cudaMemcpy(glb_r, glb_indR->data_d, faces_set_size * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(op2L_data, op2[0]->data_d, DG_NP_N1 * DG_NP_N1 * faces_set_size * sizeof(DG_FP), hipMemcpyDeviceToHost);
+  hipMemcpy(op2R_data, op2[1]->data_d, DG_NP_N1 * DG_NP_N1 * faces_set_size * sizeof(DG_FP), hipMemcpyDeviceToHost);
+  hipMemcpy(glb_l, glb_indL->data_d, faces_set_size * sizeof(int), hipMemcpyDeviceToHost);
+  hipMemcpy(glb_r, glb_indR->data_d, faces_set_size * sizeof(int), hipMemcpyDeviceToHost);
   timer->endTimer("setPETScMatrix - Copy op2 to host");
 
   op_mpi_set_dirtybit_cuda(4, edge_args);
@@ -196,7 +202,6 @@ void PoissonCoarseMatrix::setPETScMatrix() {
   MatAssemblyBegin(pMat, MAT_FINAL_ASSEMBLY);
   MatAssemblyEnd(pMat, MAT_FINAL_ASSEMBLY);
   timer->endTimer("setPETScMatrix - Assembly");
-  */
 }
 
 #ifdef DG_MPI
@@ -239,11 +244,11 @@ void PoissonCoarseMatrix::setHYPREMatrix() {
   DG_FP *op2L_data = getOP2PtrHostHE(op2[0], OP_READ);
   DG_FP *op2R_data = getOP2PtrHostHE(op2[1], OP_READ);
   int *glb   = (int *)malloc(cell_set_size * sizeof(int));
-  cudaMemcpy(glb, glb_ind->data_d, cell_set_size * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(glb, glb_ind->data_d, cell_set_size * sizeof(int), hipMemcpyDeviceToHost);
   int *glb_l = (int *)malloc(faces_set_size * sizeof(int));
   int *glb_r = (int *)malloc(faces_set_size * sizeof(int));
-  cudaMemcpy(glb_l, glb_indL->data_d, faces_set_size * sizeof(int), cudaMemcpyDeviceToHost);
-  cudaMemcpy(glb_r, glb_indR->data_d, faces_set_size * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(glb_l, glb_indL->data_d, faces_set_size * sizeof(int), hipMemcpyDeviceToHost);
+  hipMemcpy(glb_r, glb_indR->data_d, faces_set_size * sizeof(int), hipMemcpyDeviceToHost);
 
   if(!hypre_mat_init) {
     const int ilower = glb[0];
@@ -327,10 +332,10 @@ void PoissonCoarseMatrix::setHYPREMatrix() {
   int *num_col_ptr;
   cudaMalloc(&num_col_ptr, local_size * sizeof(int));
 
-  cudaMemcpy(row_num_ptr, row_num_ptr_h, local_size * sizeof(int), cudaMemcpyHostToDevice);
-  cudaMemcpy(num_col_ptr, num_col_ptr_h, local_size * sizeof(int), cudaMemcpyHostToDevice);
-  cudaMemcpy(col_buf_ptr, col_buf_ptr_h, current_nnz * sizeof(int), cudaMemcpyHostToDevice);
-  cudaMemcpy(data_buf_ptr, data_buf_ptr_h, current_nnz * sizeof(float), cudaMemcpyHostToDevice);
+  hipMemcpy(row_num_ptr, row_num_ptr_h, local_size * sizeof(int), hipMemcpyHostToDevice);
+  hipMemcpy(num_col_ptr, num_col_ptr_h, local_size * sizeof(int), hipMemcpyHostToDevice);
+  hipMemcpy(col_buf_ptr, col_buf_ptr_h, current_nnz * sizeof(int), hipMemcpyHostToDevice);
+  hipMemcpy(data_buf_ptr, data_buf_ptr_h, current_nnz * sizeof(float), hipMemcpyHostToDevice);
   timer->endTimer("HYPRE - transfer 2");
 
   timer->startTimer("HYPRE - construct");

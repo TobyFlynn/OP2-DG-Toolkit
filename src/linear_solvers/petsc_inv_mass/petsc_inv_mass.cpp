@@ -111,30 +111,27 @@ bool PETScInvMassSolver::solve(op_dat rhs, op_dat ans) {
   return converged;
 }
 
-void PETScInvMassSolver::calc_rhs(const DG_FP *in_d, DG_FP *out_d) {
+void PETScInvMassSolver::calc_rhs(Vec in, Vec out) {
   timer->startTimer("PETScInvMassSolver - calc_rhs");
   // Copy u to OP2 dat
   DGTempDat tmp_in  = dg_dat_pool->requestTempDatCells(DG_NP);
   DGTempDat tmp_out = dg_dat_pool->requestTempDatCells(DG_NP);
-  // PETScUtils::copy_vec_to_dat_p_adapt(tmp_in.dat, in_d, mesh);
-  PETScUtils::copy_vec_to_dat(tmp_in.dat, in_d);
+  PETScUtils::store_vec(&in, tmp_in.dat);
 
   matrix->mult(tmp_in.dat, tmp_out.dat);
 
-  // PETScUtils::copy_dat_to_vec_p_adapt(tmp_out.dat, out_d, mesh);
-  PETScUtils::copy_dat_to_vec(tmp_out.dat, out_d);
+  PETScUtils::load_vec(&out, tmp_out.dat);
   dg_dat_pool->releaseTempDatCells(tmp_in);
   dg_dat_pool->releaseTempDatCells(tmp_out);
   timer->endTimer("PETScInvMassSolver - calc_rhs");
 }
 
 // Matrix-free inv Mass preconditioning function
-void PETScInvMassSolver::precond(const DG_FP *in_d, DG_FP *out_d) {
+void PETScInvMassSolver::precond(Vec in, Vec out) {
   timer->startTimer("PETScInvMassSolver - precond");
   DGTempDat tmp_in  = dg_dat_pool->requestTempDatCells(DG_NP);
   DGTempDat tmp_out = dg_dat_pool->requestTempDatCells(DG_NP);
-  // PETScUtils::copy_vec_to_dat_p_adapt(tmp_in.dat, in_d, mesh);
-  PETScUtils::copy_vec_to_dat(tmp_in.dat, in_d);
+  PETScUtils::store_vec(&in, tmp_in.dat);
 
   #if DG_DIM == 3
   if(dat_factor) {
@@ -158,8 +155,7 @@ void PETScInvMassSolver::precond(const DG_FP *in_d, DG_FP *out_d) {
               op_arg_dat(tmp_out.dat,     -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
   #endif
 
-  // PETScUtils::copy_dat_to_vec_p_adapt(tmp_out.dat, out_d, mesh);
-  PETScUtils::copy_dat_to_vec(tmp_out.dat, out_d);
+  PETScUtils::load_vec(&out, tmp_out.dat);
   dg_dat_pool->releaseTempDatCells(tmp_in);
   dg_dat_pool->releaseTempDatCells(tmp_out);
   timer->endTimer("PETScInvMassSolver - precond");
@@ -172,4 +168,45 @@ void PETScInvMassSolver::setFactor(const double f) {
 void PETScInvMassSolver::setFactor(op_dat f) {
   factor_dat = f;
   dat_factor = true;
+}
+
+PetscErrorCode matMultPIMS(Mat A, Vec x, Vec y) {
+  PETScInvMassSolver *solver;
+  MatShellGetContext(A, &solver);
+  solver->calc_rhs(x, y);
+  return 0;
+}
+
+void PETScInvMassSolver::create_shell_mat() {
+  if(pMatInit)
+    MatDestroy(&pMat);
+
+  MatCreateShell(PETSC_COMM_WORLD, matrix->getUnknowns(), matrix->getUnknowns(), PETSC_DETERMINE, PETSC_DETERMINE, this, &pMat);
+  MatShellSetOperation(pMat, MATOP_MULT, (void(*)(void))matMultPIMS);
+  
+  #if defined(OP2_DG_CUDA)
+  MatShellSetVecType(pMat, VECCUDA);
+  #elif defined(OP2_DG_HIP)
+  #ifdef PETSC_COMPILED_WITH_HIP
+  MatShellSetVecType(pMat, VECHIP);
+  #else
+  MatShellSetVecType(pMat, VECSTANDARD);
+  #endif
+  #else
+  MatShellSetVecType(pMat, VECSTANDARD);
+  #endif
+
+  pMatInit = true;
+}
+
+PetscErrorCode preconPIMS(PC pc, Vec x, Vec y) {
+  PETScInvMassSolver *solver;
+  PCShellGetContext(pc, (void **)&solver);
+  solver->precond(x_ptr, y_ptr);
+  return 0;
+}
+
+void PETScInvMassSolver::set_shell_pc(PC pc) {
+  PCShellSetApply(pc, preconPIMS);
+  PCShellSetContext(pc, this);
 }

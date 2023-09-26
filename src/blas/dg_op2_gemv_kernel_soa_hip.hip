@@ -8,7 +8,7 @@
 #include "kernels/templated_soa.h"
 #include "kernels/templated_soa_sp.h"
 
-#include "hipblas.h"
+#include <hipblas/hipblas.h>
 
 hipblasHandle_t hipblas_handle;
 
