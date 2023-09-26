@@ -202,7 +202,7 @@ void PETScInvMassSolver::create_shell_mat() {
 PetscErrorCode preconPIMS(PC pc, Vec x, Vec y) {
   PETScInvMassSolver *solver;
   PCShellGetContext(pc, (void **)&solver);
-  solver->precond(x_ptr, y_ptr);
+  solver->precond(x, y);
   return 0;
 }
 

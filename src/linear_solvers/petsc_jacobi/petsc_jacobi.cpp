@@ -183,7 +183,7 @@ void PETScJacobiSolver::create_shell_mat() {
 PetscErrorCode preconPJS(PC pc, Vec x, Vec y) {
   PETScJacobiSolver *solver;
   PCShellGetContext(pc, (void **)&solver);
-  solver->precond(x_ptr, y_ptr);
+  solver->precond(x, y);
   return 0;
 }
 

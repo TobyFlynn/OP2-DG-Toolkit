@@ -183,7 +183,7 @@ void PETScPMultigrid::create_shell_mat() {
 PetscErrorCode preconPPMS(PC pc, Vec x, Vec y) {
   PETScPMultigrid *solver;
   PCShellGetContext(pc, (void **)&solver);
-  solver->precond(x_ptr, y_ptr);
+  solver->precond(x, y);
   return 0;
 }
 

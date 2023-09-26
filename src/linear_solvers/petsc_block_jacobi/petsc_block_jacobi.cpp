@@ -196,7 +196,7 @@ void PETScBlockJacobiSolver::create_shell_mat() {
 PetscErrorCode preconPBJS(PC pc, Vec x, Vec y) {
   PETScBlockJacobiSolver *solver;
   PCShellGetContext(pc, (void **)&solver);
-  solver->precond(x_ptr, y_ptr);
+  solver->precond(x, y);
   return 0;
 }
 
