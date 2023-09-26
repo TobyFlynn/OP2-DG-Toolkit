@@ -23,6 +23,18 @@ extern DGConstants *constants;
 #include "cblas.h"
 #endif
 
+void init_op2_gemv() {
+  #ifdef OP2_DG_USE_LIBXSMM
+  libxsmm_init();
+  #endif
+}
+
+void destroy_op2_gemv() {
+  #ifdef OP2_DG_USE_LIBXSMM
+  libxsmm_finalize();
+  #endif
+}
+
 // Assumes all elements are same order (does not work for p-adaptivity)
 void op2_cpu_gemm(const int m, const int n, const int k,
                   const DG_FP alpha, const bool trans, const DG_FP *A,

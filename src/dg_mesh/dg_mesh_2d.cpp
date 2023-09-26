@@ -19,6 +19,9 @@ DGDatPool *dg_dat_pool;
 
 using namespace std;
 
+void init_op2_gemv();
+void destroy_op2_gemv();
+
 DGCubatureData::DGCubatureData(DGMesh2D *m) {
   mesh = m;
 
@@ -133,6 +136,7 @@ void DGGaussData::update_mesh_constants() {
 }
 
 DGMesh2D::DGMesh2D(std::string &meshFile, bool overInt) {
+  init_op2_gemv();
   over_integrate = overInt;
   // Calculate DG constants
   constants = new DGConstants2D(DG_ORDER);
@@ -226,6 +230,7 @@ DGMesh2D::~DGMesh2D() {
     delete cubature;
     delete gauss;
   }
+  destroy_op2_gemv();
 }
 
 void DGMesh2D::init() {

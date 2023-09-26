@@ -1,8 +1,8 @@
 #include "dg_mesh/dg_mesh_3d.h"
 
 #include "op_lib_cpp.h"
-// #include "op_cuda_rt_support.h"
-// #include "op_cuda_reduction.h"
+#include "op_hip_rt_support.h"
+#include "op_hip_reduction.h"
 
 #include "dg_constants/dg_constants_3d.h"
 #include "dg_compiler_defs.h"
@@ -13,22 +13,17 @@
 extern DGConstants *constants;
 
 void DGMesh3D::free_custom_map(custom_map_info cmi) {
-  throw std::runtime_error("DGMesh3D::free_custom_map not implemented for HIP yet");
-  /*
   if(cmi.map) {
     free(cmi.map);
   }
 
   if(cmi.map_d) {
-    cudaFree(cmi.map_d);
+    hipFree(cmi.map_d);
   }
-  */
 }
 
 #ifdef DG_OP2_SOA
 void DGMesh3D::update_custom_map() {
-  throw std::runtime_error("DGMesh3D::update_custom_map not implemented for HIP yet");
-  /*
   if(node2node_custom_maps[order_int - 1].map) {
     node2node_custom_map = node2node_custom_maps[order_int - 1].map;
     node2node_custom_map_d = node2node_custom_maps[order_int - 1].map_d;
@@ -55,11 +50,11 @@ void DGMesh3D::update_custom_map() {
   op_arg fmaskR_args = op_arg_dat(fmaskR, -1, OP_ID, DG_NPF, "int", OP_READ);
   const int direct_stride = getSetSizeFromOpArg(&fmaskR_args);
   int *fmaskR_corrected_ptr = (int *)malloc(direct_stride * fmaskR->dim * sizeof(int));
-  cudaMemcpy(fmaskR_corrected_ptr, fmaskR->data_d, direct_stride * fmaskR->dim * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(fmaskR_corrected_ptr, fmaskR->data_d, direct_stride * fmaskR->dim * sizeof(int), hipMemcpyDeviceToHost);
   int *faceNum_ptr = (int *)malloc(direct_stride * faceNum->dim * sizeof(int));
-  cudaMemcpy(faceNum_ptr, faceNum->data_d, direct_stride * faceNum->dim * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(faceNum_ptr, faceNum->data_d, direct_stride * faceNum->dim * sizeof(int), hipMemcpyDeviceToHost);
   int *face2cells_ptr = (int *)malloc(map_size * face2cells->dim * sizeof(int));
-  cudaMemcpy(face2cells_ptr, face2cells->map_d, map_size * face2cells->dim * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(face2cells_ptr, face2cells->map_d, map_size * face2cells->dim * sizeof(int), hipMemcpyDeviceToHost);
 
   op_arg order_args = op_arg_dat(order, -2, face2cells, 1, "int", OP_READ);
   const int indirect_stride = getSetSizeFromOpArg(&order_args);
@@ -119,8 +114,8 @@ void DGMesh3D::update_custom_map() {
     node2node_custom_maps[order_int - 1].map[i + 3 * node2node_custom_maps[order_int - 1].total_size] = map_indices[i].second.second;
   }
 
-  cudaMalloc(&node2node_custom_maps[order_int - 1].map_d, node2node_custom_maps[order_int - 1].total_size * 4 * sizeof(int));
-  cudaMemcpy(node2node_custom_maps[order_int - 1].map_d, node2node_custom_maps[order_int - 1].map, node2node_custom_maps[order_int - 1].total_size * 4 * sizeof(int), cudaMemcpyHostToDevice);
+  hipMalloc(&node2node_custom_maps[order_int - 1].map_d, node2node_custom_maps[order_int - 1].total_size * 4 * sizeof(int));
+  hipMemcpy(node2node_custom_maps[order_int - 1].map_d, node2node_custom_maps[order_int - 1].map, node2node_custom_maps[order_int - 1].total_size * 4 * sizeof(int), hipMemcpyHostToDevice);
 
   free(fmaskR_corrected_ptr);
   free(faceNum_ptr);
@@ -130,12 +125,9 @@ void DGMesh3D::update_custom_map() {
   node2node_custom_map_d = node2node_custom_maps[order_int - 1].map_d;
   node2node_custom_core_size = node2node_custom_maps[order_int - 1].core_size;
   node2node_custom_total_size = node2node_custom_maps[order_int - 1].total_size;
-  */
 }
 #else
 void DGMesh3D::update_custom_map() {
-  throw std::runtime_error("DGMesh3D::update_custom_map not implemented for HIP yet");
-  /*
   if(node2node_custom_maps[order_int - 1].map) {
     node2node_custom_map = node2node_custom_maps[order_int - 1].map;
     node2node_custom_map_d = node2node_custom_maps[order_int - 1].map_d;
@@ -160,11 +152,11 @@ void DGMesh3D::update_custom_map() {
   const int *fmask = &FMASK_TK[(order_int - 1) * DG_NUM_FACES * DG_NPF];
   const int faces_size = faces->size + faces->exec_size;
   int *fmaskR_corrected_ptr = (int *)malloc(faces_size * fmaskR->dim * sizeof(int));
-  cudaMemcpy(fmaskR_corrected_ptr, fmaskR->data_d, faces_size * fmaskR->dim * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(fmaskR_corrected_ptr, fmaskR->data_d, faces_size * fmaskR->dim * sizeof(int), hipMemcpyDeviceToHost);
   int *faceNum_ptr = (int *)malloc(faces_size * faceNum->dim * sizeof(int));
-  cudaMemcpy(faceNum_ptr, faceNum->data_d, faces_size * faceNum->dim * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(faceNum_ptr, faceNum->data_d, faces_size * faceNum->dim * sizeof(int), hipMemcpyDeviceToHost);
   int *face2cells_ptr = (int *)malloc(faces_size * face2cells->dim * sizeof(int));
-  cudaMemcpy(face2cells_ptr, face2cells->map_d, faces_size * face2cells->dim * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(face2cells_ptr, face2cells->map_d, faces_size * face2cells->dim * sizeof(int), hipMemcpyDeviceToHost);
 
   std::vector<std::pair<std::pair<int,int>,std::pair<int,int>>> map_indices;
   for(int i = 0; i < faces->core_size; i++) {
@@ -230,8 +222,8 @@ void DGMesh3D::update_custom_map() {
     node2node_custom_maps[order_int - 1].map[i + 3 * node2node_custom_maps[order_int - 1].total_size] = map_indices[i].second.second;
   }
 
-  cudaMalloc(&node2node_custom_maps[order_int - 1].map_d, map_indices.size() * 4 * sizeof(int));
-  cudaMemcpy(node2node_custom_maps[order_int - 1].map_d, node2node_custom_maps[order_int - 1].map, map_indices.size() * 4 * sizeof(int), cudaMemcpyHostToDevice);
+  hipMalloc(&node2node_custom_maps[order_int - 1].map_d, map_indices.size() * 4 * sizeof(int));
+  hipMemcpy(node2node_custom_maps[order_int - 1].map_d, node2node_custom_maps[order_int - 1].map, map_indices.size() * 4 * sizeof(int), hipMemcpyHostToDevice);
 
   free(fmaskR_corrected_ptr);
   free(faceNum_ptr);
@@ -241,6 +233,5 @@ void DGMesh3D::update_custom_map() {
   node2node_custom_map_d = node2node_custom_maps[order_int - 1].map_d;
   node2node_custom_core_size = node2node_custom_maps[order_int - 1].core_size;
   node2node_custom_total_size = node2node_custom_maps[order_int - 1].total_size;
-  */
 }
 #endif

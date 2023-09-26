@@ -39,90 +39,81 @@ DG_FP *dg_MM_F2_d;
 DG_FP *dg_Emat_d;
 
 void DGConstants2D::transfer_kernel_ptrs() {
-  throw std::runtime_error("DGConstants2D::transfer_kernel_ptrs not implemented for HIP yet");
-  /*
   // Allocate device memory
-  cutilSafeCall(cudaMalloc(&dg_r_d, N_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_s_d, N_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_Dr_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_Ds_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_Drw_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_Dsw_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_Mass_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_InvMass_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_InvV_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_V_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_Lift_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_Interp_d, N_max * N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_MM_F0_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_MM_F1_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_MM_F2_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(cudaMalloc(&dg_Emat_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_r_d, N_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_s_d, N_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_Dr_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_Ds_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_Drw_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_Dsw_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_Mass_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_InvMass_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_InvV_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_V_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_Lift_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_Interp_d, N_max * N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_MM_F0_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_MM_F1_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_MM_F2_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
+  cutilSafeCall(hipMalloc(&dg_Emat_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP)));
 
   // Transfer matrices to device
-  cutilSafeCall(cudaMemcpy(dg_r_d, r_ptr, N_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_s_d, s_ptr, N_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_Dr_d, Dr_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_Ds_d, Ds_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_Drw_d, Drw_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_Dsw_d, Dsw_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_Mass_d, mass_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_InvMass_d, invMass_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_InvV_d, invV_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_V_d, v_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_Lift_d, lift_ptr, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_Interp_d, order_interp_ptr, N_max * N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_MM_F0_d, mmF0_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_MM_F1_d, mmF1_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_MM_F2_d, mmF2_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
-  cutilSafeCall(cudaMemcpy(dg_Emat_d, eMat_ptr, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP), cudaMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_r_d, r_ptr, N_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_s_d, s_ptr, N_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_Dr_d, Dr_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_Ds_d, Ds_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_Drw_d, Drw_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_Dsw_d, Dsw_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_Mass_d, mass_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_InvMass_d, invMass_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_InvV_d, invV_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_V_d, v_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_Lift_d, lift_ptr, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_Interp_d, order_interp_ptr, N_max * N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_MM_F0_d, mmF0_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_MM_F1_d, mmF1_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_MM_F2_d, mmF2_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_Emat_d, eMat_ptr, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
 
   // Set up pointers that are accessible from the device
-  cutilSafeCall(cudaMemcpyToSymbol(dg_r_kernel, &dg_r_d, sizeof(dg_r_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_s_kernel, &dg_s_d, sizeof(dg_s_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_Dr_kernel, &dg_Dr_d, sizeof(dg_Dr_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_Ds_kernel, &dg_Ds_d, sizeof(dg_Ds_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_Drw_kernel, &dg_Drw_d, sizeof(dg_Drw_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_Dsw_kernel, &dg_Dsw_d, sizeof(dg_Dsw_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_Mass_kernel, &dg_Mass_d, sizeof(dg_Mass_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_InvMass_kernel, &dg_InvMass_d, sizeof(dg_InvMass_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_InvV_kernel, &dg_InvV_d, sizeof(dg_InvV_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_V_kernel, &dg_V_d, sizeof(dg_V_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_Lift_kernel, &dg_Lift_d, sizeof(dg_Lift_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_Interp_kernel, &dg_Interp_d, sizeof(dg_Interp_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_MM_F0_kernel, &dg_MM_F0_d, sizeof(dg_MM_F0_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_MM_F1_kernel, &dg_MM_F1_d, sizeof(dg_MM_F1_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_MM_F2_kernel, &dg_MM_F2_d, sizeof(dg_MM_F2_d)));
-  cutilSafeCall(cudaMemcpyToSymbol(dg_Emat_kernel, &dg_Emat_d, sizeof(dg_Emat_d)));
-  */
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_r_kernel), &dg_r_d, sizeof(dg_r_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_s_kernel), &dg_s_d, sizeof(dg_s_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Dr_kernel), &dg_Dr_d, sizeof(dg_Dr_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Ds_kernel), &dg_Ds_d, sizeof(dg_Ds_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Drw_kernel), &dg_Drw_d, sizeof(dg_Drw_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Dsw_kernel), &dg_Dsw_d, sizeof(dg_Dsw_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Mass_kernel), &dg_Mass_d, sizeof(dg_Mass_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_InvMass_kernel), &dg_InvMass_d, sizeof(dg_InvMass_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_InvV_kernel), &dg_InvV_d, sizeof(dg_InvV_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_V_kernel), &dg_V_d, sizeof(dg_V_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Lift_kernel), &dg_Lift_d, sizeof(dg_Lift_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Interp_kernel), &dg_Interp_d, sizeof(dg_Interp_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_MM_F0_kernel), &dg_MM_F0_d, sizeof(dg_MM_F0_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_MM_F1_kernel), &dg_MM_F1_d, sizeof(dg_MM_F1_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_MM_F2_kernel), &dg_MM_F2_d, sizeof(dg_MM_F2_d)));
+  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Emat_kernel), &dg_Emat_d, sizeof(dg_Emat_d)));
 }
 
 void DGConstants2D::clean_up_kernel_ptrs() {
-  throw std::runtime_error("DGConstants2D::clean_up_kernel_ptrs not implemented for HIP yet");
-  /*
-  cudaFree(dg_r_d);
-  cudaFree(dg_s_d);
-  cudaFree(dg_Dr_d);
-  cudaFree(dg_Ds_d);
-  cudaFree(dg_Drw_d);
-  cudaFree(dg_Dsw_d);
-  cudaFree(dg_Mass_d);
-  cudaFree(dg_InvMass_d);
-  cudaFree(dg_InvV_d);
-  cudaFree(dg_V_d);
-  cudaFree(dg_Lift_d);
-  cudaFree(dg_Interp_d);
-  cudaFree(dg_MM_F0_kernel);
-  cudaFree(dg_MM_F1_kernel);
-  cudaFree(dg_MM_F2_kernel);
-  cudaFree(dg_Emat_d);
-  */
+  hipFree(dg_r_d);
+  hipFree(dg_s_d);
+  hipFree(dg_Dr_d);
+  hipFree(dg_Ds_d);
+  hipFree(dg_Drw_d);
+  hipFree(dg_Dsw_d);
+  hipFree(dg_Mass_d);
+  hipFree(dg_InvMass_d);
+  hipFree(dg_InvV_d);
+  hipFree(dg_V_d);
+  hipFree(dg_Lift_d);
+  hipFree(dg_Interp_d);
+  hipFree(dg_MM_F0_kernel);
+  hipFree(dg_MM_F1_kernel);
+  hipFree(dg_MM_F2_kernel);
+  hipFree(dg_Emat_d);
 }
 
 DG_FP* DGConstants2D::get_mat_ptr_kernel(Constant_Matrix matrix) {
-  throw std::runtime_error("DGConstants2D::get_mat_ptr_kernel not implemented for HIP yet");
-  return nullptr;
-  /*
   switch(matrix) {
     case R:
       return dg_r_d;
@@ -160,7 +151,6 @@ DG_FP* DGConstants2D::get_mat_ptr_kernel(Constant_Matrix matrix) {
       throw std::runtime_error("This constant matrix is not supported by DGConstants2D\n");
       return nullptr;
   }
-  */
 }
 
 float* DGConstants2D::get_mat_ptr_kernel_sp(Constant_Matrix matrix) {

@@ -15,7 +15,7 @@ void get_num_nodes_petsc_utils(const int N, int *Np, int *Nfp) {
   DGUtils::numNodes3D(N, Np, Nfp);
   #endif
 }
-/*
+
 __global__ void aos_to_soa(const int set_size, const int stride, const DG_FP *in, DG_FP *out) {
   const int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(tid >= set_size * DG_NP) return;
@@ -25,11 +25,9 @@ __global__ void aos_to_soa(const int set_size, const int stride, const DG_FP *in
   const int out_ind = cell + node * stride;
   out[out_ind] = in[in_ind];
 }
-*/
+
 // Copy PETSc vec array to OP2 dat
 void PETScUtils::copy_vec_to_dat(op_dat dat, const DG_FP *dat_d) {
-  throw std::runtime_error("PETScUtils::copy_vec_to_dat not implemented for HIP yet");
-  /*
   timer->startTimer("PETScUtils - copy_vec_to_dat");
   op_arg copy_args[] = {
     op_arg_dat(dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE)
@@ -38,19 +36,17 @@ void PETScUtils::copy_vec_to_dat(op_dat dat, const DG_FP *dat_d) {
   op_mpi_wait_all_grouped(1, copy_args, 2, 0);
 
   #ifdef DG_OP2_SOA
-  const int nthread = 512;
+  const int nthread = 256;
   const int nblocks = dat->set->size * DG_NP / nthread + 1;
   aos_to_soa<<<nblocks,nthread>>>(dat->set->size, getSetSizeFromOpArg(&copy_args[0]), dat_d, (DG_FP *)dat->data_d);
   #else
-  cudaMemcpy(dat->data_d, dat_d, dat->set->size * DG_NP * sizeof(DG_FP), cudaMemcpyDeviceToDevice);
+  hipMemcpy(dat->data_d, dat_d, dat->set->size * DG_NP * sizeof(DG_FP), hipMemcpyDeviceToDevice);
   #endif
 
   op_mpi_set_dirtybit_cuda(1, copy_args);
   timer->endTimer("PETScUtils - copy_vec_to_dat");
-  */
 }
 
-/*
 __global__ void soa_to_aos(const int set_size, const int stride, const DG_FP *in, DG_FP *out) {
   const int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(tid >= set_size * DG_NP) return;
@@ -60,12 +56,9 @@ __global__ void soa_to_aos(const int set_size, const int stride, const DG_FP *in
   const int out_ind = cell * DG_NP + node;
   out[out_ind] = in[in_ind];
 }
-*/
 
 // Copy OP2 dat to PETSc vec array
 void PETScUtils::copy_dat_to_vec(op_dat dat, DG_FP *dat_d) {
-  throw std::runtime_error("PETScUtils::copy_dat_to_vec not implemented for HIP yet");
-  /*
   timer->startTimer("PETScUtils - copy_dat_to_vec");
   op_arg copy_args[] = {
     op_arg_dat(dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ)
@@ -74,68 +67,93 @@ void PETScUtils::copy_dat_to_vec(op_dat dat, DG_FP *dat_d) {
   op_mpi_wait_all_grouped(1, copy_args, 2, 0);
 
   #ifdef DG_OP2_SOA
-  const int nthread = 512;
+  const int nthread = 256;
   const int nblocks = dat->set->size * DG_NP / nthread + 1;
   soa_to_aos<<<nblocks,nthread>>>(dat->set->size, getSetSizeFromOpArg(&copy_args[0]), (DG_FP *)dat->data_d, dat_d);
   #else
-  cudaMemcpy(dat_d, dat->data_d, dat->set->size * DG_NP * sizeof(DG_FP), cudaMemcpyDeviceToDevice);
+  hipMemcpy(dat_d, dat->data_d, dat->set->size * DG_NP * sizeof(DG_FP), hipMemcpyDeviceToDevice);
   #endif
 
   op_mpi_set_dirtybit_cuda(1, copy_args);
   timer->endTimer("PETScUtils - copy_dat_to_vec");
-  */
 }
 
 // Create a PETSc vector for GPUs
 void PETScUtils::create_vec(Vec *v, op_set set) {
-  throw std::runtime_error("PETScUtils::create_vec not implemented for HIP yet");
-  /*
   timer->startTimer("PETScUtils - create_vec");
   VecCreate(PETSC_COMM_WORLD, v);
-  VecSetType(*v, VECCUDA);
+  #ifdef PETSC_COMPILED_WITH_HIP
+  VecSetType(*v, VECHIP);
+  #else
+  VecSetType(*v, VECSTANDARD);
+  #endif
   VecSetSizes(*v, set->size * DG_NP, PETSC_DECIDE);
   timer->endTimer("PETScUtils - create_vec");
-  */
 }
 
 // Destroy a PETSc vector
 void PETScUtils::destroy_vec(Vec *v) {
-  throw std::runtime_error("PETScUtils::destroy_vec not implemented for HIP yet");
-  /*
   timer->startTimer("PETScUtils - destroy_vec");
   VecDestroy(v);
   timer->endTimer("PETScUtils - destroy_vec");
-  */
 }
 
 // Load a PETSc vector with values from an OP2 dat for GPUs
 void PETScUtils::load_vec(Vec *v, op_dat v_dat) {
-  throw std::runtime_error("PETScUtils::load_vec not implemented for HIP yet");
-  /*
   timer->startTimer("PETScUtils - load_vec");
+  #ifdef PETSC_COMPILED_WITH_HIP
   DG_FP *v_ptr;
-  VecCUDAGetArray(*v, &v_ptr);
+  VecHIPGetArray(*v, &v_ptr);
 
   copy_dat_to_vec(v_dat, v_ptr);
 
-  VecCUDARestoreArray(*v, &v_ptr);
+  VecHIPRestoreArray(*v, &v_ptr);
+  #else
+  DG_FP *v_ptr;
+  VecGetArray(*v, &v_ptr);
+
+  int size_of_petsc_vec;
+  VecGetLocalSize(*v, &size_of_petsc_vec);
+  DG_FP *v_ptr_d;
+  hipMalloc(&v_ptr_d, size_of_petsc_vec * sizeof(DG_FP));
+
+  copy_dat_to_vec(v_dat, v_ptr_d);
+
+  hipMemcpy(v_ptr, v_ptr_d, size_of_petsc_vec * sizeof(DG_FP), hipMemcpyDeviceToHost);
+  hipFree(v_ptr_d);
+
+  VecRestoreArray(*v, &v_ptr);
+  #endif
   timer->endTimer("PETScUtils - load_vec");
-  */
 }
 
 // Load an OP2 dat with the values from a PETSc vector for GPUs
 void PETScUtils::store_vec(Vec *v, op_dat v_dat) {
-  throw std::runtime_error("PETScUtils::store_vec not implemented for HIP yet");
-  /*
   timer->startTimer("PETScUtils - store_vec");
+  #ifdef PETSC_COMPILED_WITH_HIP
   const DG_FP *v_ptr;
-  VecCUDAGetArrayRead(*v, &v_ptr);
+  VecHIPGetArrayRead(*v, &v_ptr);
 
   copy_vec_to_dat(v_dat, v_ptr);
 
-  VecCUDARestoreArrayRead(*v, &v_ptr);
+  VecHIPRestoreArrayRead(*v, &v_ptr);
+  #else
+  const DG_FP *v_ptr;
+  VecGetArrayRead(*v, &v_ptr);
+
+  int size_of_petsc_vec;
+  VecGetLocalSize(*v, &size_of_petsc_vec);
+  DG_FP *v_ptr_d;
+  hipMalloc(&v_ptr_d, size_of_petsc_vec * sizeof(DG_FP));
+  hipMemcpy(v_ptr_d, v_ptr, size_of_petsc_vec * sizeof(DG_FP), hipMemcpyHostToDevice);
+
+  copy_vec_to_dat(v_dat, v_ptr_d);
+
+  hipFree(v_ptr_d);
+
+  VecRestoreArrayRead(*v, &v_ptr);
+  #endif
   timer->endTimer("PETScUtils - store_vec");
-  */
 }
 
 // P-adaptive stuff
@@ -158,7 +176,7 @@ void PETScUtils::copy_vec_to_dat_p_adapt(op_dat dat, const DG_FP *dat_d, DGMesh 
 
   int setSize = dat->set->size;
   int *tempOrder = (int *)malloc(setSize * sizeof(int));
-  cudaMemcpy(tempOrder, mesh->order->data_d, setSize * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(tempOrder, mesh->order->data_d, setSize * sizeof(int), hipMemcpyDeviceToHost);
 
   int vec_ind = 0;
   int block_start = 0;
@@ -178,7 +196,7 @@ void PETScUtils::copy_vec_to_dat_p_adapt(op_dat dat, const DG_FP *dat_d, DGMesh 
     } else {
       if(block_count != 0) {
         DG_FP *block_start_dat_c = (DG_FP *)dat->data_d + block_start * dat->dim;
-        cudaMemcpy(block_start_dat_c, dat_d + vec_ind, block_count * DG_NP * sizeof(DG_FP), cudaMemcpyDeviceToDevice);
+        hipMemcpy(block_start_dat_c, dat_d + vec_ind, block_count * DG_NP * sizeof(DG_FP), hipMemcpyDeviceToDevice);
         vec_ind += DG_NP * block_count;
       }
       block_count = 0;
@@ -188,13 +206,13 @@ void PETScUtils::copy_vec_to_dat_p_adapt(op_dat dat, const DG_FP *dat_d, DGMesh 
     int Np, Nfp;
     get_num_nodes_petsc_utils(N, &Np, &Nfp);
 
-    cudaMemcpy(v_c, dat_d + vec_ind, Np * sizeof(DG_FP), cudaMemcpyDeviceToDevice);
+    hipMemcpy(v_c, dat_d + vec_ind, Np * sizeof(DG_FP), hipMemcpyDeviceToDevice);
     vec_ind += Np;
   }
 
   if(block_count != 0) {
     DG_FP *block_start_dat_c = (DG_FP *)dat->data_d + block_start * dat->dim;
-    cudaMemcpy(block_start_dat_c, dat_d + vec_ind, block_count * DG_NP * sizeof(DG_FP), cudaMemcpyDeviceToDevice);
+    hipMemcpy(block_start_dat_c, dat_d + vec_ind, block_count * DG_NP * sizeof(DG_FP), hipMemcpyDeviceToDevice);
     vec_ind += DG_NP * block_count;
   }
   free(tempOrder);
@@ -221,7 +239,7 @@ void PETScUtils::copy_dat_to_vec_p_adapt(op_dat dat, DG_FP *dat_d, DGMesh *mesh)
 
   int setSize = dat->set->size;
   int *tempOrder = (int *)malloc(setSize * sizeof(int));
-  cudaMemcpy(tempOrder, mesh->order->data_d, setSize * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(tempOrder, mesh->order->data_d, setSize * sizeof(int), hipMemcpyDeviceToHost);
 
   int vec_ind = 0;
   int block_start = 0;
@@ -241,7 +259,7 @@ void PETScUtils::copy_dat_to_vec_p_adapt(op_dat dat, DG_FP *dat_d, DGMesh *mesh)
     } else {
       if(block_count != 0) {
         const DG_FP *block_start_dat_c = (DG_FP *)dat->data_d + block_start * dat->dim;
-        cudaMemcpy(dat_d + vec_ind, block_start_dat_c, block_count * DG_NP * sizeof(DG_FP), cudaMemcpyDeviceToDevice);
+        hipMemcpy(dat_d + vec_ind, block_start_dat_c, block_count * DG_NP * sizeof(DG_FP), hipMemcpyDeviceToDevice);
         vec_ind += DG_NP * block_count;
       }
       block_count = 0;
@@ -251,13 +269,13 @@ void PETScUtils::copy_dat_to_vec_p_adapt(op_dat dat, DG_FP *dat_d, DGMesh *mesh)
     int Np, Nfp;
     get_num_nodes_petsc_utils(N, &Np, &Nfp);
 
-    cudaMemcpy(dat_d + vec_ind, v_c, Np * sizeof(DG_FP), cudaMemcpyDeviceToDevice);
+    hipMemcpy(dat_d + vec_ind, v_c, Np * sizeof(DG_FP), hipMemcpyDeviceToDevice);
     vec_ind += Np;
   }
 
   if(block_count != 0) {
     const DG_FP *block_start_dat_c = (DG_FP *)dat->data_d + block_start * dat->dim;
-    cudaMemcpy(dat_d + vec_ind, block_start_dat_c, block_count * DG_NP * sizeof(DG_FP), cudaMemcpyDeviceToDevice);
+    hipMemcpy(dat_d + vec_ind, block_start_dat_c, block_count * DG_NP * sizeof(DG_FP), hipMemcpyDeviceToDevice);
     vec_ind += DG_NP * block_count;
   }
   free(tempOrder);
@@ -310,16 +328,17 @@ void PETScUtils::store_vec_p_adapt(Vec *v, op_dat v_dat, DGMesh *mesh) {
 
 void PETScUtils::create_vec_coarse(Vec *v, op_set set) {
   throw std::runtime_error("PETScUtils::create_vec_coarse not implemented for HIP yet");
-  /*
   timer->startTimer("PETScUtils - create_vec");
   VecCreate(PETSC_COMM_WORLD, v);
-  VecSetType(*v, VECCUDA);
+  #ifdef PETSC_COMPILED_WITH_HIP
+  VecSetType(*v, VECHIP);
+  #else
+  VecSetType(*v, VECSTANDARD);
+  #endif
   VecSetSizes(*v, set->size * DG_NP_N1, PETSC_DECIDE);
   timer->endTimer("PETScUtils - create_vec");
-  */
 }
 
-/*
 __global__ void aos_to_soa_coarse(const int set_size, const int stride, const DG_FP *in, float *out) {
   const int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(tid >= set_size * DG_NP_N1) return;
@@ -329,12 +348,9 @@ __global__ void aos_to_soa_coarse(const int set_size, const int stride, const DG
   const int out_ind = cell + node * stride;
   out[out_ind] = (float)in[in_ind];
 }
-*/
 
 // Copy PETSc vec array to OP2 dat
 void PETScUtils::copy_vec_to_dat_coarse(op_dat dat, const DG_FP *dat_d) {
-  throw std::runtime_error("PETScUtils::copy_vec_to_dat_coarse not implemented for HIP yet");
-  /*
   timer->startTimer("PETScUtils - copy_vec_to_dat_coarse");
   op_arg copy_args[] = {
     op_arg_dat(dat, -1, OP_ID, DG_NP, "float", OP_WRITE)
@@ -343,19 +359,17 @@ void PETScUtils::copy_vec_to_dat_coarse(op_dat dat, const DG_FP *dat_d) {
   op_mpi_wait_all_grouped(1, copy_args, 2, 0);
 
   #ifdef DG_OP2_SOA
-  const int nthread = 512;
+  const int nthread = 256;
   const int nblocks = dat->set->size * DG_NP_N1 / nthread + 1;
   aos_to_soa_coarse<<<nblocks,nthread>>>(dat->set->size, getSetSizeFromOpArg(&copy_args[0]), dat_d, (float *)dat->data_d);
   #else
-  cudaMemcpy2D(dat->data_d, DG_NP * sizeof(DG_FP), dat_d, DG_NP_N1 * sizeof(DG_FP), DG_NP_N1 * sizeof(DG_FP), dat->set->size, cudaMemcpyDeviceToDevice);
+  hipMemcpy2D(dat->data_d, DG_NP * sizeof(DG_FP), dat_d, DG_NP_N1 * sizeof(DG_FP), DG_NP_N1 * sizeof(DG_FP), dat->set->size, hipMemcpyDeviceToDevice);
   #endif
 
   op_mpi_set_dirtybit_cuda(1, copy_args);
   timer->endTimer("PETScUtils - copy_vec_to_dat_coarse");
-  */
 }
 
-/*
 __global__ void soa_to_aos_coarse(const int set_size, const int stride, const float *in, DG_FP *out) {
   const int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(tid >= set_size * DG_NP_N1) return;
@@ -365,12 +379,9 @@ __global__ void soa_to_aos_coarse(const int set_size, const int stride, const fl
   const int out_ind = cell * DG_NP_N1 + node;
   out[out_ind] = (double)in[in_ind];
 }
-*/
 
 // Copy OP2 dat to PETSc vec array
 void PETScUtils::copy_dat_to_vec_coarse(op_dat dat, DG_FP *dat_d) {
-  throw std::runtime_error("PETScUtils::copy_dat_to_vec_coarse not implemented for HIP yet");
-  /*
   timer->startTimer("PETScUtils - copy_dat_to_vec");
   op_arg copy_args[] = {
     op_arg_dat(dat, -1, OP_ID, DG_NP, "float", OP_READ)
@@ -379,44 +390,71 @@ void PETScUtils::copy_dat_to_vec_coarse(op_dat dat, DG_FP *dat_d) {
   op_mpi_wait_all_grouped(1, copy_args, 2, 0);
 
   #ifdef DG_OP2_SOA
-  const int nthread = 512;
+  const int nthread = 256;
   const int nblocks = dat->set->size * DG_NP_N1 / nthread + 1;
   soa_to_aos_coarse<<<nblocks,nthread>>>(dat->set->size, getSetSizeFromOpArg(&copy_args[0]), (float *)dat->data_d, dat_d);
   #else
-  cudaMemcpy2D(dat_d, DG_NP_N1 * sizeof(DG_FP), dat->data_d, DG_NP * sizeof(DG_FP), DG_NP_N1 * sizeof(DG_FP), dat->set->size, cudaMemcpyDeviceToDevice);
+  hipMemcpy2D(dat_d, DG_NP_N1 * sizeof(DG_FP), dat->data_d, DG_NP * sizeof(DG_FP), DG_NP_N1 * sizeof(DG_FP), dat->set->size, hipMemcpyDeviceToDevice);
   #endif
 
   op_mpi_set_dirtybit_cuda(1, copy_args);
   timer->endTimer("PETScUtils - copy_dat_to_vec");
-  */
 }
 
 // Load a PETSc vector with values from an OP2 dat for CPUs
 void PETScUtils::load_vec_coarse(Vec *v, op_dat v_dat) {
-  throw std::runtime_error("PETScUtils::load_vec_coarse not implemented for HIP yet");
-  /*
   timer->startTimer("PETScUtils - load_vec_coarse");
+  #ifdef PETSC_COMPILED_WITH_HIP
   DG_FP *v_ptr;
-  VecCUDAGetArray(*v, &v_ptr);
+  VecHIPGetArray(*v, &v_ptr);
 
   copy_dat_to_vec_coarse(v_dat, v_ptr);
 
-  VecCUDARestoreArray(*v, &v_ptr);
+  VecHIPRestoreArray(*v, &v_ptr);
+  #else
+  DG_FP *v_ptr;
+  VecGetArray(*v, &v_ptr);
+
+  int size_of_petsc_vec;
+  VecGetLocalSize(*v, &size_of_petsc_vec);
+  DG_FP *v_ptr_d;
+  hipMalloc(&v_ptr_d, size_of_petsc_vec * sizeof(DG_FP));
+
+  copy_dat_to_vec_coarse(v_dat, v_ptr_d);
+
+  hipMemcpy(v_ptr, v_ptr_d, size_of_petsc_vec * sizeof(DG_FP), hipMemcpyDeviceToHost);
+  hipFree(v_ptr_d);
+
+  VecRestoreArray(*v, &v_ptr);
+  #endif
   timer->endTimer("PETScUtils - load_vec_coarse");
-  */
 }
 
 // Load an OP2 dat with the values from a PETSc vector for CPUs
 void PETScUtils::store_vec_coarse(Vec *v, op_dat v_dat) {
-  throw std::runtime_error("PETScUtils::store_vec_coarse not implemented for HIP yet");
-  /*
   timer->startTimer("PETScUtils - store_vec_coarse");
+  #ifdef PETSC_COMPILED_WITH_HIP
   const DG_FP *v_ptr;
-  VecCUDAGetArrayRead(*v, &v_ptr);
+  VecHIPGetArrayRead(*v, &v_ptr);
 
   copy_vec_to_dat_coarse(v_dat, v_ptr);
 
-  VecCUDARestoreArrayRead(*v, &v_ptr);
+  VecHIPRestoreArrayRead(*v, &v_ptr);
+  #else
+  const DG_FP *v_ptr;
+  VecGetArrayRead(*v, &v_ptr);
+
+  int size_of_petsc_vec;
+  VecGetLocalSize(*v, &size_of_petsc_vec);
+  DG_FP *v_ptr_d;
+  hipMalloc(&v_ptr_d, size_of_petsc_vec * sizeof(DG_FP));
+  hipMemcpy(v_ptr_d, v_ptr, size_of_petsc_vec * sizeof(DG_FP), hipMemcpyHostToDevice);
+
+  copy_vec_to_dat_coarse(v_dat, v_ptr);
+
+  hipFree(v_ptr_d);
+
+  VecRestoreArrayRead(*v, &v_ptr);
+  #endif
   timer->endTimer("PETScUtils - store_vec_coarse");
-  */
 }

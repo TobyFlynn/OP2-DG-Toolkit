@@ -12,11 +12,11 @@
 
 cublasHandle_t cublas_handle;
 
-void init_op2_gemv_cublas() {
+void init_op2_gemv() {
   cublasCreate(&cublas_handle);
 }
 
-void destroy_op2_gemv_cublas() {
+void destroy_op2_gemv() {
   cublasDestroy(cublas_handle);
 }
 

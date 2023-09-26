@@ -9,15 +9,17 @@
 
 #include <stdexcept>
 
-// cublasHandle_t cublas_handle;
+#include "hipblas.h"
 
-// void init_op2_gemv_cublas() {
-//   cublasCreate(&cublas_handle);
-// }
+hipblasHandle_t hipblas_handle;
 
-// void destroy_op2_gemv_cublas() {
-//   cublasDestroy(cublas_handle);
-// }
+void init_op2_gemv() {
+  hipblasCreate(&hipblas_handle);
+}
+
+void destroy_op2_gemv() {
+  hipblasDestroy(hipblas_handle);
+}
 
 void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, const float alpha,
   const float beta, const DG_FP *matrix, op_dat arg4, op_dat arg5) {

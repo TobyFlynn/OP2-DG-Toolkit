@@ -3,16 +3,13 @@
 #include "dg_utils.h"
 
 int DGMesh2D::get_local_vec_unknowns() {
-  throw std::runtime_error("DGMesh2D::get_local_vec_unknowns not implemented for HIP yet");
-  return 0;
-/*
   op_arg op2_args[] = {
     op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ)
   };
   op_mpi_halo_exchanges_cuda(order->set, 1, op2_args);
   const int setSize = order->set->size;
   int *tempOrder = (int *)malloc(setSize * sizeof(int));
-  cudaMemcpy(tempOrder, order->data_d, setSize * sizeof(int), cudaMemcpyDeviceToHost);
+  hipMemcpy(tempOrder, order->data_d, setSize * sizeof(int), hipMemcpyDeviceToHost);
   int local_unkowns = 0;
   for(int i = 0; i < setSize; i++) {
     int Np, Nfp;
@@ -22,5 +19,4 @@ int DGMesh2D::get_local_vec_unknowns() {
   free(tempOrder);
   op_mpi_set_dirtybit_cuda(1, op2_args);
   return local_unkowns;
-*/
 }
