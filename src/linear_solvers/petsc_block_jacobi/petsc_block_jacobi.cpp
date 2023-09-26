@@ -54,7 +54,8 @@ bool PETScBlockJacobiSolver::solve(op_dat rhs, op_dat ans) {
   timer->startTimer("PETScBlockJacobiSolver - solve");
   // TODO only call when necessary
   calc_precond_mat();
-  create_shell_mat();
+  if(!pMatInit)
+    create_shell_mat();
   KSPSetOperators(ksp, pMat, pMat);
   if(nullspace) {
     MatNullSpace ns;

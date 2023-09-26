@@ -59,7 +59,6 @@ PETScPMultigrid::~PETScPMultigrid() {
 void PETScPMultigrid::init() {
   PETScUtils::create_vec(&b, mesh->cells);
   PETScUtils::create_vec(&x, mesh->cells);
-  create_shell_mat();
   pmultigridSolver->init();
 }
 
@@ -69,6 +68,8 @@ void PETScPMultigrid::set_coarse_matrix(PoissonCoarseMatrix *c_mat) {
 
 bool PETScPMultigrid::solve(op_dat rhs, op_dat ans) {
   timer->startTimer("PETScPMultigrid - solve");
+  if(!pMatInit)
+    create_shell_mat();
   if(nullspace) {
     MatNullSpace ns;
     MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &ns);

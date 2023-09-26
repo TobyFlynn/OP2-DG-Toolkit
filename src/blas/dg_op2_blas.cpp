@@ -115,6 +115,8 @@ void op2_cpu_gemm_halo_exchange(const int m, const int k,
     const int n = round == 0 ? b_dat->set->size : b_dat->set->size + b_dat->set->exec_size + b_dat->set->nonexec_size;
     const int start = round == 0 ? 0 : b_dat->set->size;
     const int round_size = n - start;
+    if(round_size <= 0)
+      continue;
     const DG_FP *B = (DG_FP *)b_dat->data + start * ldb;
     DG_FP *C = (DG_FP *)c_dat->data + start * ldc;
     #ifdef OP2_DG_USE_LIBXSMM
@@ -217,6 +219,8 @@ void op2_cpu_gemm_halo_exchange_sp(const int m, const int k,
     const int n = round == 0 ? b_dat->set->size : b_dat->set->size + b_dat->set->exec_size + b_dat->set->nonexec_size;
     const int start = round == 0 ? 0 : b_dat->set->size;
     const int round_size = n - start;
+    if(round_size <= 0)
+      continue;
 
     const float *B = (float *)b_dat->data + start * ldb;
     float *C = (float *)c_dat->data + start * ldc;

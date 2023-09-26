@@ -59,7 +59,6 @@ PETScJacobiSolver::~PETScJacobiSolver() {
 void PETScJacobiSolver::init() {
   PETScUtils::create_vec(&b, mesh->cells);
   PETScUtils::create_vec(&x, mesh->cells);
-  create_shell_mat();
 }
 
 bool PETScJacobiSolver::solve(op_dat rhs, op_dat ans) {
@@ -69,6 +68,9 @@ bool PETScJacobiSolver::solve(op_dat rhs, op_dat ans) {
     throw std::runtime_error("PETScJacobiSolver matrix should be of type PoissonMatrixFreeDiag\n");
   }
   diagMat = dynamic_cast<PoissonMatrixFreeDiag*>(matrix);
+
+  if(!pMatInit)
+    create_shell_mat();
 
   if(nullspace) {
     MatNullSpace ns;
