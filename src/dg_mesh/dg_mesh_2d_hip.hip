@@ -2,6 +2,9 @@
 
 #include "dg_utils.h"
 
+#include <hip/hip_runtime.h>
+#include <hip/hip_runtime_api.h>
+
 int DGMesh2D::get_local_vec_unknowns() {
   op_arg op2_args[] = {
     op_arg_dat(order, -1, OP_ID, 1, "int", OP_READ)

@@ -8,6 +8,9 @@
 
 #include "dg_utils.h"
 
+#include <hip/hip_runtime.h>
+#include <hip/hip_runtime_api.h>
+
 DG_FP *getOP2PtrDevice(op_dat dat, op_access acc) {
   op_arg args[] = {
     op_arg_dat(dat, -1, OP_ID, dat->dim, DG_FP_STR, acc)

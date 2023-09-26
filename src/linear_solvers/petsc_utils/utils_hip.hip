@@ -8,6 +8,9 @@ extern Timing *timer;
 
 #include <stdexcept>
 
+#include <hip/hip_runtime.h>
+#include <hip/hip_runtime_api.h>
+
 void get_num_nodes_petsc_utils(const int N, int *Np, int *Nfp) {
   #if DG_DIM == 2
   DGUtils::numNodes2D(N, Np, Nfp);
