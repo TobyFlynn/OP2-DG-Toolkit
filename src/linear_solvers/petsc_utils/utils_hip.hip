@@ -42,6 +42,7 @@ void PETScUtils::copy_vec_to_dat(op_dat dat, const DG_FP *dat_d) {
   const int nthread = 256;
   const int nblocks = dat->set->size * DG_NP / nthread + 1;
   aos_to_soa<<<nblocks,nthread>>>(dat->set->size, getSetSizeFromOpArg(&copy_args[0]), dat_d, (DG_FP *)dat->data_d);
+  cutilSafeCall(hipDeviceSynchronize());
   #else
   hipMemcpy(dat->data_d, dat_d, dat->set->size * DG_NP * sizeof(DG_FP), hipMemcpyDeviceToDevice);
   #endif
@@ -73,6 +74,7 @@ void PETScUtils::copy_dat_to_vec(op_dat dat, DG_FP *dat_d) {
   const int nthread = 256;
   const int nblocks = dat->set->size * DG_NP / nthread + 1;
   soa_to_aos<<<nblocks,nthread>>>(dat->set->size, getSetSizeFromOpArg(&copy_args[0]), (DG_FP *)dat->data_d, dat_d);
+  cutilSafeCall(hipDeviceSynchronize());
   #else
   hipMemcpy(dat_d, dat->data_d, dat->set->size * DG_NP * sizeof(DG_FP), hipMemcpyDeviceToDevice);
   #endif
@@ -330,7 +332,6 @@ void PETScUtils::store_vec_p_adapt(Vec *v, op_dat v_dat, DGMesh *mesh) {
 }
 
 void PETScUtils::create_vec_coarse(Vec *v, op_set set) {
-  throw std::runtime_error("PETScUtils::create_vec_coarse not implemented for HIP yet");
   timer->startTimer("PETScUtils - create_vec");
   VecCreate(PETSC_COMM_WORLD, v);
   #ifdef PETSC_COMPILED_WITH_HIP
@@ -365,6 +366,7 @@ void PETScUtils::copy_vec_to_dat_coarse(op_dat dat, const DG_FP *dat_d) {
   const int nthread = 256;
   const int nblocks = dat->set->size * DG_NP_N1 / nthread + 1;
   aos_to_soa_coarse<<<nblocks,nthread>>>(dat->set->size, getSetSizeFromOpArg(&copy_args[0]), dat_d, (float *)dat->data_d);
+  cutilSafeCall(hipDeviceSynchronize());
   #else
   hipMemcpy2D(dat->data_d, DG_NP * sizeof(DG_FP), dat_d, DG_NP_N1 * sizeof(DG_FP), DG_NP_N1 * sizeof(DG_FP), dat->set->size, hipMemcpyDeviceToDevice);
   #endif
@@ -396,6 +398,7 @@ void PETScUtils::copy_dat_to_vec_coarse(op_dat dat, DG_FP *dat_d) {
   const int nthread = 256;
   const int nblocks = dat->set->size * DG_NP_N1 / nthread + 1;
   soa_to_aos_coarse<<<nblocks,nthread>>>(dat->set->size, getSetSizeFromOpArg(&copy_args[0]), (float *)dat->data_d, dat_d);
+  cutilSafeCall(hipDeviceSynchronize());
   #else
   hipMemcpy2D(dat_d, DG_NP_N1 * sizeof(DG_FP), dat->data_d, DG_NP * sizeof(DG_FP), DG_NP_N1 * sizeof(DG_FP), dat->set->size, hipMemcpyDeviceToDevice);
   #endif
@@ -453,7 +456,7 @@ void PETScUtils::store_vec_coarse(Vec *v, op_dat v_dat) {
   hipMalloc(&v_ptr_d, size_of_petsc_vec * sizeof(DG_FP));
   hipMemcpy(v_ptr_d, v_ptr, size_of_petsc_vec * sizeof(DG_FP), hipMemcpyHostToDevice);
 
-  copy_vec_to_dat_coarse(v_dat, v_ptr);
+  copy_vec_to_dat_coarse(v_dat, v_ptr_d);
 
   hipFree(v_ptr_d);
 
