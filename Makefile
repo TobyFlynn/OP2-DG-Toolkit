@@ -69,8 +69,6 @@ cuda: base $(LIB)/libop2dgtoolkit_2d_cuda.a $(LIB)/libop2dgtoolkit_2d_mpi_cuda.a
 hip: base $(LIB)/libop2dgtoolkit_2d_hip.a $(LIB)/libop2dgtoolkit_2d_mpi_hip.a \
 	$(LIB)/libop2dgtoolkit_3d_hip.a $(LIB)/libop2dgtoolkit_3d_mpi_hip.a
 
-hip_2d: base $(LIB)/libop2dgtoolkit_2d_hip.a $(LIB)/libop2dgtoolkit_2d_mpi_hip.a 
-
 clean:
 	-rm -rf $(OBJ)
 	-rm -rf $(LIB)
@@ -227,31 +225,15 @@ LINEAR_SOLVER_HIP_OBJ := linear_solvers/petsc_utils/utils_hip.o
 COMMON_2D_OBJ := dg_constants/dg_constants_2d.o \
 	dg_mesh_op/dg_mesh_2d_op.o \
 	dg_operators_op/dg_operators_2d_op.o \
-	matrices_op/2d/poisson_matrix_over_int_op.o \
 	matrices_op/2d/poisson_coarse_matrix_op.o \
-	matrices_op/2d/poisson_coarse_matrix_over_int_op.o \
 	matrices_op/2d/poisson_matrix_free_mult_op.o \
 	matrices_op/2d/poisson_matrix_free_diag_op.o \
 	matrices/2d/poisson_matrix_free.o \
-	matrices_op/2d/poisson_semi_matrix_free_over_int_op.o \
-	matrices_op/2d/poisson_matrix_free_over_int_op.o \
-	matrices_op/2d/mm_poisson_matrix_over_int_op.o \
 	matrices_op/2d/mm_poisson_matrix_free_op.o \
-	matrices_op/2d/mm_poisson_matrix_free_over_int_op.o \
 	matrices_op/2d/factor_poisson_matrix_free_mult_op.o \
 	matrices_op/2d/factor_poisson_matrix_free_diag_op.o \
 	matrices_op/2d/factor_mm_poisson_matrix_free_diag_op.o \
 	matrices_op/2d/factor_poisson_coarse_matrix_op.o \
-	matrices_op/2d/factor_poisson_matrix_over_int_op.o \
-	matrices_op/2d/factor_poisson_coarse_matrix_over_int_op.o \
-	matrices_op/2d/factor_poisson_semi_matrix_free_over_int_op.o \
-	matrices_op/2d/factor_poisson_matrix_free_over_int_op.o \
-	matrices_op/2d/factor_mm_poisson_matrix_over_int_op.o \
-	matrices_op/2d/factor_mm_poisson_matrix_free_over_int_op.o \
-	matrices_op/2d/cub_poisson_matrix_op.o \
-	matrices_op/2d/cub_factor_poisson_matrix_op.o \
-	matrices_op/2d/cub_mm_poisson_matrix_op.o \
-	matrices_op/2d/cub_factor_mm_poisson_matrix_op.o \
 	$(COMMON_OBJ) \
 	$(LINEAR_SOLVER_OBJ)
 
