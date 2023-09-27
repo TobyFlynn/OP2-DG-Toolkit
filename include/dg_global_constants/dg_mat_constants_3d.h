@@ -3,7 +3,7 @@
 
 #include "dg_compiler_defs.h"
 
-#ifdef OP2_DG_CUDA
+#if defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
 extern __constant__ DG_FP *dg_r_kernel;
 extern __constant__ DG_FP *dg_s_kernel;
 extern __constant__ DG_FP *dg_t_kernel;

@@ -15,12 +15,6 @@
 #include "timing.h"
 extern Timing *timer;
 
-int PoissonCoarseMatrix::getUnknowns() {
-  const int setSize = _mesh->order->set->size;
-  int unknowns = setSize * DG_NP_N1;
-  return unknowns;
-}
-
 void PoissonCoarseMatrix::set_glb_ind() {
   int unknowns = getUnknowns();
   int global_ind = 0;

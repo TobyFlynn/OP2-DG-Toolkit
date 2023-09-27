@@ -1,6 +1,6 @@
 #include "op_lib_cpp.h"
-#include "op_cuda_rt_support.h"
-#include "op_cuda_reduction.h"
+#include "op_hip_rt_support.h"
+#include "op_hip_reduction.h"
 
 #include "dg_compiler_defs.h"
 #include "dg_mesh/dg_mesh.h"
@@ -8,16 +8,16 @@
 #include "kernels/templated_soa.h"
 #include "kernels/templated_soa_sp.h"
 
-#include "cublas_v2.h"
+#include <hipblas/hipblas.h>
 
-cublasHandle_t cublas_handle;
+hipblasHandle_t hipblas_handle;
 
-void init_op2_gemv_cublas() {
-  cublasCreate(&cublas_handle);
+void init_op2_gemv() {
+  hipblasCreate(&hipblas_handle);
 }
 
-void destroy_op2_gemv_cublas() {
-  cublasDestroy(cublas_handle);
+void destroy_op2_gemv() {
+  hipblasDestroy(hipblas_handle);
 }
 
 template<int m, int n>
@@ -92,7 +92,6 @@ void templated_wrapper_sp(bool trans, int nblocks, int nthread, int sh_mem_size,
 
 void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, const float alpha,
   const float beta, const float *A_sp, op_dat x, op_dat y) {
-
   int nargs = 2;
   op_arg args[2] = {
     op_arg_dat(x, -1, OP_ID, x->dim, "float", OP_READ),
@@ -149,24 +148,23 @@ void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, c
                                  (float *) args[1].data_d, set->size);
     } else {
       if(t) {
-        cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, set->size, n, m,
-                      &alpha, (float *)args[0].data_d, strideX, A_sp, m,
-                      &beta, (float *)args[1].data_d, strideY);
+        hipblasSgemm(hipblas_handle, HIPBLAS_OP_N, HIPBLAS_OP_N, set->size, n, m,
+                     &alpha, (float *)args[0].data_d, strideX, A_sp, m,
+                     &beta, (float *)args[1].data_d, strideY);
       } else {
-        cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, set->size, m, n,
-                    &alpha, (float *)args[0].data_d, strideX, A_sp, m, &beta,
-                    (float *)args[1].data_d, strideY);
+        hipblasSgemm(hipblas_handle, HIPBLAS_OP_N, HIPBLAS_OP_T, set->size, m, n,
+                     &alpha, (float *)args[0].data_d, strideX, A_sp, m, &beta,
+                     (float *)args[1].data_d, strideY);
       }
     }
   }
 
   op_mpi_set_dirtybit_cuda(nargs, args);
-  cutilSafeCall(cudaDeviceSynchronize());
+  cutilSafeCall(hipDeviceSynchronize());
 }
 
 void custom_kernel_gemv_halo_exchange_sp(op_set set, const bool t, const int m, const int n, const float alpha,
   const float beta, const float *A_sp, op_dat x, op_dat y) {
-
   int nargs = 2;
   op_arg args[2] = {
     op_arg_dat(x, -1, OP_ID, x->dim, "float", OP_READ),
@@ -229,20 +227,20 @@ void custom_kernel_gemv_halo_exchange_sp(op_set set, const bool t, const int m, 
                                    x_ptr, y_ptr, end - start);
       } else {
         if(t) {
-          cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, end - start, n,
-                      m, &alpha, x_ptr, strideX, A_sp, m, &beta, y_ptr,
-                      strideY);
+          hipblasSgemm(hipblas_handle, HIPBLAS_OP_N, HIPBLAS_OP_N, end - start, n,
+                       m, &alpha, x_ptr, strideX, A_sp, m, &beta, y_ptr,
+                       strideY);
         } else {
-          cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, end - start, m,
-                      n, &alpha, x_ptr, strideX, A_sp, m, &beta, y_ptr,
-                      strideY);
+          hipblasSgemm(hipblas_handle, HIPBLAS_OP_N, HIPBLAS_OP_T, end - start, m,
+                       n, &alpha, x_ptr, strideX, A_sp, m, &beta, y_ptr,
+                       strideY);
         }
       }
     }
   }
 
   op_mpi_set_dirtybit_force_halo_exchange(nargs, args, 2);
-  cutilSafeCall(cudaDeviceSynchronize());
+  cutilSafeCall(hipDeviceSynchronize());
 }
 
 template<int m, int n>
@@ -373,23 +371,22 @@ void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, cons
                                  (double *) args[1].data_d, set->size);
     } else {
       if(t) {
-        cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, set->size, n, m,
+        hipblasDgemm(hipblas_handle, HIPBLAS_OP_N, HIPBLAS_OP_N, set->size, n, m,
                       &alpha, (double *)args[0].data_d, strideX, matrix, m,
                       &beta, (double *)args[1].data_d, strideY);
       } else {
-        cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, set->size, m, n,
+        hipblasDgemm(hipblas_handle, HIPBLAS_OP_N, HIPBLAS_OP_T, set->size, m, n,
                     &alpha, (double *)args[0].data_d, strideX, matrix, m, &beta,
                     (double *)args[1].data_d, strideY);
       }
     }
   }
   op_mpi_set_dirtybit_cuda(nargs, args);
-  cutilSafeCall(cudaDeviceSynchronize());
+  cutilSafeCall(hipDeviceSynchronize());
 }
 
 void custom_kernel_gemv_halo_exchange(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
   const DG_FP beta, const DG_FP *matrix, op_dat x, op_dat y) {
-
   int nargs = 2;
   op_arg args[2] = {
     op_arg_dat(x, -1, OP_ID, x->dim, DG_FP_STR, OP_READ),
@@ -451,11 +448,11 @@ void custom_kernel_gemv_halo_exchange(op_set set, const bool t, const int m, con
                                    x_ptr, y_ptr, end - start);
       } else {
         if(t) {
-          cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, end - start, n,
+          hipblasDgemm(hipblas_handle, HIPBLAS_OP_N, HIPBLAS_OP_N, end - start, n,
                       m, &alpha, x_ptr, strideX, matrix, m, &beta, y_ptr,
                       strideY);
         } else {
-          cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, end - start, m,
+          hipblasDgemm(hipblas_handle, HIPBLAS_OP_N, HIPBLAS_OP_T, end - start, m,
                       n, &alpha, x_ptr, strideX, matrix, m, &beta, y_ptr,
                       strideY);
         }
@@ -463,5 +460,5 @@ void custom_kernel_gemv_halo_exchange(op_set set, const bool t, const int m, con
     }
   }
   op_mpi_set_dirtybit_force_halo_exchange(nargs, args, 2);
-  cutilSafeCall(cudaDeviceSynchronize());
+  cutilSafeCall(hipDeviceSynchronize());
 }

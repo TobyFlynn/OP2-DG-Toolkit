@@ -59,7 +59,6 @@ PETScPMultigrid::~PETScPMultigrid() {
 void PETScPMultigrid::init() {
   PETScUtils::create_vec(&b, mesh->cells);
   PETScUtils::create_vec(&x, mesh->cells);
-  create_shell_mat();
   pmultigridSolver->init();
 }
 
@@ -69,6 +68,8 @@ void PETScPMultigrid::set_coarse_matrix(PoissonCoarseMatrix *c_mat) {
 
 bool PETScPMultigrid::solve(op_dat rhs, op_dat ans) {
   timer->startTimer("PETScPMultigrid - solve");
+  if(!pMatInit)
+    create_shell_mat();
   if(nullspace) {
     MatNullSpace ns;
     MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &ns);
@@ -122,35 +123,72 @@ bool PETScPMultigrid::solve(op_dat rhs, op_dat ans) {
   return converged;
 }
 
-void PETScPMultigrid::calc_rhs(const DG_FP *in_d, DG_FP *out_d) {
+void PETScPMultigrid::calc_rhs(Vec in, Vec out) {
   timer->startTimer("PETScPMultigrid - calc_rhs");
   // Copy u to OP2 dat
   DGTempDat tmp_in  = dg_dat_pool->requestTempDatCells(DG_NP);
   DGTempDat tmp_out = dg_dat_pool->requestTempDatCells(DG_NP);
-  // PETScUtils::copy_vec_to_dat_p_adapt(tmp_in.dat, in_d, mesh);
-  PETScUtils::copy_vec_to_dat(tmp_in.dat, in_d);
+  PETScUtils::store_vec(&in, tmp_in.dat);
 
   matrix->mult(tmp_in.dat, tmp_out.dat);
 
-  // PETScUtils::copy_dat_to_vec_p_adapt(tmp_out.dat, out_d, mesh);
-  PETScUtils::copy_dat_to_vec(tmp_out.dat, out_d);
+  PETScUtils::load_vec(&out, tmp_out.dat);
   dg_dat_pool->releaseTempDatCells(tmp_in);
   dg_dat_pool->releaseTempDatCells(tmp_out);
   timer->endTimer("PETScPMultigrid - calc_rhs");
 }
 
-void PETScPMultigrid::precond(const DG_FP *in_d, DG_FP *out_d) {
+void PETScPMultigrid::precond(Vec in, Vec out) {
   timer->startTimer("PETScPMultigrid - precond");
   DGTempDat tmp_in  = dg_dat_pool->requestTempDatCells(DG_NP);
   DGTempDat tmp_out = dg_dat_pool->requestTempDatCells(DG_NP);
-  // PETScUtils::copy_vec_to_dat_p_adapt(tmp_in.dat, in_d, mesh);
-  PETScUtils::copy_vec_to_dat(tmp_in.dat, in_d);
+  PETScUtils::store_vec(&in, tmp_in.dat);
 
   pmultigridSolver->solve(tmp_in.dat, tmp_out.dat);
 
-  // PETScUtils::copy_dat_to_vec_p_adapt(tmp_out.dat, out_d, mesh);
-  PETScUtils::copy_dat_to_vec(tmp_out.dat, out_d);
+  PETScUtils::load_vec(&out, tmp_out.dat);
   dg_dat_pool->releaseTempDatCells(tmp_in);
   dg_dat_pool->releaseTempDatCells(tmp_out);
   timer->endTimer("PETScPMultigrid - precond");
+}
+
+PetscErrorCode matMultPPMS(Mat A, Vec x, Vec y) {
+  PETScPMultigrid *solver;
+  MatShellGetContext(A, &solver);
+  solver->calc_rhs(x, y);
+  return 0;
+}
+
+void PETScPMultigrid::create_shell_mat() {
+  if(pMatInit)
+    MatDestroy(&pMat);
+
+  MatCreateShell(PETSC_COMM_WORLD, matrix->getUnknowns(), matrix->getUnknowns(), PETSC_DETERMINE, PETSC_DETERMINE, this, &pMat);
+  MatShellSetOperation(pMat, MATOP_MULT, (void(*)(void))matMultPPMS);
+  
+  #if defined(OP2_DG_CUDA)
+  MatShellSetVecType(pMat, VECCUDA);
+  #elif defined(OP2_DG_HIP)
+  #ifdef PETSC_COMPILED_WITH_HIP
+  MatShellSetVecType(pMat, VECHIP);
+  #else
+  MatShellSetVecType(pMat, VECSTANDARD);
+  #endif
+  #else
+  MatShellSetVecType(pMat, VECSTANDARD);
+  #endif
+
+  pMatInit = true;
+}
+
+PetscErrorCode preconPPMS(PC pc, Vec x, Vec y) {
+  PETScPMultigrid *solver;
+  PCShellGetContext(pc, (void **)&solver);
+  solver->precond(x, y);
+  return 0;
+}
+
+void PETScPMultigrid::set_shell_pc(PC pc) {
+  PCShellSetApply(pc, preconPPMS);
+  PCShellSetContext(pc, this);
 }

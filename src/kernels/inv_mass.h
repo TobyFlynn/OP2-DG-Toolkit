@@ -1,6 +1,6 @@
 inline void inv_mass(const int *p, const DG_FP *J, DG_FP *x) {
   // Get constants
-  const int dg_np  = DG_CONSTANTS_TK[(*p - 1) * 5];
+  const int dg_np  = DG_CONSTANTS_TK[(*p - 1) * DG_NUM_CONSTANTS];
   const DG_FP *mat = &dg_InvMass_kernel[(*p - 1) * DG_NP * DG_NP];
 
   DG_FP tmp[DG_NP];

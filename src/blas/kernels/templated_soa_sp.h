@@ -1,5 +1,21 @@
 #pragma once
 
+#ifdef __ldcg_wrapper
+#undef __ldcg_wrapper
+#endif
+
+#ifdef __stcg_wrapper
+#undef __stcg_wrapper
+#endif
+
+#ifdef OP2_DG_CUDA
+#define __ldcg_wrapper __ldcg
+#define __stcg_wrapper(X, Y) __stcg((X), (Y))
+#else
+#define __ldcg_wrapper *
+#define __stcg_wrapper(X, Y) *(X) = (Y)
+#endif
+
 template<int m, int n>
 __global__ void templated_cuda_gemm_gpu_sp(
   const int strideX, const int strideY,
@@ -23,7 +39,7 @@ __global__ void templated_cuda_gemm_gpu_sp(
     float *y = arg5 + cell;
 
     float y_tmp[m];
-    float x_tmp = __ldcg(x);
+    float x_tmp = __ldcg_wrapper(x);
     #pragma unroll
     for(int i = 0; i < m; i++) {
       const int ind = DG_MAT_IND(i,0,m,n);
@@ -32,7 +48,7 @@ __global__ void templated_cuda_gemm_gpu_sp(
 
     #pragma unroll
     for(int j = 1; j < n - 1; j++) {
-      x_tmp = __ldcg(x + j * strideX);
+      x_tmp = __ldcg_wrapper(x + j * strideX);
       #pragma unroll
       for(int i = 0; i < m; i++) {
         const int ind = DG_MAT_IND(i,j,m,n);
@@ -40,13 +56,13 @@ __global__ void templated_cuda_gemm_gpu_sp(
       }
     }
 
-    x_tmp = __ldcg(x + (n-1) * strideX);
+    x_tmp = __ldcg_wrapper(x + (n-1) * strideX);
     #pragma unroll
     for(int i = 0; i < m; i++) {
       const int ind = DG_MAT_IND(i,n-1,m,n);
       y_tmp[i] += mat_sh[ind] * x_tmp;
-      y_tmp[i] = alpha * y_tmp[i] + beta * __ldcg(y + i * strideY);
-      __stcg(y + i * strideY, y_tmp[i]);
+      y_tmp[i] = alpha * y_tmp[i] + beta * __ldcg_wrapper(y + i * strideY);
+      __stcg_wrapper(y + i * strideY, y_tmp[i]);
     }
   }
 }
@@ -74,7 +90,7 @@ __global__ void templated_cuda_gemm_gpu_1_alpha_sp(
     float *y = arg5 + cell;
 
     float y_tmp[m];
-    float x_tmp = __ldcg(x);
+    float x_tmp = __ldcg_wrapper(x);
     #pragma unroll
     for(int i = 0; i < m; i++) {
       const int ind = DG_MAT_IND(i,0,m,n);
@@ -83,7 +99,7 @@ __global__ void templated_cuda_gemm_gpu_1_alpha_sp(
 
     #pragma unroll
     for(int j = 1; j < n - 1; j++) {
-      x_tmp = __ldcg(x + j * strideX);
+      x_tmp = __ldcg_wrapper(x + j * strideX);
       #pragma unroll
       for(int i = 0; i < m; i++) {
         const int ind = DG_MAT_IND(i,j,m,n);
@@ -91,13 +107,13 @@ __global__ void templated_cuda_gemm_gpu_1_alpha_sp(
       }
     }
 
-    x_tmp = __ldcg(x + (n-1) * strideX);
+    x_tmp = __ldcg_wrapper(x + (n-1) * strideX);
     #pragma unroll
     for(int i = 0; i < m; i++) {
       const int ind = DG_MAT_IND(i,n-1,m,n);
       y_tmp[i] += mat_sh[ind] * x_tmp;
-      y_tmp[i] = y_tmp[i] + beta * __ldcg(y + i * strideY);
-      __stcg(y + i * strideY, y_tmp[i]);
+      y_tmp[i] = y_tmp[i] + beta * __ldcg_wrapper(y + i * strideY);
+      __stcg_wrapper(y + i * strideY, y_tmp[i]);
     }
   }
 }
@@ -124,7 +140,7 @@ __global__ void templated_cuda_gemm_gpu_1_alpha_0_beta_sp(
     float *y = arg5 + cell;
 
     float y_tmp[m];
-    float x_tmp = __ldcg(x);
+    float x_tmp = __ldcg_wrapper(x);
     #pragma unroll
     for(int i = 0; i < m; i++) {
       const int ind = DG_MAT_IND(i,0,m,n);
@@ -133,7 +149,7 @@ __global__ void templated_cuda_gemm_gpu_1_alpha_0_beta_sp(
 
     #pragma unroll
     for(int j = 1; j < n - 1; j++) {
-      x_tmp = __ldcg(x + j * strideX);
+      x_tmp = __ldcg_wrapper(x + j * strideX);
       #pragma unroll
       for(int i = 0; i < m; i++) {
         const int ind = DG_MAT_IND(i,j,m,n);
@@ -141,12 +157,12 @@ __global__ void templated_cuda_gemm_gpu_1_alpha_0_beta_sp(
       }
     }
 
-    x_tmp = __ldcg(x + (n-1) * strideX);
+    x_tmp = __ldcg_wrapper(x + (n-1) * strideX);
     #pragma unroll
     for(int i = 0; i < m; i++) {
       const int ind = DG_MAT_IND(i,n-1,m,n);
       y_tmp[i] += mat_sh[ind] * x_tmp;
-      __stcg(y + i * strideY, y_tmp[i]);
+      __stcg_wrapper(y + i * strideY, y_tmp[i]);
     }
   }
 }
@@ -173,7 +189,7 @@ __global__ void templated_cuda_gemm_gpu_1_alpha_1_beta_sp(
     float *y = arg5 + cell;
 
     float y_tmp[m];
-    float x_tmp = __ldcg(x);
+    float x_tmp = __ldcg_wrapper(x);
     #pragma unroll
     for(int i = 0; i < m; i++) {
       const int ind = DG_MAT_IND(i,0,m,n);
@@ -182,7 +198,7 @@ __global__ void templated_cuda_gemm_gpu_1_alpha_1_beta_sp(
 
     #pragma unroll
     for(int j = 1; j < n - 1; j++) {
-      x_tmp = __ldcg(x + j * strideX);
+      x_tmp = __ldcg_wrapper(x + j * strideX);
       #pragma unroll
       for(int i = 0; i < m; i++) {
         const int ind = DG_MAT_IND(i,j,m,n);
@@ -190,13 +206,13 @@ __global__ void templated_cuda_gemm_gpu_1_alpha_1_beta_sp(
       }
     }
 
-    x_tmp = __ldcg(x + (n-1) * strideX);
+    x_tmp = __ldcg_wrapper(x + (n-1) * strideX);
     #pragma unroll
     for(int i = 0; i < m; i++) {
       const int ind = DG_MAT_IND(i,n-1,m,n);
       y_tmp[i] += mat_sh[ind] * x_tmp;
-      y_tmp[i] = y_tmp[i] + __ldcg(y + i * strideY);
-      __stcg(y + i * strideY, y_tmp[i]);
+      y_tmp[i] = y_tmp[i] + __ldcg_wrapper(y + i * strideY);
+      __stcg_wrapper(y + i * strideY, y_tmp[i]);
     }
   }
 }
@@ -224,7 +240,7 @@ __global__ void templated_cuda_gemm_gpu_0_beta_sp(
     float *y = arg5 + cell;
 
     float y_tmp[m];
-    float x_tmp = __ldcg(x);
+    float x_tmp = __ldcg_wrapper(x);
     #pragma unroll
     for(int i = 0; i < m; i++) {
       const int ind = DG_MAT_IND(i,0,m,n);
@@ -233,7 +249,7 @@ __global__ void templated_cuda_gemm_gpu_0_beta_sp(
 
     #pragma unroll
     for(int j = 1; j < n - 1; j++) {
-      x_tmp = __ldcg(x + j * strideX);
+      x_tmp = __ldcg_wrapper(x + j * strideX);
       #pragma unroll
       for(int i = 0; i < m; i++) {
         const int ind = DG_MAT_IND(i,j,m,n);
@@ -241,13 +257,13 @@ __global__ void templated_cuda_gemm_gpu_0_beta_sp(
       }
     }
 
-    x_tmp = __ldcg(x + (n-1) * strideX);
+    x_tmp = __ldcg_wrapper(x + (n-1) * strideX);
     #pragma unroll
     for(int i = 0; i < m; i++) {
       const int ind = DG_MAT_IND(i,n-1,m,n);
       y_tmp[i] += mat_sh[ind] * x_tmp;
       y_tmp[i] = alpha * y_tmp[i];
-      __stcg(y + i * strideY, y_tmp[i]);
+      __stcg_wrapper(y + i * strideY, y_tmp[i]);
     }
   }
 }
@@ -275,7 +291,7 @@ __global__ void templated_cuda_gemm_gpu_1_beta_sp(
     float *y = arg5 + cell;
 
     float y_tmp[m];
-    float x_tmp = __ldcg(x);
+    float x_tmp = __ldcg_wrapper(x);
     #pragma unroll
     for(int i = 0; i < m; i++) {
       const int ind = DG_MAT_IND(i,0,m,n);
@@ -284,7 +300,7 @@ __global__ void templated_cuda_gemm_gpu_1_beta_sp(
 
     #pragma unroll
     for(int j = 1; j < n - 1; j++) {
-      x_tmp = __ldcg(x + j * strideX);
+      x_tmp = __ldcg_wrapper(x + j * strideX);
       #pragma unroll
       for(int i = 0; i < m; i++) {
         const int ind = DG_MAT_IND(i,j,m,n);
@@ -292,13 +308,13 @@ __global__ void templated_cuda_gemm_gpu_1_beta_sp(
       }
     }
 
-    x_tmp = __ldcg(x + (n-1) * strideX);
+    x_tmp = __ldcg_wrapper(x + (n-1) * strideX);
     #pragma unroll
     for(int i = 0; i < m; i++) {
       const int ind = DG_MAT_IND(i,n-1,m,n);
       y_tmp[i] += mat_sh[ind] * x_tmp;
-      y_tmp[i] = alpha * y_tmp[i] + __ldcg(y + i * strideY);
-      __stcg(y + i * strideY, y_tmp[i]);
+      y_tmp[i] = alpha * y_tmp[i] + __ldcg_wrapper(y + i * strideY);
+      __stcg_wrapper(y + i * strideY, y_tmp[i]);
     }
   }
 }
@@ -330,7 +346,7 @@ __global__ void templated_cuda_gemm_T_gpu_sp(
     float *y = arg5 + cell;
 
     float y_tmp[n];
-    float x_tmp = __ldcg(x);
+    float x_tmp = __ldcg_wrapper(x);
     #pragma unroll
     for(int i = 0; i < n; i++) {
       const int ind = DG_MAT_IND(0,i,m,n);
@@ -339,7 +355,7 @@ __global__ void templated_cuda_gemm_T_gpu_sp(
 
     #pragma unroll
     for(int j = 1; j < m - 1; j++) {
-      x_tmp = __ldcg(x + j * strideX);
+      x_tmp = __ldcg_wrapper(x + j * strideX);
       #pragma unroll
       for(int i = 0; i < n; i++) {
         const int ind = DG_MAT_IND(j,i,m,n);
@@ -347,13 +363,13 @@ __global__ void templated_cuda_gemm_T_gpu_sp(
       }
     }
 
-    x_tmp = __ldcg(x + (m-1) * strideX);
+    x_tmp = __ldcg_wrapper(x + (m-1) * strideX);
     #pragma unroll
     for(int i = 0; i < n; i++) {
       const int ind = DG_MAT_IND(m-1,i,m,n);
       y_tmp[i] += mat_sh[ind] * x_tmp;
-      y_tmp[i] = alpha * y_tmp[i] + beta * __ldcg(y + i * strideY);
-      __stcg(y + i * strideY, y_tmp[i]);
+      y_tmp[i] = alpha * y_tmp[i] + beta * __ldcg_wrapper(y + i * strideY);
+      __stcg_wrapper(y + i * strideY, y_tmp[i]);
     }
   }
 }
@@ -380,7 +396,7 @@ __global__ void templated_cuda_gemm_T_gpu_1_alpha_0_beta_sp(
     float *y = arg5 + cell;
 
     float y_tmp[n];
-    float x_tmp = __ldcg(x);
+    float x_tmp = __ldcg_wrapper(x);
     #pragma unroll
     for(int i = 0; i < n; i++) {
       const int ind = DG_MAT_IND(0,i,m,n);
@@ -389,7 +405,7 @@ __global__ void templated_cuda_gemm_T_gpu_1_alpha_0_beta_sp(
 
     #pragma unroll
     for(int j = 1; j < m - 1; j++) {
-      x_tmp = __ldcg(x + j * strideX);
+      x_tmp = __ldcg_wrapper(x + j * strideX);
       #pragma unroll
       for(int i = 0; i < n; i++) {
         const int ind = DG_MAT_IND(j,i,m,n);
@@ -397,12 +413,12 @@ __global__ void templated_cuda_gemm_T_gpu_1_alpha_0_beta_sp(
       }
     }
 
-    x_tmp = __ldcg(x + (m-1) * strideX);
+    x_tmp = __ldcg_wrapper(x + (m-1) * strideX);
     #pragma unroll
     for(int i = 0; i < n; i++) {
       const int ind = DG_MAT_IND(m-1,i,m,n);
       y_tmp[i] += mat_sh[ind] * x_tmp;
-      __stcg(y + i * strideY, y_tmp[i]);
+      __stcg_wrapper(y + i * strideY, y_tmp[i]);
     }
   }
 }
@@ -430,7 +446,7 @@ __global__ void templated_cuda_gemm_T_gpu_0_beta_sp(
     float *y = arg5 + cell;
 
     float y_tmp[n];
-    float x_tmp = __ldcg(x);
+    float x_tmp = __ldcg_wrapper(x);
     #pragma unroll
     for(int i = 0; i < n; i++) {
       const int ind = DG_MAT_IND(0,i,m,n);
@@ -439,7 +455,7 @@ __global__ void templated_cuda_gemm_T_gpu_0_beta_sp(
 
     #pragma unroll
     for(int j = 1; j < m - 1; j++) {
-      x_tmp = __ldcg(x + j * strideX);
+      x_tmp = __ldcg_wrapper(x + j * strideX);
       #pragma unroll
       for(int i = 0; i < n; i++) {
         const int ind = DG_MAT_IND(j,i,m,n);
@@ -447,13 +463,13 @@ __global__ void templated_cuda_gemm_T_gpu_0_beta_sp(
       }
     }
 
-    x_tmp = __ldcg(x + (m-1) * strideX);
+    x_tmp = __ldcg_wrapper(x + (m-1) * strideX);
     #pragma unroll
     for(int i = 0; i < n; i++) {
       const int ind = DG_MAT_IND(m-1,i,m,n);
       y_tmp[i] += mat_sh[ind] * x_tmp;
       y_tmp[i] = alpha * y_tmp[i];
-      __stcg(y + i * strideY, y_tmp[i]);
+      __stcg_wrapper(y + i * strideY, y_tmp[i]);
     }
   }
 }
@@ -480,7 +496,7 @@ __global__ void templated_cuda_gemm_T_gpu_1_alpha_1_beta_sp(
     float *y = arg5 + cell;
 
     float y_tmp[n];
-    float x_tmp = __ldcg(x);
+    float x_tmp = __ldcg_wrapper(x);
     #pragma unroll
     for(int i = 0; i < n; i++) {
       const int ind = DG_MAT_IND(0,i,m,n);
@@ -489,7 +505,7 @@ __global__ void templated_cuda_gemm_T_gpu_1_alpha_1_beta_sp(
 
     #pragma unroll
     for(int j = 1; j < m - 1; j++) {
-      x_tmp = __ldcg(x + j * strideX);
+      x_tmp = __ldcg_wrapper(x + j * strideX);
       #pragma unroll
       for(int i = 0; i < n; i++) {
         const int ind = DG_MAT_IND(j,i,m,n);
@@ -497,13 +513,13 @@ __global__ void templated_cuda_gemm_T_gpu_1_alpha_1_beta_sp(
       }
     }
 
-    x_tmp = __ldcg(x + (m-1) * strideX);
+    x_tmp = __ldcg_wrapper(x + (m-1) * strideX);
     #pragma unroll
     for(int i = 0; i < n; i++) {
       const int ind = DG_MAT_IND(m-1,i,m,n);
       y_tmp[i] += mat_sh[ind] * x_tmp;
-      y_tmp[i] = y_tmp[i] + __ldcg(y + i * strideY);
-      __stcg(y + i * strideY, y_tmp[i]);
+      y_tmp[i] = y_tmp[i] + __ldcg_wrapper(y + i * strideY);
+      __stcg_wrapper(y + i * strideY, y_tmp[i]);
     }
   }
 }
@@ -531,7 +547,7 @@ __global__ void templated_cuda_gemm_T_gpu_1_beta_sp(
     float *y = arg5 + cell;
 
     float y_tmp[n];
-    float x_tmp = __ldcg(x);
+    float x_tmp = __ldcg_wrapper(x);
     #pragma unroll
     for(int i = 0; i < n; i++) {
       const int ind = DG_MAT_IND(0,i,m,n);
@@ -540,7 +556,7 @@ __global__ void templated_cuda_gemm_T_gpu_1_beta_sp(
 
     #pragma unroll
     for(int j = 1; j < m - 1; j++) {
-      x_tmp = __ldcg(x + j * strideX);
+      x_tmp = __ldcg_wrapper(x + j * strideX);
       #pragma unroll
       for(int i = 0; i < n; i++) {
         const int ind = DG_MAT_IND(j,i,m,n);
@@ -548,13 +564,13 @@ __global__ void templated_cuda_gemm_T_gpu_1_beta_sp(
       }
     }
 
-    x_tmp = __ldcg(x + (m-1) * strideX);
+    x_tmp = __ldcg_wrapper(x + (m-1) * strideX);
     #pragma unroll
     for(int i = 0; i < n; i++) {
       const int ind = DG_MAT_IND(m-1,i,m,n);
       y_tmp[i] += mat_sh[ind] * x_tmp;
-      y_tmp[i] = alpha * y_tmp[i] + __ldcg(y + i * strideY);
-      __stcg(y + i * strideY, y_tmp[i]);
+      y_tmp[i] = alpha * y_tmp[i] + __ldcg_wrapper(y + i * strideY);
+      __stcg_wrapper(y + i * strideY, y_tmp[i]);
     }
   }
 }
@@ -582,7 +598,7 @@ __global__ void templated_cuda_gemm_T_gpu_1_alpha_sp(
     float *y = arg5 + cell;
 
     float y_tmp[n];
-    float x_tmp = __ldcg(x);
+    float x_tmp = __ldcg_wrapper(x);
     #pragma unroll
     for(int i = 0; i < n; i++) {
       const int ind = DG_MAT_IND(0,i,m,n);
@@ -591,7 +607,7 @@ __global__ void templated_cuda_gemm_T_gpu_1_alpha_sp(
 
     #pragma unroll
     for(int j = 1; j < m - 1; j++) {
-      x_tmp = __ldcg(x + j * strideX);
+      x_tmp = __ldcg_wrapper(x + j * strideX);
       #pragma unroll
       for(int i = 0; i < n; i++) {
         const int ind = DG_MAT_IND(j,i,m,n);
@@ -599,13 +615,13 @@ __global__ void templated_cuda_gemm_T_gpu_1_alpha_sp(
       }
     }
 
-    x_tmp = __ldcg(x + (m-1) * strideX);
+    x_tmp = __ldcg_wrapper(x + (m-1) * strideX);
     #pragma unroll
     for(int i = 0; i < n; i++) {
       const int ind = DG_MAT_IND(m-1,i,m,n);
       y_tmp[i] += mat_sh[ind] * x_tmp;
-      y_tmp[i] = y_tmp[i] + beta * __ldcg(y + i * strideY);
-      __stcg(y + i * strideY, y_tmp[i]);
+      y_tmp[i] = y_tmp[i] + beta * __ldcg_wrapper(y + i * strideY);
+      __stcg_wrapper(y + i * strideY, y_tmp[i]);
     }
   }
 }

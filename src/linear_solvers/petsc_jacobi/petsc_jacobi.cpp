@@ -21,11 +21,6 @@ extern Timing *timer;
 extern DGDatPool *dg_dat_pool;
 extern Config *config;
 
-void custom_kernel_petsc_pre_jacobi(const int order, char const *name, op_set set,
-  op_arg arg0,
-  op_arg arg1,
-  op_arg arg2);
-
 PETScJacobiSolver::PETScJacobiSolver(DGMesh *m) {
   bc = nullptr;
   nullspace = false;
@@ -64,7 +59,6 @@ PETScJacobiSolver::~PETScJacobiSolver() {
 void PETScJacobiSolver::init() {
   PETScUtils::create_vec(&b, mesh->cells);
   PETScUtils::create_vec(&x, mesh->cells);
-  create_shell_mat();
 }
 
 bool PETScJacobiSolver::solve(op_dat rhs, op_dat ans) {
@@ -74,6 +68,9 @@ bool PETScJacobiSolver::solve(op_dat rhs, op_dat ans) {
     throw std::runtime_error("PETScJacobiSolver matrix should be of type PoissonMatrixFreeDiag\n");
   }
   diagMat = dynamic_cast<PoissonMatrixFreeDiag*>(matrix);
+
+  if(!pMatInit)
+    create_shell_mat();
 
   if(nullspace) {
     MatNullSpace ns;
@@ -123,46 +120,76 @@ bool PETScJacobiSolver::solve(op_dat rhs, op_dat ans) {
   return converged;
 }
 
-void PETScJacobiSolver::calc_rhs(const DG_FP *in_d, DG_FP *out_d) {
+void PETScJacobiSolver::calc_rhs(Vec in, Vec out) {
   timer->startTimer("PETScJacobiSolver - calc_rhs");
   // Copy u to OP2 dat
   DGTempDat tmp_in  = dg_dat_pool->requestTempDatCells(DG_NP);
   DGTempDat tmp_out = dg_dat_pool->requestTempDatCells(DG_NP);
-  // PETScUtils::copy_vec_to_dat_p_adapt(tmp_in.dat, in_d, mesh);
-  PETScUtils::copy_vec_to_dat(tmp_in.dat, in_d);
+  PETScUtils::store_vec(&in, tmp_in.dat);
 
   matrix->mult(tmp_in.dat, tmp_out.dat);
 
-  // PETScUtils::copy_dat_to_vec_p_adapt(tmp_out.dat, out_d, mesh);
-  PETScUtils::copy_dat_to_vec(tmp_out.dat, out_d);
+  PETScUtils::load_vec(&out, tmp_out.dat);
   dg_dat_pool->releaseTempDatCells(tmp_in);
   dg_dat_pool->releaseTempDatCells(tmp_out);
   timer->endTimer("PETScJacobiSolver - calc_rhs");
 }
 
 // Matrix-free inv Mass preconditioning function
-void PETScJacobiSolver::precond(const DG_FP *in_d, DG_FP *out_d) {
+void PETScJacobiSolver::precond(Vec in, Vec out) {
   timer->startTimer("PETScJacobiSolver - precond");
   DGTempDat tmp_in  = dg_dat_pool->requestTempDatCells(DG_NP);
   DGTempDat tmp_out = dg_dat_pool->requestTempDatCells(DG_NP);
-  // PETScUtils::copy_vec_to_dat_p_adapt(tmp_in.dat, in_d, mesh);
-  PETScUtils::copy_vec_to_dat(tmp_in.dat, in_d);
+  PETScUtils::store_vec(&in, tmp_in.dat);
 
-  #if defined(OP2_DG_CUDA) && !defined(DG_OP2_SOA)
-  custom_kernel_petsc_pre_jacobi(DG_ORDER, "petsc_pre_jacobi", mesh->cells,
-              op_arg_dat(diagMat->diag, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp_in.dat,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp_out.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
-  #else
   op_par_loop(petsc_pre_jacobi, "petsc_pre_jacobi", mesh->cells,
               op_arg_dat(diagMat->diag, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(tmp_in.dat,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(tmp_out.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
-  #endif
 
-  // PETScUtils::copy_dat_to_vec_p_adapt(tmp_out.dat, out_d, mesh);
-  PETScUtils::copy_dat_to_vec(tmp_out.dat, out_d);
+  PETScUtils::load_vec(&out, tmp_out.dat);
   dg_dat_pool->releaseTempDatCells(tmp_in);
   dg_dat_pool->releaseTempDatCells(tmp_out);
   timer->endTimer("PETScJacobiSolver - precond");
+}
+
+PetscErrorCode matMultPJS(Mat A, Vec x, Vec y) {
+  PETScJacobiSolver *solver;
+  MatShellGetContext(A, &solver);
+  solver->calc_rhs(x, y);
+  return 0;
+}
+
+void PETScJacobiSolver::create_shell_mat() {
+  if(pMatInit)
+    MatDestroy(&pMat);
+
+  MatCreateShell(PETSC_COMM_WORLD, matrix->getUnknowns(), matrix->getUnknowns(), PETSC_DETERMINE, PETSC_DETERMINE, this, &pMat);
+  MatShellSetOperation(pMat, MATOP_MULT, (void(*)(void))matMultPJS);
+  
+  #if defined(OP2_DG_CUDA)
+  MatShellSetVecType(pMat, VECCUDA);
+  #elif defined(OP2_DG_HIP)
+  #ifdef PETSC_COMPILED_WITH_HIP
+  MatShellSetVecType(pMat, VECHIP);
+  #else
+  MatShellSetVecType(pMat, VECSTANDARD);
+  #endif
+  #else
+  MatShellSetVecType(pMat, VECSTANDARD);
+  #endif
+
+  pMatInit = true;
+}
+
+PetscErrorCode preconPJS(PC pc, Vec x, Vec y) {
+  PETScJacobiSolver *solver;
+  PCShellGetContext(pc, (void **)&solver);
+  solver->precond(x, y);
+  return 0;
+}
+
+void PETScJacobiSolver::set_shell_pc(PC pc) {
+  PCShellSetApply(pc, preconPJS);
+  PCShellSetContext(pc, this);
 }

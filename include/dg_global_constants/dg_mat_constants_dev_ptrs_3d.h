@@ -1,7 +1,7 @@
 #ifndef __DG_3D_MAT_CONSTANTS_DEV_PTRS_H
 #define __DG_3D_MAT_CONSTANTS_DEV_PTRS_H
 
-#ifdef OP2_DG_CUDA
+#if defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
 #include "dg_compiler_defs.h"
 
 extern DG_FP *dg_r_d;

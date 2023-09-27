@@ -19,7 +19,11 @@ DGDatPool *dg_dat_pool;
 
 using namespace std;
 
+void init_op2_gemv();
+void destroy_op2_gemv();
+
 DGMesh2D::DGMesh2D(std::string &meshFile) {
+  init_op2_gemv();
   // Calculate DG constants
   constants = new DGConstants2D(DG_ORDER);
 
@@ -97,7 +101,8 @@ DGMesh2D::DGMesh2D(std::string &meshFile) {
 }
 
 DGMesh2D::~DGMesh2D() {
-  delete constants;
+  delete (DGConstants2D *)constants;
+  destroy_op2_gemv();
 }
 
 void DGMesh2D::init() {

@@ -72,3 +72,9 @@ void PoissonCoarseMatrix::getHYPRERanges(int *ilower, int *iupper, int *jlower, 
   HYPRE_IJMatrixGetLocalRange(hypre_mat, ilower, iupper, jlower, jupper);
 }
 #endif
+
+int PoissonCoarseMatrix::getUnknowns() {
+  const int setSize_ = _mesh->order->set->size;
+  int unknowns = setSize_ * DG_NP_N1;
+  return unknowns;
+}

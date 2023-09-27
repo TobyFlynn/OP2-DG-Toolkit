@@ -2,8 +2,13 @@ cmake_minimum_required(VERSION 3.18)
 project(libop2dgtoolkit CXX)
 
 # Import compiler flags for all build types
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fPIC -fopenmp -g -O3")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -fopenmp -g -O3")
+if(INTEL_COMPILER)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fPIC -qopenmp -g -O3")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -qopenmp -g -O3")
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fPIC -fopenmp -g -O3")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -fopenmp -g -O3")
+endif()
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --disable-warnings -g -O3")
 
 if(NOT OP2_DIR)
@@ -100,6 +105,11 @@ if(BUILD_GPU)
   include_directories(${CUDAToolkit_INCLUDE_DIRS})
   set(CMAKE_CUDA_COMPILER ${CUDAToolkit_NVCC_EXECUTABLE})
   set(CMAKE_CUDA_ARCHITECTURES 70)
+endif()
+
+if(BUILD_HIP)
+  enable_language(HIP)
+  set(HIP_ARCHITECTURES gfx908)
 endif()
 
 # Install headers

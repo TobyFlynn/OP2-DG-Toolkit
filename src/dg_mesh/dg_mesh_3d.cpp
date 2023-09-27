@@ -10,30 +10,15 @@
 #include "dg_global_constants/dg_global_constants_3d.h"
 #include "dg_dat_pool.h"
 
-#ifndef OP2_DG_CUDA
-#ifdef OP2_DG_USE_LIBXSMM
-#include "libxsmm_source.h"
-#endif
-#endif
-
-#ifdef OP2_DG_CUDA
-void init_op2_gemv_cublas();
-void destroy_op2_gemv_cublas();
-#endif
+void init_op2_gemv();
+void destroy_op2_gemv();
 
 DGConstants *constants;
 DGDatPool *dg_dat_pool;
 
 DGMesh3D::DGMesh3D(std::string &meshFile) {
-  #ifndef OP2_DG_CUDA
-  #ifdef OP2_DG_USE_LIBXSMM
-  libxsmm_init();
-  #endif
-  #endif
+  init_op2_gemv();
 
-  #ifdef OP2_DG_CUDA
-  init_op2_gemv_cublas();
-  #endif
   // Sets
   nodes   = op_decl_set_hdf5(meshFile.c_str(), "nodes");
   cells   = op_decl_set_hdf5(meshFile.c_str(), "cells");
@@ -126,15 +111,8 @@ DGMesh3D::~DGMesh3D() {
     free_custom_map(node2node_custom_maps[i]);
   }
   delete dg_dat_pool;
-  delete constants;
-  #ifndef OP2_DG_CUDA
-  #ifdef OP2_DG_USE_LIBXSMM
-  libxsmm_finalize();
-  #endif
-  #endif
-  #ifdef OP2_DG_CUDA
-  destroy_op2_gemv_cublas();
-  #endif
+  delete (DGConstants3D *)constants;
+  destroy_op2_gemv();
 }
 
 void DGMesh3D::init() {
