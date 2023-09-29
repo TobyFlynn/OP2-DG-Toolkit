@@ -2,3 +2,4 @@ build/
 gen*/
 lib/
 obj/
+bin/

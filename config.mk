@@ -17,6 +17,14 @@ PETSC_DIR = /dcs/pg20/u1717021/PhD/petsc-install
 INIPP_DIR = /dcs/pg20/u1717021/PhD/inipp/inipp
 HIGHFIVE_DIR = /dcs/pg20/u1717021/PhD/HighFive/include
 MPI_DIR := /dcs/pg20/u1717021/PhD/apps
+VTK_DIR := /dcs/pg20/u1717021/PhD/apps
+
+PART_LIB_NAME = PARMETIS
+PARMETIS_DIR = /dcs/pg20/u1717021/PhD/apps
+#PTSCOTCH_DIR = /dcs/pg20/u1717021/PhD/apps
+PARTITION_LIB = -L$(PARMETIS_DIR)/lib -lparmetis -lmetis -lGKlib
+#PARTITION_LIB = -L${PTSCOTCH_DIR}/lib -lptscotch -lscotch -lptscotcherr -lscotcherr -lptscotcherrexit -lscotcherrexit
+#PARTITION_LIB = -L$(PARMETIS_DIR)/lib -lparmetis -lmetis -lGKlib -L${PTSCOTCH_DIR}/lib -lptscotch -lscotch -lptscotcherr -lscotcherr -lptscotcherrexit -lscotcherrexit
 
 ORDER = 3
 SOA = true

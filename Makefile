@@ -5,6 +5,7 @@ ROOT_DIR != realpath $(MAKEFILES_DIR)
 INC := -I$(ROOT_DIR)/include
 LIB := $(ROOT_DIR)/lib
 OBJ := $(ROOT_DIR)/obj
+BIN := $(ROOT_DIR)/bin
 BASE_OBJ_DIR := $(OBJ)/base
 2D_SEQ_OBJ_DIR := $(OBJ)/2d_seq
 2D_OMP_OBJ_DIR := $(OBJ)/2d_omp
@@ -31,6 +32,8 @@ ARMA_INC = -I$(ARMA_DIR)/include
 PETSC_INC = -I$(PETSC_DIR)/include
 INIPP_INC = -I$(INIPP_DIR)
 MPI_INC = -I$(MPI_DIR)/include
+VTK_INC = -I$(VTK_DIR)/include/vtk-9.2
+HIGHFIVE_INC = -I$(HIGHFIVE_DIR)
 
 # Common compile flags
 BASE_FLAGS := -g -O3
@@ -45,6 +48,7 @@ HIP_COMPILE_DEFS := -DOP2_DG_HIP -DDG_OP2_SOA
 CUDA_COMPILE_DEFS := -DOP2_DG_CUDA -DDG_OP2_SOA
 MPI_COMPILER_DEFS := -DDG_MPI
 OP2_DG_TOOLKIT_INC := $(ARMA_INC) $(INC) $(OP2_INC) $(OPENBLAS_INC) $(PETSC_INC) $(INIPP_INC)
+TOOLS_INC := $(INC) $(VTK_INC) $(HIGHFIVE_INC) $(OP2_INC)
 
 all: base 2d 3d
 
@@ -69,9 +73,16 @@ cuda: base $(LIB)/libop2dgtoolkit_2d_cuda.a $(LIB)/libop2dgtoolkit_2d_mpi_cuda.a
 hip: base $(LIB)/libop2dgtoolkit_2d_hip.a $(LIB)/libop2dgtoolkit_2d_mpi_hip.a \
 	$(LIB)/libop2dgtoolkit_3d_hip.a $(LIB)/libop2dgtoolkit_3d_mpi_hip.a
 
+tools: $(BIN)/hdf52vtk_2D $(BIN)/hdf52vtk_3D $(BIN)/vtk2hdf5_2D $(BIN)/vtk2hdf5_3D \
+	$(BIN)/vtk2hdf5_periodic_cube_3D
+
 clean:
 	-rm -rf $(OBJ)
 	-rm -rf $(LIB)
+	-rm -rf $(BIN)
+
+$(BIN):
+	@mkdir -p $@
 
 # Object directories
 $(OBJ):
@@ -544,3 +555,21 @@ $(LIB)/libop2dgtoolkit_3d_mpi_cuda.a: $(3D_MPI_CUDA_OBJ) | $(LIB)
 	hip/dg_tookit_kernels.o)
 $(LIB)/libop2dgtoolkit_3d_mpi_hip.a: $(3D_MPI_HIP_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
+
+# Tools
+HDF5_LIB = -L$(HDF5_DIR)/lib -lhdf5
+VTK_VERSION = 9.2
+VTK_LIB = -L$(VTK_DIR)/lib64 $(shell ls $(VTK_DIR)/lib64/libvtk*-$(VTK_VERSION).so | sed "s+$(VTK_DIR)/lib64/lib+-l+g" | sed "s+\.so++g")
+OP2_MPI_LIB = -L$(OP2_DIR)/lib -lop2_mpi
+HDF52VTK_LIBS := $(HDF5_LIB) $(VTK_LIB)
+VTK2HDF5_LIBS := $(HDF5_LIB) $(VTK_LIB) $(OP2_MPI_LIB) $(PARTITION_LIB)
+$(BIN)/hdf52vtk_2D: tools/hdf52vtk_2D.cpp | $(BIN)
+	$(CXX) $(CXXFLAGS) $(COMMON_COMPILE_DEFS_2D) $(TOOLS_INC) $< $(HDF52VTK_LIBS) -o $@
+$(BIN)/hdf52vtk_3D: tools/hdf52vtk_3D.cpp | $(BIN)
+	$(CXX) $(CXXFLAGS) $(COMMON_COMPILE_DEFS_3D) $(TOOLS_INC) $< $(HDF52VTK_LIBS) -o $@
+$(BIN)/vtk2hdf5_2D: tools/vtk2hdf5_2D.cpp | $(BIN)
+	$(CXX) $(CXXFLAGS) $(COMMON_COMPILE_DEFS_2D) -DOP2_PARTITIONER=$(PART_LIB_NAME) $(TOOLS_INC) $< $(VTK2HDF5_LIBS) -o $@
+$(BIN)/vtk2hdf5_3D: tools/vtk2hdf5_3D.cpp | $(BIN)
+	$(CXX) $(CXXFLAGS) $(COMMON_COMPILE_DEFS_3D) -DOP2_PARTITIONER=$(PART_LIB_NAME) $(TOOLS_INC) $< $(VTK2HDF5_LIBS) -o $@
+$(BIN)/vtk2hdf5_periodic_cube_3D: tools/vtk2hdf5_periodic_cube_3D.cpp | $(BIN)
+	$(CXX) $(CXXFLAGS) $(COMMON_COMPILE_DEFS_3D) -DOP2_PARTITIONER=$(PART_LIB_NAME) $(TOOLS_INC) $< $(VTK2HDF5_LIBS) -o $@
