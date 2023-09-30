@@ -1,10 +1,5 @@
-inline void factor_poisson_matrix_3d_op1_diag(const int *order, const DG_FP *rx,
-                                         const DG_FP *sx, const DG_FP *tx,
-                                         const DG_FP *ry, const DG_FP *sy,
-                                         const DG_FP *ty, const DG_FP *rz,
-                                         const DG_FP *sz, const DG_FP *tz,
-                                         const DG_FP *J, const DG_FP *factor,
-                                         DG_FP *diag) {
+inline void factor_poisson_matrix_3d_op1_diag(const int *order, const DG_FP *geof,
+                                              const DG_FP *factor, DG_FP *diag) {
   const DG_FP *dr_mat = &dg_Dr_kernel[(*order - 1) * DG_NP * DG_NP];
   const DG_FP *ds_mat = &dg_Ds_kernel[(*order - 1) * DG_NP * DG_NP];
   const DG_FP *dt_mat = &dg_Dt_kernel[(*order - 1) * DG_NP * DG_NP];
@@ -17,7 +12,7 @@ inline void factor_poisson_matrix_3d_op1_diag(const int *order, const DG_FP *rx,
   for(int i = 0; i < dg_np; i++) {
     for(int j = 0; j < dg_np; j++) {
       int op_ind = DG_MAT_IND(i, j, dg_np, dg_np);
-      D[op_ind] = rx[0] * dr_mat[op_ind] + sx[0] * ds_mat[op_ind] + tx[0] * dt_mat[op_ind];
+      D[op_ind] = geof[RX_IND] * dr_mat[op_ind] + geof[SX_IND] * ds_mat[op_ind] + geof[TX_IND] * dt_mat[op_ind];
       D[op_ind] *= factor[i];
     }
   }
@@ -31,7 +26,7 @@ inline void factor_poisson_matrix_3d_op1_diag(const int *order, const DG_FP *rx,
       int a_ind = DG_MAT_IND(k, i, dg_np, dg_np);
       // int b_ind = j * dg_np + k;
       int b_ind = DG_MAT_IND(k, i, dg_np, dg_np);
-      DG_FP Dx = rx[0] * dr_mat[a_ind] + sx[0] * ds_mat[a_ind] + tx[0] * dt_mat[a_ind];
+      DG_FP Dx = geof[RX_IND] * dr_mat[a_ind] + geof[SX_IND] * ds_mat[a_ind] + geof[TX_IND] * dt_mat[a_ind];
       diag[i] += Dx * D_t[b_ind];
     }
   }
@@ -40,7 +35,7 @@ inline void factor_poisson_matrix_3d_op1_diag(const int *order, const DG_FP *rx,
   for(int i = 0; i < dg_np; i++) {
     for(int j = 0; j < dg_np; j++) {
       int op_ind = DG_MAT_IND(i, j, dg_np, dg_np);
-      D[op_ind] = ry[0] * dr_mat[op_ind] + sy[0] * ds_mat[op_ind] + ty[0] * dt_mat[op_ind];
+      D[op_ind] = geof[RY_IND] * dr_mat[op_ind] + geof[SY_IND] * ds_mat[op_ind] + geof[TY_IND] * dt_mat[op_ind];
       D[op_ind] *= factor[i];
     }
   }
@@ -53,7 +48,7 @@ inline void factor_poisson_matrix_3d_op1_diag(const int *order, const DG_FP *rx,
       int a_ind = DG_MAT_IND(k, i, dg_np, dg_np);
       // int b_ind = j * dg_np + k;
       int b_ind = DG_MAT_IND(k, i, dg_np, dg_np);
-      DG_FP Dy = ry[0] * dr_mat[a_ind] + sy[0] * ds_mat[a_ind] + ty[0] * dt_mat[a_ind];
+      DG_FP Dy = geof[RY_IND] * dr_mat[a_ind] + geof[SY_IND] * ds_mat[a_ind] + geof[TY_IND] * dt_mat[a_ind];
       diag[i] += Dy * D_t[b_ind];
     }
   }
@@ -62,7 +57,7 @@ inline void factor_poisson_matrix_3d_op1_diag(const int *order, const DG_FP *rx,
   for(int i = 0; i < dg_np; i++) {
     for(int j = 0; j < dg_np; j++) {
       int op_ind = DG_MAT_IND(i, j, dg_np, dg_np);
-      D[op_ind] = rz[0] * dr_mat[op_ind] + sz[0] * ds_mat[op_ind] + tz[0] * dt_mat[op_ind];
+      D[op_ind] = geof[RZ_IND] * dr_mat[op_ind] + geof[SZ_IND] * ds_mat[op_ind] + geof[TZ_IND] * dt_mat[op_ind];
       D[op_ind] *= factor[i];
     }
   }
@@ -75,9 +70,9 @@ inline void factor_poisson_matrix_3d_op1_diag(const int *order, const DG_FP *rx,
       int a_ind = DG_MAT_IND(k, i, dg_np, dg_np);
       // int b_ind = j * dg_np + k;
       int b_ind = DG_MAT_IND(k, i, dg_np, dg_np);
-      DG_FP Dz = rz[0] * dr_mat[a_ind] + sz[0] * ds_mat[a_ind] + tz[0] * dt_mat[a_ind];
+      DG_FP Dz = geof[RZ_IND] * dr_mat[a_ind] + geof[SZ_IND] * ds_mat[a_ind] + geof[TZ_IND] * dt_mat[a_ind];
       diag[i] += Dz * D_t[b_ind];
     }
-    diag[i] *= J[0];
+    diag[i] *= geof[J_IND];
   }
 }

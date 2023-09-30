@@ -26,8 +26,8 @@ void MMPoissonMatrixFree3D::mult(op_dat in, op_dat out) {
   PoissonMatrixFree3D::mult(in, out);
 
   op_par_loop(pmf_3d_mult_mm, "pmf_3d_mult_mm", _mesh->cells,
-              op_arg_dat(_mesh->order, -1, OP_ID, 1, "int", OP_READ),
-              op_arg_dat(mesh->J, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+              op_arg_gbl(&_mesh->order_int, 1, "int", OP_READ),
+              op_arg_dat(mesh->geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
               op_arg_gbl(&factor,  1, DG_FP_STR, OP_READ),
               op_arg_dat(in,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(out, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));

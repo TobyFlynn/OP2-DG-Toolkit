@@ -1,9 +1,9 @@
-inline void normals_check_3d(const int **order, const int *faceNum, DG_FP *nx,
+inline void normals_check_3d(const int *order, const int *faceNum, DG_FP *nx,
                           DG_FP *ny, DG_FP *nz, const DG_FP **x,
                           const DG_FP **y, const DG_FP **z, const DG_FP **nodeX_,
                           const DG_FP **nodeY_, const DG_FP **nodeZ_, int *errors) {
-  const int dg_npf = DG_CONSTANTS_TK[(order[0][0] - 1) * 2 + 1];
-  const int *fmask  = &FMASK_TK[(order[0][0] - 1) * 4 * DG_NPF];
+  const int dg_npf = DG_CONSTANTS_TK[(*order - 1) * 2 + 1];
+  const int *fmask  = &FMASK_TK[(*order - 1) * 4 * DG_NPF];
   const int *fmaskL = &fmask[faceNum[0] * dg_npf];
   const int *fmaskR = &fmask[faceNum[1] * dg_npf];
 

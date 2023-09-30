@@ -71,13 +71,9 @@ bool PETScInvMassSolver::solve(op_dat rhs, op_dat ans) {
     matrix->apply_bc(rhs, bc);
 
   Vec b, x;
-  // PETScUtils::create_vec_p_adapt(&b, matrix->getUnknowns());
-  // PETScUtils::create_vec_p_adapt(&x, matrix->getUnknowns());
   PETScUtils::create_vec(&b, mesh->cells);
   PETScUtils::create_vec(&x, mesh->cells);
 
-  // PETScUtils::load_vec_p_adapt(&b, rhs, mesh);
-  // PETScUtils::load_vec_p_adapt(&x, ans, mesh);
   PETScUtils::load_vec(&b, rhs);
   PETScUtils::load_vec(&x, ans);
 
@@ -101,7 +97,6 @@ bool PETScInvMassSolver::solve(op_dat rhs, op_dat ans) {
 
   Vec solution;
   KSPGetSolution(ksp, &solution);
-  // PETScUtils::store_vec_p_adapt(&solution, ans, mesh);
   PETScUtils::store_vec(&solution, ans);
 
   PETScUtils::destroy_vec(&b);
@@ -137,14 +132,14 @@ void PETScInvMassSolver::precond(Vec in, Vec out) {
   #if DG_DIM == 3
   if(dat_factor) {
     op_par_loop(petsc_pre_inv_mass_dat, "petsc_pre_inv_mass_dat", mesh->cells,
-                op_arg_dat(mesh->J, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                op_arg_dat(mesh->geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
                 op_arg_dat(factor_dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(tmp_in.dat,      -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(tmp_out.dat,     -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
   } else {
     op_par_loop(petsc_pre_inv_mass, "petsc_pre_inv_mass", mesh->cells,
                 op_arg_gbl(&factor,  1, DG_FP_STR, OP_READ),
-                op_arg_dat(mesh->J, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                op_arg_dat(mesh->geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
                 op_arg_dat(tmp_in.dat,      -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(tmp_out.dat,     -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
   }

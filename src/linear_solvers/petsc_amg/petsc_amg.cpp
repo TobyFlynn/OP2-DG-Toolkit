@@ -98,11 +98,11 @@ bool PETScAMGSolver::solve(op_dat rhs, op_dat ans) {
     matrix->apply_bc(rhs, bc);
 
   Vec b, x;
-  PETScUtils::create_vec_p_adapt(&b, matrix->getUnknowns());
-  PETScUtils::create_vec_p_adapt(&x, matrix->getUnknowns());
+  PETScUtils::create_vec(&b, mesh->cells);
+  PETScUtils::create_vec(&x, mesh->cells);
 
-  PETScUtils::load_vec_p_adapt(&b, rhs, mesh);
-  PETScUtils::load_vec_p_adapt(&x, ans, mesh);
+  PETScUtils::load_vec(&b, rhs);
+  PETScUtils::load_vec(&x, ans);
 
   timer->startTimer("PETScAMGSolver - KSPSolve");
   KSPSolve(ksp, b, x);
@@ -124,7 +124,7 @@ bool PETScAMGSolver::solve(op_dat rhs, op_dat ans) {
 
   Vec solution;
   KSPGetSolution(ksp, &solution);
-  PETScUtils::store_vec_p_adapt(&solution, ans, mesh);
+  PETScUtils::store_vec(&solution, ans);
 
   PETScUtils::destroy_vec(&b);
   PETScUtils::destroy_vec(&x);

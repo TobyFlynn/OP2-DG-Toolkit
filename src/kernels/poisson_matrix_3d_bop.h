@@ -1,10 +1,7 @@
 inline void poisson_matrix_3d_bop(const int *order, const int *faceNum,
                           const int *bc_type, const DG_FP *nx, const DG_FP *ny,
                           const DG_FP *nz, const DG_FP *fscale, const DG_FP *sJ,
-                          const DG_FP *rx, const DG_FP *sx, const DG_FP *tx,
-                          const DG_FP *ry, const DG_FP *sy, const DG_FP *ty,
-                          const DG_FP *rz, const DG_FP *sz, const DG_FP *tz,
-                          DG_FP *op1) {
+                          const DG_FP *geof, DG_FP *op1) {
   // Do nothing for Neumann boundary conditions
   if(*bc_type == 1)
     return;
@@ -35,9 +32,9 @@ inline void poisson_matrix_3d_bop(const int *order, const int *faceNum,
   const int *fmaskB = &fmask[*faceNum * dg_npf];
 
   DG_FP D[DG_NP * DG_NP];
-  const DG_FP r_fact = nx[0] * rx[0] + ny[0] * ry[0] + nz[0] * rz[0];
-  const DG_FP s_fact = nx[0] * sx[0] + ny[0] * sy[0] + nz[0] * sz[0];
-  const DG_FP t_fact = nx[0] * tx[0] + ny[0] * ty[0] + nz[0] * tz[0];
+  const DG_FP r_fact = nx[0] * geof[RX_IND] + ny[0] * geof[RY_IND] + nz[0] * geof[RZ_IND];
+  const DG_FP s_fact = nx[0] * geof[SX_IND] + ny[0] * geof[SY_IND] + nz[0] * geof[SZ_IND];
+  const DG_FP t_fact = nx[0] * geof[TX_IND] + ny[0] * geof[TY_IND] + nz[0] * geof[TZ_IND];
   for(int i = 0; i < dg_np; i++) {
     for(int j = 0; j < dg_np; j++) {
       // int ind = i + j * dg_np;

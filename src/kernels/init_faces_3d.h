@@ -1,42 +1,39 @@
-inline void init_faces_3d(const int *faceNum, const DG_FP **rx, const DG_FP **ry,
-                          const DG_FP **rz, const DG_FP **sx, const DG_FP **sy,
-                          const DG_FP **sz, const DG_FP **tx, const DG_FP **ty,
-                          const DG_FP **tz, const DG_FP **J, DG_FP *nx,
+inline void init_faces_3d(const int *faceNum, const DG_FP **geof, DG_FP *nx,
                           DG_FP *ny, DG_FP *nz, DG_FP *sJ, DG_FP *fscale) {
   if(faceNum[0] == 0) {
-    nx[0] = -tx[0][0];
-    ny[0] = -ty[0][0];
-    nz[0] = -tz[0][0];
+    nx[0] = -geof[0][TX_IND];
+    ny[0] = -geof[0][TY_IND];
+    nz[0] = -geof[0][TZ_IND];
   } else if(faceNum[0] == 1) {
-    nx[0] = -sx[0][0];
-    ny[0] = -sy[0][0];
-    nz[0] = -sz[0][0];
+    nx[0] = -geof[0][SX_IND];
+    ny[0] = -geof[0][SY_IND];
+    nz[0] = -geof[0][SZ_IND];
   } else if(faceNum[0] == 2) {
-    nx[0] = rx[0][0] + sx[0][0] + tx[0][0];
-    ny[0] = ry[0][0] + sy[0][0] + ty[0][0];
-    nz[0] = rz[0][0] + sz[0][0] + tz[0][0];
+    nx[0] = geof[0][RX_IND] + geof[0][SX_IND] + geof[0][TX_IND];
+    ny[0] = geof[0][RY_IND] + geof[0][SY_IND] + geof[0][TY_IND];
+    nz[0] = geof[0][RZ_IND] + geof[0][SZ_IND] + geof[0][TZ_IND];
   } else {
-    nx[0] = -rx[0][0];
-    ny[0] = -ry[0][0];
-    nz[0] = -rz[0][0];
+    nx[0] = -geof[0][RX_IND];
+    ny[0] = -geof[0][RY_IND];
+    nz[0] = -geof[0][RZ_IND];
   }
 
   if(faceNum[1] == 0) {
-    nx[1] = -tx[1][0];
-    ny[1] = -ty[1][0];
-    nz[1] = -tz[1][0];
+    nx[1] = -geof[1][TX_IND];
+    ny[1] = -geof[1][TY_IND];
+    nz[1] = -geof[1][TZ_IND];
   } else if(faceNum[1] == 1) {
-    nx[1] = -sx[1][0];
-    ny[1] = -sy[1][0];
-    nz[1] = -sz[1][0];
+    nx[1] = -geof[1][SX_IND];
+    ny[1] = -geof[1][SY_IND];
+    nz[1] = -geof[1][SZ_IND];
   } else if(faceNum[1] == 2) {
-    nx[1] = rx[1][0] + sx[1][0] + tx[1][0];
-    ny[1] = ry[1][0] + sy[1][0] + ty[1][0];
-    nz[1] = rz[1][0] + sz[1][0] + tz[1][0];
+    nx[1] = geof[1][RX_IND] + geof[1][SX_IND] + geof[1][TX_IND];
+    ny[1] = geof[1][RY_IND] + geof[1][SY_IND] + geof[1][TY_IND];
+    nz[1] = geof[1][RZ_IND] + geof[1][SZ_IND] + geof[1][TZ_IND];
   } else {
-    nx[1] = -rx[1][0];
-    ny[1] = -ry[1][0];
-    nz[1] = -rz[1][0];
+    nx[1] = -geof[1][RX_IND];
+    ny[1] = -geof[1][RY_IND];
+    nz[1] = -geof[1][RZ_IND];
   }
 
   sJ[0] = sqrt(nx[0] * nx[0] + ny[0] * ny[0] + nz[0] * nz[0]);
@@ -47,8 +44,8 @@ inline void init_faces_3d(const int *faceNum, const DG_FP **rx, const DG_FP **ry
   nx[1] /= sJ[1];
   ny[1] /= sJ[1];
   nz[1] /= sJ[1];
-  sJ[0] *= J[0][0];
-  fscale[0] = sJ[0] / J[0][0];
-  sJ[1] *= J[1][0];
-  fscale[1] = sJ[1] / J[1][0];
+  sJ[0] *= geof[0][J_IND];
+  fscale[0] = sJ[0] / geof[0][J_IND];
+  sJ[1] *= geof[1][J_IND];
+  fscale[1] = sJ[1] / geof[1][J_IND];
 }

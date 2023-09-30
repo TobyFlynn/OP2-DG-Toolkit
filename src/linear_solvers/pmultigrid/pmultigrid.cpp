@@ -203,7 +203,7 @@ void PMultigridPoissonSolver::set_matrix(PoissonMatrix *mat) {
     } else {
       smfMatrix->calc_mat_partial();
       op_par_loop(copy_diag, "copy_diag", mesh->cells,
-                  op_arg_dat(mesh->order,    -1, OP_ID, 1, "int", OP_READ),
+                  op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
                   op_arg_dat(smfMatrix->op1, -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
                   op_arg_dat(diag_dats[i],   -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
     }
@@ -467,7 +467,7 @@ void PMultigridPoissonSolver::jacobi_smoother(const int level) {
   matrix->mult(u_dat[level], tmp_dat.dat);
   op_par_loop(p_multigrid_relaxation_jacobi_diag, "p_multigrid_relaxation_jacobi_diag", mesh->cells,
               op_arg_gbl(&w, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(mesh->order,      -1, OP_ID, 1, "int", OP_READ),
+              op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(tmp_dat.dat,      -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(b_dat[level],     -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(diag_dats[level], -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),

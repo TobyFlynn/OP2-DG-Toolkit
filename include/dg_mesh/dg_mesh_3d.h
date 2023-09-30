@@ -43,12 +43,14 @@ public:
 
   // OP2 stuff
   op_dat nodeX, nodeY, nodeZ, x, y, z;
-  op_dat rx, ry, rz, sx, sy, sz, tx, ty, tz;
   op_dat faceNum, bfaceNum, periodicFace, fmaskL, fmaskR, nx, ny, nz, sJ, fscale;
   op_dat bnx, bny, bnz, bsJ, bfscale;
   op_dat nx_c, ny_c, nz_c, sJ_c;
 
 private:
+  void calc_mesh_constants();
+
+#ifdef USE_CUSTOM_MAPS
   struct custom_map_info {
     int *map = nullptr;
     int *map_d = nullptr;
@@ -56,7 +58,6 @@ private:
     int total_size = 0;
   };
 
-  void calc_mesh_constants();
   void update_custom_map();
   void free_custom_map(custom_map_info cmi);
 
@@ -64,7 +65,7 @@ private:
   int node2node_custom_core_size = 0;
   int node2node_custom_total_size = 0;
   std::vector<custom_map_info> node2node_custom_maps;
-
+#endif
 };
 
 #endif

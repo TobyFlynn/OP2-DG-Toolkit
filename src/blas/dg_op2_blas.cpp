@@ -257,7 +257,7 @@ void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
   #if defined(USE_OP2_KERNELS)
   if(transpose) {
     op_par_loop(gemv_liftT, "gemv_liftT", mesh->cells,
-                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
                 op_arg_gbl(constants->get_mat_ptr(DGConstants::LIFT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
@@ -265,7 +265,7 @@ void op2_gemv_lift(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                 op_arg_dat(y, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW));
   } else {
     op_par_loop(gemv_lift, "gemv_lift", mesh->cells,
-                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
                 op_arg_gbl(constants->get_mat_ptr(DGConstants::LIFT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
@@ -293,7 +293,7 @@ void op2_gemv_emat(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
   #if defined(USE_OP2_KERNELS)
   if(transpose) {
     op_par_loop(gemv_liftT, "gemv_liftT", mesh->cells,
-                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
                 op_arg_gbl(constants->get_mat_ptr(DGConstants::EMAT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
@@ -301,7 +301,7 @@ void op2_gemv_emat(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                 op_arg_dat(y, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW));
   } else {
     op_par_loop(gemv_lift, "gemv_lift", mesh->cells,
-                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
                 op_arg_gbl(constants->get_mat_ptr(DGConstants::EMAT), DG_ORDER * DG_NUM_FACES * DG_NPF * DG_NP, DG_FP_STR, OP_READ),
@@ -330,7 +330,7 @@ void op2_gemv_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha,
   #if defined(USE_OP2_KERNELS)
   if(transpose) {
     op_par_loop(gemv_np_npT, "gemv_np_npT", mesh->cells,
-                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
                 op_arg_gbl(matrix, DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
@@ -338,7 +338,7 @@ void op2_gemv_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha,
                 op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
   } else {
     op_par_loop(gemv_np_np, "gemv_np_np", mesh->cells,
-                op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
                 op_arg_gbl(&alpha, 1, DG_FP_STR, OP_READ),
                 op_arg_gbl(&beta,  1, DG_FP_STR, OP_READ),
                 op_arg_gbl(matrix, DG_ORDER * DG_NP * DG_NP, DG_FP_STR, OP_READ),
@@ -548,7 +548,7 @@ void op2_gemv_np_np_halo_exchange(DGMesh *mesh, bool transpose, const DG_FP alph
   const DG_FP *A = matrix + (order - 1) * DG_NP * DG_NP;
   custom_kernel_gemv_halo_exchange(mesh->cells, transpose, m, k, alpha, beta, A, x, y);
   #else
-  const int order = *((int *)mesh->order->data);
+  const int order = mesh->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
   const int k = m;
   const DG_FP *A = matrix + (order - 1) * DG_NP * DG_NP;

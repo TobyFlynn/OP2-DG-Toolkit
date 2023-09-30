@@ -1,6 +1,6 @@
-inline void jump_3d(const int **order, const int *faceNum, const int *fmaskL_corrected,
+inline void jump_3d(const int *order, const int *faceNum, const int *fmaskL_corrected,
                     const int *fmaskR_corrected, const DG_FP **in, DG_FP **out) {
-  const int p = order[0][0];
+  const int p = *order;
   const int dg_npf = DG_CONSTANTS_TK[(p - 1) * DG_NUM_CONSTANTS + 1];
   const int faceNumL = faceNum[0];
   const int faceNumR = faceNum[1];

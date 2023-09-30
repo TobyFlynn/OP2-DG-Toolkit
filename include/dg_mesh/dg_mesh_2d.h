@@ -47,7 +47,7 @@ public:
   op_dat bedge_type, edgeNum, bedgeNum, reverse;
   op_dat nx_c, ny_c, sJ_c, fscale_c;
   op_dat nx_c_new, ny_c_new, sJ_c_new, fscale_c_new;
-  op_dat op_tmp[4];
+  op_dat order, J, op_tmp[4];
 
 private:
   void update_mesh_constants();

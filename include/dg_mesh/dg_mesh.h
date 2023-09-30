@@ -18,7 +18,7 @@ public:
 
   op_set cells, faces, bfaces;
   op_map face2cells, bface2cells;
-  op_dat order, J, geof;
+  op_dat geof;
 };
 
 #endif

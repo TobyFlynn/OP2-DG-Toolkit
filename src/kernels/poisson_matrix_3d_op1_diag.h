@@ -1,9 +1,5 @@
-inline void poisson_matrix_3d_op1_diag(const int *order, const DG_FP *rx,
-                                       const DG_FP *sx, const DG_FP *tx,
-                                       const DG_FP *ry, const DG_FP *sy,
-                                       const DG_FP *ty, const DG_FP *rz,
-                                       const DG_FP *sz, const DG_FP *tz,
-                                       const DG_FP *J, DG_FP *diag) {
+inline void poisson_matrix_3d_op1_diag(const int *order, const DG_FP *geof,
+                                       DG_FP *diag) {
   const DG_FP *dr_mat = &dg_Dr_kernel[(*order - 1) * DG_NP * DG_NP];
   const DG_FP *ds_mat = &dg_Ds_kernel[(*order - 1) * DG_NP * DG_NP];
   const DG_FP *dt_mat = &dg_Dt_kernel[(*order - 1) * DG_NP * DG_NP];
@@ -15,16 +11,16 @@ inline void poisson_matrix_3d_op1_diag(const int *order, const DG_FP *rx,
     for(int j = 0; j < dg_np; j++) {
       // int ind = i + j * dg_np;
       int ind = DG_MAT_IND(i, j, dg_np, dg_np);
-      Dx[ind] = rx[0] * dr_mat[ind] + sx[0] * ds_mat[ind] + tx[0] * dt_mat[ind];
-      Dy[ind] = ry[0] * dr_mat[ind] + sy[0] * ds_mat[ind] + ty[0] * dt_mat[ind];
-      Dz[ind] = rz[0] * dr_mat[ind] + sz[0] * ds_mat[ind] + tz[0] * dt_mat[ind];
+      Dx[ind] = geof[RX_IND] * dr_mat[ind] + geof[SX_IND] * ds_mat[ind] + geof[TX_IND] * dt_mat[ind];
+      Dy[ind] = geof[RY_IND] * dr_mat[ind] + geof[SY_IND] * ds_mat[ind] + geof[TY_IND] * dt_mat[ind];
+      Dz[ind] = geof[RZ_IND] * dr_mat[ind] + geof[SZ_IND] * ds_mat[ind] + geof[TZ_IND] * dt_mat[ind];
     }
   }
 
   DG_FP Dx_t[DG_NP * DG_NP], Dy_t[DG_NP * DG_NP], Dz_t[DG_NP * DG_NP];
-  op2_in_kernel_gemm(false, false, dg_np, dg_np, dg_np, J[0], mass_mat, dg_np, Dx, dg_np, 0.0, Dx_t, dg_np);
-  op2_in_kernel_gemm(false, false, dg_np, dg_np, dg_np, J[0], mass_mat, dg_np, Dy, dg_np, 0.0, Dy_t, dg_np);
-  op2_in_kernel_gemm(false, false, dg_np, dg_np, dg_np, J[0], mass_mat, dg_np, Dz, dg_np, 0.0, Dz_t, dg_np);
+  op2_in_kernel_gemm(false, false, dg_np, dg_np, dg_np, geof[J_IND], mass_mat, dg_np, Dx, dg_np, 0.0, Dx_t, dg_np);
+  op2_in_kernel_gemm(false, false, dg_np, dg_np, dg_np, geof[J_IND], mass_mat, dg_np, Dy, dg_np, 0.0, Dy_t, dg_np);
+  op2_in_kernel_gemm(false, false, dg_np, dg_np, dg_np, geof[J_IND], mass_mat, dg_np, Dz, dg_np, 0.0, Dz_t, dg_np);
 
   for(int i = 0; i < dg_np; i++) {
     diag[i] = 0.0;

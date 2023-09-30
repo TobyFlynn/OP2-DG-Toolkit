@@ -1,30 +1,27 @@
-inline void init_bfaces_3d(const int *faceNum, const DG_FP *rx, const DG_FP *ry,
-                           const DG_FP *rz, const DG_FP *sx, const DG_FP *sy,
-                           const DG_FP *sz, const DG_FP *tx, const DG_FP *ty,
-                           const DG_FP *tz, const DG_FP *J, DG_FP *nx,
+inline void init_bfaces_3d(const int *faceNum, const DG_FP *geof, DG_FP *nx,
                            DG_FP *ny, DG_FP *nz, DG_FP *sJ, DG_FP *fscale) {
   if(*faceNum == 0) {
-    *nx = -*tx;
-    *ny = -*ty;
-    *nz = -*tz;
+    *nx = -geof[TX_IND];
+    *ny = -geof[TY_IND];
+    *nz = -geof[TZ_IND];
   } else if(*faceNum == 1) {
-    *nx = -*sx;
-    *ny = -*sy;
-    *nz = -*sz;
+    *nx = -geof[SX_IND];
+    *ny = -geof[SY_IND];
+    *nz = -geof[SZ_IND];
   } else if(*faceNum == 2) {
-    *nx = *rx + *sx + *tx;
-    *ny = *ry + *sy + *ty;
-    *nz = *rz + *sz + *tz;
+    *nx = geof[RX_IND] + geof[SX_IND] + geof[TX_IND];
+    *ny = geof[RY_IND] + geof[SY_IND] + geof[TY_IND];
+    *nz = geof[RZ_IND] + geof[SZ_IND] + geof[TZ_IND];
   } else {
-    *nx = -*rx;
-    *ny = -*ry;
-    *nz = -*rz;
+    *nx = -geof[RX_IND];
+    *ny = -geof[RY_IND];
+    *nz = -geof[RZ_IND];
   }
 
   *sJ = sqrt(*nx * *nx + *ny * *ny + *nz * *nz);
   *nx /= *sJ;
   *ny /= *sJ;
   *nz /= *sJ;
-  *sJ *= *J;
-  *fscale = *sJ / *J;
+  *sJ *= geof[J_IND];
+  *fscale = *sJ / geof[J_IND];
 }

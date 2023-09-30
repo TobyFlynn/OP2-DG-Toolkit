@@ -1,8 +1,5 @@
-inline void factor_poisson_coarse_matrix_3d_op1(const DG_FP *rx, const DG_FP *sx,
-                    const DG_FP *tx, const DG_FP *ry, const DG_FP *sy,
-                    const DG_FP *ty, const DG_FP *rz, const DG_FP *sz,
-                    const DG_FP *tz, const DG_FP *J, const DG_FP *factor,
-                    DG_FP *op1) {
+inline void factor_poisson_coarse_matrix_3d_op1(const DG_FP *geof, const DG_FP *factor,
+                                                DG_FP *op1) {
   const DG_FP *dr_mat = dg_Dr_kernel;
   const DG_FP *ds_mat = dg_Ds_kernel;
   const DG_FP *dt_mat = dg_Dt_kernel;
@@ -13,9 +10,9 @@ inline void factor_poisson_coarse_matrix_3d_op1(const DG_FP *rx, const DG_FP *sx
     for(int j = 0; j < DG_NP_N1; j++) {
       // int ind = i + j * DG_NP_N1;
       int ind = DG_MAT_IND(i, j, DG_NP_N1, DG_NP_N1);
-      Dx[ind] = rx[0] * dr_mat[ind] + sx[0] * ds_mat[ind] + tx[0] * dt_mat[ind];
-      Dy[ind] = ry[0] * dr_mat[ind] + sy[0] * ds_mat[ind] + ty[0] * dt_mat[ind];
-      Dz[ind] = rz[0] * dr_mat[ind] + sz[0] * ds_mat[ind] + tz[0] * dt_mat[ind];
+      Dx[ind] = geof[RX_IND] * dr_mat[ind] + geof[SX_IND] * ds_mat[ind] + geof[TX_IND] * dt_mat[ind];
+      Dy[ind] = geof[RY_IND] * dr_mat[ind] + geof[SY_IND] * ds_mat[ind] + geof[TY_IND] * dt_mat[ind];
+      Dz[ind] = geof[RZ_IND] * dr_mat[ind] + geof[SZ_IND] * ds_mat[ind] + geof[TZ_IND] * dt_mat[ind];
     }
   }
 
@@ -51,7 +48,7 @@ inline void factor_poisson_coarse_matrix_3d_op1(const DG_FP *rx, const DG_FP *sx
         int b_ind = DG_MAT_IND(k, j, DG_NP_N1, DG_NP_N1);
         op1[op_ind] += Dx[a_ind] * Dx_t[b_ind] + Dy[a_ind] * Dy_t[b_ind] + Dz[a_ind] * Dz_t[b_ind];
       }
-      op1[op_ind] *= J[0];
+      op1[op_ind] *= geof[J_IND];
     }
   }
 }

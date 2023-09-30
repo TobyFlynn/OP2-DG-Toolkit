@@ -20,21 +20,7 @@ void get_num_nodes(const int N, int *Np, int *Nfp) {
 }
 
 int PoissonMatrix::getUnknowns() {
-  op_arg op2_args[] = {
-    op_arg_dat(_mesh->order, -1, OP_ID, 1, "int", OP_READ)
-  };
-  op_mpi_halo_exchanges(_mesh->order->set, 1, op2_args);
-  const int setSize = _mesh->order->set->size;
-  const int *tempOrder = (int *)_mesh->order->data;
-  int unknowns = 0;
-  #pragma omp parallel for reduction(+:unknowns)
-  for(int i = 0; i < setSize; i++) {
-    int Np, Nfp;
-    get_num_nodes(tempOrder[i], &Np, &Nfp);
-    unknowns += Np;
-  }
-  op_mpi_set_dirtybit(1, op2_args);
-  return unknowns;
+  return DG_NP * _mesh->cells->size;
 }
 
 void PoissonMatrix::set_glb_ind() {
@@ -44,22 +30,18 @@ void PoissonMatrix::set_glb_ind() {
   global_ind = get_global_mat_start_ind(unknowns);
   #endif
   op_arg args[] = {
-    op_arg_dat(_mesh->order, -1, OP_ID, 1, "int", OP_READ),
     op_arg_dat(glb_ind, -1, OP_ID, 1, "int", OP_WRITE)
   };
-  op_mpi_halo_exchanges(_mesh->cells, 2, args);
+  op_mpi_halo_exchanges(_mesh->cells, 1, args);
 
-  const int *p = (int *)_mesh->order->data;
   int *data_ptr = (int *)glb_ind->data;
   int ind = global_ind;
   for(int i = 0; i < _mesh->cells->size; i++) {
-    int Np, Nfp;
-    get_num_nodes(p[i], &Np, &Nfp);
     data_ptr[i] = ind;
-    ind += Np;
+    ind += DG_NP;
   }
 
-  op_mpi_set_dirtybit(2, args);
+  op_mpi_set_dirtybit(1, args);
 }
 
 void PoissonMatrix::setPETScMatrix() {
@@ -82,13 +64,11 @@ void PoissonMatrix::setPETScMatrix() {
   // Add cubature OP to Poisson matrix
   op_arg args[] = {
     op_arg_dat(op1, -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
-    op_arg_dat(glb_ind, -1, OP_ID, 1, "int", OP_READ),
-    op_arg_dat(_mesh->order, -1, OP_ID, 1, "int", OP_READ)
+    op_arg_dat(glb_ind, -1, OP_ID, 1, "int", OP_READ)
   };
-  op_mpi_halo_exchanges(_mesh->cells, 3, args);
+  op_mpi_halo_exchanges(_mesh->cells, 2, args);
   const DG_FP *op1_data = (DG_FP *)op1->data;
   const int *glb = (int *)glb_ind->data;
-  const int *p = (int *)_mesh->order->data;
 
   #ifdef DG_COL_MAJ
   MatSetOption(pMat, MAT_ROW_ORIENTED, PETSC_FALSE);
@@ -97,8 +77,6 @@ void PoissonMatrix::setPETScMatrix() {
   #endif
 
   for(int i = 0; i < _mesh->cells->size; i++) {
-    int Np, Nfp;
-    get_num_nodes(p[i], &Np, &Nfp);
     int currentRow = glb[i];
     int currentCol = glb[i];
 
@@ -108,35 +86,28 @@ void PoissonMatrix::setPETScMatrix() {
       idxn[n] = currentCol + n;
     }
 
-    MatSetValues(pMat, Np, idxm, Np, idxn, &op1_data[i * DG_NP * DG_NP], INSERT_VALUES);
+    MatSetValues(pMat, DG_NP, idxm, DG_NP, idxn, &op1_data[i * DG_NP * DG_NP], INSERT_VALUES);
   }
 
-  op_mpi_set_dirtybit(3, args);
+  op_mpi_set_dirtybit(2, args);
 
   op_arg edge_args[] = {
     op_arg_dat(op2[0], -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
     op_arg_dat(op2[1], -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
     op_arg_dat(glb_indL, -1, OP_ID, 1, "int", OP_READ),
-    op_arg_dat(glb_indR, -1, OP_ID, 1, "int", OP_READ),
-    op_arg_dat(orderL, -1, OP_ID, 1, "int", OP_READ),
-    op_arg_dat(orderR, -1, OP_ID, 1, "int", OP_READ)
+    op_arg_dat(glb_indR, -1, OP_ID, 1, "int", OP_READ)
   };
-  op_mpi_halo_exchanges(_mesh->faces, 6, edge_args);
+  op_mpi_halo_exchanges(_mesh->faces, 4, edge_args);
 
   const DG_FP *op2L_data = (DG_FP *)op2[0]->data;
   const DG_FP *op2R_data = (DG_FP *)op2[1]->data;
   const int *glb_l = (int *)glb_indL->data;
   const int *glb_r = (int *)glb_indR->data;
-  const int *p_l = (int *)orderL->data;
-  const int *p_r = (int *)orderR->data;
 
   // Add Gauss OP and OPf to Poisson matrix
   for(int i = 0; i < _mesh->faces->size; i++) {
     int leftRow = glb_l[i];
     int rightRow = glb_r[i];
-    int NpL, NpR, Nfp;
-    get_num_nodes(p_l[i], &NpL, &Nfp);
-    get_num_nodes(p_r[i], &NpR, &Nfp);
 
     int idxl[DG_NP], idxr[DG_NP];
     for(int n = 0; n < DG_NP; n++) {
@@ -144,11 +115,11 @@ void PoissonMatrix::setPETScMatrix() {
       idxr[n] = rightRow + n;
     }
 
-    MatSetValues(pMat, NpL, idxl, NpR, idxr, &op2L_data[i * DG_NP * DG_NP], INSERT_VALUES);
-    MatSetValues(pMat, NpR, idxr, NpL, idxl, &op2R_data[i * DG_NP * DG_NP], INSERT_VALUES);
+    MatSetValues(pMat, DG_NP, idxl, DG_NP, idxr, &op2L_data[i * DG_NP * DG_NP], INSERT_VALUES);
+    MatSetValues(pMat, DG_NP, idxr, DG_NP, idxl, &op2R_data[i * DG_NP * DG_NP], INSERT_VALUES);
   }
 
-  op_mpi_set_dirtybit(6, edge_args);
+  op_mpi_set_dirtybit(4, edge_args);
 
   MatAssemblyBegin(pMat, MAT_FINAL_ASSEMBLY);
   MatAssemblyEnd(pMat, MAT_FINAL_ASSEMBLY);
