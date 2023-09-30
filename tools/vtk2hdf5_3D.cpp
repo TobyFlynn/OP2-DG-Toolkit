@@ -2,7 +2,7 @@
 #define STRINGIFY(X) STRINGIFY2(X)
 
 #include <vtkSmartPointer.h>
-#include <vtkUnstructuredGridReader.h>
+#include <vtkXMLUnstructuredGridReader.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellIterator.h>
 #include <vtkIdList.h>
@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 
   // Read in VTK file
   vtkSmartPointer<vtkUnstructuredGrid> grid;
-  auto reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
+  auto reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
   reader->SetFileName (filename.c_str());
   reader->Update();
   grid = reader->GetOutput();
@@ -168,6 +168,13 @@ int main(int argc, char **argv) {
     bface2node_vec[i] = vtkNodeInd2op2NodeInd.at(bface2node_vec[i]);
   }
 
+  std::vector<double> nodeX_vec, nodeY_vec, nodeZ_vec;
+  for(int i = 0; i < cells_vec.size(); i++) {
+    nodeX_vec.push_back(coords_data[cells_vec[i] * 3]);
+    nodeY_vec.push_back(coords_data[cells_vec[i] * 3 + 1]);
+    nodeZ_vec.push_back(coords_data[cells_vec[i] * 3 + 2]);
+  }
+
   int numCells = numVTKCells;
   int numFaces = face2cell_vec.size() / 2;
   int numBoundaryFaces = bface2cell_vec.size();
@@ -176,78 +183,24 @@ int main(int argc, char **argv) {
   std::cout << "Number of faces: " << numFaces << std::endl;
   std::cout << "Number of boundary faces: " << numBoundaryFaces << std::endl;
 
-  // Create new flux mapping
-  std::map<int, std::vector<std::pair<int,std::pair<int, bool>>>> flux_mapping;
-  for(int i = 0; i < numCells; i++) {
-    std::vector<std::pair<int,std::pair<int, bool>>> tmp;
-    flux_mapping.insert({i, tmp});
-  }
-  for(int i = 0; i < numFaces; i++) {
-    int ind0 = face2cell_vec[i * 2];
-    int ind1 = face2cell_vec[i * 2 + 1];
-    flux_mapping.at(ind0).push_back({ind1, {i, true}});
-    flux_mapping.at(ind1).push_back({ind0, {i, false}});
-  }
-  std::vector<int> flux2main_cell_vec;
-  std::vector<int> flux2neighbour_cells_vec;
-  std::vector<int> flux2faces_vec;
-  std::vector<int> fluxL_vec;
-  std::vector<int> bflux2cells_vec;
-  std::vector<int> bflux2faces_vec;
-  std::vector<int> bfluxL_vec;
-  for(int i = 0; i < numCells; i++) {
-    if(flux_mapping.at(i).size() != 4) {
-      for(int j = 0; j < flux_mapping.at(i).size(); j++) {
-        bflux2cells_vec.push_back(i);
-        bflux2cells_vec.push_back(flux_mapping.at(i)[j].first);
-        bflux2faces_vec.push_back(flux_mapping.at(i)[j].second.first);
-        bfluxL_vec.push_back(flux_mapping.at(i)[j].second.second);
-      }
-    } else {
-      flux2main_cell_vec.push_back(i);
-      flux2neighbour_cells_vec.push_back(flux_mapping.at(i)[0].first);
-      flux2neighbour_cells_vec.push_back(flux_mapping.at(i)[1].first);
-      flux2neighbour_cells_vec.push_back(flux_mapping.at(i)[2].first);
-      flux2neighbour_cells_vec.push_back(flux_mapping.at(i)[3].first);
-      flux2faces_vec.push_back(flux_mapping.at(i)[0].second.first);
-      flux2faces_vec.push_back(flux_mapping.at(i)[1].second.first);
-      flux2faces_vec.push_back(flux_mapping.at(i)[2].second.first);
-      flux2faces_vec.push_back(flux_mapping.at(i)[3].second.first);
-      fluxL_vec.push_back(flux_mapping.at(i)[0].second.second);
-      fluxL_vec.push_back(flux_mapping.at(i)[1].second.second);
-      fluxL_vec.push_back(flux_mapping.at(i)[2].second.second);
-      fluxL_vec.push_back(flux_mapping.at(i)[3].second.second);
-    }
-  }
-
-  op_set nodes   = op_decl_set(numVTKNodes, "nodes");
-  op_set cells   = op_decl_set(numCells, "cells");
-  op_set faces   = op_decl_set(numFaces, "faces");
-  op_set bfaces  = op_decl_set(numBoundaryFaces, "bfaces");
-  op_set fluxes  = op_decl_set(fluxL_vec.size() / 4, "fluxes");
-  op_set bfluxes = op_decl_set(bfluxL_vec.size(), "bfluxes");
+  op_set cells  = op_decl_set(numCells, "cells");
+  op_set faces  = op_decl_set(numFaces, "faces");
+  op_set bfaces = op_decl_set(numBoundaryFaces, "bfaces");
 
   // Maps
-  op_map cell2nodes  = op_decl_map(cells, nodes, 4, cells_vec.data(), "cell2nodes");
-  op_map face2nodes  = op_decl_map(faces, nodes, 3, face2node_vec.data(), "face2nodes");
   op_map face2cells  = op_decl_map(faces, cells, 2, face2cell_vec.data(), "face2cells");
-  op_map bface2nodes = op_decl_map(bfaces, nodes, 3, bface2node_vec.data(), "bface2nodes");
   op_map bface2cells = op_decl_map(bfaces, cells, 1, bface2cell_vec.data(), "bface2cells");
-  op_map flux2main_cell  = op_decl_map(fluxes, cells, 1, flux2main_cell_vec.data(), "flux2main_cell");
-  op_map flux2neighbour_cells  = op_decl_map(fluxes, cells, 4, flux2neighbour_cells_vec.data(), "flux2neighbour_cells");
-  op_map flux2faces  = op_decl_map(fluxes, faces, 4, flux2faces_vec.data(), "flux2faces");
-  op_map bflux2cells = op_decl_map(bfluxes, cells, 2, bflux2cells_vec.data(), "bflux2cells");
-  op_map bflux2faces = op_decl_map(bfluxes, faces, 1, bflux2faces_vec.data(), "bflux2faces");
 
   // Dats
-  op_dat node_coords  = op_decl_dat(nodes, 3, "double", coords_data, "node_coords");
-  op_dat faceNum      = op_decl_dat(faces, 2, "int", faceNum_vec.data(), "faceNum");
+  op_dat nodeX        = op_decl_dat(cells,  4, "double", nodeX_vec.data(), "nodeX");
+  op_dat nodeY        = op_decl_dat(cells,  4, "double", nodeY_vec.data(), "nodeY");
+  op_dat nodeZ        = op_decl_dat(cells,  4, "double", nodeZ_vec.data(), "nodeZ");
+  op_dat faceNum      = op_decl_dat(faces,  2, "int", faceNum_vec.data(), "faceNum");
   op_dat bfaceNum     = op_decl_dat(bfaces, 1, "int", bfaceNum_vec.data(), "bfaceNum");
-  op_dat periodicFace = op_decl_dat(faces, 1, "int", periodicFace_vec.data(), "periodicFace");
-  op_dat fluxL        = op_decl_dat(fluxes, 4, "int", fluxL_vec.data(), "fluxL");
-  op_dat bfluxL       = op_decl_dat(bfluxes, 1, "int", bfluxL_vec.data(), "bfluxL");
+  op_dat periodicFace = op_decl_dat(faces,  1, "int", periodicFace_vec.data(), "periodicFace");
 
   op_partition("" STRINGIFY(OP2_PARTITIONER), "KWAY", cells, face2cells, NULL);
+  op_renumber(face2cells);
 
   std::string meshfile = outdir + "mesh.h5";
   op_dump_to_hdf5(meshfile.c_str());

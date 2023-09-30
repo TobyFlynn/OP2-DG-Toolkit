@@ -42,7 +42,7 @@ public:
   void interp_dat_between_orders_sp(int old_order, int new_order, op_dat in);
 
   // OP2 stuff
-  op_dat node_coords, nodeX, nodeY, x, y, rx, ry, sx, sy;
+  op_dat nodeX, nodeY, x, y, rx, ry, sx, sy;
   op_dat nx, ny, sJ, fscale, bnx, bny, bsJ, bfscale;
   op_dat bedge_type, edgeNum, bedgeNum, reverse;
   op_dat nx_c, ny_c, sJ_c, fscale_c;

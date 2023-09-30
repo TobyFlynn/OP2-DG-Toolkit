@@ -31,29 +31,20 @@ DGMesh2D::DGMesh2D(std::string &meshFile) {
 
   // Initialise OP2
   // Declare OP2 sets
-  nodes  = op_decl_set_hdf5(meshFile.c_str(), "nodes");
   cells  = op_decl_set_hdf5(meshFile.c_str(), "cells");
   faces  = op_decl_set_hdf5(meshFile.c_str(), "faces");
   bfaces = op_decl_set_hdf5(meshFile.c_str(), "bfaces");
 
   // Declare OP2 maps
-  cell2nodes  = op_decl_map_hdf5(cells, nodes, 3, meshFile.c_str(), "cell2nodes");
-  face2nodes  = op_decl_map_hdf5(faces, nodes, 2, meshFile.c_str(), "face2nodes");
   face2cells  = op_decl_map_hdf5(faces, cells, 2, meshFile.c_str(), "face2cells");
-  bface2nodes = op_decl_map_hdf5(bfaces, nodes, 2, meshFile.c_str(), "bface2nodes");
   bface2cells = op_decl_map_hdf5(bfaces, cells, 1, meshFile.c_str(), "bface2cells");
 
   // Declare OP2 datasets from HDF5
-  // Structure: {x, y}
-  node_coords = op_decl_dat_hdf5(nodes, 2, DG_FP_STR, meshFile.c_str(), "node_coords");
-  bedge_type  = op_decl_dat_hdf5(bfaces, 1, "int", meshFile.c_str(), "bedge_type");
-  edgeNum     = op_decl_dat_hdf5(faces, 2, "int", meshFile.c_str(), "edgeNum");
-  bedgeNum    = op_decl_dat_hdf5(bfaces, 1, "int", meshFile.c_str(), "bedgeNum");
-
-  // Declare regular OP2 datasets
-  // Coords of nodes per cell
-  nodeX = op_decl_dat(cells, 3, DG_FP_STR, (DG_FP *)NULL, "nodeX");
-  nodeY = op_decl_dat(cells, 3, DG_FP_STR, (DG_FP *)NULL, "nodeY");
+  nodeX      = op_decl_dat_hdf5(cells, 3, DG_FP_STR, meshFile.c_str(), "nodeX");
+  nodeY      = op_decl_dat_hdf5(cells, 3, DG_FP_STR, meshFile.c_str(), "nodeY");
+  bedge_type = op_decl_dat_hdf5(bfaces, 1, "int", meshFile.c_str(), "bedge_type");
+  edgeNum    = op_decl_dat_hdf5(faces, 2, "int", meshFile.c_str(), "edgeNum");
+  bedgeNum   = op_decl_dat_hdf5(bfaces, 1, "int", meshFile.c_str(), "bedgeNum");
 
   // The x and y coordinates of all the solution points in a cell
   x = op_decl_dat(cells, DG_NP, DG_FP_STR, (DG_FP *)NULL, "x");
@@ -109,11 +100,6 @@ void DGMesh2D::init() {
   // Initialise the order to the max order to start with
   op_par_loop(init_order, "init_order", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_WRITE));
-
-  op_par_loop(init_nodes, "init_nodes", cells,
-              op_arg_dat(node_coords, -3, cell2nodes, 2, DG_FP_STR, OP_READ),
-              op_arg_dat(nodeX, -1, OP_ID, 3, DG_FP_STR, OP_WRITE),
-              op_arg_dat(nodeY, -1, OP_ID, 3, DG_FP_STR, OP_WRITE));
 
   // Calculate geometric factors
   op_par_loop(calc_geom, "calc_geom", cells,

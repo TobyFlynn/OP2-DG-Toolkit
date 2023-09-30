@@ -42,16 +42,12 @@ public:
   void grad_halo_exchange(op_dat u, op_dat ux, op_dat uy, op_dat uz);
 
   // OP2 stuff
-  op_dat node_coords, nodeX, nodeY, nodeZ, x, y, z;
+  op_dat nodeX, nodeY, nodeZ, x, y, z;
   op_dat rx, ry, rz, sx, sy, sz, tx, ty, tz;
   op_dat faceNum, bfaceNum, periodicFace, fmaskL, fmaskR, nx, ny, nz, sJ, fscale;
   op_dat bnx, bny, bnz, bsJ, bfscale;
   op_dat nx_c, ny_c, nz_c, sJ_c;
 
-  // op_set fluxes, bfluxes;
-  // op_map flux2main_cell, flux2neighbour_cells, flux2faces, bflux2cells, bflux2faces;
-  // op_dat fluxL, fluxFaceNums, fluxFmask, fluxNx, fluxNy, fluxNz, fluxFscale, fluxSJ;
-  // op_dat bfluxL;
 private:
   struct custom_map_info {
     int *map = nullptr;

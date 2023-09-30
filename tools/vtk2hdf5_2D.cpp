@@ -43,10 +43,10 @@ struct Cell {
 struct Edge {
   int points[2];
   int cells[2];
-  int num[2];
+  char num[2];
 };
 
-int getBoundaryEdgeNum(const string &type, double x0, double y0, double x1, double y1) {
+char getBoundaryEdgeNum(const string &type, double x0, double y0, double x1, double y1) {
   if(type == "cylinder_p") {
     if(x0 == 0.0 && x1 == 0.0) {
       // Inflow
@@ -63,6 +63,9 @@ int getBoundaryEdgeNum(const string &type, double x0, double y0, double x1, doub
     }
   } else if(type == "euler_vortex") {
     return -1;
+  } else if(type == "outflows") {
+    // Outflow
+    return 1;
   } else {
     cerr << "***ERROR*** Unrecognised boundary type specified" << endl;
   }
@@ -201,7 +204,7 @@ int main(int argc, char **argv) {
         edge->points[1] = key.second;
         edge->cells[0] = i;
         edge->cells[1] = -1;
-        edge->num[0] = j;
+        edge->num[0] = static_cast<char>(j);
         edge->num[1] = -1;
         internalEdgeMap.insert(make_pair(key, move(edge)));
       } else {
@@ -219,7 +222,7 @@ int main(int argc, char **argv) {
             cout << "  Key: " << key.first << " " << key.second << endl;
           }
           internalEdgeMap.at(key)->cells[1] = i;
-          internalEdgeMap.at(key)->num[1] = j;
+          internalEdgeMap.at(key)->num[1] = static_cast<char>(j);
       }
     }
   }
@@ -294,27 +297,24 @@ int main(int argc, char **argv) {
     cout << "Number of periodic edges that do not match up: " << periodic_map_x.size() + periodic_map_y.size() << endl;
   }
 
-  vector<int> edge2node_vec, edge2cell_vec, edgeNum_vec;
-  vector<int> bedge2node_vec, bedge2cell_vec, bedgeNum_vec, bedgeType_vec;
+  vector<int> edge2cell_vec;
+  vector<int> bedge2cell_vec;
+  vector<int> edgeNum_vec, bedgeNum_vec, bedgeType_vec;
   for(auto const &edge : internalEdgeMap) {
     if(edge.second->cells[1] == -1) {
-      bedge2node_vec.push_back(edge.second->points[0]);
-      bedge2node_vec.push_back(edge.second->points[1]);
       bedge2cell_vec.push_back(edge.second->cells[0]);
       bedgeNum_vec.push_back(edge.second->num[0]);
       double x0 = x[edge.second->points[0]];
       double y0 = y[edge.second->points[0]];
       double x1 = x[edge.second->points[1]];
       double y1 = y[edge.second->points[1]];
-      int bType = getBoundaryEdgeNum(bcType, x0, y0, x1, y1);
+      char bType = getBoundaryEdgeNum(bcType, x0, y0, x1, y1);
       bedgeType_vec.push_back(bType);
     } else {
       if(edge.second->points[0] == edge.second->points[1])
         cout << "***** ERROR: Edge with identical points *****" << endl;
       if(edge.second->cells[0] == edge.second->cells[1])
         cout << "***** ERROR: Edge with identical cells *****" << endl;
-      edge2node_vec.push_back(edge.second->points[0]);
-      edge2node_vec.push_back(edge.second->points[1]);
       edge2cell_vec.push_back(edge.second->cells[0]);
       edge2cell_vec.push_back(edge.second->cells[1]);
       edgeNum_vec.push_back(edge.second->num[0]);
@@ -322,28 +322,27 @@ int main(int argc, char **argv) {
     }
   }
 
-  op_set nodes  = op_decl_set(x.size(), "nodes");
   op_set cells  = op_decl_set(elements.size() / 3, "cells");
   op_set faces  = op_decl_set(edgeNum_vec.size() / 2, "faces");
   op_set bfaces = op_decl_set(bedgeNum_vec.size(), "bfaces");
 
-  op_map cell2nodes  = op_decl_map(cells, nodes, 3, elements.data(), "cell2nodes");
-  op_map face2nodes  = op_decl_map(faces, nodes, 2, edge2node_vec.data(), "face2nodes");
   op_map face2cells  = op_decl_map(faces, cells, 2, edge2cell_vec.data(), "face2cells");
-  op_map bface2nodes = op_decl_map(bfaces, nodes, 2, bedge2node_vec.data(), "bface2nodes");
   op_map bface2cells = op_decl_map(bfaces, cells, 1, bedge2cell_vec.data(), "bface2cells");
 
-  vector<double> coords_vec;
-  for(int i = 0; i < x.size(); i++) {
-    coords_vec.push_back(x[i]);
-    coords_vec.push_back(y[i]);
+  vector<double> nodeX_vec, nodeY_vec;
+  for(int i = 0; i < elements.size(); i++) {
+    nodeX_vec.push_back(x[elements[i]]);
+    nodeY_vec.push_back(y[elements[i]]);
   }
-  op_dat node_coords = op_decl_dat(nodes, 2, "double", coords_vec.data(), "node_coords");
+
+  op_dat nodeX       = op_decl_dat(cells, 3, "double", nodeX_vec.data(), "nodeX");
+  op_dat nodeY       = op_decl_dat(cells, 3, "double", nodeY_vec.data(), "nodeY");
   op_dat bedge_type  = op_decl_dat(bfaces, 1, "int", bedgeType_vec.data(), "bedge_type");
-  op_dat edgeNum     = op_decl_dat(faces, 2, "int", edgeNum_vec.data(), "edgeNum");
+  op_dat edgeNum     = op_decl_dat(faces,  2, "int", edgeNum_vec.data(), "edgeNum");
   op_dat bedgeNum    = op_decl_dat(bfaces, 1, "int", bedgeNum_vec.data(), "bedgeNum");
 
   op_partition("" STRINGIFY(OP2_PARTITIONER), "KWAY", cells, face2cells, NULL);
+  op_renumber(face2cells);
 
   std::string meshfile = outdir + "mesh.h5";
   op_dump_to_hdf5(meshfile.c_str());

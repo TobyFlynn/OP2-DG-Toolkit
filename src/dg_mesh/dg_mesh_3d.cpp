@@ -20,27 +20,21 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   init_op2_gemv();
 
   // Sets
-  nodes   = op_decl_set_hdf5(meshFile.c_str(), "nodes");
-  cells   = op_decl_set_hdf5(meshFile.c_str(), "cells");
-  faces   = op_decl_set_hdf5(meshFile.c_str(), "faces");
-  bfaces  = op_decl_set_hdf5(meshFile.c_str(), "bfaces");
+  cells  = op_decl_set_hdf5(meshFile.c_str(), "cells");
+  faces  = op_decl_set_hdf5(meshFile.c_str(), "faces");
+  bfaces = op_decl_set_hdf5(meshFile.c_str(), "bfaces");
 
   // Maps
-  cell2nodes  = op_decl_map_hdf5(cells, nodes, 4, meshFile.c_str(), "cell2nodes");
-  face2nodes  = op_decl_map_hdf5(faces, nodes, 3, meshFile.c_str(), "face2nodes");
   face2cells  = op_decl_map_hdf5(faces, cells, 2, meshFile.c_str(), "face2cells");
-  bface2nodes = op_decl_map_hdf5(bfaces, nodes, 3, meshFile.c_str(), "bface2nodes");
   bface2cells = op_decl_map_hdf5(bfaces, cells, 1, meshFile.c_str(), "bface2cells");
 
   // Dats
-  node_coords  = op_decl_dat_hdf5(nodes, 3, DG_FP_STR, meshFile.c_str(), "node_coords");
+  nodeX        = op_decl_dat_hdf5(cells, 4, DG_FP_STR, meshFile.c_str(), "nodeX");
+  nodeY        = op_decl_dat_hdf5(cells, 4, DG_FP_STR, meshFile.c_str(), "nodeY");
+  nodeZ        = op_decl_dat_hdf5(cells, 4, DG_FP_STR, meshFile.c_str(), "nodeZ");
   faceNum      = op_decl_dat_hdf5(faces, 2, "int", meshFile.c_str(), "faceNum");
   bfaceNum     = op_decl_dat_hdf5(bfaces, 1, "int", meshFile.c_str(), "bfaceNum");
   periodicFace = op_decl_dat_hdf5(faces, 1, "int", meshFile.c_str(), "periodicFace");
-
-  nodeX = op_decl_dat(cells, 4, DG_FP_STR, (DG_FP *)NULL, "nodeX");
-  nodeY = op_decl_dat(cells, 4, DG_FP_STR, (DG_FP *)NULL, "nodeY");
-  nodeZ = op_decl_dat(cells, 4, DG_FP_STR, (DG_FP *)NULL, "nodeZ");
 
   x = op_decl_dat(cells, DG_NP, DG_FP_STR, (DG_FP *)NULL, "x");
   y = op_decl_dat(cells, DG_NP, DG_FP_STR, (DG_FP *)NULL, "y");
@@ -78,16 +72,6 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   bfscale = op_decl_dat(bfaces, 1, DG_FP_STR, (DG_FP *)NULL, "bfscale");
 
   order = op_decl_dat(cells, 1, "int", (int *)NULL, "order");
-/*
-  fluxFaceNums = op_decl_dat(fluxes, 8, "int", (int *)NULL, "fluxFaceNums");
-  fluxFmask = op_decl_dat(fluxes, 4 * DG_NPF, "int", (int *)NULL, "fluxFmask");
-
-  fluxNx = op_decl_dat(fluxes, 4, DG_FP_STR, (DG_FP *)NULL, "fluxNx");
-  fluxNy = op_decl_dat(fluxes, 4, DG_FP_STR, (DG_FP *)NULL, "fluxNy");
-  fluxNz = op_decl_dat(fluxes, 4, DG_FP_STR, (DG_FP *)NULL, "fluxNz");
-  fluxSJ = op_decl_dat(fluxes, 4, DG_FP_STR, (DG_FP *)NULL, "fluxSJ");
-  fluxFscale = op_decl_dat(fluxes, 8, DG_FP_STR, (DG_FP *)NULL, "fluxFscale");
-*/
 
   dg_dat_pool = new DGDatPool(this);
 
@@ -119,12 +103,6 @@ void DGMesh3D::init() {
   // Initialise the order to the max order to start with
   op_par_loop(init_order, "init_order", cells,
               op_arg_dat(order, -1, OP_ID, 1, "int", OP_WRITE));
-
-  op_par_loop(init_nodes_3d, "init_nodes_3d", cells,
-              op_arg_dat(node_coords, -4, cell2nodes, 3, DG_FP_STR, OP_READ),
-              op_arg_dat(nodeX, -1, OP_ID, 4, DG_FP_STR, OP_WRITE),
-              op_arg_dat(nodeY, -1, OP_ID, 4, DG_FP_STR, OP_WRITE),
-              op_arg_dat(nodeZ, -1, OP_ID, 4, DG_FP_STR, OP_WRITE));
 
   calc_mesh_constants();
 }
