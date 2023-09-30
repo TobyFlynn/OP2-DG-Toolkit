@@ -12,6 +12,8 @@
 
 extern DGConstants *constants;
 
+#ifdef USE_CUSTOM_MAPS
+
 void DGMesh3D::free_custom_map(custom_map_info cmi) {
   if(cmi.map) {
     free(cmi.map);
@@ -234,4 +236,6 @@ void DGMesh3D::update_custom_map() {
   node2node_custom_core_size = node2node_custom_maps[order_int - 1].core_size;
   node2node_custom_total_size = node2node_custom_maps[order_int - 1].total_size;
 }
+#endif
+
 #endif

@@ -1,12 +1,9 @@
-inline void poisson_matrix_3d_op2(const int **order, const int *faceNum,
+inline void poisson_matrix_3d_op2(const int *order, const int *faceNum,
                       const int *fmaskL_corrected, const int *fmaskR_corrected,
                       const DG_FP *nx, const DG_FP *ny, const DG_FP *nz,
-                      const DG_FP *fscale, const DG_FP *sJ, const DG_FP **rx,
-                      const DG_FP **sx, const DG_FP **tx, const DG_FP **ry,
-                      const DG_FP **sy, const DG_FP **ty, const DG_FP **rz,
-                      const DG_FP **sz, const DG_FP **tz, DG_FP *op1L,
-                      DG_FP *op1R, DG_FP *op2L, DG_FP *op2R) {
-  const int p = order[0][0];
+                      const DG_FP *fscale, const DG_FP *sJ, const DG_FP **geof,
+                      DG_FP *op1L, DG_FP *op1R, DG_FP *op2L, DG_FP *op2R) {
+  const int p = *order;
   const DG_FP *dr_mat = &dg_Dr_kernel[(p - 1) * DG_NP * DG_NP];
   const DG_FP *ds_mat = &dg_Ds_kernel[(p - 1) * DG_NP * DG_NP];
   const DG_FP *dt_mat = &dg_Dt_kernel[(p - 1) * DG_NP * DG_NP];
@@ -43,12 +40,12 @@ inline void poisson_matrix_3d_op2(const int **order, const int *faceNum,
   const int *fmaskR = &fmask[faceNum[1] * dg_npf];
 
   DG_FP DL[DG_NP * DG_NP], DR[DG_NP * DG_NP];
-  const DG_FP r_fact_0 = nx[0] * rx[0][0] + ny[0] * ry[0][0] + nz[0] * rz[0][0];
-  const DG_FP s_fact_0 = nx[0] * sx[0][0] + ny[0] * sy[0][0] + nz[0] * sz[0][0];
-  const DG_FP t_fact_0 = nx[0] * tx[0][0] + ny[0] * ty[0][0] + nz[0] * tz[0][0];
-  const DG_FP r_fact_1 = nx[1] * rx[1][0] + ny[1] * ry[1][0] + nz[1] * rz[1][0];
-  const DG_FP s_fact_1 = nx[1] * sx[1][0] + ny[1] * sy[1][0] + nz[1] * sz[1][0];
-  const DG_FP t_fact_1 = nx[1] * tx[1][0] + ny[1] * ty[1][0] + nz[1] * tz[1][0];
+  const DG_FP r_fact_0 = nx[0] * geof[0][RX_IND] + ny[0] * geof[0][RY_IND] + nz[0] * geof[0][RZ_IND];
+  const DG_FP s_fact_0 = nx[0] * geof[0][SX_IND] + ny[0] * geof[0][SY_IND] + nz[0] * geof[0][SZ_IND];
+  const DG_FP t_fact_0 = nx[0] * geof[0][TX_IND] + ny[0] * geof[0][TY_IND] + nz[0] * geof[0][TZ_IND];
+  const DG_FP r_fact_1 = nx[1] * geof[1][RX_IND] + ny[1] * geof[1][RY_IND] + nz[1] * geof[1][RZ_IND];
+  const DG_FP s_fact_1 = nx[1] * geof[1][SX_IND] + ny[1] * geof[1][SY_IND] + nz[1] * geof[1][SZ_IND];
+  const DG_FP t_fact_1 = nx[1] * geof[1][TX_IND] + ny[1] * geof[1][TY_IND] + nz[1] * geof[1][TZ_IND];
   for(int i = 0; i < dg_np; i++) {
     for(int j = 0; j < dg_np; j++) {
       // int ind = i + j * dg_np;

@@ -1,6 +1,6 @@
-inline void avg_3d_sp(const int **order, const int *faceNum, const int *fmaskL_corrected,
+inline void avg_3d_sp(const int *order, const int *faceNum, const int *fmaskL_corrected,
                    const int *fmaskR_corrected, const float **in, float **out) {
-  const int p = order[0][0];
+  const int p = *order;
   const int dg_npf = DG_CONSTANTS_TK[(p - 1) * DG_NUM_CONSTANTS + 1];
   const int faceNumL = faceNum[0];
   const int faceNumR = faceNum[1];

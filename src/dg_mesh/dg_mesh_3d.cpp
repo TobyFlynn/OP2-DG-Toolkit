@@ -46,16 +46,6 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   y = op_decl_dat(cells, DG_NP, DG_FP_STR, (DG_FP *)NULL, "y");
   z = op_decl_dat(cells, DG_NP, DG_FP_STR, (DG_FP *)NULL, "z");
 
-  rx = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "rx");
-  ry = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "ry");
-  rz = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "rz");
-  sx = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "sx");
-  sy = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "sy");
-  sz = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "sz");
-  tx = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "tx");
-  ty = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "ty");
-  tz = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "tz");
-  J  = op_decl_dat(cells, 1, DG_FP_STR, (DG_FP *)NULL, "J");
   geof = op_decl_dat(cells, 10, DG_FP_STR, (DG_FP *)NULL, "geof");
   nx_c = op_decl_dat(cells, 4, DG_FP_STR, (DG_FP *)NULL, "nx_c");
   ny_c = op_decl_dat(cells, 4, DG_FP_STR, (DG_FP *)NULL, "ny_c");
@@ -77,18 +67,6 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   bsJ     = op_decl_dat(bfaces, 1, DG_FP_STR, (DG_FP *)NULL, "bsJ");
   bfscale = op_decl_dat(bfaces, 1, DG_FP_STR, (DG_FP *)NULL, "bfscale");
 
-  order = op_decl_dat(cells, 1, "int", (int *)NULL, "order");
-/*
-  fluxFaceNums = op_decl_dat(fluxes, 8, "int", (int *)NULL, "fluxFaceNums");
-  fluxFmask = op_decl_dat(fluxes, 4 * DG_NPF, "int", (int *)NULL, "fluxFmask");
-
-  fluxNx = op_decl_dat(fluxes, 4, DG_FP_STR, (DG_FP *)NULL, "fluxNx");
-  fluxNy = op_decl_dat(fluxes, 4, DG_FP_STR, (DG_FP *)NULL, "fluxNy");
-  fluxNz = op_decl_dat(fluxes, 4, DG_FP_STR, (DG_FP *)NULL, "fluxNz");
-  fluxSJ = op_decl_dat(fluxes, 4, DG_FP_STR, (DG_FP *)NULL, "fluxSJ");
-  fluxFscale = op_decl_dat(fluxes, 8, DG_FP_STR, (DG_FP *)NULL, "fluxFscale");
-*/
-
   dg_dat_pool = new DGDatPool(this);
 
   constants = new DGConstants3D(DG_ORDER);
@@ -99,26 +77,41 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
 
   order_int = DG_ORDER;
 
+  #ifdef USE_CUSTOM_MAPS
   for(int i = 0; i < DG_ORDER; i++) {
     custom_map_info tmp;
     node2node_custom_maps.push_back(tmp);
   }
+  #endif
 }
 
 
 DGMesh3D::~DGMesh3D() {
+  #ifdef USE_CUSTOM_MAPS
   for(int i = 0; i < DG_ORDER; i++) {
     free_custom_map(node2node_custom_maps[i]);
   }
+  #endif
   delete dg_dat_pool;
   delete (DGConstants3D *)constants;
   destroy_op2_gemv();
 }
 
 void DGMesh3D::init() {
-  // Initialise the order to the max order to start with
-  op_par_loop(init_order, "init_order", cells,
-              op_arg_dat(order, -1, OP_ID, 1, "int", OP_WRITE));
+  op_par_loop(init_grid_3d, "init_grid_3d", cells,
+              op_arg_gbl(&order_int, 1, "int", OP_READ),
+              op_arg_dat(nodeX, -1, OP_ID, 4, DG_FP_STR, OP_READ),
+              op_arg_dat(nodeY, -1, OP_ID, 4, DG_FP_STR, OP_READ),
+              op_arg_dat(nodeZ, -1, OP_ID, 4, DG_FP_STR, OP_READ),
+              op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(z, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+
+  op_par_loop(init_geometric_factors_3d, "init_geometric_factors_3d", cells,
+              op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(z, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(geof, -1, OP_ID, 10, DG_FP_STR, OP_WRITE));
 
   op_par_loop(init_nodes_3d, "init_nodes_3d", cells,
               op_arg_dat(node_coords, -4, cell2nodes, 3, DG_FP_STR, OP_READ),
@@ -130,10 +123,6 @@ void DGMesh3D::init() {
 }
 
 void DGMesh3D::calc_mesh_constants() {
-  DGTempDat tmp0 = dg_dat_pool->requestTempDatCells(DG_NP);
-  DGTempDat tmp1 = dg_dat_pool->requestTempDatCells(DG_NP);
-  DGTempDat tmp2 = dg_dat_pool->requestTempDatCells(DG_NP);
-
   op_par_loop(init_grid_3d, "init_grid_3d", cells,
               op_arg_gbl(&order_int, 1, "int", OP_READ),
               op_arg_dat(nodeX, -1, OP_ID, 4, DG_FP_STR, OP_READ),
@@ -142,56 +131,6 @@ void DGMesh3D::calc_mesh_constants() {
               op_arg_dat(x, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(z, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
-
-  op2_gemv(this, false, 1.0, DGConstants::DR, x, 0.0, tmp0.dat);
-  op2_gemv(this, false, 1.0, DGConstants::DS, x, 0.0, tmp1.dat);
-  op2_gemv(this, false, 1.0, DGConstants::DT, x, 0.0, tmp2.dat);
-  op_par_loop(init_geometric_factors_copy_3d, "init_geometric_factors_copy_3d", cells,
-              op_arg_dat(tmp0.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp1.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp2.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(rx, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
-              op_arg_dat(sx, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
-              op_arg_dat(tx, -1, OP_ID, 1, DG_FP_STR, OP_WRITE));
-
-  op2_gemv(this, false, 1.0, DGConstants::DR, y, 0.0, tmp0.dat);
-  op2_gemv(this, false, 1.0, DGConstants::DS, y, 0.0, tmp1.dat);
-  op2_gemv(this, false, 1.0, DGConstants::DT, y, 0.0, tmp2.dat);
-  op_par_loop(init_geometric_factors_copy_3d, "init_geometric_factors_copy_3d", cells,
-              op_arg_dat(tmp0.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp1.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp2.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(ry, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
-              op_arg_dat(sy, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
-              op_arg_dat(ty, -1, OP_ID, 1, DG_FP_STR, OP_WRITE));
-
-  op2_gemv(this, false, 1.0, DGConstants::DR, z, 0.0, tmp0.dat);
-  op2_gemv(this, false, 1.0, DGConstants::DS, z, 0.0, tmp1.dat);
-  op2_gemv(this, false, 1.0, DGConstants::DT, z, 0.0, tmp2.dat);
-  op_par_loop(init_geometric_factors_copy_3d, "init_geometric_factors_copy_3d", cells,
-              op_arg_dat(tmp0.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp1.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(tmp2.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(rz, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
-              op_arg_dat(sz, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
-              op_arg_dat(tz, -1, OP_ID, 1, DG_FP_STR, OP_WRITE));
-
-  dg_dat_pool->releaseTempDatCells(tmp0);
-  dg_dat_pool->releaseTempDatCells(tmp1);
-  dg_dat_pool->releaseTempDatCells(tmp2);
-
-  op_par_loop(init_geometric_factors_3d, "init_geometric_factors_3d", cells,
-              op_arg_dat(rx, -1, OP_ID, 1, DG_FP_STR, OP_RW),
-              op_arg_dat(ry, -1, OP_ID, 1, DG_FP_STR, OP_RW),
-              op_arg_dat(rz, -1, OP_ID, 1, DG_FP_STR, OP_RW),
-              op_arg_dat(sx, -1, OP_ID, 1, DG_FP_STR, OP_RW),
-              op_arg_dat(sy, -1, OP_ID, 1, DG_FP_STR, OP_RW),
-              op_arg_dat(sz, -1, OP_ID, 1, DG_FP_STR, OP_RW),
-              op_arg_dat(tx, -1, OP_ID, 1, DG_FP_STR, OP_RW),
-              op_arg_dat(ty, -1, OP_ID, 1, DG_FP_STR, OP_RW),
-              op_arg_dat(tz, -1, OP_ID, 1, DG_FP_STR, OP_RW),
-              op_arg_dat(J, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
-              op_arg_dat(geof, -1, OP_ID, 10, DG_FP_STR, OP_WRITE));
 
   int num = 0;
   op_par_loop(face_check_3d, "face_check_3d", faces,
@@ -211,16 +150,7 @@ void DGMesh3D::calc_mesh_constants() {
 
   op_par_loop(init_faces_3d, "init_faces_3d", faces,
               op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
-              op_arg_dat(rx, -2, face2cells, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(ry, -2, face2cells, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(rz, -2, face2cells, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(sx, -2, face2cells, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(sy, -2, face2cells, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(sz, -2, face2cells, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(tx, -2, face2cells, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(ty, -2, face2cells, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(tz, -2, face2cells, 1, DG_FP_STR, OP_READ),
-              op_arg_dat(J,  -2, face2cells, 1, DG_FP_STR, OP_READ),
+              op_arg_dat(geof, -2, face2cells, 10, DG_FP_STR, OP_READ),
               op_arg_dat(nx, -1, OP_ID, 2, DG_FP_STR, OP_WRITE),
               op_arg_dat(ny, -1, OP_ID, 2, DG_FP_STR, OP_WRITE),
               op_arg_dat(nz, -1, OP_ID, 2, DG_FP_STR, OP_WRITE),
@@ -229,7 +159,7 @@ void DGMesh3D::calc_mesh_constants() {
 
   int num_norm = 0;
   op_par_loop(normals_check_3d, "normals_check_3d", faces,
-              op_arg_dat(order, -2, face2cells, 1, "int", OP_READ),
+              op_arg_gbl(&order_int, 1, "int", OP_READ),
               op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
               op_arg_dat(nx, -1, OP_ID, 2, DG_FP_STR, OP_RW),
               op_arg_dat(ny, -1, OP_ID, 2, DG_FP_STR, OP_RW),
@@ -260,16 +190,7 @@ void DGMesh3D::calc_mesh_constants() {
   if(bface2cells) {
     op_par_loop(init_bfaces_3d, "init_bfaces_3d", bfaces,
                 op_arg_dat(bfaceNum, -1, OP_ID, 1, "int", OP_READ),
-                op_arg_dat(rx, 0, bface2cells, 1, DG_FP_STR, OP_READ),
-                op_arg_dat(ry, 0, bface2cells, 1, DG_FP_STR, OP_READ),
-                op_arg_dat(rz, 0, bface2cells, 1, DG_FP_STR, OP_READ),
-                op_arg_dat(sx, 0, bface2cells, 1, DG_FP_STR, OP_READ),
-                op_arg_dat(sy, 0, bface2cells, 1, DG_FP_STR, OP_READ),
-                op_arg_dat(sz, 0, bface2cells, 1, DG_FP_STR, OP_READ),
-                op_arg_dat(tx, 0, bface2cells, 1, DG_FP_STR, OP_READ),
-                op_arg_dat(ty, 0, bface2cells, 1, DG_FP_STR, OP_READ),
-                op_arg_dat(tz, 0, bface2cells, 1, DG_FP_STR, OP_READ),
-                op_arg_dat(J,  0, bface2cells, 1, DG_FP_STR, OP_READ),
+                op_arg_dat(geof, 0, bface2cells, 10, DG_FP_STR, OP_READ),
                 op_arg_dat(bnx, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
                 op_arg_dat(bny, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
                 op_arg_dat(bnz, -1, OP_ID, 1, DG_FP_STR, OP_WRITE),
@@ -289,27 +210,10 @@ void DGMesh3D::calc_mesh_constants() {
                 op_arg_dat(nz_c, 0, bface2cells, 4, DG_FP_STR, OP_WRITE),
                 op_arg_dat(sJ_c, 0, bface2cells, 4, DG_FP_STR, OP_WRITE));
   }
-/*
-  op_par_loop(flux_init_3d, "flux_init_3d", fluxes,
-              op_arg_dat(order, 0, flux2main_cell, 1, "int", OP_READ),
-              op_arg_dat(faceNum, -4, flux2faces, 2, "int", OP_READ),
-              op_arg_dat(fmaskL, -4, flux2faces, DG_NPF, "int", OP_READ),
-              op_arg_dat(fmaskR, -4, flux2faces, DG_NPF, "int", OP_READ),
-              op_arg_dat(nx, -4, flux2faces, 2, DG_FP_STR, OP_READ),
-              op_arg_dat(ny, -4, flux2faces, 2, DG_FP_STR, OP_READ),
-              op_arg_dat(nz, -4, flux2faces, 2, DG_FP_STR, OP_READ),
-              op_arg_dat(sJ, -4, flux2faces, 2, DG_FP_STR, OP_READ),
-              op_arg_dat(fscale, -4, flux2faces, 2, DG_FP_STR, OP_READ),
-              op_arg_dat(fluxL, -1, OP_ID, 4, "int", OP_READ),
-              op_arg_dat(fluxFaceNums, -1, OP_ID, 8, "int", OP_WRITE),
-              op_arg_dat(fluxFmask, -1, OP_ID, 4 * DG_NPF, "int", OP_WRITE),
-              op_arg_dat(fluxNx, -1, OP_ID, 4, DG_FP_STR, OP_WRITE),
-              op_arg_dat(fluxNy, -1, OP_ID, 4, DG_FP_STR, OP_WRITE),
-              op_arg_dat(fluxNz, -1, OP_ID, 4, DG_FP_STR, OP_WRITE),
-              op_arg_dat(fluxSJ, -1, OP_ID, 4, DG_FP_STR, OP_WRITE),
-              op_arg_dat(fluxFscale, -1, OP_ID, 8, DG_FP_STR, OP_WRITE));
-*/
+
+  #ifdef USE_CUSTOM_MAPS
   update_custom_map();
+  #endif
 }
 
 void DGMesh3D::update_order(int new_order, std::vector<op_dat> &dats_to_interp) {
@@ -323,11 +227,6 @@ void DGMesh3D::update_order(int new_order, std::vector<op_dat> &dats_to_interp) 
   }
 
   order_int = new_order;
-
-  // Copy across new orders
-  op_par_loop(copy_new_orders_int, "copy_new_orders_int", cells,
-              op_arg_gbl(&new_order, 1, "int", OP_READ),
-              op_arg_dat(order, -1, OP_ID, 1, "int", OP_WRITE));
 
   calc_mesh_constants();
 }
@@ -343,11 +242,6 @@ void DGMesh3D::update_order_sp(int new_order, std::vector<op_dat> &dats_to_inter
   }
 
   order_int = new_order;
-
-  // Copy across new orders
-  op_par_loop(copy_new_orders_int, "copy_new_orders_int", cells,
-              op_arg_gbl(&new_order, 1, "int", OP_READ),
-              op_arg_dat(order, -1, OP_ID, 1, "int", OP_WRITE));
 
   calc_mesh_constants();
 }

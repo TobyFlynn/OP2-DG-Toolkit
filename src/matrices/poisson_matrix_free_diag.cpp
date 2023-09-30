@@ -26,7 +26,7 @@ void PoissonMatrixFreeDiag::multJacobi(op_dat in, op_dat out) {
   mult(in, out);
 
   op_par_loop(poisson_diag_mult_jacobi, "poisson_diag_mult_jacobi", _mesh->cells,
-              op_arg_dat(_mesh->order, -1, OP_ID, 1, "int", OP_READ),
+              op_arg_gbl(&_mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(diag, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(out, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
   timer->endTimer("PoissonMatrixFreeDiag - multJacobi");

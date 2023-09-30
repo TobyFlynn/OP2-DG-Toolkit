@@ -33,8 +33,8 @@ void FactorMMPoissonSemiMatrixFree3D::mult(op_dat in, op_dat out) {
 
   timer->startTimer("FactorMMPoissonSemiMatrixFree3D - Mult MM");
   op_par_loop(fpmf_3d_mult_mm, "fpmf_3d_mult_mm", _mesh->cells,
-              op_arg_dat(_mesh->order, -1, OP_ID, 1, "int", OP_READ),
-              op_arg_dat(mesh->J, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+              op_arg_gbl(&_mesh->order_int, 1, "int", OP_READ),
+              op_arg_dat(mesh->geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
               op_arg_dat(mm_factor, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(in,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(out, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
@@ -46,9 +46,9 @@ void FactorMMPoissonSemiMatrixFree3D::mult(op_dat in, op_dat out) {
 void FactorMMPoissonSemiMatrixFree3D::calc_mm() {
   timer->startTimer("FactorMMPoissonSemiMatrixFree3D - calc_mm");
   op_par_loop(factor_poisson_matrix_3d_mm, "factor_poisson_matrix_3d_mm", mesh->cells,
-              op_arg_dat(mesh->order, -1, OP_ID, 1, "int", OP_READ),
+              op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(mm_factor, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(mesh->J, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+              op_arg_dat(mesh->geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
               op_arg_dat(op1, -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_RW));
   timer->endTimer("FactorMMPoissonSemiMatrixFree3D - calc_mm");
 }

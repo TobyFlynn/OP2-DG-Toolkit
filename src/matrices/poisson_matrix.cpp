@@ -28,18 +28,17 @@ void PoissonMatrix::mult(op_dat in, op_dat out) {
   timer->startTimer("PoissonMatrix - mult");
   timer->startTimer("PoissonMatrix - mult Cells");
   op_par_loop(poisson_mult_cells, "poisson_mult_cells", _mesh->cells,
-              op_arg_dat(_mesh->order, -1, OP_ID, 1, "int", OP_READ),
+              op_arg_gbl(&_mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(in,  -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(op1, -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(out, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
   timer->endTimer("PoissonMatrix - mult Cells");
   timer->startTimer("PoissonMatrix - mult Faces");
   op_par_loop(poisson_mult_faces, "poisson_mult_faces", _mesh->faces,
-              op_arg_dat(_mesh->order, 0, _mesh->face2cells, 1, "int", OP_READ),
+              op_arg_gbl(&_mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(in,      0, _mesh->face2cells, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(op2[0], -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(out,     0, _mesh->face2cells, DG_NP, DG_FP_STR, OP_INC),
-              op_arg_dat(_mesh->order, 1, _mesh->face2cells, 1, "int", OP_READ),
               op_arg_dat(in,      1, _mesh->face2cells, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(op2[1], -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(out,     1, _mesh->face2cells, DG_NP, DG_FP_STR, OP_INC));
@@ -56,7 +55,7 @@ void PoissonMatrix::multJacobi(op_dat in, op_dat out) {
   mult(in, out);
 
   op_par_loop(poisson_mult_jacobi, "poisson_mult_jacobi", _mesh->cells,
-              op_arg_dat(_mesh->order, -1, OP_ID, 1, "int", OP_READ),
+              op_arg_gbl(&_mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(op1, -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(out, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
   timer->endTimer("PoissonMatrix - multJacobi");
