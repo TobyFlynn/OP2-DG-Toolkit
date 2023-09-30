@@ -8,7 +8,7 @@
 extern DGConstants *constants;
 extern Timing *timer;
 
-FactorPoissonCoarseMatrix3D::FactorPoissonCoarseMatrix3D(DGMesh3D *m) : PoissonCoarseMatrix3D(m) {
+FactorPoissonCoarseMatrix3D::FactorPoissonCoarseMatrix3D(DGMesh3D *m, bool calc_apply_bc_mat) : PoissonCoarseMatrix3D(m, calc_apply_bc_mat) {
   factor = op_decl_dat(mesh->cells, DG_NP, DG_FP_STR, (DG_FP *)NULL, "poisson_matrix_coarse_factor");
 }
 

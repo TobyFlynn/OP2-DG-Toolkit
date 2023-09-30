@@ -8,16 +8,18 @@
 extern DGConstants *constants;
 extern Timing *timer;
 
-PoissonCoarseMatrix3D::PoissonCoarseMatrix3D(DGMesh3D *m) {
+PoissonCoarseMatrix3D::PoissonCoarseMatrix3D(DGMesh3D *m, bool calc_apply_bc_mat) {
   mesh = m;
   _mesh = m;
+  apply_bc_mat = calc_apply_bc_mat;
 
   petscMatInit = false;
 
   op1    = op_decl_dat(mesh->cells, DG_NP_N1 * DG_NP_N1, DG_FP_STR, (DG_FP *)NULL, "poisson_matrix_op1");
   op2[0] = op_decl_dat(mesh->faces, DG_NP_N1 * DG_NP_N1, DG_FP_STR, (DG_FP *)NULL, "poisson_matrix_op20");
   op2[1] = op_decl_dat(mesh->faces, DG_NP_N1 * DG_NP_N1, DG_FP_STR, (DG_FP *)NULL, "poisson_matrix_op21");
-  opbc   = op_decl_dat(mesh->bfaces, DG_NP_N1 * DG_NPF_N1, DG_FP_STR, (DG_FP *)NULL, "poisson_matrix_opbc");
+  if(apply_bc_mat)
+    opbc = op_decl_dat(mesh->bfaces, DG_NP_N1 * DG_NPF_N1, DG_FP_STR, (DG_FP *)NULL, "poisson_matrix_opbc");
 
   glb_ind = op_decl_dat(mesh->cells, 1, "int", (int *)NULL, "poisson_matrix_glb_ind");
   glb_indL = op_decl_dat(mesh->faces, 1, "int", (int *)NULL, "poisson_matrix_glb_indL");
@@ -37,6 +39,9 @@ void PoissonCoarseMatrix3D::calc_mat() {
 void PoissonCoarseMatrix3D::apply_bc(op_dat rhs, op_dat bc) {
   timer->startTimer("PoissonCoarseMatrix3D - apply_bc");
   if(mesh->bface2cells) {
+    if(!apply_bc_mat)
+      throw std::runtime_error("calc_apply_bc_mat was set to false");
+
     op_par_loop(poisson_coarse_matrix_apply_bc, "poisson_coarse_matrix_apply_bc", mesh->bfaces,
                 op_arg_dat(opbc, -1, OP_ID, DG_NPF_N1 * DG_NP_N1, DG_FP_STR, OP_READ),
                 op_arg_dat(bc,   -1, OP_ID, DG_NPF, DG_FP_STR, OP_READ),
@@ -87,16 +92,18 @@ void PoissonCoarseMatrix3D::calc_opbc() {
                 op_arg_dat(mesh->geof, 0, mesh->bface2cells, 10, DG_FP_STR, OP_READ),
                 op_arg_dat(op1, 0, mesh->bface2cells, DG_NP_N1 * DG_NP_N1, DG_FP_STR, OP_INC));
 
-    op_par_loop(poisson_coarse_matrix_3d_opbc, "poisson_coarse_matrix_3d_opbc", mesh->bfaces,
-                op_arg_dat(mesh->bfaceNum, -1, OP_ID, 1, "int", OP_READ),
-                op_arg_dat(bc_types, -1, OP_ID, 1, "int", OP_READ),
-                op_arg_dat(mesh->bnx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
-                op_arg_dat(mesh->bny, -1, OP_ID, 1, DG_FP_STR, OP_READ),
-                op_arg_dat(mesh->bnz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
-                op_arg_dat(mesh->bfscale, -1, OP_ID, 1, DG_FP_STR, OP_READ),
-                op_arg_dat(mesh->bsJ, -1, OP_ID, 1, DG_FP_STR, OP_READ),
-                op_arg_dat(mesh->geof, 0, mesh->bface2cells, 10, DG_FP_STR, OP_READ),
-                op_arg_dat(opbc, -1, OP_ID, DG_NPF_N1 * DG_NP_N1, DG_FP_STR, OP_WRITE));
+    if(apply_bc_mat) {
+      op_par_loop(poisson_coarse_matrix_3d_opbc, "poisson_coarse_matrix_3d_opbc", mesh->bfaces,
+                  op_arg_dat(mesh->bfaceNum, -1, OP_ID, 1, "int", OP_READ),
+                  op_arg_dat(bc_types, -1, OP_ID, 1, "int", OP_READ),
+                  op_arg_dat(mesh->bnx, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                  op_arg_dat(mesh->bny, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                  op_arg_dat(mesh->bnz, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                  op_arg_dat(mesh->bfscale, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                  op_arg_dat(mesh->bsJ, -1, OP_ID, 1, DG_FP_STR, OP_READ),
+                  op_arg_dat(mesh->geof, 0, mesh->bface2cells, 10, DG_FP_STR, OP_READ),
+                  op_arg_dat(opbc, -1, OP_ID, DG_NPF_N1 * DG_NP_N1, DG_FP_STR, OP_WRITE));
+    }
   }
   timer->endTimer("PoissonCoarseMatrix3D - calc_opbc");
 }

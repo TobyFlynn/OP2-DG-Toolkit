@@ -7,7 +7,7 @@
 
 class PoissonCoarseMatrix3D : public PoissonCoarseMatrix {
 public:
-  PoissonCoarseMatrix3D(DGMesh3D *m);
+  PoissonCoarseMatrix3D(DGMesh3D *m, bool calc_apply_bc_mat = false);
 
   // op_dat bc_types - 0 for Dirichlet, 1 for Neumann
   virtual void calc_mat() override;
@@ -20,6 +20,7 @@ protected:
   virtual void calc_glb_ind() override;
 
   DGMesh3D *mesh;
+  bool apply_bc_mat;
 };
 
 #endif

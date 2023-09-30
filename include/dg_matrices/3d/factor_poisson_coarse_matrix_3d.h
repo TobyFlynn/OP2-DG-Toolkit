@@ -7,7 +7,7 @@
 
 class FactorPoissonCoarseMatrix3D : public PoissonCoarseMatrix3D {
 public:
-  FactorPoissonCoarseMatrix3D(DGMesh3D *m);
+  FactorPoissonCoarseMatrix3D(DGMesh3D *m, bool calc_apply_bc_mat = false);
 
   void set_factor(op_dat f);
 

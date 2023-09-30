@@ -99,28 +99,39 @@ void DGDatPool::releaseTempDatFaces(DGTempDat tempDat) {
 }
 
 void DGDatPool::report() {
-  int dim_cells = 0;
-  int dim_faces = 0;
+  double dim_cells = 0;
+  double dim_cells_sp = 0;
+  double dim_faces = 0;
 
   for(int i = 0; i < cell_dats.size(); i++) {
     dim_cells += cell_dats[i].dat->dim;
+  }
+
+  for(int i = 0; i < cell_dats_sp.size(); i++) {
+    dim_cells_sp += cell_dats_sp[i].dat->dim;
   }
 
   for(int i = 0; i < face_dats.size(); i++) {
     dim_faces += face_dats[i].dat->dim;
   }
 
-  int num_cells = 0;
-  int num_faces = 0;
+  double num_cells = 0;
+  double num_faces = 0;
 
   #ifdef DG_MPI
-  MPI_Allreduce(&mesh->cells->size, &num_cells, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  MPI_Allreduce(&mesh->faces->size, &num_faces, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  double tmp_cells_size = mesh->cells->size;
+  double tmp_faces_size = mesh->faces->size;
+  MPI_Allreduce(&tmp_cells_size, &num_cells, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  MPI_Allreduce(&tmp_faces_size, &num_faces, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
   #else
   num_cells = mesh->cells->size;
   num_faces = mesh->faces->size;
   #endif
 
-  double gb_used = (dim_cells * num_cells + dim_faces * num_cells) * sizeof(DG_FP) / 1e9;
-  op_printf("Amount of memory used by DG Dat Pool is: %g GB\n", gb_used);
+  double gb_used = ((dim_cells * num_cells + dim_faces * num_cells) * sizeof(DG_FP) + dim_cells_sp * num_cells * sizeof(float)) / 1e9;
+  op_printf("Total amount of memory used by DG Dat Pool is: %g GB\n", gb_used);
+  double gb_used_dp = ((dim_cells * num_cells + dim_faces * num_cells) * sizeof(DG_FP)) / 1e9;
+  op_printf("Double type amount of memory used by DG Dat Pool is: %g GB\n", gb_used);
+  double gb_used_sp = (dim_cells_sp * num_cells * sizeof(float)) / 1e9;
+  op_printf("Float type amount of memory used by DG Dat Pool is: %g GB\n", gb_used);
 }
