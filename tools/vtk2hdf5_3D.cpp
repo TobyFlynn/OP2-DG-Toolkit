@@ -2,7 +2,7 @@
 #define STRINGIFY(X) STRINGIFY2(X)
 
 #include <vtkSmartPointer.h>
-#include <vtkXMLUnstructuredGridReader.h>
+#include <vtkUnstructuredGridReader.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellIterator.h>
 #include <vtkIdList.h>
@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 
   // Read in VTK file
   vtkSmartPointer<vtkUnstructuredGrid> grid;
-  auto reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+  auto reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
   reader->SetFileName (filename.c_str());
   reader->Update();
   grid = reader->GetOutput();
@@ -174,6 +174,7 @@ int main(int argc, char **argv) {
     nodeY_vec.push_back(coords_data[cells_vec[i] * 3 + 1]);
     nodeZ_vec.push_back(coords_data[cells_vec[i] * 3 + 2]);
   }
+  free(coords_data);
 
   int numCells = numVTKCells;
   int numFaces = face2cell_vec.size() / 2;
@@ -205,6 +206,5 @@ int main(int argc, char **argv) {
   std::string meshfile = outdir + "mesh.h5";
   op_dump_to_hdf5(meshfile.c_str());
 
-  free(coords_data);
   op_exit();
 }
