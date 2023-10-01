@@ -131,7 +131,7 @@ void DGDatPool::report() {
   double gb_used = ((dim_cells * num_cells + dim_faces * num_cells) * sizeof(DG_FP) + dim_cells_sp * num_cells * sizeof(float)) / 1e9;
   op_printf("Total amount of memory used by DG Dat Pool is: %g GB\n", gb_used);
   double gb_used_dp = ((dim_cells * num_cells + dim_faces * num_cells) * sizeof(DG_FP)) / 1e9;
-  op_printf("Double type amount of memory used by DG Dat Pool is: %g GB\n", gb_used);
+  op_printf("Double type amount of memory used by DG Dat Pool is: %g GB\n", gb_used_dp);
   double gb_used_sp = (dim_cells_sp * num_cells * sizeof(float)) / 1e9;
-  op_printf("Float type amount of memory used by DG Dat Pool is: %g GB\n", gb_used);
+  op_printf("Float type amount of memory used by DG Dat Pool is: %g GB\n", gb_used_sp);
 }

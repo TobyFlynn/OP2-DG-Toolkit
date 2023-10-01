@@ -1,5 +1,5 @@
 build/
-gen*/
+code_gen/
 lib/
 obj/
 bin/
