@@ -24,10 +24,13 @@ PARMETIS_DIR = /dcs/pg20/u1717021/PhD/apps
 #PTSCOTCH_DIR = /dcs/pg20/u1717021/PhD/apps
 PARTITION_LIB = -L$(PARMETIS_DIR)/lib -lparmetis -lmetis -lGKlib
 #PARTITION_LIB = -L${PTSCOTCH_DIR}/lib -lptscotch -lscotch -lptscotcherr -lscotcherr -lptscotcherrexit -lscotcherrexit
+VTK_VERSION = 9.0
+#HYPRE_DIR =
 #PARTITION_LIB = -L$(PARMETIS_DIR)/lib -lparmetis -lmetis -lGKlib -L${PTSCOTCH_DIR}/lib -lptscotch -lscotch -lptscotcherr -lscotcherr -lptscotcherrexit -lscotcherrexit
 
 ORDER = 3
 SOA = 1
+BUILD_WITH_HYPRE = 0
 
 # Probably do not need to change derived variables below this comment unless
 # dependencies were installed in unusual locations
@@ -43,6 +46,7 @@ PETSC_INC = -I$(PETSC_DIR)/include
 INIPP_INC = -I$(INIPP_DIR)
 MPI_INC = -I$(MPI_DIR)/include
 HIGHFIVE_INC = -I$(HIGHFIVE_DIR)
+HYPRE_INC = -I$(HYPRE_DIR)/include
 
 HDF5_LIB = -L$(HDF5_DIR)/lib -lhdf5
 OP2_MPI_LIB = -L$(OP2_DIR)/lib -lop2_mpi

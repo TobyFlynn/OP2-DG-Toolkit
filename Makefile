@@ -40,6 +40,11 @@ HIP_COMPILE_DEFS := -DOP2_DG_HIP -DDG_OP2_SOA
 CUDA_COMPILE_DEFS := -DOP2_DG_CUDA -DDG_OP2_SOA
 MPI_COMPILER_DEFS := -DDG_MPI
 OP2_DG_TOOLKIT_INC := $(ARMA_INC) $(INC) $(OP2_INC) $(OPENBLAS_INC) $(PETSC_INC) $(INIPP_INC)
+ifeq ($(BUILD_WITH_HYPRE),1)
+	OP2_DG_TOOLKIT_INC := $(OP2_DG_TOOLKIT_INC) $(HYPRE_INC)
+	COMMON_COMPILE_DEFS_2D := $(COMMON_COMPILE_DEFS_2D) -DINS_BUILD_WITH_HYPRE
+	COMMON_COMPILE_DEFS_3D := $(COMMON_COMPILE_DEFS_3D) -DINS_BUILD_WITH_HYPRE
+endif
 TOOLS_INC := $(INC) $(VTK_INC) $(HIGHFIVE_INC) $(OP2_INC)
 
 all: base 2d 3d
@@ -214,7 +219,7 @@ LINEAR_SOLVER_OBJ := linear_solvers/linear_solver.o \
 	linear_solvers_op/petsc_inv_mass/petsc_inv_mass_op.o \
 	linear_solvers_op/petsc_jacobi/petsc_jacobi_op.o \
 	linear_solvers_op/initial_guess_extrapolation/initial_guess_extrapolation_op.o
-ifeq ($(HYPRE),true)
+ifeq ($(BUILD_WITH_HYPRE),1)
 	LINEAR_SOLVER_OBJ += linear_solvers/hypre_amg/hypre_amg.o
 endif
 
