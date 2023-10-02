@@ -113,7 +113,7 @@ void DGConstants2D::clean_up_kernel_ptrs() {
   hipFree(dg_Emat_d);
 }
 
-DG_FP* DGConstants2D::get_mat_ptr_kernel(Constant_Matrix matrix) {
+DG_FP* DGConstants2D::get_mat_ptr_device(Constant_Matrix matrix) {
   switch(matrix) {
     case R:
       return dg_r_d;
@@ -153,7 +153,7 @@ DG_FP* DGConstants2D::get_mat_ptr_kernel(Constant_Matrix matrix) {
   }
 }
 
-float* DGConstants2D::get_mat_ptr_kernel_sp(Constant_Matrix matrix) {
-  throw std::runtime_error("get_mat_ptr_kernel_sp is not implemented yet for 2D\n");
+float* DGConstants2D::get_mat_ptr_device_sp(Constant_Matrix matrix) {
+  throw std::runtime_error("get_mat_ptr_device_sp is not implemented yet for 2D\n");
   return nullptr;
 }
