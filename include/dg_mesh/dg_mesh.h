@@ -17,7 +17,7 @@ public:
   int order_int;
 
   op_set nodes, cells, faces, bfaces;
-  op_map cell2nodes, face2nodes, face2cells, bface2nodes, bface2cells;
+  op_map cell2nodes, face2cells, bface2nodes, bface2cells;
   op_dat geof;
 };
 

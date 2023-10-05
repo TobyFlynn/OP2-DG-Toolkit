@@ -294,7 +294,7 @@ int main(int argc, char **argv) {
     cout << "Number of periodic edges that do not match up: " << periodic_map_x.size() + periodic_map_y.size() << endl;
   }
 
-  vector<int> edge2node_vec, edge2cell_vec, edgeNum_vec;
+  vector<int> edge2cell_vec, edgeNum_vec;
   vector<int> bedge2node_vec, bedge2cell_vec, bedgeNum_vec, bedgeType_vec;
   for(auto const &edge : internalEdgeMap) {
     if(edge.second->cells[1] == -1) {
@@ -313,8 +313,6 @@ int main(int argc, char **argv) {
         cout << "***** ERROR: Edge with identical points *****" << endl;
       if(edge.second->cells[0] == edge.second->cells[1])
         cout << "***** ERROR: Edge with identical cells *****" << endl;
-      edge2node_vec.push_back(edge.second->points[0]);
-      edge2node_vec.push_back(edge.second->points[1]);
       edge2cell_vec.push_back(edge.second->cells[0]);
       edge2cell_vec.push_back(edge.second->cells[1]);
       edgeNum_vec.push_back(edge.second->num[0]);
@@ -328,7 +326,6 @@ int main(int argc, char **argv) {
   op_set bfaces = op_decl_set(bedgeNum_vec.size(), "bfaces");
 
   op_map cell2nodes  = op_decl_map(cells, nodes, 3, elements.data(), "cell2nodes");
-  op_map face2nodes  = op_decl_map(faces, nodes, 2, edge2node_vec.data(), "face2nodes");
   op_map face2cells  = op_decl_map(faces, cells, 2, edge2cell_vec.data(), "face2cells");
   op_map bface2nodes = op_decl_map(bfaces, nodes, 2, bedge2node_vec.data(), "bface2nodes");
   op_map bface2cells = op_decl_map(bfaces, cells, 1, bedge2cell_vec.data(), "bface2cells");
