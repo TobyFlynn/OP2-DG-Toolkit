@@ -112,16 +112,16 @@ void gather_int_array(int *g_array, int *l_array, int comm_size, int g_size,
   free(displs);
 }
 
-int get_global_mat_start_ind(int unknowns) {
+ll get_global_mat_start_ind(ll unknowns) {
   int rank, comm_size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
 
-  int *sizes = (int *)malloc(comm_size * sizeof(int));
+  ll *sizes = (ll *)malloc(comm_size * sizeof(ll));
 
-  MPI_Allgather(&unknowns, 1, MPI_INT, sizes, 1, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(&unknowns, 1, MPI_LONG_LONG, sizes, 1, MPI_LONG_LONG, MPI_COMM_WORLD);
 
-  int index = 0;
+  ll index = 0;
   for(int i = 0; i < rank; i++) {
     index += sizes[i];
   }

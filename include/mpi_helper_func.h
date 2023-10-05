@@ -23,7 +23,7 @@ void gather_DG_FP_array(DG_FP *g_array, DG_FP *l_array, int comm_size,
 void gather_int_array(int *g_array, int *l_array, int comm_size, int g_size,
                       int l_size, int elem_size);
 
-int get_global_mat_start_ind(int unknowns);
+ll get_global_mat_start_ind(ll unknowns);
 
 int get_global_element_start_ind(op_set set);
 

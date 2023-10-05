@@ -16,17 +16,17 @@
 extern Timing *timer;
 
 void PoissonCoarseMatrix::set_glb_ind() {
-  int unknowns = getUnknowns();
-  int global_ind = 0;
+  ll unknowns = getUnknowns();
+  ll global_ind = 0;
   #ifdef DG_MPI
   global_ind = get_global_mat_start_ind(unknowns);
   #endif
   op_arg args[] = {
-    op_arg_dat(glb_ind, -1, OP_ID, 1, "int", OP_WRITE)
+    op_arg_dat(glb_ind, -1, OP_ID, 1, "ll", OP_WRITE)
   };
   op_mpi_halo_exchanges(_mesh->cells, 1, args);
 
-  int *data_ptr = (int *)glb_ind->data;
+  ll *data_ptr = (ll *)glb_ind->data;
   #pragma omp parallel for
   for(int i = 0; i < _mesh->cells->size; i++) {
     data_ptr[i] = global_ind + i * DG_NP_N1;
@@ -66,14 +66,14 @@ void PoissonCoarseMatrix::setPETScMatrix() {
   timer->startTimer("setPETScMatrix - OP2 op1");
   op_arg args[] = {
     op_arg_dat(op1, -1, OP_ID, DG_NP_N1 * DG_NP_N1, DG_FP_STR, OP_READ),
-    op_arg_dat(glb_ind, -1, OP_ID, 1, "int", OP_READ)
+    op_arg_dat(glb_ind, -1, OP_ID, 1, "ll", OP_READ)
   };
   op_mpi_halo_exchanges(_mesh->cells, 2, args);
   op_mpi_set_dirtybit(2, args);
   timer->endTimer("setPETScMatrix - OP2 op1");
 
   const DG_FP *op1_data = (DG_FP *)op1->data;
-  const int *glb = (int *)glb_ind->data;
+  const ll *glb = (ll *)glb_ind->data;
 
   #ifdef DG_COL_MAJ
   MatSetOption(pMat, MAT_ROW_ORIENTED, PETSC_FALSE);
@@ -83,13 +83,13 @@ void PoissonCoarseMatrix::setPETScMatrix() {
 
   timer->startTimer("setPETScMatrix - Set values op1");
   for(int i = 0; i < _mesh->cells->size; i++) {
-    int currentRow = glb[i];
-    int currentCol = glb[i];
+    ll currentRow = glb[i];
+    ll currentCol = glb[i];
 
-    int idxm[DG_NP_N1], idxn[DG_NP_N1];
-    for(int n = 0; n < DG_NP_N1; n++) {
-      idxm[n] = currentRow + n;
-      idxn[n] = currentCol + n;
+    PetscInt idxm[DG_NP_N1], idxn[DG_NP_N1];
+    for(ll n = 0; n < DG_NP_N1; n++) {
+      idxm[n] = static_cast<PetscInt>(currentRow + n);
+      idxn[n] = static_cast<PetscInt>(currentCol + n);
     }
 
     MatSetValues(pMat, DG_NP_N1, idxm, DG_NP_N1, idxn, &op1_data[i * DG_NP_N1 * DG_NP_N1], INSERT_VALUES);
@@ -100,8 +100,8 @@ void PoissonCoarseMatrix::setPETScMatrix() {
   op_arg edge_args[] = {
     op_arg_dat(op2[0], -1, OP_ID, DG_NP_N1 * DG_NP_N1, DG_FP_STR, OP_READ),
     op_arg_dat(op2[1], -1, OP_ID, DG_NP_N1 * DG_NP_N1, DG_FP_STR, OP_READ),
-    op_arg_dat(glb_indL, -1, OP_ID, 1, "int", OP_READ),
-    op_arg_dat(glb_indR, -1, OP_ID, 1, "int", OP_READ)
+    op_arg_dat(glb_indL, -1, OP_ID, 1, "ll", OP_READ),
+    op_arg_dat(glb_indR, -1, OP_ID, 1, "ll", OP_READ)
   };
   op_mpi_halo_exchanges(_mesh->faces, 4, edge_args);
   op_mpi_set_dirtybit(4, edge_args);
@@ -109,19 +109,19 @@ void PoissonCoarseMatrix::setPETScMatrix() {
 
   const DG_FP *op2L_data = (DG_FP *)op2[0]->data;
   const DG_FP *op2R_data = (DG_FP *)op2[1]->data;
-  const int *glb_l = (int *)glb_indL->data;
-  const int *glb_r = (int *)glb_indR->data;
+  const ll *glb_l = (ll *)glb_indL->data;
+  const ll *glb_r = (ll *)glb_indR->data;
 
   // Add Gauss OP and OPf to Poisson matrix
   timer->startTimer("setPETScMatrix - Set values op2");
   for(int i = 0; i < _mesh->faces->size; i++) {
-    int leftRow = glb_l[i];
-    int rightRow = glb_r[i];
+    ll leftRow = glb_l[i];
+    ll rightRow = glb_r[i];
 
-    int idxl[DG_NP_N1], idxr[DG_NP_N1];
-    for(int n = 0; n < DG_NP_N1; n++) {
-      idxl[n] = leftRow + n;
-      idxr[n] = rightRow + n;
+    PetscInt idxl[DG_NP_N1], idxr[DG_NP_N1];
+    for(ll n = 0; n < DG_NP_N1; n++) {
+      idxl[n] = static_cast<PetscInt>(leftRow + n);
+      idxr[n] = static_cast<PetscInt>(rightRow + n);
     }
 
     MatSetValues(pMat, DG_NP_N1, idxl, DG_NP_N1, idxr, &op2L_data[i * DG_NP_N1 * DG_NP_N1], INSERT_VALUES);
@@ -298,7 +298,7 @@ void PoissonCoarseMatrix::setHYPREMatrix() {
       int num_this_col = 0;
       for(int elem = 0; elem < it->second.size(); elem++) {
         DG_FP *data_ptr = it->second[elem].second;
-        int base_col_ind = it->second[elem].first; 
+        int base_col_ind = it->second[elem].first;
         for(int j = 0; j < DG_NP_N1; j++) {
           col_buf_ptr_h[current_nnz] = base_col_ind + j;
           data_buf_ptr_h[current_nnz] = data_ptr[i + j * DG_NP_N1];

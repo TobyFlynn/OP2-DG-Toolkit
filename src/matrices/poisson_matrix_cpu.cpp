@@ -38,20 +38,20 @@ int PoissonMatrix::getUnknowns() {
 }
 
 void PoissonMatrix::set_glb_ind() {
-  int unknowns = getUnknowns();
-  int global_ind = 0;
+  ll unknowns = getUnknowns();
+  ll global_ind = 0;
   #ifdef DG_MPI
   global_ind = get_global_mat_start_ind(unknowns);
   #endif
   op_arg args[] = {
     op_arg_dat(_mesh->order, -1, OP_ID, 1, "int", OP_READ),
-    op_arg_dat(glb_ind, -1, OP_ID, 1, "int", OP_WRITE)
+    op_arg_dat(glb_ind, -1, OP_ID, 1, "ll", OP_WRITE)
   };
   op_mpi_halo_exchanges(_mesh->cells, 2, args);
 
   const int *p = (int *)_mesh->order->data;
-  int *data_ptr = (int *)glb_ind->data;
-  int ind = global_ind;
+  ll *data_ptr = (ll *)glb_ind->data;
+  ll ind = global_ind;
   for(int i = 0; i < _mesh->cells->size; i++) {
     int Np, Nfp;
     get_num_nodes(p[i], &Np, &Nfp);
@@ -99,13 +99,13 @@ void PoissonMatrix::setPETScMatrix() {
   for(int i = 0; i < _mesh->cells->size; i++) {
     int Np, Nfp;
     get_num_nodes(p[i], &Np, &Nfp);
-    int currentRow = glb[i];
-    int currentCol = glb[i];
+    ll currentRow = glb[i];
+    ll currentCol = glb[i];
 
-    int idxm[DG_NP], idxn[DG_NP];
-    for(int n = 0; n < DG_NP; n++) {
-      idxm[n] = currentRow + n;
-      idxn[n] = currentCol + n;
+    PetscInt idxm[DG_NP], idxn[DG_NP];
+    for(ll n = 0; n < DG_NP; n++) {
+      idxm[n] = static_cast<PetscInt>(currentRow + n);
+      idxn[n] = static_cast<PetscInt>(currentCol + n);
     }
 
     MatSetValues(pMat, Np, idxm, Np, idxn, &op1_data[i * DG_NP * DG_NP], INSERT_VALUES);
@@ -116,8 +116,8 @@ void PoissonMatrix::setPETScMatrix() {
   op_arg edge_args[] = {
     op_arg_dat(op2[0], -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
     op_arg_dat(op2[1], -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
-    op_arg_dat(glb_indL, -1, OP_ID, 1, "int", OP_READ),
-    op_arg_dat(glb_indR, -1, OP_ID, 1, "int", OP_READ),
+    op_arg_dat(glb_indL, -1, OP_ID, 1, "ll", OP_READ),
+    op_arg_dat(glb_indR, -1, OP_ID, 1, "ll", OP_READ),
     op_arg_dat(orderL, -1, OP_ID, 1, "int", OP_READ),
     op_arg_dat(orderR, -1, OP_ID, 1, "int", OP_READ)
   };
@@ -125,23 +125,23 @@ void PoissonMatrix::setPETScMatrix() {
 
   const DG_FP *op2L_data = (DG_FP *)op2[0]->data;
   const DG_FP *op2R_data = (DG_FP *)op2[1]->data;
-  const int *glb_l = (int *)glb_indL->data;
-  const int *glb_r = (int *)glb_indR->data;
+  const ll *glb_l = (ll *)glb_indL->data;
+  const ll *glb_r = (ll *)glb_indR->data;
   const int *p_l = (int *)orderL->data;
   const int *p_r = (int *)orderR->data;
 
   // Add Gauss OP and OPf to Poisson matrix
   for(int i = 0; i < _mesh->faces->size; i++) {
-    int leftRow = glb_l[i];
-    int rightRow = glb_r[i];
+    ll leftRow = glb_l[i];
+    ll rightRow = glb_r[i];
     int NpL, NpR, Nfp;
     get_num_nodes(p_l[i], &NpL, &Nfp);
     get_num_nodes(p_r[i], &NpR, &Nfp);
 
-    int idxl[DG_NP], idxr[DG_NP];
-    for(int n = 0; n < DG_NP; n++) {
-      idxl[n] = leftRow + n;
-      idxr[n] = rightRow + n;
+    PetscInt idxl[DG_NP], idxr[DG_NP];
+    for(ll n = 0; n < DG_NP; n++) {
+      idxl[n] = static_cast<PetscInt>(leftRow + n);
+      idxr[n] = static_cast<PetscInt>(rightRow + n);
     }
 
     MatSetValues(pMat, NpL, idxl, NpR, idxr, &op2L_data[i * DG_NP * DG_NP], INSERT_VALUES);
