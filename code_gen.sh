@@ -7,8 +7,8 @@ rm -rf gen_3d
 
 dir_list=$(find src -maxdepth 3 -mindepth 1 | grep -v "\." | sed "s+src/++g")
 
-mkdir gen_2d
-cd gen_2d
+mkdir -p code_gen/gen_2d
+cd code_gen/gen_2d
 
 for i in $dir_list
 do
@@ -24,10 +24,7 @@ do
   mkdir -p $i
 done
 
-cd ..
-
-ORDER=3
-SOA=1
+cd ../..
 
 python3 preprocessor.py 2 $ORDER
 
@@ -37,7 +34,7 @@ if [ $SOA = 1 ]; then
   export OP_AUTO_SOA=1
 fi
 
-cd gen_2d
+cd code_gen/gen_2d
 
 python3 $OP2_TRANSLATOR \
   dg_tookit.cpp dg_mesh/dg_mesh_2d.cpp \
@@ -120,4 +117,4 @@ sed -i "2i #include \"dg_global_constants/dg_mat_constants_3d.h\"" seq/dg_tookit
 sed -i "2i #include \"cblas.h\"" openmp/dg_tookit_kernels.cpp
 sed -i "2i #include \"cblas.h\"" seq/dg_tookit_seqkernels.cpp
 
-cd ..
+cd ../..
