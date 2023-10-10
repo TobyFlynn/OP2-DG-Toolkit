@@ -24,7 +24,7 @@ class PoissonCoarseMatrix : public PoissonMatrix {
 public:
   virtual void mult(op_dat in, op_dat out) override;
   virtual void multJacobi(op_dat in, op_dat out) override;
-  virtual int getUnknowns() override;
+  virtual DG_MAT_IND_TYPE getUnknowns() override;
 
   #if defined(INS_BUILD_WITH_AMGX) && defined(OP2_DG_CUDA)
   bool getAmgXMat(AMGX_matrix_handle** mat);

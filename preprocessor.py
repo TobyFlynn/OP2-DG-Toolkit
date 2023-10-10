@@ -3,7 +3,7 @@ import sys
 
 gemv_template = \
 """
-#if !defined(OP2_DG_CUDA) && !defined(OP2_DG_HIP) 
+#if !defined(OP2_DG_CUDA) && !defined(OP2_DG_HIP)
 #if DG_DOUBLE == 1
 cblas_dgemv({row_col},{trans},{m},{n},{alpha},{A},{lda},{x}, 1,{beta},{y}, 1);
 #else
@@ -134,6 +134,8 @@ dg_cub_2d_np = "1"
 dg_cub_surf_2d_np = "1"
 
 fp_type = "d"
+mat_int_type = 'int'
+#mat_int_type = 'll'
 
 # Get DG order from command line args
 if dim == "2":
@@ -198,6 +200,12 @@ for f in inputfiles:
     newdata = replace_gemv_kernels(newdata)
     newdata = replace_gemm_kernels(newdata)
     if "CMakeLists" not in f:
+        if mat_int_type == "int":
+            newdata = newdata.replace("DG_MAT_IND_TYPE_STR", "\"int\"")
+            newdata = newdata.replace("DG_MAT_IND_TYPE", "int")
+        else:
+            newdata = newdata.replace("DG_MAT_IND_TYPE_STR", "\"ll\"")
+            newdata = newdata.replace("DG_MAT_IND_TYPE", "ll")
         if fp_type == "d":
             newdata = newdata.replace("DG_FP_STR", "\"double\"")
             newdata = newdata.replace("DG_FP", "double")

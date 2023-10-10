@@ -20,9 +20,9 @@ PoissonCoarseMatrix2D::PoissonCoarseMatrix2D(DGMesh2D *m) {
   op2[1] = op_decl_dat(mesh->faces, DG_NP_N1 * DG_NP_N1, DG_FP_STR, (DG_FP *)NULL, "poisson_op21");
   opbc   = op_decl_dat(mesh->bfaces, DG_NUM_FACES * DG_NPF_N1 * DG_NP_N1, DG_FP_STR, (DG_FP *)NULL, "poisson_opbc");
 
-  glb_ind   = op_decl_dat(mesh->cells, 1, "ll", (ll *)NULL, "poisson_glb_ind");
-  glb_indL  = op_decl_dat(mesh->faces, 1, "ll", (ll *)NULL, "poisson_glb_indL");
-  glb_indR  = op_decl_dat(mesh->faces, 1, "ll", (ll *)NULL, "poisson_glb_indR");
+  glb_ind   = op_decl_dat(mesh->cells, 1, DG_MAT_IND_TYPE_STR, (DG_MAT_IND_TYPE *)NULL, "poisson_glb_ind");
+  glb_indL  = op_decl_dat(mesh->faces, 1, DG_MAT_IND_TYPE_STR, (DG_MAT_IND_TYPE *)NULL, "poisson_glb_indL");
+  glb_indR  = op_decl_dat(mesh->faces, 1, DG_MAT_IND_TYPE_STR, (DG_MAT_IND_TYPE *)NULL, "poisson_glb_indR");
 }
 
 PoissonCoarseMatrix2D::~PoissonCoarseMatrix2D() {
@@ -44,9 +44,9 @@ void PoissonCoarseMatrix2D::calc_glb_ind() {
   timer->startTimer("PoissonCoarseMatrix2D - calc_glb_ind");
   set_glb_ind();
   op_par_loop(copy_to_edges_ll, "copy_to_edges_ll", mesh->faces,
-              op_arg_dat(glb_ind, -2, mesh->face2cells, 1, "ll", OP_READ),
-              op_arg_dat(glb_indL, -1, OP_ID, 1, "ll", OP_WRITE),
-              op_arg_dat(glb_indR, -1, OP_ID, 1, "ll", OP_WRITE));
+              op_arg_dat(glb_ind, -2, mesh->face2cells, 1, DG_MAT_IND_TYPE_STR, OP_READ),
+              op_arg_dat(glb_indL, -1, OP_ID, 1, DG_MAT_IND_TYPE_STR, OP_WRITE),
+              op_arg_dat(glb_indR, -1, OP_ID, 1, DG_MAT_IND_TYPE_STR, OP_WRITE));
   timer->endTimer("PoissonCoarseMatrix2D - calc_glb_ind");
 }
 

@@ -21,7 +21,7 @@ public:
   virtual void multJacobi(op_dat in, op_dat out);
   virtual void multJacobi_sp(op_dat in, op_dat out);
   virtual bool getPETScMat(Mat** mat);
-  virtual int getUnknowns();
+  virtual DG_MAT_IND_TYPE getUnknowns();
 
   op_dat op1, op2[2], opbc, glb_ind, glb_indL, glb_indR, orderL, orderR;
   // int unknowns;

@@ -96,7 +96,7 @@ bool PETScPMultigrid::solve(op_dat rhs, op_dat ans) {
   KSPSolve(ksp, b, x);
   timer->endTimer("PETScPMultigrid - KSPSolve");
 
-  int numIt;
+  PetscInt numIt;
   KSPGetIterationNumber(ksp, &numIt);
   iter_counts.push_back(numIt);
   // op_printf("%d\n", numIt);
@@ -165,7 +165,7 @@ void PETScPMultigrid::create_shell_mat() {
 
   MatCreateShell(PETSC_COMM_WORLD, matrix->getUnknowns(), matrix->getUnknowns(), PETSC_DETERMINE, PETSC_DETERMINE, this, &pMat);
   MatShellSetOperation(pMat, MATOP_MULT, (void(*)(void))matMultPPMS);
-  
+
   #if defined(OP2_DG_CUDA)
   MatShellSetVecType(pMat, VECCUDA);
   #elif defined(OP2_DG_HIP)

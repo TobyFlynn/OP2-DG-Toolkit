@@ -19,14 +19,14 @@ void get_num_nodes(const int N, int *Np, int *Nfp) {
   #endif
 }
 
-int PoissonMatrix::getUnknowns() {
+DG_MAT_IND_TYPE PoissonMatrix::getUnknowns() {
   op_arg op2_args[] = {
     op_arg_dat(_mesh->order, -1, OP_ID, 1, "int", OP_READ)
   };
   op_mpi_halo_exchanges(_mesh->order->set, 1, op2_args);
   const int setSize = _mesh->order->set->size;
   const int *tempOrder = (int *)_mesh->order->data;
-  int unknowns = 0;
+  DG_MAT_IND_TYPE unknowns = 0;
   #pragma omp parallel for reduction(+:unknowns)
   for(int i = 0; i < setSize; i++) {
     int Np, Nfp;
@@ -38,20 +38,20 @@ int PoissonMatrix::getUnknowns() {
 }
 
 void PoissonMatrix::set_glb_ind() {
-  ll unknowns = getUnknowns();
-  ll global_ind = 0;
+  DG_MAT_IND_TYPE unknowns = getUnknowns();
+  DG_MAT_IND_TYPE global_ind = 0;
   #ifdef DG_MPI
   global_ind = get_global_mat_start_ind(unknowns);
   #endif
   op_arg args[] = {
     op_arg_dat(_mesh->order, -1, OP_ID, 1, "int", OP_READ),
-    op_arg_dat(glb_ind, -1, OP_ID, 1, "ll", OP_WRITE)
+    op_arg_dat(glb_ind, -1, OP_ID, 1, DG_MAT_IND_TYPE_STR, OP_WRITE)
   };
   op_mpi_halo_exchanges(_mesh->cells, 2, args);
 
   const int *p = (int *)_mesh->order->data;
-  ll *data_ptr = (ll *)glb_ind->data;
-  ll ind = global_ind;
+  DG_MAT_IND_TYPE *data_ptr = (DG_MAT_IND_TYPE *)glb_ind->data;
+  DG_MAT_IND_TYPE ind = global_ind;
   for(int i = 0; i < _mesh->cells->size; i++) {
     int Np, Nfp;
     get_num_nodes(p[i], &Np, &Nfp);
@@ -66,7 +66,7 @@ void PoissonMatrix::setPETScMatrix() {
   if(!petscMatInit) {
     MatCreate(PETSC_COMM_WORLD, &pMat);
     petscMatInit = true;
-    int unknowns = getUnknowns();
+    DG_MAT_IND_TYPE unknowns = getUnknowns();
     MatSetSizes(pMat, unknowns, unknowns, PETSC_DECIDE, PETSC_DECIDE);
 
     #ifdef DG_MPI
@@ -82,12 +82,12 @@ void PoissonMatrix::setPETScMatrix() {
   // Add cubature OP to Poisson matrix
   op_arg args[] = {
     op_arg_dat(op1, -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
-    op_arg_dat(glb_ind, -1, OP_ID, 1, "int", OP_READ),
+    op_arg_dat(glb_ind, -1, OP_ID, 1, DG_MAT_IND_TYPE_STR, OP_READ),
     op_arg_dat(_mesh->order, -1, OP_ID, 1, "int", OP_READ)
   };
   op_mpi_halo_exchanges(_mesh->cells, 3, args);
   const DG_FP *op1_data = (DG_FP *)op1->data;
-  const int *glb = (int *)glb_ind->data;
+  const DG_MAT_IND_TYPE *glb = (DG_MAT_IND_TYPE *)glb_ind->data;
   const int *p = (int *)_mesh->order->data;
 
   #ifdef DG_COL_MAJ
@@ -99,11 +99,11 @@ void PoissonMatrix::setPETScMatrix() {
   for(int i = 0; i < _mesh->cells->size; i++) {
     int Np, Nfp;
     get_num_nodes(p[i], &Np, &Nfp);
-    ll currentRow = glb[i];
-    ll currentCol = glb[i];
+    DG_MAT_IND_TYPE currentRow = glb[i];
+    DG_MAT_IND_TYPE currentCol = glb[i];
 
     PetscInt idxm[DG_NP], idxn[DG_NP];
-    for(ll n = 0; n < DG_NP; n++) {
+    for(DG_MAT_IND_TYPE n = 0; n < DG_NP; n++) {
       idxm[n] = static_cast<PetscInt>(currentRow + n);
       idxn[n] = static_cast<PetscInt>(currentCol + n);
     }
@@ -116,8 +116,8 @@ void PoissonMatrix::setPETScMatrix() {
   op_arg edge_args[] = {
     op_arg_dat(op2[0], -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
     op_arg_dat(op2[1], -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
-    op_arg_dat(glb_indL, -1, OP_ID, 1, "ll", OP_READ),
-    op_arg_dat(glb_indR, -1, OP_ID, 1, "ll", OP_READ),
+    op_arg_dat(glb_indL, -1, OP_ID, 1, DG_MAT_IND_TYPE_STR, OP_READ),
+    op_arg_dat(glb_indR, -1, OP_ID, 1, DG_MAT_IND_TYPE_STR, OP_READ),
     op_arg_dat(orderL, -1, OP_ID, 1, "int", OP_READ),
     op_arg_dat(orderR, -1, OP_ID, 1, "int", OP_READ)
   };
@@ -125,21 +125,21 @@ void PoissonMatrix::setPETScMatrix() {
 
   const DG_FP *op2L_data = (DG_FP *)op2[0]->data;
   const DG_FP *op2R_data = (DG_FP *)op2[1]->data;
-  const ll *glb_l = (ll *)glb_indL->data;
-  const ll *glb_r = (ll *)glb_indR->data;
+  const DG_MAT_IND_TYPE *glb_l = (DG_MAT_IND_TYPE *)glb_indL->data;
+  const DG_MAT_IND_TYPE *glb_r = (DG_MAT_IND_TYPE *)glb_indR->data;
   const int *p_l = (int *)orderL->data;
   const int *p_r = (int *)orderR->data;
 
   // Add Gauss OP and OPf to Poisson matrix
   for(int i = 0; i < _mesh->faces->size; i++) {
-    ll leftRow = glb_l[i];
-    ll rightRow = glb_r[i];
+    DG_MAT_IND_TYPE leftRow = glb_l[i];
+    DG_MAT_IND_TYPE rightRow = glb_r[i];
     int NpL, NpR, Nfp;
     get_num_nodes(p_l[i], &NpL, &Nfp);
     get_num_nodes(p_r[i], &NpR, &Nfp);
 
     PetscInt idxl[DG_NP], idxr[DG_NP];
-    for(ll n = 0; n < DG_NP; n++) {
+    for(DG_MAT_IND_TYPE n = 0; n < DG_NP; n++) {
       idxl[n] = static_cast<PetscInt>(leftRow + n);
       idxr[n] = static_cast<PetscInt>(rightRow + n);
     }
