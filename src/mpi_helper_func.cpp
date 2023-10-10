@@ -1,15 +1,20 @@
 #include "op_seq.h"
 
-#include "mpi.h"
+#include "dg_compiler_defs.h"
 
+#include "mpi.h"
 #include <memory>
 
-int global_sum(int local) {
-  int result;
+DG_MAT_IND_TYPE global_sum(DG_MAT_IND_TYPE local) {
+  DG_MAT_IND_TYPE result;
+  #if DG_MAT_IND_LL == 1
+  MPI_Allreduce(&local, &result, 1, MPI_LONG_LONG, MPI_SUM, MPI_COMM_WORLD);
+  #else
   MPI_Allreduce(&local, &result, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  #endif
   return result;
 }
-
+/*
 int compute_local_size(int global_size, int mpi_comm_size, int mpi_rank) {
   int local_size = global_size / mpi_comm_size;
   int remainder = global_size % mpi_comm_size;
@@ -111,17 +116,21 @@ void gather_int_array(int *g_array, int *l_array, int comm_size, int g_size,
   free(sendcnts);
   free(displs);
 }
-
-int get_global_mat_start_ind(int unknowns) {
+*/
+DG_MAT_IND_TYPE get_global_mat_start_ind(DG_MAT_IND_TYPE unknowns) {
   int rank, comm_size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
 
-  int *sizes = (int *)malloc(comm_size * sizeof(int));
+  DG_MAT_IND_TYPE *sizes = (DG_MAT_IND_TYPE *)malloc(comm_size * sizeof(DG_MAT_IND_TYPE));
 
+  #if DG_MAT_IND_LL == 1
+  MPI_Allgather(&unknowns, 1, MPI_LONG_LONG, sizes, 1, MPI_LONG_LONG, MPI_COMM_WORLD);
+  #else
   MPI_Allgather(&unknowns, 1, MPI_INT, sizes, 1, MPI_INT, MPI_COMM_WORLD);
+  #endif
 
-  int index = 0;
+  DG_MAT_IND_TYPE index = 0;
   for(int i = 0; i < rank; i++) {
     index += sizes[i];
   }
@@ -130,6 +139,7 @@ int get_global_mat_start_ind(int unknowns) {
   return index;
 }
 
+/*
 int get_global_element_start_ind(op_set set) {
   int rank, comm_size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -147,6 +157,7 @@ int get_global_element_start_ind(op_set set) {
   free(sizes);
   return index;
 }
+
 
 void gather_op2_DG_FP_array(DG_FP *g_array, DG_FP *l_array, int l_size,
                              int elem_size, int comm_size, int rank) {
@@ -172,3 +183,4 @@ void gather_op2_DG_FP_array(DG_FP *g_array, DG_FP *l_array, int l_size,
   free(displs);
   free(sizes);
 }
+*/

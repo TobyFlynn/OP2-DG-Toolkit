@@ -2,6 +2,7 @@
 #define __DG_COMPILER_DEFS_H
 
 #define DG_DOUBLE 1
+#define DG_MAT_IND_LL 0
 
 #if DG_DOUBLE == 1
 #define DG_FP double
@@ -9,6 +10,12 @@
 #else
 #define DG_FP float
 #define fp_equal(x,y) (fabs((x) - (y)) < 1e-6)
+#endif
+
+#if DG_MAT_IND_LL == 1
+#define DG_MAT_IND_TYPE ll
+#else
+#define DG_MAT_IND_TYPE int
 #endif
 
 #ifdef DG_COL_MAJ

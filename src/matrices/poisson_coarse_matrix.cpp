@@ -73,8 +73,8 @@ void PoissonCoarseMatrix::getHYPRERanges(int *ilower, int *iupper, int *jlower, 
 }
 #endif
 
-int PoissonCoarseMatrix::getUnknowns() {
+DG_MAT_IND_TYPE PoissonCoarseMatrix::getUnknowns() {
   const int setSize_ = _mesh->cells->size;
-  int unknowns = setSize_ * DG_NP_N1;
+  DG_MAT_IND_TYPE unknowns = static_cast<DG_MAT_IND_TYPE>(setSize_) * DG_NP_N1;
   return unknowns;
 }

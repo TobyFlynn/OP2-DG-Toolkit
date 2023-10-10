@@ -108,7 +108,7 @@ bool PETScAMGSolver::solve(op_dat rhs, op_dat ans) {
   KSPSolve(ksp, b, x);
   timer->endTimer("PETScAMGSolver - KSPSolve");
 
-  int numIt;
+  PetscInt numIt;
   KSPGetIterationNumber(ksp, &numIt);
   KSPConvergedReason reason;
   KSPGetConvergedReason(ksp, &reason);

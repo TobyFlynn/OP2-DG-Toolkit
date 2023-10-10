@@ -64,3 +64,7 @@ void PoissonMatrix::multJacobi(op_dat in, op_dat out) {
 void PoissonMatrix::multJacobi_sp(op_dat in, op_dat out) {
   throw std::runtime_error("multJacobi_sp not implemented");
 }
+
+DG_MAT_IND_TYPE PoissonMatrix::getUnknowns() {
+  return DG_NP * static_cast<DG_MAT_IND_TYPE>(_mesh->cells->size);
+}

@@ -18,32 +18,28 @@ void get_num_nodes(const int N, int *Np, int *Nfp) {
   #endif
 }
 
-int PoissonMatrix::getUnknowns() {
-  return DG_NP * _mesh->cells->size;
-}
-
 void PoissonMatrix::set_glb_ind() {
-  int unknowns = getUnknowns();
-  int global_ind = 0;
+  DG_MAT_IND_TYPE unknowns = getUnknowns();
+  DG_MAT_IND_TYPE global_ind = 0;
   #ifdef DG_MPI
   global_ind = get_global_mat_start_ind(unknowns);
   #endif
   op_arg args[] = {
-    op_arg_dat(glb_ind, -1, OP_ID, 1, "int", OP_WRITE)
+    op_arg_dat(glb_ind, -1, OP_ID, 1, DG_MAT_IND_TYPE, OP_WRITE)
   };
   op_mpi_halo_exchanges_cuda(_mesh->cells, 1, args);
 
   const int setSize = _mesh->cells->size;
-  int *data_ptr = (int *)malloc(setSize * sizeof(int));
-  hipMemcpy(data_ptr, glb_ind->data_d, setSize * sizeof(int), hipMemcpyDeviceToHost);
+  DG_MAT_IND_TYPE *data_ptr = (DG_MAT_IND_TYPE *)malloc(setSize * sizeof(DG_MAT_IND_TYPE));
+  hipMemcpy(data_ptr, glb_ind->data_d, setSize * sizeof(DG_MAT_IND_TYPE), hipMemcpyDeviceToHost);
 
-  int ind = global_ind;
+  DG_MAT_IND_TYPE ind = global_ind;
   for(int i = 0; i < _mesh->cells->size; i++) {
     data_ptr[i] = ind;
     ind += DG_NP;
   }
 
-  hipMemcpy(glb_ind->data_d, data_ptr, setSize * sizeof(int), hipMemcpyHostToDevice);
+  hipMemcpy(glb_ind->data_d, data_ptr, setSize * sizeof(DG_MAT_IND_TYPE), hipMemcpyHostToDevice);
 
   op_mpi_set_dirtybit_cuda(1, args);
   free(data_ptr);
@@ -56,7 +52,7 @@ void PoissonMatrix::setPETScMatrix() {
   if(!petscMatInit) {
     MatCreate(PETSC_COMM_WORLD, &pMat);
     petscMatInit = true;
-    int unknowns = getUnknowns();
+    DG_MAT_IND_TYPE unknowns = getUnknowns();
     MatSetSizes(pMat, unknowns, unknowns, PETSC_DECIDE, PETSC_DECIDE);
 
     #ifdef DG_MPI
@@ -79,15 +75,15 @@ void PoissonMatrix::setPETScMatrix() {
   // Add cubature OP to Poisson matrix
   op_arg args[] = {
     op_arg_dat(op1, -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
-    op_arg_dat(glb_ind, -1, OP_ID, 1, "int", OP_READ)
+    op_arg_dat(glb_ind, -1, OP_ID, 1, DG_MAT_IND_TYPE_STR, OP_READ)
   };
   op_mpi_halo_exchanges_cuda(_mesh->cells, 2, args);
 
   const int setSize = _mesh->cells->size;
   DG_FP *op1_data = (DG_FP *)malloc(DG_NP * DG_NP * setSize * sizeof(DG_FP));
-  int *glb   = (int *)malloc(setSize * sizeof(int));
+  DG_MAT_IND_TYPE *glb = (DG_MAT_IND_TYPE *)malloc(setSize * sizeof(DG_MAT_IND_TYPE));
   hipMemcpy(op1_data, op1->data_d, setSize * DG_NP * DG_NP * sizeof(DG_FP), hipMemcpyDeviceToHost);
-  hipMemcpy(glb, glb_ind->data_d, setSize * sizeof(int), hipMemcpyDeviceToHost);
+  hipMemcpy(glb, glb_ind->data_d, setSize * sizeof(DG_MAT_IND_TYPE), hipMemcpyDeviceToHost);
   op_mpi_set_dirtybit_cuda(2, args);
 
   #ifdef DG_COL_MAJ
@@ -97,12 +93,12 @@ void PoissonMatrix::setPETScMatrix() {
   #endif
 
   for(int i = 0; i < setSize; i++) {
-    int currentRow = glb[i];
-    int currentCol = glb[i];
-    int idxm[DG_NP], idxn[DG_NP];
-    for(int n = 0; n < DG_NP; n++) {
-      idxm[n] = currentRow + n;
-      idxn[n] = currentCol + n;
+    DG_MAT_IND_TYPE currentRow = glb[i];
+    DG_MAT_IND_TYPE currentCol = glb[i];
+    PetscInt idxm[DG_NP], idxn[DG_NP];
+    for(DG_MAT_IND_TYPE n = 0; n < DG_NP; n++) {
+      idxm[n] = static_cast<PetscInt>(currentRow + n);
+      idxn[n] = static_cast<PetscInt>(currentCol + n);
     }
 
     MatSetValues(pMat, DG_NP, idxm, DG_NP, idxn, &op1_data[i * DG_NP * DG_NP], INSERT_VALUES);
@@ -114,29 +110,29 @@ void PoissonMatrix::setPETScMatrix() {
   op_arg edge_args[] = {
     op_arg_dat(op2[0], -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
     op_arg_dat(op2[1], -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
-    op_arg_dat(glb_indL, -1, OP_ID, 1, "int", OP_READ),
-    op_arg_dat(glb_indR, -1, OP_ID, 1, "int", OP_READ)
+    op_arg_dat(glb_indL, -1, OP_ID, 1, DG_MAT_IND_TYPE_STR, OP_READ),
+    op_arg_dat(glb_indR, -1, OP_ID, 1, DG_MAT_IND_TYPE_STR, OP_READ)
   };
   op_mpi_halo_exchanges_cuda(_mesh->faces, 4, edge_args);
   DG_FP *op2L_data = (DG_FP *)malloc(DG_NP * DG_NP * _mesh->faces->size * sizeof(DG_FP));
   DG_FP *op2R_data = (DG_FP *)malloc(DG_NP * DG_NP * _mesh->faces->size * sizeof(DG_FP));
-  int *glb_l = (int *)malloc(_mesh->faces->size * sizeof(int));
-  int *glb_r = (int *)malloc(_mesh->faces->size * sizeof(int));
+  DG_MAT_IND_TYPE *glb_l = (DG_MAT_IND_TYPE *)malloc(_mesh->faces->size * sizeof(DG_MAT_IND_TYPE));
+  DG_MAT_IND_TYPE *glb_r = (DG_MAT_IND_TYPE *)malloc(_mesh->faces->size * sizeof(DG_MAT_IND_TYPE));
 
   hipMemcpy(op2L_data, op2[0]->data_d, DG_NP * DG_NP * _mesh->faces->size * sizeof(DG_FP), hipMemcpyDeviceToHost);
   hipMemcpy(op2R_data, op2[1]->data_d, DG_NP * DG_NP * _mesh->faces->size * sizeof(DG_FP), hipMemcpyDeviceToHost);
-  hipMemcpy(glb_l, glb_indL->data_d, _mesh->faces->size * sizeof(int), hipMemcpyDeviceToHost);
-  hipMemcpy(glb_r, glb_indR->data_d, _mesh->faces->size * sizeof(int), hipMemcpyDeviceToHost);
+  hipMemcpy(glb_l, glb_indL->data_d, _mesh->faces->size * sizeof(DG_MAT_IND_TYPE), hipMemcpyDeviceToHost);
+  hipMemcpy(glb_r, glb_indR->data_d, _mesh->faces->size * sizeof(DG_MAT_IND_TYPE), hipMemcpyDeviceToHost);
 
   // Add Gauss OP and OPf to Poisson matrix
   for(int i = 0; i < _mesh->faces->size; i++) {
-    int leftRow = glb_l[i];
-    int rightRow = glb_r[i];
+    DG_MAT_IND_TYPE leftRow = glb_l[i];
+    DG_MAT_IND_TYPE rightRow = glb_r[i];
 
-    int idxl[DG_NP], idxr[DG_NP];
-    for(int n = 0; n < DG_NP; n++) {
-      idxl[n] = leftRow + n;
-      idxr[n] = rightRow + n;
+    PetscInt idxl[DG_NP], idxr[DG_NP];
+    for(DG_MAT_IND_TYPE n = 0; n < DG_NP; n++) {
+      idxl[n] = static_cast<PetscInt>(leftRow + n);
+      idxr[n] = static_cast<PetscInt>(rightRow + n);
     }
 
     MatSetValues(pMat, DG_NP, idxl, DG_NP, idxr, &op2L_data[i * DG_NP * DG_NP], INSERT_VALUES);

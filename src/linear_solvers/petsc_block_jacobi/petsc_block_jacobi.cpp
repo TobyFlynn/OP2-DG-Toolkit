@@ -178,7 +178,7 @@ void PETScBlockJacobiSolver::create_shell_mat() {
 
   MatCreateShell(PETSC_COMM_WORLD, matrix->getUnknowns(), matrix->getUnknowns(), PETSC_DETERMINE, PETSC_DETERMINE, this, &pMat);
   MatShellSetOperation(pMat, MATOP_MULT, (void(*)(void))matMultPBJS);
-  
+
   #if defined(OP2_DG_CUDA)
   MatShellSetVecType(pMat, VECCUDA);
   #elif defined(OP2_DG_HIP)
