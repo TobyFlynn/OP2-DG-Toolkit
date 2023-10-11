@@ -27,13 +27,6 @@ BASE_OBJ_DIR := $(OBJ)/base
 
 include config.mk
 
-OP2_INC = -I$(OP2_DIR)/include
-OPENBLAS_INC = -I$(OPENBLAS_DIR)/include
-ARMA_INC = -I$(ARMA_DIR)/include
-PETSC_INC = -I$(PETSC_DIR)/include
-INIPP_INC = -I$(INIPP_DIR)
-MPI_INC = -I$(MPI_DIR)/include
-
 # Common compile flags
 BASE_FLAGS := -g -O3
 SEQ_CPU_COMPILER_FLAGS := $(BASE_FLAGS)

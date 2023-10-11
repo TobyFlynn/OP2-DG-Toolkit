@@ -20,10 +20,10 @@ DGMesh3D::DGMesh3D(std::string &meshFile) {
   init_op2_gemv();
 
   // Sets
-  nodes   = op_decl_set_hdf5(meshFile.c_str(), "nodes");
-  cells   = op_decl_set_hdf5(meshFile.c_str(), "cells");
-  faces   = op_decl_set_hdf5(meshFile.c_str(), "faces");
-  bfaces  = op_decl_set_hdf5(meshFile.c_str(), "bfaces");
+  nodes  = op_decl_set_hdf5(meshFile.c_str(), "nodes");
+  cells  = op_decl_set_hdf5(meshFile.c_str(), "cells");
+  faces  = op_decl_set_hdf5(meshFile.c_str(), "faces");
+  bfaces = op_decl_set_hdf5(meshFile.c_str(), "bfaces");
 
   // Maps
   cell2nodes  = op_decl_map_hdf5(cells, nodes, 4, meshFile.c_str(), "cell2nodes");
@@ -194,20 +194,37 @@ void DGMesh3D::calc_mesh_constants() {
               op_arg_dat(y, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(z, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
 
-  int num = 0;
-  op_par_loop(face_check_3d, "face_check_3d", faces,
-              op_arg_gbl(&order_int, 1, "int", OP_READ),
-              op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
-              op_arg_dat(periodicFace, -1, OP_ID, 1, "int", OP_READ),
-              op_arg_dat(x, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(y, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(z, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(fmaskL, -1, OP_ID, DG_NPF, "int", OP_WRITE),
-              op_arg_dat(fmaskR, -1, OP_ID, DG_NPF, "int", OP_WRITE),
-              op_arg_gbl(&num, 1, "int", OP_INC));
-  if(num > 0) {
-    std::cout << "Number of non matching points on faces: " << num << std::endl;
-    exit(-1);
+  if(periodicFace) {
+    int num = 0;
+    op_par_loop(face_check_3d_periodic, "face_check_3d_periodic", faces,
+                op_arg_gbl(&order_int, 1, "int", OP_READ),
+                op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
+                op_arg_dat(periodicFace, -1, OP_ID, 1, "int", OP_READ),
+                op_arg_dat(x, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(y, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(z, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(fmaskL, -1, OP_ID, DG_NPF, "int", OP_WRITE),
+                op_arg_dat(fmaskR, -1, OP_ID, DG_NPF, "int", OP_WRITE),
+                op_arg_gbl(&num, 1, "int", OP_INC));
+    if(num > 0) {
+      std::cout << "Number of non matching points on faces: " << num << std::endl;
+      exit(-1);
+    }
+  } else {
+    int num = 0;
+    op_par_loop(face_check_3d, "face_check_3d", faces,
+                op_arg_gbl(&order_int, 1, "int", OP_READ),
+                op_arg_dat(faceNum, -1, OP_ID, 2, "int", OP_READ),
+                op_arg_dat(x, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(y, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(z, -2, face2cells, DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(fmaskL, -1, OP_ID, DG_NPF, "int", OP_WRITE),
+                op_arg_dat(fmaskR, -1, OP_ID, DG_NPF, "int", OP_WRITE),
+                op_arg_gbl(&num, 1, "int", OP_INC));
+    if(num > 0) {
+      std::cout << "Number of non matching points on faces: " << num << std::endl;
+      exit(-1);
+    }
   }
 
   #ifdef USE_CUSTOM_MAPS

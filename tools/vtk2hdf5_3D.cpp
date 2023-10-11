@@ -58,7 +58,6 @@ int main(int argc, char **argv) {
   std::map<int,int> vtkInd2op2Ind;
   std::vector<int> faceNum_vec;
   std::vector<int> bfaceNum_vec;
-  std::vector<int> periodicFace_vec;
   std::map<int,int> vtkNodeInd2op2NodeInd;
 
   int numVTKCells = 0;
@@ -120,8 +119,6 @@ int main(int argc, char **argv) {
               faceNum_vec.push_back(1);
             else
               faceNum_vec.push_back(0);
-
-            periodicFace_vec.push_back(0);
           }
         } else {
           // Boundary edge
@@ -180,10 +177,9 @@ int main(int argc, char **argv) {
   op_map bface2cells = op_decl_map(bfaces, cells, 1, bface2cell_vec.data(), "bface2cells");
 
   // Dats
-  op_dat node_coords  = op_decl_dat(nodes, 3, "double", coords_data, "node_coords");
-  op_dat faceNum      = op_decl_dat(faces, 2, "int", faceNum_vec.data(), "faceNum");
-  op_dat bfaceNum     = op_decl_dat(bfaces, 1, "int", bfaceNum_vec.data(), "bfaceNum");
-  op_dat periodicFace = op_decl_dat(faces, 1, "int", periodicFace_vec.data(), "periodicFace");
+  op_dat node_coords = op_decl_dat(nodes, 3, "double", coords_data, "node_coords");
+  op_dat faceNum     = op_decl_dat(faces, 2, "int", faceNum_vec.data(), "faceNum");
+  op_dat bfaceNum    = op_decl_dat(bfaces, 1, "int", bfaceNum_vec.data(), "bfaceNum");
 
   op_partition("" STRINGIFY(OP2_PARTITIONER), "KWAY", cells, face2cells, NULL);
 
