@@ -1,62 +1,50 @@
-inline void init_grid(const int *p, DG_FP *rx, DG_FP *ry, DG_FP *sx,
-                      DG_FP *sy, DG_FP *nx, DG_FP *ny, DG_FP *J, DG_FP *sJ,
-                      DG_FP *fscale, DG_FP *nx_c, DG_FP *ny_c, DG_FP *sJ_c,
-                      DG_FP *fscale_c) {
-  // Get constants for this element's order
-  const int *fmask = &FMASK_TK[(*p - 1) * 3 * DG_NPF];
-  const int dg_np  = DG_CONSTANTS_TK[(*p - 1) * 5];
-  const int dg_nfp = DG_CONSTANTS_TK[(*p - 1) * 5 + 1];
+inline void init_grid(const DG_FP *x, const DG_FP *y, DG_FP *nx, DG_FP *ny, 
+                      DG_FP *sJ, DG_FP *fscale, DG_FP *geof) {
+  const DG_FP *dr_mat = &dg_Dr_kernel[(DG_ORDER - 1) * DG_NP * DG_NP];
+  const DG_FP *ds_mat = &dg_Ds_kernel[(DG_ORDER - 1) * DG_NP * DG_NP];
+
+  DG_FP xr = 0.0;
+  DG_FP yr = 0.0;
+  for(int i = 0; i < DG_NP; i++) {
+    int ind = DG_MAT_IND(0, i, DG_NP, DG_NP);
+    xr += dr_mat[ind] * x[i];
+    yr += dr_mat[ind] * y[i];
+  }
+
+  DG_FP xs = 0.0;
+  DG_FP ys = 0.0;
+  for(int i = 0; i < DG_NP; i++) {
+    int ind = DG_MAT_IND(0, i, DG_NP, DG_NP);
+    xs += ds_mat[ind] * x[i];
+    ys += ds_mat[ind] * y[i];
+  }
+
   // Calculate normals
   // Face 0
-  for(int i = 0; i < dg_nfp; i++) {
-    const int fmask_ind = fmask[i];
-    nx[i] = ry[fmask_ind];
-    ny[i] = -rx[fmask_ind];
-  }
+  nx[0] = yr;
+  ny[0] = -xr;
   // Face 1
-  for(int i = 0; i < dg_nfp; i++) {
-    const int fmask_ind = fmask[dg_nfp + i];
-    nx[dg_nfp + i] = sy[fmask_ind] - ry[fmask_ind];
-    ny[dg_nfp + i] = rx[fmask_ind] - sx[fmask_ind];
-  }
+  nx[1] = ys - yr;
+  ny[1] = xr - xs;
   // Face 2
-  for(int i = 0; i < dg_nfp; i++) {
-    const int fmask_ind = fmask[2 * dg_nfp + i];
-    nx[2 * dg_nfp + i] = -sy[fmask_ind];
-    ny[2 * dg_nfp + i] = sx[fmask_ind];
-  }
+  nx[2] = -ys;
+  ny[2] = xs;
 
   // J = -xs.*yr + xr.*ys
-  for(int i = 0; i < dg_np; i++) {
-    J[i] = -sx[i] * ry[i] + rx[i] * sy[i];
-  }
+  geof[J_IND] = -xs * yr + xr * ys;
 
   // rx = ys./J; sx =-yr./J; ry =-xs./J; sy = xr./J;
-  for(int i = 0; i < dg_np; i++) {
-    DG_FP rx_n = sy[i] / J[i];
-    DG_FP sx_n = -ry[i] / J[i];
-    DG_FP ry_n = -sx[i] / J[i];
-    DG_FP sy_n = rx[i] / J[i];
-    rx[i] = rx_n;
-    sx[i] = sx_n;
-    ry[i] = ry_n;
-    sy[i] = sy_n;
-  }
+  geof[RX_IND] = ys / geof[J_IND];
+  geof[SX_IND] = -yr / geof[J_IND];
+  geof[RY_IND] = -xs / geof[J_IND];
+  geof[SY_IND] = xr / geof[J_IND];
 
   // Normalise
-  for(int i = 0; i < 3 * dg_nfp; i++) {
+  for(int i = 0; i < DG_NUM_FACES; i++) {
     sJ[i] = sqrt(nx[i] * nx[i] + ny[i] * ny[i]);
     nx[i] = nx[i] / sJ[i];
     ny[i] = ny[i] / sJ[i];
-    const int fmask_ind = fmask[i];
     // sJ[i] /= 2.0;
-    fscale[i] = sJ[i] / J[fmask_ind];
-  }
-
-  for(int i = 0; i < 3; i++) {
-    nx_c[i] = nx[i * dg_nfp];
-    ny_c[i] = ny[i * dg_nfp];
-    sJ_c[i] = sJ[i * dg_nfp];
-    fscale_c[i] = fscale[i * dg_nfp];
+    fscale[i] = sJ[i] / geof[J_IND];
   }
 }

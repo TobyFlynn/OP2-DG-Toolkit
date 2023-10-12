@@ -253,20 +253,17 @@ COMMON_2D_OBJ := dg_constants/dg_constants_2d.o \
 	$(LINEAR_SOLVER_OBJ)
 
 # 2D CPU only object files
-CPU_2D_OBJ := dg_mesh/dg_mesh_2d_cpu.o \
-	dg_constants/dg_constants_2d_cpu.o \
+CPU_2D_OBJ := dg_constants/dg_constants_2d_cpu.o \
 	$(CPU_OBJ) \
 	$(LINEAR_SOLVER_CPU_OBJ)
 
 # 2D CUDA only object files
-CUDA_2D_OBJ := dg_mesh/dg_mesh_2d_gpu.o \
-	dg_constants/dg_constants_2d_gpu.o \
+CUDA_2D_OBJ := dg_constants/dg_constants_2d_gpu.o \
 	$(CUDA_OBJ) \
 	$(LINEAR_SOLVER_CUDA_OBJ)
 
 # 2D HIP only object files
-HIP_2D_OBJ := dg_mesh/dg_mesh_2d_hip.o \
-	dg_constants/dg_constants_2d_hip.o \
+HIP_2D_OBJ := dg_constants/dg_constants_2d_hip.o \
 	$(HIP_OBJ) \
 	$(LINEAR_SOLVER_HIP_OBJ)
 
