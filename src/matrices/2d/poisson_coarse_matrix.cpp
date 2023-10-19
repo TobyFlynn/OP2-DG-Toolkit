@@ -18,7 +18,7 @@ PoissonCoarseMatrix2D::PoissonCoarseMatrix2D(DGMesh2D *m) {
   op1    = op_decl_dat(mesh->cells, DG_NP_N1 * DG_NP_N1, DG_FP_STR, (DG_FP *)NULL, "poisson_op1");
   op2[0] = op_decl_dat(mesh->faces, DG_NP_N1 * DG_NP_N1, DG_FP_STR, (DG_FP *)NULL, "poisson_op20");
   op2[1] = op_decl_dat(mesh->faces, DG_NP_N1 * DG_NP_N1, DG_FP_STR, (DG_FP *)NULL, "poisson_op21");
-  opbc   = op_decl_dat(mesh->bfaces, DG_NUM_FACES * DG_NPF_N1 * DG_NP_N1, DG_FP_STR, (DG_FP *)NULL, "poisson_opbc");
+  opbc   = op_decl_dat(mesh->bfaces, DG_NPF_N1 * DG_NP_N1, DG_FP_STR, (DG_FP *)NULL, "poisson_opbc");
 
   glb_ind   = op_decl_dat(mesh->cells, 1, DG_MAT_IND_TYPE_STR, (DG_MAT_IND_TYPE *)NULL, "poisson_glb_ind");
   glb_indL  = op_decl_dat(mesh->faces, 1, DG_MAT_IND_TYPE_STR, (DG_MAT_IND_TYPE *)NULL, "poisson_glb_indL");
