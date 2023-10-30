@@ -38,6 +38,7 @@ DGMesh2D::DGMesh2D(std::string &meshFile) {
 
   // Declare OP2 maps
   cell2nodes  = op_decl_map_hdf5(cells, nodes, 3, meshFile.c_str(), "cell2nodes");
+  face2nodes  = op_decl_map_hdf5(faces, nodes, 2, meshFile.c_str(), "face2nodes");
   face2cells  = op_decl_map_hdf5(faces, cells, 2, meshFile.c_str(), "face2cells");
   bface2nodes = op_decl_map_hdf5(bfaces, nodes, 2, meshFile.c_str(), "bface2nodes");
   bface2cells = op_decl_map_hdf5(bfaces, cells, 1, meshFile.c_str(), "bface2cells");
@@ -93,13 +94,13 @@ void DGMesh2D::init() {
               op_arg_dat(node_coords, -3, cell2nodes, 2, DG_FP_STR, OP_READ),
               op_arg_dat(nodeX, -1, OP_ID, 3, DG_FP_STR, OP_WRITE),
               op_arg_dat(nodeY, -1, OP_ID, 3, DG_FP_STR, OP_WRITE));
-  
+
   op_par_loop(init_edges, "init_edges", faces,
               op_arg_dat(edgeNum, -1, OP_ID, 2, "int", OP_READ),
               op_arg_dat(nodeX, -2, face2cells, 3, DG_FP_STR, OP_READ),
               op_arg_dat(nodeY, -2, face2cells, 3, DG_FP_STR, OP_READ),
               op_arg_dat(reverse, -1, OP_ID, 1, "bool", OP_WRITE));
-  
+
   op_par_loop(calc_geom, "calc_geom", cells,
               op_arg_gbl(&order_int, 1, "int", OP_READ),
               op_arg_dat(nodeX, -1, OP_ID, 3, DG_FP_STR, OP_READ),

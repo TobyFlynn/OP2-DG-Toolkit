@@ -44,6 +44,8 @@ public:
   op_dat bedge_type, edgeNum, bedgeNum, reverse;
   op_dat nx_c, ny_c, sJ_c, fscale_c;
 
+  op_map face2nodes;
+
 private:
   void calc_mesh_constants();
 };
