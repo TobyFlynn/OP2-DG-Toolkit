@@ -51,29 +51,33 @@ all: base 2d 3d
 
 base: $(LIB)/libdgtoolkit.a
 
-2d: base $(LIB)/libop2dgtoolkit_2d_seq.a $(LIB)/libop2dgtoolkit_2d_openmp.a \
-	$(LIB)/libop2dgtoolkit_2d_mpi.a $(LIB)/libop2dgtoolkit_2d_mpi_openmp.a \
-	$(LIB)/libop2dgtoolkit_2d_cuda.a $(LIB)/libop2dgtoolkit_2d_mpi_cuda.a
+2d: cpu_2d cuda_2d
 
-3d: base $(LIB)/libop2dgtoolkit_3d_seq.a $(LIB)/libop2dgtoolkit_3d_openmp.a \
-	$(LIB)/libop2dgtoolkit_3d_mpi.a $(LIB)/libop2dgtoolkit_3d_mpi_openmp.a \
-	$(LIB)/libop2dgtoolkit_3d_cuda.a $(LIB)/libop2dgtoolkit_3d_mpi_cuda.a
+3d: cpu_3d cuda_3d
 
-cpu: base $(LIB)/libop2dgtoolkit_2d_seq.a $(LIB)/libop2dgtoolkit_2d_openmp.a \
-	$(LIB)/libop2dgtoolkit_2d_mpi.a $(LIB)/libop2dgtoolkit_2d_mpi_openmp.a \
-	$(LIB)/libop2dgtoolkit_3d_seq.a $(LIB)/libop2dgtoolkit_3d_openmp.a \
+cpu: cpu_2d cpu_3d
+
+cpu_2d: base $(LIB)/libop2dgtoolkit_2d_seq.a $(LIB)/libop2dgtoolkit_2d_openmp.a \
+	$(LIB)/libop2dgtoolkit_2d_mpi.a $(LIB)/libop2dgtoolkit_2d_mpi_openmp.a
+
+cpu_3d: base $(LIB)/libop2dgtoolkit_3d_seq.a $(LIB)/libop2dgtoolkit_3d_openmp.a \
 	$(LIB)/libop2dgtoolkit_3d_mpi.a $(LIB)/libop2dgtoolkit_3d_mpi_openmp.a
 
-cuda: base $(LIB)/libop2dgtoolkit_2d_cuda.a $(LIB)/libop2dgtoolkit_2d_mpi_cuda.a \
-	$(LIB)/libop2dgtoolkit_3d_cuda.a $(LIB)/libop2dgtoolkit_3d_mpi_cuda.a
+cuda: cuda_2d cuda_3d
 
-hip: base $(LIB)/libop2dgtoolkit_2d_hip.a $(LIB)/libop2dgtoolkit_2d_mpi_hip.a \
-	$(LIB)/libop2dgtoolkit_3d_hip.a $(LIB)/libop2dgtoolkit_3d_mpi_hip.a
+cuda_2d: base $(LIB)/libop2dgtoolkit_2d_cuda.a $(LIB)/libop2dgtoolkit_2d_mpi_cuda.a
+
+cuda_3d: base $(LIB)/libop2dgtoolkit_3d_cuda.a $(LIB)/libop2dgtoolkit_3d_mpi_cuda.a
+
+hip: hip_2d hip_3d
+
+hip_2d: base $(LIB)/libop2dgtoolkit_2d_hip.a $(LIB)/libop2dgtoolkit_2d_mpi_hip.a
+
+hip_3d: base $(LIB)/libop2dgtoolkit_3d_hip.a $(LIB)/libop2dgtoolkit_3d_mpi_hip.a
 
 codegen: $(CODE_GEN_DIR)
 
-tools: $(BIN)/hdf52vtk_2D $(BIN)/hdf52vtk_3D $(BIN)/vtk2hdf5_2D $(BIN)/vtk2hdf5_3D \
-	$(BIN)/vtk2hdf5_periodic_cube_3D
+tools: $(BIN)/hdf52vtk_2D $(BIN)/vtk2hdf5_3D
 
 clean:
 	-rm -rf $(OBJ)
