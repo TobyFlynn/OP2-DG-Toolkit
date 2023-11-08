@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
     add_3d_vec_solution(&file, "ins_solver_vel00", "ins_solver_vel01",
                         "ins_solver_vel02", "velocity", numCells, vtkGrid);
     add_3d_vec_solution(&file, "ins_solver_vel10", "ins_solver_vel11",
-                        "ins_solver_vel12", "velocity1", numCells, vtkGrid);
+                        "ins_solver_vel12", "velocity", numCells, vtkGrid);
     add_3d_vec_solution(&file, "ins_solver_velT0", "ins_solver_velT1",
                         "ins_solver_velT2", "velocityT", numCells, vtkGrid);
     add_3d_vec_solution(&file, "ins_solver_velTT0", "ins_solver_velTT1",
