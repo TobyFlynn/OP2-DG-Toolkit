@@ -77,7 +77,8 @@ hip_3d: base $(LIB)/libop2dgtoolkit_3d_hip.a $(LIB)/libop2dgtoolkit_3d_mpi_hip.a
 
 codegen: $(CODE_GEN_DIR)
 
-tools: $(BIN)/hdf52vtk_2D $(BIN)/vtk2hdf5_3D
+tools: $(BIN)/hdf52vtk_2D $(BIN)/hdf52vtk_3D $(BIN)/vtk2hdf5_2D \
+	$(BIN)/vtk2hdf5_3D $(BIN)/vtk2hdf5_periodic_cube_3D
 
 clean:
 	-rm -rf $(OBJ)
