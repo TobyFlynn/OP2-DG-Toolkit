@@ -46,29 +46,6 @@ struct Edge {
   int num[2];
 };
 
-int getBoundaryEdgeNum(const string &type, double x0, double y0, double x1, double y1) {
-  if(type == "cylinder_p") {
-    if(x0 == 0.0 && x1 == 0.0) {
-      // Inflow
-      return 0;
-    } else if(x0 == x1 && x0 > 5.0) {
-      // Outflow
-      return 1;
-    } else if(x0 > 0.1 && x1 > 0.1 && x0 < 1.0 && x1 < 1.0
-              && y0 > 0.1 && y1 > 0.1 && y0 < 0.9 && y1 < 0.9) {
-      // Cylinder Wall
-      return 2;
-    } else {
-      return -1;
-    }
-  } else if(type == "euler_vortex") {
-    return -1;
-  } else {
-    cerr << "***ERROR*** Unrecognised boundary type specified" << endl;
-  }
-  return -1;
-}
-
 struct cmpCoords {
     bool operator()(const pair<double,double>& a, const pair<double,double>& b) const {
         bool xCmp = abs(a.first - b.first) < 1e-8;
@@ -295,7 +272,7 @@ int main(int argc, char **argv) {
   }
 
   vector<int> edge2node_vec, edge2cell_vec, edgeNum_vec;
-  vector<int> bedge2node_vec, bedge2cell_vec, bedgeNum_vec, bedgeType_vec;
+  vector<int> bedge2node_vec, bedge2cell_vec, bedgeNum_vec;
   for(auto const &edge : internalEdgeMap) {
     if(edge.second->cells[1] == -1) {
       bedge2node_vec.push_back(edge.second->points[0]);
@@ -306,8 +283,6 @@ int main(int argc, char **argv) {
       double y0 = y[edge.second->points[0]];
       double x1 = x[edge.second->points[1]];
       double y1 = y[edge.second->points[1]];
-      int bType = getBoundaryEdgeNum(bcType, x0, y0, x1, y1);
-      bedgeType_vec.push_back(bType);
     } else {
       if(edge.second->points[0] == edge.second->points[1])
         cout << "***** ERROR: Edge with identical points *****" << endl;
@@ -339,7 +314,6 @@ int main(int argc, char **argv) {
     coords_vec.push_back(y[i]);
   }
   op_dat node_coords = op_decl_dat(nodes, 2, "double", coords_vec.data(), "node_coords");
-  op_dat bedge_type  = op_decl_dat(bfaces, 1, "int", bedgeType_vec.data(), "bedge_type");
   op_dat edgeNum     = op_decl_dat(faces, 2, "int", edgeNum_vec.data(), "edgeNum");
   op_dat bedgeNum    = op_decl_dat(bfaces, 1, "int", bedgeNum_vec.data(), "bedgeNum");
 
