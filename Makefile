@@ -252,6 +252,8 @@ COMMON_2D_OBJ := dg_constants/dg_constants_2d.o \
 	matrices_op/2d/mm_poisson_matrix_free_op.o \
 	matrices_op/2d/factor_poisson_matrix_free_mult_op.o \
 	matrices_op/2d/factor_poisson_matrix_free_diag_op.o \
+	matrices_op/2d/factor_poisson_matrix_free_mult_oi_op.o \
+	matrices_op/2d/factor_poisson_matrix_free_diag_oi_op.o \
 	matrices_op/2d/factor_mm_poisson_matrix_free_diag_op.o \
 	matrices_op/2d/factor_poisson_coarse_matrix_op.o \
 	$(COMMON_OBJ) \

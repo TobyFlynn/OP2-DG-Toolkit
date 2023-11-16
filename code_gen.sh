@@ -50,6 +50,8 @@ python3 $OP2_TRANSLATOR \
   matrices/2d/mm_poisson_matrix_free.cpp \
   matrices/2d/factor_poisson_matrix_free_mult.cpp \
   matrices/2d/factor_poisson_matrix_free_diag.cpp \
+  matrices/2d/factor_poisson_matrix_free_mult_oi.cpp \
+  matrices/2d/factor_poisson_matrix_free_diag_oi.cpp \
   matrices/2d/factor_mm_poisson_matrix_free_diag.cpp \
   matrices/2d/factor_poisson_coarse_matrix.cpp \
   linear_solvers/petsc_block_jacobi/petsc_block_jacobi.cpp \
