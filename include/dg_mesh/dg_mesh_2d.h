@@ -21,6 +21,7 @@ public:
   // Operators
   void div(op_dat u, op_dat v, op_dat res);
   void div_with_central_flux(op_dat u, op_dat v, op_dat res);
+  void div_over_int_with_central_flux(op_dat u, op_dat v, op_dat res);
   void div_weak(op_dat u, op_dat v, op_dat res);
   void curl(op_dat u, op_dat v, op_dat res);
   void grad(op_dat u, op_dat ux, op_dat uy);

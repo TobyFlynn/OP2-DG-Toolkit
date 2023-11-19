@@ -325,83 +325,6 @@ void DGConstants2D::gauss(const int nGauss) {
   DG_CONSTANTS_TK[(DG_ORDER - 1) * 5 + 4] = gNfp;
 }
 
-/*
-void DGConstants2D::cubature(const int nCub, const int N, arma::mat &V_, arma::mat &invV_, arma::mat &Dr_, arma::mat &Ds_) {
-  arma::vec c_r, c_s, cub_w_;
-  DGUtils::cubature2D(nCub, c_r, c_s, cub_w_);
-  arma::mat cub_V_ = DGUtils::interpMatrix2D(c_r, c_s, invV_, N);
-
-  arma::mat cub_Dr_, cub_Ds_;
-  DGUtils::dMatrices2D(c_r, c_s, V_, N, cub_Dr_, cub_Ds_);
-
-  arma::mat cub_V_Dr = cub_V_ * Dr_;
-  arma::mat cub_V_Ds = cub_V_ * Ds_;
-
-  save_vec(cubW_g, cub_w_, N, cNp_max);
-  save_vec(cubW_g_TK, cub_w_, N, cNp_max);
-  save_mat(cubV_ptr, cub_V_, N, cNp_max * Np_max);
-  save_mat(cubDr_ptr, cub_Dr_, N, cNp_max * Np_max);
-  save_mat(cubDs_ptr, cub_Ds_, N, cNp_max * Np_max);
-  save_mat(cubVDr_ptr, cub_V_Dr, N, cNp_max * Np_max);
-  save_mat(cubVDs_ptr, cub_V_Ds, N, cNp_max * Np_max);
-
-  // Number of cubature points
-  int cNp = cub_w_.n_elem;
-  DG_CONSTANTS[(N - 1) * 5 + 2] = cNp;
-  DG_CONSTANTS_TK[(N - 1) * 5 + 2] = cNp;
-}
-
-void DGConstants2D::gauss(const int nGauss, const int N, arma::mat &V_, arma::mat &invV_, arma::mat &Dr_, arma::mat &Ds_) {
-  arma::vec g_x, gauss_w_;
-  DGUtils::jacobiGQ(0.0, 0.0, nGauss - 1, g_x, gauss_w_);
-
-  arma::vec face1r = g_x;
-  arma::vec face2r = -g_x;
-  arma::vec face3r = -arma::ones<arma::vec>(nGauss);
-  arma::vec face1s = -arma::ones<arma::vec>(nGauss);
-  arma::vec face2s = g_x;
-  arma::vec face3s = -g_x;
-
-  arma::mat gauss_interp1_ = DGUtils::vandermonde2D(face1r, face1s, N) * invV_;
-  arma::mat gauss_interp2_ = DGUtils::vandermonde2D(face2r, face2s, N) * invV_;
-  arma::mat gauss_interp3_ = DGUtils::vandermonde2D(face3r, face3s, N) * invV_;
-
-  arma::mat gauss_interp_ = arma::join_vert(gauss_interp1_, gauss_interp2_, gauss_interp3_);
-
-  arma::mat gauss_i1_Dr = gauss_interp1_ * Dr_;
-  arma::mat gauss_i1_Ds = gauss_interp1_ * Ds_;
-  arma::mat gauss_i2_Dr = gauss_interp2_ * Dr_;
-  arma::mat gauss_i2_Ds = gauss_interp2_ * Ds_;
-  arma::mat gauss_i3_Dr = gauss_interp3_ * Dr_;
-  arma::mat gauss_i3_Ds = gauss_interp3_ * Ds_;
-  // arma::mat invMass_gauss_interpT = invMass * gauss_interp_.t();
-  arma::mat invMass_gauss_interpT = V_ * V_.t() * gauss_interp_.t();
-
-  save_vec(gaussW_g, gauss_w_, N, gNfp_max);
-  save_vec(gaussW_g_TK, gauss_w_, N, gNfp_max);
-  save_mat(gInterp_ptr, gauss_interp_, N, gNp_max * Np_max);
-  save_mat(gFInterp0_ptr, gauss_interp1_, N, gNfp_max * Np_max);
-  save_mat(gFInterp1_ptr, gauss_interp2_, N, gNfp_max * Np_max);
-  save_mat(gFInterp2_ptr, gauss_interp3_, N, gNfp_max * Np_max);
-  save_mat(gF0Dr_ptr, gauss_i1_Dr, N, gNfp_max * Np_max);
-  save_mat(gF0Ds_ptr, gauss_i1_Ds, N, gNfp_max * Np_max);
-  save_mat(gF1Dr_ptr, gauss_i2_Dr, N, gNfp_max * Np_max);
-  save_mat(gF1Ds_ptr, gauss_i2_Ds, N, gNfp_max * Np_max);
-  save_mat(gF2Dr_ptr, gauss_i3_Dr, N, gNfp_max * Np_max);
-  save_mat(gF2Ds_ptr, gauss_i3_Ds, N, gNfp_max * Np_max);
-  save_mat(invMass_gInterpT_ptr, invMass_gauss_interpT, N, gNp_max * Np_max);
-
-  // Number of gauss points
-  int gNp = gauss_w_.n_elem * 3;
-  DG_CONSTANTS[(N - 1) * 5 + 3] = gNp;
-  DG_CONSTANTS_TK[(N - 1) * 5 + 3] = gNp;
-  // Number of gauss points per edge
-  int gNfp = gauss_w_.n_elem;
-  DG_CONSTANTS[(N - 1) * 5 + 4] = gNfp;
-  DG_CONSTANTS_TK[(N - 1) * 5 + 4] = gNfp;
-}
-*/
-
 void DGConstants2D::calc_interp_mats() {
   for(int n0 = 1; n0 <= N_max; n0++) {
     arma::vec x_n0, y_n0, r_n0, s_n0;
@@ -436,6 +359,12 @@ void DGConstants2D::calc_interp_mats() {
   lift_ptr_sp = (float *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(float));
   eMat_ptr_sp = (float *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(float));
   order_interp_ptr_sp = (float *)calloc(N_max * N_max * Np_max * Np_max, sizeof(float));
+  cubInterp_ptr_sp = (float *)calloc(DG_NP * DG_CUB_2D_NP, sizeof(float));
+  cubProj_ptr_sp = (float *)calloc(DG_NP * DG_CUB_2D_NP, sizeof(float));
+  cubPDrT_ptr_sp = (float *)calloc(DG_NP * DG_CUB_2D_NP, sizeof(float));
+  cubPDsT_ptr_sp = (float *)calloc(DG_NP * DG_CUB_2D_NP, sizeof(float));
+  cubInterpSurf_ptr_sp = (float *)calloc(DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_2D_NP, sizeof(float));
+  cubLiftSurf_ptr_sp   = (float *)calloc(DG_NP * DG_NUM_FACES * DG_CUB_SURF_2D_NP, sizeof(float));
 
   for(int i = 0; i < N_max * Np_max * Np_max; i++) {
     Dr_ptr_sp[i] = (float)Dr_ptr[i];
@@ -455,6 +384,21 @@ void DGConstants2D::calc_interp_mats() {
 
   for(int i = 0; i < N_max * N_max * Np_max * Np_max; i++) {
     order_interp_ptr_sp[i] = (float)order_interp_ptr[i];
+  }
+
+  for(int i = 0; i < DG_NP * DG_CUB_2D_NP; i++) {
+    cubInterp_ptr_sp[i] = (float)cubInterp_ptr[i];
+    cubProj_ptr_sp[i] = (float)cubProj_ptr[i];
+    cubPDrT_ptr_sp[i] = (float)cubPDrT_ptr[i];
+    cubPDsT_ptr_sp[i] = (float)cubPDsT_ptr[i];
+  }
+
+  for(int i = 0; i < DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_2D_NP; i++) {
+    cubInterpSurf_ptr_sp[i] = (float)cubInterpSurf_ptr[i];
+  }
+
+  for(int i = 0; i < DG_NP * DG_NUM_FACES * DG_CUB_SURF_2D_NP; i++) {
+    cubLiftSurf_ptr_sp[i] = (float)cubLiftSurf_ptr[i];
   }
 
   transfer_kernel_ptrs();
@@ -559,4 +503,10 @@ DGConstants2D::~DGConstants2D() {
   free(lift_ptr_sp);
   free(eMat_ptr_sp);
   free(order_interp_ptr_sp);
+  free(cubInterp_ptr_sp);
+  free(cubProj_ptr_sp);
+  free(cubPDrT_ptr_sp);
+  free(cubPDsT_ptr_sp);
+  free(cubInterpSurf_ptr_sp);
+  free(cubLiftSurf_ptr_sp);
 }

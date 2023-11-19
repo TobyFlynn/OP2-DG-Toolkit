@@ -118,6 +118,18 @@ float* DGConstants2D::get_mat_ptr_device_sp(Constant_Matrix matrix) {
       return eMat_ptr_sp;
     case INTERP_MATRIX_ARRAY:
       return order_interp_ptr_sp;
+    case CUB2D_INTERP:
+      return cubInterp_ptr_sp;
+    case CUB2D_PROJ:
+      return cubProj_ptr_sp;
+    case CUB2D_PDR:
+      return cubPDrT_ptr_sp;
+    case CUB2D_PDS:
+      return cubPDsT_ptr_sp;
+    case CUBSURF2D_INTERP:
+      return cubInterpSurf_ptr_sp;
+    case CUBSURF2D_LIFT:
+      return cubLiftSurf_ptr_sp;
     default:
       throw std::runtime_error("This sp constant matrix is not supported by DGConstants2D\n");
       return nullptr;

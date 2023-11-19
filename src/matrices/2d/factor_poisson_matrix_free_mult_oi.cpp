@@ -20,6 +20,10 @@ void FactorPoissonMatrixFreeMultOI2D::mat_free_set_factor_oi(op_dat f) {
   mat_free_factor_oi = f;
 }
 
+void FactorPoissonMatrixFreeMultOI2D::mat_free_set_factor_surf_oi(op_dat f) {
+  mat_free_factor_surf_oi = f;
+}
+
 void FactorPoissonMatrixFreeMultOI2D::calc_tau() {
   timer->startTimer("FactorPoissonMatrixFreeMultOI2D - calc tau");
   op_par_loop(fpmf_2d_calc_tau_faces, "fpmf_2d_calc_tau_faces", mesh->faces,
@@ -166,6 +170,39 @@ void FactorPoissonMatrixFreeMultOI2D::mat_free_mult(op_dat in, op_dat out) {
   timer->endTimer("FactorPoissonMatrixFreeMultOI2D - mult bfaces");
 
   timer->startTimer("FactorPoissonMatrixFreeMultOI2D - finish flux");
+  if(mesh->order_int == DG_ORDER) {
+    DGTempDat jump_cub = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_CUB_SURF_2D_NP);
+    DGTempDat fluxX_cub = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_CUB_SURF_2D_NP);
+    DGTempDat fluxY_cub = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_CUB_SURF_2D_NP);
+    op2_gemv(mesh, false, 1.0, DGConstants::CUBSURF2D_INTERP, tmp_npf0.dat, 0.0, jump_cub.dat);
+    op_par_loop(fpmf_2d_mult_flux_oi_0, "fpmf_2d_mult_flux_oi_0", mesh->cells,
+              op_arg_dat(mesh->nx_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(mesh->ny_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(mesh->sJ_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(mesh->geof, -1, OP_ID, 5, DG_FP_STR, OP_READ),
+              op_arg_dat(mat_free_factor_surf_oi, -1, OP_ID, DG_NUM_FACES * DG_CUB_SURF_2D_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(jump_cub.dat,  -1, OP_ID, DG_NUM_FACES * DG_CUB_SURF_2D_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(fluxX_cub.dat, -1, OP_ID, DG_NUM_FACES * DG_CUB_SURF_2D_NP, DG_FP_STR, OP_WRITE),
+              op_arg_dat(fluxY_cub.dat, -1, OP_ID, DG_NUM_FACES * DG_CUB_SURF_2D_NP, DG_FP_STR, OP_WRITE));
+    op2_gemv(mesh, false, 1.0, DGConstants::CUBSURF2D_LIFT, fluxX_cub.dat, 1.0, tmp_grad0.dat);
+    op2_gemv(mesh, false, 1.0, DGConstants::CUBSURF2D_LIFT, fluxY_cub.dat, 1.0, tmp_grad0.dat);
+    dg_dat_pool->releaseTempDatCells(jump_cub);
+    dg_dat_pool->releaseTempDatCells(fluxX_cub);
+    dg_dat_pool->releaseTempDatCells(fluxY_cub);
+    op_par_loop(fpmf_2d_mult_flux_oi_1, "fpmf_2d_mult_flux_oi_1", mesh->cells,
+                op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
+                op_arg_dat(mesh->nx_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+                op_arg_dat(mesh->ny_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+                op_arg_dat(mesh->sJ_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+                op_arg_dat(mat_free_tau_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+                op_arg_dat(mat_free_factor_copy, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(tmp_npf0.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW),
+                op_arg_dat(tmp_npf1.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW),
+                op_arg_dat(tmp_npf2.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW));
+    mesh->mass(tmp_grad0.dat);
+    mesh->mass(tmp_grad1.dat);
+    op2_gemv(mesh, false, 1.0, DGConstants::EMAT, tmp_npf0.dat, 0.0, out);
+  } else {
     op_par_loop(fpmf_2d_mult_flux, "fpmf_2d_mult_flux", mesh->cells,
                 op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
                 op_arg_dat(mesh->nx_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
@@ -176,19 +213,19 @@ void FactorPoissonMatrixFreeMultOI2D::mat_free_mult(op_dat in, op_dat out) {
                 op_arg_dat(tmp_npf0.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW),
                 op_arg_dat(tmp_npf1.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW),
                 op_arg_dat(tmp_npf2.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW));
+  
+    timer->startTimer("FactorPoissonMatrixFreeMultOI2D - mult cells MM");
+    mesh->mass(tmp_grad0.dat);
+    mesh->mass(tmp_grad1.dat);
+    timer->endTimer("FactorPoissonMatrixFreeMultOI2D - mult cells MM");
+
+    timer->startTimer("FactorPoissonMatrixFreeMultOI2D - mult cells Emat");
+    op2_gemv(mesh, false, 1.0, DGConstants::EMAT, tmp_npf1.dat, 1.0, tmp_grad0.dat);
+    op2_gemv(mesh, false, 1.0, DGConstants::EMAT, tmp_npf2.dat, 1.0, tmp_grad1.dat);
+    op2_gemv(mesh, false, 1.0, DGConstants::EMAT, tmp_npf0.dat, 0.0, out);
+    timer->endTimer("FactorPoissonMatrixFreeMultOI2D - mult cells Emat");
+  }
   timer->endTimer("FactorPoissonMatrixFreeMultOI2D - finish flux");
-
-  timer->startTimer("FactorPoissonMatrixFreeMultOI2D - mult cells");
-  timer->startTimer("FactorPoissonMatrixFreeMultOI2D - mult cells MM");
-  mesh->mass(tmp_grad0.dat);
-  mesh->mass(tmp_grad1.dat);
-  timer->endTimer("FactorPoissonMatrixFreeMultOI2D - mult cells MM");
-
-  timer->startTimer("FactorPoissonMatrixFreeMultOI2D - mult cells Emat");
-  op2_gemv(mesh, false, 1.0, DGConstants::EMAT, tmp_npf1.dat, 1.0, tmp_grad0.dat);
-  op2_gemv(mesh, false, 1.0, DGConstants::EMAT, tmp_npf2.dat, 1.0, tmp_grad1.dat);
-  op2_gemv(mesh, false, 1.0, DGConstants::EMAT, tmp_npf0.dat, 0.0, out);
-  timer->endTimer("FactorPoissonMatrixFreeMultOI2D - mult cells Emat");
 
   timer->startTimer("FactorPoissonMatrixFreeMultOI2D - mult cells cells");
   op_par_loop(pmf_2d_mult_cells_geof, "pmf_2d_mult_cells_geof", mesh->cells,
@@ -200,7 +237,6 @@ void FactorPoissonMatrixFreeMultOI2D::mat_free_mult(op_dat in, op_dat out) {
   op2_gemv(mesh, true, 1.0, DGConstants::DR, tmp_grad0.dat, 1.0, out);
   op2_gemv(mesh, true, 1.0, DGConstants::DS, tmp_grad1.dat, 1.0, out);
   timer->endTimer("FactorPoissonMatrixFreeMultOI2D - mult cells cells");
-  timer->endTimer("FactorPoissonMatrixFreeMultOI2D - mult cells");
   dg_dat_pool->releaseTempDatCells(tmp_grad0);
   dg_dat_pool->releaseTempDatCells(tmp_grad1);
   dg_dat_pool->releaseTempDatCells(tmp_npf0);
@@ -217,12 +253,33 @@ void FactorPoissonMatrixFreeMultOI2D::mat_free_mult_sp(op_dat in, op_dat out) {
   timer->startTimer("FactorPoissonMatrixFreeMultOI2D - mult grad");
   op2_gemv_sp(mesh, false, 1.0, DGConstants::DR, in, 0.0, tmp_grad0.dat);
   op2_gemv_sp(mesh, false, 1.0, DGConstants::DS, in, 0.0, tmp_grad1.dat);
-  op_par_loop(fpmf_2d_grad_sp, "fpmf_2d_grad_sp", mesh->cells,
+  if(mesh->order_int == DG_ORDER) {
+    DGTempDat tmp_grad0_oi = dg_dat_pool->requestTempDatCellsSP(DG_CUB_2D_NP);
+    DGTempDat tmp_grad1_oi = dg_dat_pool->requestTempDatCellsSP(DG_CUB_2D_NP);
+
+    op2_gemv_sp(mesh, false, 1.0, DGConstants::CUB2D_INTERP, tmp_grad0.dat, 0.0, tmp_grad0_oi.dat);
+    op2_gemv_sp(mesh, false, 1.0, DGConstants::CUB2D_INTERP, tmp_grad1.dat, 0.0, tmp_grad1_oi.dat);
+
+    op_par_loop(fpmf_2d_grad_oi_sp, "fpmf_2d_grad_oi_sp", mesh->cells,
+                op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
+                op_arg_dat(mesh->geof, -1, OP_ID, 5, DG_FP_STR, OP_READ),
+                op_arg_dat(mat_free_factor_oi, -1, OP_ID, DG_CUB_2D_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(tmp_grad0_oi.dat, -1, OP_ID, DG_CUB_2D_NP, "float", OP_RW),
+                op_arg_dat(tmp_grad1_oi.dat, -1, OP_ID, DG_CUB_2D_NP, "float", OP_RW));
+
+    op2_gemv_sp(mesh, false, 1.0, DGConstants::CUB2D_PROJ, tmp_grad0_oi.dat, 0.0, tmp_grad0.dat);
+    op2_gemv_sp(mesh, false, 1.0, DGConstants::CUB2D_PROJ, tmp_grad1_oi.dat, 0.0, tmp_grad1.dat);
+
+    dg_dat_pool->releaseTempDatCellsSP(tmp_grad0_oi);
+    dg_dat_pool->releaseTempDatCellsSP(tmp_grad1_oi);
+  } else {
+    op_par_loop(fpmf_2d_grad_sp, "fpmf_2d_grad_sp", mesh->cells,
               op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(mesh->geof, -1, OP_ID, 5, DG_FP_STR, OP_READ),
               op_arg_dat(mat_free_factor_copy, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
               op_arg_dat(tmp_grad0.dat, -1, OP_ID, DG_NP, "float", OP_RW),
               op_arg_dat(tmp_grad1.dat, -1, OP_ID, DG_NP, "float", OP_RW));
+  }
   timer->endTimer("FactorPoissonMatrixFreeMultOI2D - mult grad");
 
   DGTempDat tmp_npf0 = dg_dat_pool->requestTempDatCellsSP(DG_NUM_FACES * DG_NPF);
@@ -256,6 +313,39 @@ void FactorPoissonMatrixFreeMultOI2D::mat_free_mult_sp(op_dat in, op_dat out) {
   timer->endTimer("FactorPoissonMatrixFreeMultOI2D - mult bfaces");
 
   timer->startTimer("FactorPoissonMatrixFreeMultOI2D - finish flux");
+  if(mesh->order_int == DG_ORDER) {
+    DGTempDat jump_cub = dg_dat_pool->requestTempDatCellsSP(DG_NUM_FACES * DG_CUB_SURF_2D_NP);
+    DGTempDat fluxX_cub = dg_dat_pool->requestTempDatCellsSP(DG_NUM_FACES * DG_CUB_SURF_2D_NP);
+    DGTempDat fluxY_cub = dg_dat_pool->requestTempDatCellsSP(DG_NUM_FACES * DG_CUB_SURF_2D_NP);
+    op2_gemv_sp(mesh, false, 1.0, DGConstants::CUBSURF2D_INTERP, tmp_npf0.dat, 0.0, jump_cub.dat);
+    op_par_loop(fpmf_2d_mult_flux_oi_sp_0, "fpmf_2d_mult_flux_oi_sp_0", mesh->cells,
+              op_arg_dat(mesh->nx_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(mesh->ny_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(mesh->sJ_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+              op_arg_dat(mesh->geof, -1, OP_ID, 5, DG_FP_STR, OP_READ),
+              op_arg_dat(mat_free_factor_surf_oi, -1, OP_ID, DG_NUM_FACES * DG_CUB_SURF_2D_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(jump_cub.dat,  -1, OP_ID, DG_NUM_FACES * DG_CUB_SURF_2D_NP, "float", OP_READ),
+              op_arg_dat(fluxX_cub.dat, -1, OP_ID, DG_NUM_FACES * DG_CUB_SURF_2D_NP, "float", OP_WRITE),
+              op_arg_dat(fluxY_cub.dat, -1, OP_ID, DG_NUM_FACES * DG_CUB_SURF_2D_NP, "float", OP_WRITE));
+    op2_gemv_sp(mesh, false, 1.0, DGConstants::CUBSURF2D_LIFT, fluxX_cub.dat, 1.0, tmp_grad0.dat);
+    op2_gemv_sp(mesh, false, 1.0, DGConstants::CUBSURF2D_LIFT, fluxY_cub.dat, 1.0, tmp_grad0.dat);
+    dg_dat_pool->releaseTempDatCellsSP(jump_cub);
+    dg_dat_pool->releaseTempDatCellsSP(fluxX_cub);
+    dg_dat_pool->releaseTempDatCellsSP(fluxY_cub);
+    op_par_loop(fpmf_2d_mult_flux_oi_sp_1, "fpmf_2d_mult_flux_oi_sp_1", mesh->cells,
+                op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
+                op_arg_dat(mesh->nx_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+                op_arg_dat(mesh->ny_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+                op_arg_dat(mesh->sJ_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
+                op_arg_dat(mat_free_tau_c_sp, -1, OP_ID, 3, "float", OP_READ),
+                op_arg_dat(mat_free_factor_copy, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(tmp_npf0.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW),
+                op_arg_dat(tmp_npf1.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW),
+                op_arg_dat(tmp_npf2.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW));
+    mesh->mass_sp(tmp_grad0.dat);
+    mesh->mass_sp(tmp_grad1.dat);
+    op2_gemv_sp(mesh, false, 1.0, DGConstants::EMAT, tmp_npf0.dat, 0.0, out);
+  } else {
     op_par_loop(fpmf_2d_mult_flux_sp, "fpmf_2d_mult_flux_sp", mesh->cells,
                 op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
                 op_arg_dat(mesh->nx_c, -1, OP_ID, 3, DG_FP_STR, OP_READ),
@@ -266,19 +356,21 @@ void FactorPoissonMatrixFreeMultOI2D::mat_free_mult_sp(op_dat in, op_dat out) {
                 op_arg_dat(tmp_npf0.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW),
                 op_arg_dat(tmp_npf1.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW),
                 op_arg_dat(tmp_npf2.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW));
+    
+    timer->startTimer("FactorPoissonMatrixFreeMultOI2D - mult cells MM");
+    mesh->mass_sp(tmp_grad0.dat);
+    mesh->mass_sp(tmp_grad1.dat);
+    timer->endTimer("FactorPoissonMatrixFreeMultOI2D - mult cells MM");
+
+    timer->startTimer("FactorPoissonMatrixFreeMultOI2D - mult cells Emat");
+    op2_gemv_sp(mesh, false, 1.0, DGConstants::EMAT, tmp_npf1.dat, 1.0, tmp_grad0.dat);
+    op2_gemv_sp(mesh, false, 1.0, DGConstants::EMAT, tmp_npf2.dat, 1.0, tmp_grad1.dat);
+    op2_gemv_sp(mesh, false, 1.0, DGConstants::EMAT, tmp_npf0.dat, 0.0, out);
+    timer->endTimer("FactorPoissonMatrixFreeMultOI2D - mult cells Emat");
+  }
   timer->endTimer("FactorPoissonMatrixFreeMultOI2D - finish flux");
 
   timer->startTimer("FactorPoissonMatrixFreeMultOI2D - mult cells");
-  timer->startTimer("FactorPoissonMatrixFreeMultOI2D - mult cells MM");
-  mesh->mass_sp(tmp_grad0.dat);
-  mesh->mass_sp(tmp_grad1.dat);
-  timer->endTimer("FactorPoissonMatrixFreeMultOI2D - mult cells MM");
-
-  timer->startTimer("FactorPoissonMatrixFreeMultOI2D - mult cells Emat");
-  op2_gemv_sp(mesh, false, 1.0, DGConstants::EMAT, tmp_npf1.dat, 1.0, tmp_grad0.dat);
-  op2_gemv_sp(mesh, false, 1.0, DGConstants::EMAT, tmp_npf2.dat, 1.0, tmp_grad1.dat);
-  op2_gemv_sp(mesh, false, 1.0, DGConstants::EMAT, tmp_npf0.dat, 0.0, out);
-  timer->endTimer("FactorPoissonMatrixFreeMultOI2D - mult cells Emat");
 
   timer->startTimer("FactorPoissonMatrixFreeMultOI2D - mult cells cells");
   op_par_loop(pmf_2d_mult_cells_geof_sp, "pmf_2d_mult_cells_geof_sp", mesh->cells,

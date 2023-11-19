@@ -15,9 +15,10 @@ public:
   virtual void mat_free_mult_sp(op_dat in, op_dat out) override;
   virtual void mat_free_set_factor(op_dat f);
   virtual void mat_free_set_factor_oi(op_dat f);
+  virtual void mat_free_set_factor_surf_oi(op_dat f);
 
 protected:
-  op_dat mat_free_factor, mat_free_factor_copy, mat_free_factor_oi;
+  op_dat mat_free_factor, mat_free_factor_copy, mat_free_factor_oi, mat_free_factor_surf_oi;
 
   void check_current_order();
   void calc_tau();
