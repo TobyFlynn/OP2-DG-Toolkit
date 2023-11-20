@@ -185,7 +185,7 @@ void FactorPoissonMatrixFreeMultOI2D::mat_free_mult(op_dat in, op_dat out) {
               op_arg_dat(fluxX_cub.dat, -1, OP_ID, DG_NUM_FACES * DG_CUB_SURF_2D_NP, DG_FP_STR, OP_WRITE),
               op_arg_dat(fluxY_cub.dat, -1, OP_ID, DG_NUM_FACES * DG_CUB_SURF_2D_NP, DG_FP_STR, OP_WRITE));
     op2_gemv(mesh, false, 1.0, DGConstants::CUBSURF2D_LIFT, fluxX_cub.dat, 1.0, tmp_grad0.dat);
-    op2_gemv(mesh, false, 1.0, DGConstants::CUBSURF2D_LIFT, fluxY_cub.dat, 1.0, tmp_grad0.dat);
+    op2_gemv(mesh, false, 1.0, DGConstants::CUBSURF2D_LIFT, fluxY_cub.dat, 1.0, tmp_grad1.dat);
     dg_dat_pool->releaseTempDatCells(jump_cub);
     dg_dat_pool->releaseTempDatCells(fluxX_cub);
     dg_dat_pool->releaseTempDatCells(fluxY_cub);
@@ -328,7 +328,7 @@ void FactorPoissonMatrixFreeMultOI2D::mat_free_mult_sp(op_dat in, op_dat out) {
               op_arg_dat(fluxX_cub.dat, -1, OP_ID, DG_NUM_FACES * DG_CUB_SURF_2D_NP, "float", OP_WRITE),
               op_arg_dat(fluxY_cub.dat, -1, OP_ID, DG_NUM_FACES * DG_CUB_SURF_2D_NP, "float", OP_WRITE));
     op2_gemv_sp(mesh, false, 1.0, DGConstants::CUBSURF2D_LIFT, fluxX_cub.dat, 1.0, tmp_grad0.dat);
-    op2_gemv_sp(mesh, false, 1.0, DGConstants::CUBSURF2D_LIFT, fluxY_cub.dat, 1.0, tmp_grad0.dat);
+    op2_gemv_sp(mesh, false, 1.0, DGConstants::CUBSURF2D_LIFT, fluxY_cub.dat, 1.0, tmp_grad1.dat);
     dg_dat_pool->releaseTempDatCellsSP(jump_cub);
     dg_dat_pool->releaseTempDatCellsSP(fluxX_cub);
     dg_dat_pool->releaseTempDatCellsSP(fluxY_cub);
