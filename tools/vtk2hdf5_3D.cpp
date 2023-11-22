@@ -182,6 +182,7 @@ int main(int argc, char **argv) {
   op_dat bfaceNum    = op_decl_dat(bfaces, 1, "int", bfaceNum_vec.data(), "bfaceNum");
 
   op_partition("" STRINGIFY(OP2_PARTITIONER), "KWAY", cells, face2cells, NULL);
+  op_renumber(face2cells);
 
   std::string meshfile = outdir + "mesh.h5";
   op_dump_to_hdf5(meshfile.c_str());

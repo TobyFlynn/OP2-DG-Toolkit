@@ -412,6 +412,7 @@ int main(int argc, char **argv) {
   op_dat periodicFace = op_decl_dat(faces, 1, "int", periodicFace_vec.data(), "periodicFace");
 
   op_partition("" STRINGIFY(OP2_PARTITIONER), "KWAY", cells, face2cells, NULL);
+  op_renumber(face2cells);
 
   std::string meshfile = outdir + "mesh.h5";
   op_dump_to_hdf5(meshfile.c_str());

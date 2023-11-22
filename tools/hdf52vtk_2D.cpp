@@ -148,14 +148,8 @@ int main(int argc, char **argv) {
     add_1d_vec_solution(&file, "ins_solver_pr", "pressure", numCells, vtkGrid);
     add_1d_vec_solution(&file, "ins_solver_temperature", "temperature", numCells, vtkGrid);
     add_1d_vec_solution(&file, "ins_solver_rho", "rho", numCells, vtkGrid);
-
-    add_2d_vec_solution(&file, "mp_ins_solver_vel00", "mp_ins_solver_vel01", "velocity", numCells, vtkGrid);
-    add_2d_vec_solution(&file, "mp_ins_solver_vel10", "mp_ins_solver_vel11", "velocity", numCells, vtkGrid);
-    add_2d_vec_solution(&file, "mp_ins_solver_velT0", "mp_ins_solver_velT1", "velocityT", numCells, vtkGrid);
-    add_2d_vec_solution(&file, "mp_ins_solver_velTT0", "mp_ins_solver_velTT1", "velocityTT", numCells, vtkGrid);
-    add_1d_vec_solution(&file, "mp_ins_solver_pr", "pressure", numCells, vtkGrid);
-    add_1d_vec_solution(&file, "mp_ins_solver_rho", "rho", numCells, vtkGrid);
-    add_1d_vec_solution(&file, "mp_ins_solver_mu", "mu", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "ins_solver_shock_cap_art_vis", "art_vis", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "ins_solver_mu", "mu", numCells, vtkGrid);
     add_1d_vec_solution(&file, "ls_s", "level_set", numCells, vtkGrid);
 
     add_2d_vec_solution(&file, "ins_solver_st00", "ins_solver_st01", "SurfTen", numCells, vtkGrid);
