@@ -15,8 +15,12 @@ public:
   virtual void mat_free_mult_sp(op_dat in, op_dat out);
 
 protected:
+  virtual void check_current_order();
+  virtual void calc_tau();
+
   DGMesh3D *mesh;
   op_dat mat_free_bcs, mat_free_tau_c, mat_free_tau_c_sp;
+  int current_order;
 };
 
 #endif

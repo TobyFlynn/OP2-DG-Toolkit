@@ -16,13 +16,13 @@ public:
   virtual void mat_free_mult_sp(op_dat in, op_dat out) override;
 
 protected:
+  virtual void check_current_order() override;
+  virtual void calc_tau() override;
+
   op_dat mat_free_factor, mat_free_factor_copy, mat_free_gtau, mat_free_factor_copy_sp;
 
-  void check_current_order();
-  void calc_tau();
-
 private:
-  int factor_order, current_order;
+  int factor_order;
 };
 
 #endif
