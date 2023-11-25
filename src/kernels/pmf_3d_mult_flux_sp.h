@@ -1,7 +1,7 @@
-inline void pmf_3d_mult_flux_sp(const int *order, const DG_FP *nx, const DG_FP *ny,
-                             const DG_FP *nz, const DG_FP *sJ, const float *tau,
-                             float *jump, float *avg_x, float *avg_y,
-                             float *avg_z) {
+inline void pmf_3d_mult_flux_sp(const int * __restrict__ order, const DG_FP * __restrict__ nx, const DG_FP * __restrict__ ny,
+                             const DG_FP * __restrict__ nz, const DG_FP * __restrict__ sJ, const float * __restrict__ tau,
+                             float * __restrict__ jump, float * __restrict__ avg_x, float * __restrict__ avg_y,
+                             float * __restrict__ avg_z) {
   const int dg_npf = DG_CONSTANTS_TK[(*order - 1) * DG_NUM_CONSTANTS + 1];
 
   for(int i = 0; i < 4; i++) {
