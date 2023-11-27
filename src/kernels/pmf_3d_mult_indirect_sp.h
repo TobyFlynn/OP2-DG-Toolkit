@@ -19,6 +19,35 @@ inline void pmf_3d_mult_indirect_sp(const int * __restrict__ order, const int * 
   const float _nyL = (float)ny[0];
   const float _nzL = (float)nz[0];
   const float _sJL = (float)sJ[0];
+  float _half_jump[DG_NPF], _avg_x[DG_NPF], _avg_y[DG_NPF], _avg_z[DG_NPF];
+  for(int i = 0; i < dg_npf; i++) {
+    const int fmaskL_ind = fmaskL[i];
+    const int fmaskR_ind = fmaskR_corrected[i];
+    _half_jump[i] = 0.5f * (in[0][fmaskL_ind] - in[1][fmaskR_ind]);
+  }
+  for(int i = 0; i < dg_npf; i++) {
+    const int fmaskL_ind = fmaskL[i];
+    const int fmaskR_ind = fmaskR_corrected[i];
+    _avg_x[i] = 0.5f * (in_x[0][fmaskL_ind] + in_x[1][fmaskR_ind]);
+  }
+  for(int i = 0; i < dg_npf; i++) {
+    const int fmaskL_ind = fmaskL[i];
+    const int fmaskR_ind = fmaskR_corrected[i];
+    _avg_y[i] = 0.5f * (in_y[0][fmaskL_ind] + in_y[1][fmaskR_ind]);
+  }
+  for(int i = 0; i < dg_npf; i++) {
+    const int fmaskL_ind = fmaskL[i];
+    const int fmaskR_ind = fmaskR_corrected[i];
+    _avg_z[i] = 0.5f * (in_z[0][fmaskL_ind] + in_z[1][fmaskR_ind]);
+  }
+  for(int i = 0; i < dg_npf; i++) {
+    const float _sum = _nxL * _avg_x[i] + _nyL * _avg_y[i] + _nzL * _avg_z[i];
+    pen_out[0][faceNumL * dg_npf + i] = _sJL * (_tau * _half_jump[i] - _sum);
+    out_x[0][faceNumL * dg_npf + i]   = _nxL * _sJL * -_half_jump[i];
+    out_y[0][faceNumL * dg_npf + i]   = _nyL * _sJL * -_half_jump[i];
+    out_z[0][faceNumL * dg_npf + i]   = _nzL * _sJL * -_half_jump[i];
+  }
+  /*
   for(int i = 0; i < dg_npf; i++) {
     const int fmaskL_ind = fmaskL[i];
     const int fmaskR_ind = fmaskR_corrected[i];
@@ -34,11 +63,39 @@ inline void pmf_3d_mult_indirect_sp(const int * __restrict__ order, const int * 
     out_y[0][faceNumL * dg_npf + i]   = _nyL * _sJL * -_half_jump;
     out_z[0][faceNumL * dg_npf + i]   = _nzL * _sJL * -_half_jump;
   }
-
+  */
   const float _nxR = (float)nx[1];
   const float _nyR = (float)ny[1];
   const float _nzR = (float)nz[1];
   const float _sJR = (float)sJ[1];
+  for(int i = 0; i < dg_npf; i++) {
+    const int fmaskL_ind = fmaskL_corrected[i];
+    const int fmaskR_ind = fmaskR[i];
+    _half_jump[i] = 0.5f * (in[1][fmaskR_ind] - in[0][fmaskL_ind]);
+  }
+  for(int i = 0; i < dg_npf; i++) {
+    const int fmaskL_ind = fmaskL_corrected[i];
+    const int fmaskR_ind = fmaskR[i];
+    _avg_x[i] = 0.5f * (in_x[0][fmaskL_ind] + in_x[1][fmaskR_ind]);
+  }
+  for(int i = 0; i < dg_npf; i++) {
+    const int fmaskL_ind = fmaskL_corrected[i];
+    const int fmaskR_ind = fmaskR[i];
+    _avg_y[i] = 0.5f * (in_y[0][fmaskL_ind] + in_y[1][fmaskR_ind]);
+  }
+  for(int i = 0; i < dg_npf; i++) {
+    const int fmaskL_ind = fmaskL_corrected[i];
+    const int fmaskR_ind = fmaskR[i];
+    _avg_z[i] = 0.5f * (in_z[0][fmaskL_ind] + in_z[1][fmaskR_ind]);
+  }
+  for(int i = 0; i < dg_npf; i++) {
+    const float _sum = _nxR * _avg_x[i] + _nyR * _avg_y[i] + _nzR * _avg_z[i];
+    pen_out[1][faceNumR * dg_npf + i] = _sJR * (_tau * _half_jump[i] - _sum);
+    out_x[1][faceNumR * dg_npf + i]   = _nxR * _sJR * -_half_jump[i];
+    out_y[1][faceNumR * dg_npf + i]   = _nyR * _sJR * -_half_jump[i];
+    out_z[1][faceNumR * dg_npf + i]   = _nzR * _sJR * -_half_jump[i];
+  }
+  /*
   for(int i = 0; i < dg_npf; i++) {
     const int fmaskL_ind = fmaskL_corrected[i];
     const int fmaskR_ind = fmaskR[i];
@@ -54,4 +111,5 @@ inline void pmf_3d_mult_indirect_sp(const int * __restrict__ order, const int * 
     out_y[1][faceNumR * dg_npf + i]   = _nyR * _sJR * -_half_jump;
     out_z[1][faceNumR * dg_npf + i]   = _nzR * _sJR * -_half_jump;
   }
+  */
 }
