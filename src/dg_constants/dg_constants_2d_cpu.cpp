@@ -18,6 +18,7 @@ DG_FP *dg_MM_F0_kernel;
 DG_FP *dg_MM_F1_kernel;
 DG_FP *dg_MM_F2_kernel;
 DG_FP *dg_Emat_kernel;
+DG_FP *dg_cubSurf2d_Interp_kernel;
 
 void DGConstants2D::transfer_kernel_ptrs() {
   dg_r_kernel = r_ptr;
@@ -36,6 +37,7 @@ void DGConstants2D::transfer_kernel_ptrs() {
   dg_MM_F1_kernel = mmF1_ptr;
   dg_MM_F2_kernel = mmF2_ptr;
   dg_Emat_kernel = eMat_ptr;
+  dg_cubSurf2d_Interp_kernel = cubInterpSurf_ptr;
 }
 
 void DGConstants2D::clean_up_kernel_ptrs() {

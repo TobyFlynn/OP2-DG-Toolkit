@@ -20,6 +20,7 @@ __constant__ DG_FP *dg_MM_F0_kernel;
 __constant__ DG_FP *dg_MM_F1_kernel;
 __constant__ DG_FP *dg_MM_F2_kernel;
 __constant__ DG_FP *dg_Emat_kernel;
+__constant__ DG_FP *dg_cubSurf2d_Interp_kernel;
 
 DG_FP *dg_r_d;
 DG_FP *dg_s_d;
@@ -128,6 +129,7 @@ void DGConstants2D::transfer_kernel_ptrs() {
   cutilSafeCall(cudaMemcpyToSymbol(dg_MM_F1_kernel, &dg_MM_F1_d, sizeof(dg_MM_F1_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_MM_F2_kernel, &dg_MM_F2_d, sizeof(dg_MM_F2_d)));
   cutilSafeCall(cudaMemcpyToSymbol(dg_Emat_kernel, &dg_Emat_d, sizeof(dg_Emat_d)));
+  cutilSafeCall(cudaMemcpyToSymbol(dg_cubSurf2d_Interp_kernel, &dg_cubInterpSurf_d, sizeof(dg_cubInterpSurf_d)));
 
   cutilSafeCall(cudaMalloc(&dg_Dr_sp_d, N_max * Np_max * Np_max * sizeof(float)));
   cutilSafeCall(cudaMalloc(&dg_Ds_sp_d, N_max * Np_max * Np_max * sizeof(float)));
