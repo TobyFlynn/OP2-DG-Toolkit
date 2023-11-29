@@ -1,5 +1,5 @@
-inline void avg_3d(const int *order, const int *faceNum, const int *fmaskL_corrected,
-                   const int *fmaskR_corrected, const DG_FP **in, DG_FP **out) {
+inline void avg_3d(const int * __restrict__ order, const int * __restrict__ faceNum, const int * __restrict__ fmaskL_corrected,
+                   const int * __restrict__ fmaskR_corrected, const DG_FP ** __restrict__ in, DG_FP ** __restrict__ out) {
   const int p = *order;
   const int dg_npf = DG_CONSTANTS_TK[(p - 1) * DG_NUM_CONSTANTS + 1];
   const int faceNumL = faceNum[0];

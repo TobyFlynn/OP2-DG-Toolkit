@@ -1,4 +1,4 @@
-inline void fpmf_3d_grad_sp(const int *p, const DG_FP *geof,
+inline void fpmf_3d_grad_sp(const int * __restrict__ p, const DG_FP * __restrict__ geof,
                             const float * __restrict__ fact,
                             float * __restrict__ ux, float * __restrict__ uy,
                             float *__restrict__ uz) {
@@ -14,9 +14,10 @@ inline void fpmf_3d_grad_sp(const int *p, const DG_FP *geof,
   const float sz = (float)geof[SZ_IND];
   const float tz = (float)geof[TZ_IND];
   for(int m = 0; m < dg_np; m++) {
-    const DG_FP r = ux[m];
-    const DG_FP s = uy[m];
-    const DG_FP t = uz[m];
+    const float r = ux[m];
+    const float s = uy[m];
+    const float t = uz[m];
+    const float _fact = fact[m];
     ux[m] = fact[m] * (rx * r + sx * s + tx * t);
     uy[m] = fact[m] * (ry * r + sy * s + ty * t);
     uz[m] = fact[m] * (rz * r + sz * s + tz * t);

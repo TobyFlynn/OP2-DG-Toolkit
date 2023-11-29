@@ -1,7 +1,7 @@
-inline void fpmf_3d_apply_bc(const int *p, const int *faceNum, const int *bc_type,
-                             const DG_FP *nx, const DG_FP *ny, const DG_FP *nz, const DG_FP *fscale,
-                             const DG_FP *sJ, const DG_FP *geof, const DG_FP *fact, const DG_FP *bc,
-                             DG_FP *rhs) {
+inline void fpmf_3d_apply_bc(const int * __restrict__ p, const int * __restrict__ faceNum, const int * __restrict__ bc_type,
+                             const DG_FP * __restrict__ nx, const DG_FP * __restrict__ ny, const DG_FP * __restrict__ nz, const DG_FP * __restrict__ fscale,
+                             const DG_FP * __restrict__ sJ, const DG_FP * __restrict__ geof, const DG_FP * __restrict__ fact, const DG_FP * __restrict__ bc,
+                             DG_FP * __restrict__ rhs) {
   const DG_FP *dr_mat = &dg_Dr_kernel[(*p - 1) * DG_NP * DG_NP];
   const DG_FP *ds_mat = &dg_Ds_kernel[(*p - 1) * DG_NP * DG_NP];
   const DG_FP *dt_mat = &dg_Dt_kernel[(*p - 1) * DG_NP * DG_NP];

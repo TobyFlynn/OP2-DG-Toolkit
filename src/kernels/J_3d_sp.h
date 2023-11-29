@@ -1,4 +1,4 @@
-inline void J_3d_sp(const int *p, const DG_FP *geof, const float *x, float *y) {
+inline void J_3d_sp(const int * __restrict__ p, const DG_FP * __restrict__ geof, const float * __restrict__ x, float * __restrict__ y) {
   // Get constants
   const int dg_np  = DG_CONSTANTS_TK[(*p - 1) * DG_NUM_CONSTANTS];
 

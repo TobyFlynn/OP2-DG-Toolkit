@@ -1,6 +1,6 @@
-inline void fpmf_3d_calc_tau_bfaces(const int *order, const int *faceNum,
-                                    const DG_FP *fscale, const DG_FP *factor,
-                                    DG_FP *tau) {
+inline void fpmf_3d_calc_tau_bfaces(const int * __restrict__ order, const int * __restrict__ faceNum,
+                                    const DG_FP * __restrict__ fscale, const DG_FP * __restrict__ factor,
+                                    DG_FP * __restrict__ tau) {
   const int p = order[0];
   const int dg_npf = DG_CONSTANTS_TK[(p - 1) * DG_NUM_CONSTANTS + 1];
   const int _faceNum = faceNum[0];

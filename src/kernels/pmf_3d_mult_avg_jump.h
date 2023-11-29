@@ -1,8 +1,8 @@
-inline void pmf_3d_mult_avg_jump(const int *order, const int *bc_type,
-                               const int *faceNum, const DG_FP *in,
-                               const DG_FP *in_x, const DG_FP *in_y,
-                               const DG_FP *in_z, DG_FP *jump, DG_FP *avg_x,
-                               DG_FP *avg_y, DG_FP *avg_z) {
+inline void pmf_3d_mult_avg_jump(const int * __restrict__ order, const int * __restrict__ bc_type,
+                               const int * __restrict__ faceNum, const DG_FP * __restrict__ in,
+                               const DG_FP * __restrict__ in_x, const DG_FP * __restrict__ in_y,
+                               const DG_FP * __restrict__ in_z, DG_FP * __restrict__ jump, DG_FP * __restrict__ avg_x,
+                               DG_FP * __restrict__ avg_y, DG_FP * __restrict__ avg_z) {
   if(*bc_type == 1)
     return;
 

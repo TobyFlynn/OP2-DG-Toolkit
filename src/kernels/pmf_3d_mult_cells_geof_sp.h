@@ -1,5 +1,5 @@
-inline void pmf_3d_mult_cells_geof_sp(const int *p, const DG_FP *geof, float *in_x,
-                                   float *in_y, float *in_z) {
+inline void pmf_3d_mult_cells_geof_sp(const int * __restrict__ p, const DG_FP * __restrict__ geof, float * __restrict__ in_x,
+                                   float * __restrict__ in_y, float * __restrict__ in_z) {
   const int dg_np = DG_CONSTANTS_TK[(*p - 1) * DG_NUM_CONSTANTS];
 
   const float rx = (float)geof[RX_IND];
