@@ -38,6 +38,8 @@ private:
   float *Dr_ptr_sp, *Ds_ptr_sp, *Dt_ptr_sp, *Drw_ptr_sp, *Dsw_ptr_sp, *Dtw_ptr_sp;
   float *mass_ptr_sp, *invMass_ptr_sp, *invV_ptr_sp, *v_ptr_sp, *lift_ptr_sp, *eMat_ptr_sp;
   float *order_interp_ptr_sp;
+  float *cubInterp_ptr_sp, *cubProj_ptr_sp, *cubPDrT_ptr_sp, *cubPDsT_ptr_sp, *cubPDtT_ptr_sp;
+  float *cubInterpSurf_ptr_sp, *cubLiftSurf_ptr_sp;
 };
 
 #endif

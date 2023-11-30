@@ -182,6 +182,20 @@ float* DGConstants3D::get_mat_ptr_device_sp(Constant_Matrix matrix) {
       return dg_Emat_kernel_sp;
     case INTERP_MATRIX_ARRAY:
       return dg_Interp_kernel_sp;
+    case CUB3D_INTERP:
+      return cubInterp_ptr_sp;
+    case CUB3D_PROJ:
+      return cubProj_ptr_sp;
+    case CUB3D_PDR:
+      return cubPDrT_ptr_sp;
+    case CUB3D_PDS:
+      return cubPDsT_ptr_sp;
+    case CUB3D_PDT:
+      return cubPDtT_ptr_sp;
+    case CUBSURF3D_INTERP:
+      return cubInterpSurf_ptr_sp;
+    case CUBSURF3D_LIFT:
+      return cubLiftSurf_ptr_sp;
     default:
       throw std::runtime_error("This sp constant matrix is not supported by DGConstants3D\n");
       return nullptr;
