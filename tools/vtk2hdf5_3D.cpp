@@ -53,6 +53,7 @@ int main(int argc, char **argv) {
   double *coords_data = (double *)malloc(3 * numNodes * sizeof(double));
   std::vector<int> cells_vec;
   std::vector<int> face2cell_vec;
+  std::vector<int> face2node_vec;
   std::vector<int> bface2cell_vec;
   std::vector<int> bface2node_vec;
   std::map<int,int> vtkInd2op2Ind;
@@ -119,6 +120,10 @@ int main(int argc, char **argv) {
               faceNum_vec.push_back(1);
             else
               faceNum_vec.push_back(0);
+
+            for(int pt = 0; pt < 3; pt++) {
+              face2node_vec.push_back(idList->GetId(pt));
+            }
           }
         } else {
           // Boundary edge
@@ -153,6 +158,10 @@ int main(int argc, char **argv) {
     cells_vec[i] = vtkNodeInd2op2NodeInd.at(cells_vec[i]);
   }
 
+  for(int i = 0; i < face2node_vec.size(); i++) {
+    face2node_vec[i] = vtkNodeInd2op2NodeInd.at(face2node_vec[i]);
+  }
+
   for(int i = 0; i < bface2node_vec.size(); i++) {
     bface2node_vec[i] = vtkNodeInd2op2NodeInd.at(bface2node_vec[i]);
   }
@@ -172,6 +181,7 @@ int main(int argc, char **argv) {
 
   // Maps
   op_map cell2nodes  = op_decl_map(cells, nodes, 4, cells_vec.data(), "cell2nodes");
+  op_map face2nodes  = op_decl_map(faces, nodes, 3, face2node_vec.data(), "face2nodes");
   op_map face2cells  = op_decl_map(faces, cells, 2, face2cell_vec.data(), "face2cells");
   op_map bface2nodes = op_decl_map(bfaces, nodes, 3, bface2node_vec.data(), "bface2nodes");
   op_map bface2cells = op_decl_map(bfaces, cells, 1, bface2cell_vec.data(), "bface2cells");
