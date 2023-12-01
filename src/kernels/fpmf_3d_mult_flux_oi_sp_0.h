@@ -5,7 +5,7 @@ inline void fpmf_3d_mult_flux_oi_sp_0(const DG_FP *nx, const DG_FP *ny, const DG
     const int face_ind = i/DG_CUB_SURF_3D_NP;
     const float _nx = (float)nx[face_ind];
     const float _ny = (float)ny[face_ind];
-    const float _nz = (float)ny[face_ind];
+    const float _nz = (float)nz[face_ind];
     const float _fscale = (float)sJ[face_ind] / (float)geof[J_IND];
     const float _factor = (float)factor[i];
 

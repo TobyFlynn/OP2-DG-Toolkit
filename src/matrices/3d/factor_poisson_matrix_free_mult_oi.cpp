@@ -122,7 +122,7 @@ void FactorPoissonMatrixFreeMultOI3D::mat_free_mult(op_dat in, op_dat out) {
                 op_arg_dat(mat_free_factor_oi, -1, OP_ID, DG_CUB_3D_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(tmp_grad0_oi.dat, -1, OP_ID, DG_CUB_3D_NP, DG_FP_STR, OP_RW),
                 op_arg_dat(tmp_grad1_oi.dat, -1, OP_ID, DG_CUB_3D_NP, DG_FP_STR, OP_RW),
-                op_arg_dat(tmp_grad1_oi.dat, -1, OP_ID, DG_CUB_3D_NP, DG_FP_STR, OP_RW));
+                op_arg_dat(tmp_grad2_oi.dat, -1, OP_ID, DG_CUB_3D_NP, DG_FP_STR, OP_RW));
 
     op2_gemv(mesh, false, 1.0, DGConstants::CUB3D_PROJ, tmp_grad0_oi.dat, 0.0, tmp_grad0.dat);
     op2_gemv(mesh, false, 1.0, DGConstants::CUB3D_PROJ, tmp_grad1_oi.dat, 0.0, tmp_grad1.dat);
@@ -297,7 +297,7 @@ void FactorPoissonMatrixFreeMultOI3D::mat_free_mult_sp(op_dat in, op_dat out) {
                 op_arg_dat(mat_free_factor_oi, -1, OP_ID, DG_CUB_3D_NP, DG_FP_STR, OP_READ),
                 op_arg_dat(tmp_grad0_oi.dat, -1, OP_ID, DG_CUB_3D_NP, "float", OP_RW),
                 op_arg_dat(tmp_grad1_oi.dat, -1, OP_ID, DG_CUB_3D_NP, "float", OP_RW),
-                op_arg_dat(tmp_grad1_oi.dat, -1, OP_ID, DG_CUB_3D_NP, "float", OP_RW));
+                op_arg_dat(tmp_grad2_oi.dat, -1, OP_ID, DG_CUB_3D_NP, "float", OP_RW));
 
     op2_gemv_sp(mesh, false, 1.0, DGConstants::CUB3D_PROJ, tmp_grad0_oi.dat, 0.0, tmp_grad0.dat);
     op2_gemv_sp(mesh, false, 1.0, DGConstants::CUB3D_PROJ, tmp_grad1_oi.dat, 0.0, tmp_grad1.dat);
@@ -408,13 +408,13 @@ void FactorPoissonMatrixFreeMultOI3D::mat_free_mult_sp(op_dat in, op_dat out) {
                 op_arg_dat(tmp_npf2.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW),
                 op_arg_dat(tmp_npf3.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW));
     timer->endTimer("FactorPoissonMatrixFreeMultOI3D sp" + std::to_string(mesh->order_int) + " finish flux");
-    
+
     timer->startTimer("FactorPoissonMatrixFreeMultOI3D sp" + std::to_string(mesh->order_int) + " mult cells MM");
     mesh->mass_sp(tmp_grad0.dat);
     mesh->mass_sp(tmp_grad1.dat);
     mesh->mass_sp(tmp_grad2.dat);
     timer->endTimer("FactorPoissonMatrixFreeMultOI3D sp" + std::to_string(mesh->order_int) + " mult cells MM");
-    
+
     timer->startTimer("FactorPoissonMatrixFreeMultOI3D sp" + std::to_string(mesh->order_int) + " mult cells Emat");
     op2_gemv_sp(mesh, false, 1.0, DGConstants::EMAT, tmp_npf1.dat, 1.0, tmp_grad0.dat);
     op2_gemv_sp(mesh, false, 1.0, DGConstants::EMAT, tmp_npf2.dat, 1.0, tmp_grad1.dat);

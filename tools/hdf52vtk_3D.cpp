@@ -256,6 +256,7 @@ int main(int argc, char **argv) {
     add_1d_vec_solution(&file, "ins_solver_rho", "Rho", numCells, vtkGrid);
     add_1d_vec_solution(&file, "ins_solver_mu", "Mu", numCells, vtkGrid);
     add_1d_vec_solution(&file, "ls_solver_s", "Surface", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "ins_solver_shock_cap_art_vis", "Art Vis", numCells, vtkGrid);
 
     add_3d_vec_solution(&file, "advec_u", "advec_v", "advec_w", "velocity", numCells, vtkGrid);
     add_1d_vec_solution(&file, "advec_val", "Val", numCells, vtkGrid);
