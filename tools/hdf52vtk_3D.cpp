@@ -252,6 +252,10 @@ int main(int argc, char **argv) {
                         "ins_solver_velT2", "velocityT", numCells, vtkGrid);
     add_3d_vec_solution(&file, "ins_solver_velTT0", "ins_solver_velTT1",
                         "ins_solver_velTT2", "velocityTT", numCells, vtkGrid);
+    add_3d_vec_solution(&file, "ins_solver_st00", "ins_solver_st01",
+                        "ins_solver_st02", "Surface Tension", numCells, vtkGrid);
+    add_3d_vec_solution(&file, "ins_solver_st10", "ins_solver_st11",
+                        "ins_solver_st12", "Surface Tension", numCells, vtkGrid);
     add_1d_vec_solution(&file, "ins_solver_pr", "Pressure", numCells, vtkGrid);
     add_1d_vec_solution(&file, "ins_solver_rho", "Rho", numCells, vtkGrid);
     add_1d_vec_solution(&file, "ins_solver_mu", "Mu", numCells, vtkGrid);
