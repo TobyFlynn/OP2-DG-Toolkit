@@ -25,7 +25,7 @@ void PoissonMatrix::set_glb_ind() {
   global_ind = get_global_mat_start_ind(unknowns);
   #endif
   op_arg args[] = {
-    op_arg_dat(glb_ind, -1, OP_ID, 1, DG_MAT_IND_TYPE, OP_WRITE)
+    op_arg_dat(glb_ind, -1, OP_ID, 1, DG_MAT_IND_TYPE_STR, OP_WRITE)
   };
   op_mpi_halo_exchanges_cuda(_mesh->cells, 1, args);
 
