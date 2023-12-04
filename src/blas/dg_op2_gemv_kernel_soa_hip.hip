@@ -369,6 +369,11 @@ void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, cons
                                  strideX, strideY, alpha, beta, matrix,
                                  (double *) args[0].data_d,
                                  (double *) args[1].data_d, set->size);
+    } else if(m == 23 && n == 20) {
+      templated_wrapper_dp<23,20>(t, nblocks,nthread, n*m*sizeof(double),
+                                  strideX, strideY, alpha, beta, matrix,
+                                  (double *) args[0].data_d,
+                                  (double *) args[1].data_d, set->size);
     } else {
       if(t) {
         hipblasDgemm(hipblas_handle, HIPBLAS_OP_N, HIPBLAS_OP_N, set->size, n, m,
@@ -446,6 +451,10 @@ void custom_kernel_gemv_halo_exchange(op_set set, const bool t, const int m, con
         templated_wrapper_dp<4,20>(t, nblocks,nthread, n*m*sizeof(double),
                                    strideX, strideY, alpha, beta, matrix,
                                    x_ptr, y_ptr, end - start);
+      } else if(m == 23 && n == 20) {
+        templated_wrapper_dp<23,20>(t, nblocks,nthread, n*m*sizeof(double),
+                                    strideX, strideY, alpha, beta, matrix,
+                                    x_ptr, y_ptr, end - start);
       } else {
         if(t) {
           hipblasDgemm(hipblas_handle, HIPBLAS_OP_N, HIPBLAS_OP_N, end - start, n,
