@@ -37,22 +37,26 @@ fi
 cd code_gen/gen_2d
 
 python3 $OP2_TRANSLATOR \
-  dg_tookit.cpp dg_mesh/dg_mesh_2d.cpp \
+  dg_toolkit.cpp dg_mesh/dg_mesh_2d.cpp \
   blas/dg_op2_blas.cpp dg_operators/dg_operators_2d.cpp \
   matrices/poisson_matrix.cpp \
   matrices/poisson_coarse_matrix.cpp \
   matrices/poisson_semi_matrix_free.cpp \
   matrices/poisson_matrix_free_diag.cpp \
+  matrices/poisson_matrix_free_block_diag.cpp \
   matrices/poisson_matrix_free.cpp \
   matrices/2d/poisson_coarse_matrix.cpp \
   matrices/2d/poisson_matrix_free_mult.cpp \
   matrices/2d/poisson_matrix_free_diag.cpp \
+  matrices/2d/poisson_matrix_free_block_diag.cpp \
   matrices/2d/mm_poisson_matrix_free.cpp \
   matrices/2d/factor_poisson_matrix_free_mult.cpp \
   matrices/2d/factor_poisson_matrix_free_diag.cpp \
+  matrices/2d/factor_poisson_matrix_free_block_diag.cpp \
   matrices/2d/factor_poisson_matrix_free_mult_oi.cpp \
   matrices/2d/factor_poisson_matrix_free_diag_oi.cpp \
   matrices/2d/factor_mm_poisson_matrix_free_diag.cpp \
+  matrices/2d/factor_mm_poisson_matrix_free_block_diag.cpp \
   matrices/2d/factor_poisson_coarse_matrix.cpp \
   linear_solvers/petsc_block_jacobi/petsc_block_jacobi.cpp \
   linear_solvers/pmultigrid/pmultigrid.cpp \
@@ -62,27 +66,36 @@ python3 $OP2_TRANSLATOR \
   kernels/
 
 # Add compiler definitions to every kernel
-sed -i "17i #include \"dg_compiler_defs.h\"" cuda/dg_tookit_kernels.cu
-sed -i "17i #include \"dg_compiler_defs.h\"" hip/dg_tookit_kernels.cpp
-sed -i "1i #include \"dg_compiler_defs.h\"" openmp/dg_tookit_kernels.cpp
-sed -i "1i #include \"omp.h\"" openmp/dg_tookit_kernels.cpp
-sed -i "1i #include \"dg_compiler_defs.h\"" seq/dg_tookit_seqkernels.cpp
-sed -i "18i #include \"dg_global_constants/dg_mat_constants_2d.h\"" cuda/dg_tookit_kernels.cu
-sed -i "18i #include \"dg_global_constants/dg_mat_constants_2d.h\"" hip/dg_tookit_kernels.cpp
-sed -i "2i #include \"dg_global_constants/dg_mat_constants_2d.h\"" openmp/dg_tookit_kernels.cpp
-sed -i "2i #include \"dg_global_constants/dg_mat_constants_2d.h\"" seq/dg_tookit_seqkernels.cpp
-sed -i "2i #include \"cblas.h\"" openmp/dg_tookit_kernels.cpp
-sed -i "2i #include \"cblas.h\"" seq/dg_tookit_seqkernels.cpp
+cuda_line_no_2d=$(grep -n op_cuda_reduction cuda/dg_toolkit_kernels.cu | cut -d : -f 1)
+hip_line_no_2d=$(grep -n op_hip_reduction hip/dg_toolkit_kernels.cpp | cut -d : -f 1)
+openmp_line_no_2d=$(grep -n op_lib_cpp openmp/dg_toolkit_kernels.cpp | cut -d : -f 1)
+seq_line_no_2d=$(grep -n op_lib_cpp seq/dg_toolkit_seqkernels.cpp | cut -d : -f 1)
+
+cuda_line_no_2d=$((cuda_line_no_2d+1))
+hip_line_no_2d=$((hip_line_no_2d+1))
+openmp_line_no_2d=$((openmp_line_no_2d+1))
+seq_line_no_2d=$((seq_line_no_2d+1))
+
+text_gpu_2d="#include \"dg_compiler_defs.h\"\n#include \"dg_global_constants/dg_mat_constants_2d.h\""
+text_cpu_2d="#include \"dg_compiler_defs.h\"\n#include \"dg_global_constants/dg_mat_constants_2d.h\"\n#include \"cblas.h\""
+
+sed -i "${cuda_line_no_2d}i $text_gpu_2d" cuda/dg_toolkit_kernels.cu
+sed -i "${hip_line_no_2d}i $text_gpu_2d" hip/dg_toolkit_kernels.cpp
+sed -i "${openmp_line_no_2d}i $text_cpu_2d" openmp/dg_toolkit_kernels.cpp
+sed -i "${seq_line_no_2d}i $text_cpu_2d" seq/dg_toolkit_seqkernels.cpp
+
+#sed -i "1i #include \"omp.h\"" openmp/dg_tookit_kernels.cpp
 
 cd ../gen_3d
 
 python3 $OP2_TRANSLATOR \
-  dg_tookit.cpp dg_mesh/dg_mesh_3d.cpp \
+  dg_toolkit.cpp dg_mesh/dg_mesh_3d.cpp \
   blas/dg_op2_blas.cpp dg_operators/dg_operators_3d.cpp \
   matrices/poisson_matrix.cpp \
   matrices/poisson_coarse_matrix.cpp \
   matrices/poisson_semi_matrix_free.cpp \
   matrices/poisson_matrix_free_diag.cpp \
+  matrices/poisson_matrix_free_block_diag.cpp \
   matrices/3d/poisson_matrix.cpp \
   matrices/3d/poisson_coarse_matrix.cpp \
   matrices/3d/poisson_semi_matrix_free.cpp \
@@ -107,16 +120,24 @@ python3 $OP2_TRANSLATOR \
   kernels/
 
 # Add compiler definitions to every kernel
-sed -i "16i #include \"dg_compiler_defs.h\"" cuda/dg_tookit_kernels.cu
-sed -i "16i #include \"dg_compiler_defs.h\"" hip/dg_tookit_kernels.cpp
-sed -i "1i #include \"dg_compiler_defs.h\"" openmp/dg_tookit_kernels.cpp
-sed -i "1i #include \"omp.h\"" openmp/dg_tookit_kernels.cpp
-sed -i "1i #include \"dg_compiler_defs.h\"" seq/dg_tookit_seqkernels.cpp
-sed -i "17i #include \"dg_global_constants/dg_mat_constants_3d.h\"" cuda/dg_tookit_kernels.cu
-sed -i "17i #include \"dg_global_constants/dg_mat_constants_3d.h\"" hip/dg_tookit_kernels.cpp
-sed -i "2i #include \"dg_global_constants/dg_mat_constants_3d.h\"" openmp/dg_tookit_kernels.cpp
-sed -i "2i #include \"dg_global_constants/dg_mat_constants_3d.h\"" seq/dg_tookit_seqkernels.cpp
-sed -i "2i #include \"cblas.h\"" openmp/dg_tookit_kernels.cpp
-sed -i "2i #include \"cblas.h\"" seq/dg_tookit_seqkernels.cpp
+cuda_line_no_3d=$(grep -n op_cuda_reduction cuda/dg_toolkit_kernels.cu | cut -d : -f 1)
+hip_line_no_3d=$(grep -n op_hip_reduction hip/dg_toolkit_kernels.cpp | cut -d : -f 1)
+openmp_line_no_3d=$(grep -n op_lib_cpp openmp/dg_toolkit_kernels.cpp | cut -d : -f 1)
+seq_line_no_3d=$(grep -n op_lib_cpp seq/dg_toolkit_seqkernels.cpp | cut -d : -f 1)
+
+cuda_line_no_3d=$((cuda_line_no_3d+1))
+hip_line_no_3d=$((hip_line_no_3d+1))
+openmp_line_no_3d=$((openmp_line_no_3d+1))
+seq_line_no_3d=$((seq_line_no_3d+1))
+
+text_gpu_3d="#include \"dg_compiler_defs.h\"\n#include \"dg_global_constants/dg_mat_constants_3d.h\""
+text_cpu_3d="#include \"dg_compiler_defs.h\"\n#include \"dg_global_constants/dg_mat_constants_3d.h\"\n#include \"cblas.h\""
+
+sed -i "${cuda_line_no_3d}i $text_gpu_3d" cuda/dg_toolkit_kernels.cu
+sed -i "${hip_line_no_3d}i $text_gpu_3d" hip/dg_toolkit_kernels.cpp
+sed -i "${openmp_line_no_3d}i $text_cpu_3d" openmp/dg_toolkit_kernels.cpp
+sed -i "${seq_line_no_3d}i $text_cpu_3d" seq/dg_toolkit_seqkernels.cpp
+
+#sed -i "1i #include \"omp.h\"" openmp/dg_tookit_kernels.cpp
 
 cd ../..

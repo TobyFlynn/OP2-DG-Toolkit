@@ -186,6 +186,7 @@ COMMON_OBJ := blas_op/dg_op2_blas_op.o \
 	matrices_op/poisson_semi_matrix_free_op.o \
 	matrices/poisson_matrix_free.o \
 	matrices_op/poisson_matrix_free_diag_op.o \
+	matrices_op/poisson_matrix_free_block_diag_op.o \
 	config.o
 
 # MPI objects
@@ -248,13 +249,16 @@ COMMON_2D_OBJ := dg_constants/dg_constants_2d.o \
 	matrices_op/2d/poisson_coarse_matrix_op.o \
 	matrices_op/2d/poisson_matrix_free_mult_op.o \
 	matrices_op/2d/poisson_matrix_free_diag_op.o \
+	matrices_op/2d/poisson_matrix_free_block_diag_op.o \
 	matrices/2d/poisson_matrix_free.o \
 	matrices_op/2d/mm_poisson_matrix_free_op.o \
 	matrices_op/2d/factor_poisson_matrix_free_mult_op.o \
 	matrices_op/2d/factor_poisson_matrix_free_diag_op.o \
+	matrices_op/2d/factor_poisson_matrix_free_block_diag_op.o \
 	matrices_op/2d/factor_poisson_matrix_free_mult_oi_op.o \
 	matrices_op/2d/factor_poisson_matrix_free_diag_oi_op.o \
 	matrices_op/2d/factor_mm_poisson_matrix_free_diag_op.o \
+	matrices_op/2d/factor_mm_poisson_matrix_free_block_diag_op.o \
 	matrices_op/2d/factor_poisson_coarse_matrix_op.o \
 	$(COMMON_OBJ) \
 	$(LINEAR_SOLVER_OBJ)
@@ -344,7 +348,7 @@ $(2D_CUDA_OBJ_DIR)/%.o: $(CODE_GEN_DIR)/gen_2d/%.cu | $(2D_CUDA_OBJ_DIR)
 	$(NVCC) $(NVCC_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(CUDA_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 # Generic rules 2D HIP
-$(2D_HIP_OBJ_DIR)/hip/dg_tookit_kernels.o: $(CODE_GEN_DIR)/gen_2d/hip/dg_tookit_kernels.cpp | $(2D_HIP_OBJ_DIR)
+$(2D_HIP_OBJ_DIR)/hip/dg_toolkit_kernels.o: $(CODE_GEN_DIR)/gen_2d/hip/dg_toolkit_kernels.cpp | $(2D_HIP_OBJ_DIR)
 	$(HIPCC) $(HIP_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(HIP_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 $(2D_HIP_OBJ_DIR)/%.o: $(CODE_GEN_DIR)/gen_2d/%.cpp | $(2D_HIP_OBJ_DIR)
@@ -369,7 +373,7 @@ $(2D_MPI_CUDA_OBJ_DIR)/%.o: $(CODE_GEN_DIR)/gen_2d/%.cu | $(2D_MPI_CUDA_OBJ_DIR)
 	$(NVCC) $(NVCC_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(CUDA_COMPILE_DEFS) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 # Generic rules 2D MPI HIP
-$(2D_MPI_HIP_OBJ_DIR)/hip/dg_tookit_kernels.o: $(CODE_GEN_DIR)/gen_2d/hip/dg_tookit_kernels.cpp | $(2D_MPI_HIP_OBJ_DIR)
+$(2D_MPI_HIP_OBJ_DIR)/hip/dg_toolkit_kernels.o: $(CODE_GEN_DIR)/gen_2d/hip/dg_toolkit_kernels.cpp | $(2D_MPI_HIP_OBJ_DIR)
 	$(HIPCC) $(HIP_FLAGS) $(COMMON_COMPILE_DEFS_2D) $(HIP_COMPILE_DEFS) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 $(2D_MPI_HIP_OBJ_DIR)/%.o: $(CODE_GEN_DIR)/gen_2d/%.cpp | $(2D_MPI_HIP_OBJ_DIR)
@@ -394,7 +398,7 @@ $(3D_CUDA_OBJ_DIR)/%.o: $(CODE_GEN_DIR)/gen_3d/%.cu | $(3D_CUDA_OBJ_DIR)
 	$(NVCC) $(NVCC_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(CUDA_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 # Generic rules 3D HIP
-$(3D_HIP_OBJ_DIR)/hip/dg_tookit_kernels.o: $(CODE_GEN_DIR)/gen_3d/hip/dg_tookit_kernels.cpp | $(3D_HIP_OBJ_DIR)
+$(3D_HIP_OBJ_DIR)/hip/dg_toolkit_kernels.o: $(CODE_GEN_DIR)/gen_3d/hip/dg_toolkit_kernels.cpp | $(3D_HIP_OBJ_DIR)
 	$(HIPCC) $(HIP_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(HIP_COMPILE_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 $(3D_HIP_OBJ_DIR)/%.o: $(CODE_GEN_DIR)/gen_3d/%.cpp | $(3D_HIP_OBJ_DIR)
@@ -419,7 +423,7 @@ $(3D_MPI_CUDA_OBJ_DIR)/%.o: $(CODE_GEN_DIR)/gen_3d/%.cu | $(3D_MPI_CUDA_OBJ_DIR)
 	$(NVCC) $(NVCC_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(CUDA_COMPILE_DEFS) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 # Generic rules 3D MPI HIP
-$(3D_MPI_HIP_OBJ_DIR)/hip/dg_tookit_kernels.o: $(CODE_GEN_DIR)/gen_3d/hip/dg_tookit_kernels.cpp | $(3D_MPI_HIP_OBJ_DIR)
+$(3D_MPI_HIP_OBJ_DIR)/hip/dg_toolkit_kernels.o: $(CODE_GEN_DIR)/gen_3d/hip/dg_toolkit_kernels.cpp | $(3D_MPI_HIP_OBJ_DIR)
 	$(HIPCC) $(HIP_FLAGS) $(COMMON_COMPILE_DEFS_3D) $(HIP_COMPILE_DEFS) $(MPI_COMPILER_DEFS) $(OP2_DG_TOOLKIT_INC) -c $< -o $@
 
 $(3D_MPI_HIP_OBJ_DIR)/%.o: $(CODE_GEN_DIR)/gen_3d/%.cpp | $(3D_MPI_HIP_OBJ_DIR)
@@ -432,7 +436,7 @@ $(3D_MPI_HIP_OBJ_DIR)/%.o: $(CODE_GEN_DIR)/gen_3d/%.hip | $(3D_MPI_HIP_OBJ_DIR)
 2D_SEQ_OBJ := $(addprefix $(2D_SEQ_OBJ_DIR)/,\
 	$(COMMON_2D_OBJ) \
 	$(CPU_2D_OBJ) \
-	seq/dg_tookit_seqkernels.o)
+	seq/dg_toolkit_seqkernels.o)
 $(LIB)/libop2dgtoolkit_2d_seq.a: $(2D_SEQ_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -440,7 +444,7 @@ $(LIB)/libop2dgtoolkit_2d_seq.a: $(2D_SEQ_OBJ) | $(LIB)
 2D_OMP_OBJ := $(addprefix $(2D_OMP_OBJ_DIR)/,\
 	$(COMMON_2D_OBJ) \
 	$(CPU_2D_OBJ) \
-	openmp/dg_tookit_kernels.o)
+	openmp/dg_toolkit_kernels.o)
 $(LIB)/libop2dgtoolkit_2d_openmp.a: $(2D_OMP_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -448,7 +452,7 @@ $(LIB)/libop2dgtoolkit_2d_openmp.a: $(2D_OMP_OBJ) | $(LIB)
 2D_CUDA_OBJ := $(addprefix $(2D_CUDA_OBJ_DIR)/,\
 	$(COMMON_2D_OBJ) \
 	$(CUDA_2D_OBJ) \
-	cuda/dg_tookit_kernels.o)
+	cuda/dg_toolkit_kernels.o)
 $(LIB)/libop2dgtoolkit_2d_cuda.a: $(2D_CUDA_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -456,7 +460,7 @@ $(LIB)/libop2dgtoolkit_2d_cuda.a: $(2D_CUDA_OBJ) | $(LIB)
 2D_HIP_OBJ := $(addprefix $(2D_HIP_OBJ_DIR)/,\
 	$(COMMON_2D_OBJ) \
 	$(HIP_2D_OBJ) \
-	hip/dg_tookit_kernels.o)
+	hip/dg_toolkit_kernels.o)
 $(LIB)/libop2dgtoolkit_2d_hip.a: $(2D_HIP_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -465,7 +469,7 @@ $(LIB)/libop2dgtoolkit_2d_hip.a: $(2D_HIP_OBJ) | $(LIB)
 	$(COMMON_2D_OBJ) \
 	$(CPU_2D_OBJ) \
 	$(MPI_OBJ) \
-	seq/dg_tookit_seqkernels.o)
+	seq/dg_toolkit_seqkernels.o)
 $(LIB)/libop2dgtoolkit_2d_mpi.a: $(2D_MPI_SEQ_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -474,7 +478,7 @@ $(LIB)/libop2dgtoolkit_2d_mpi.a: $(2D_MPI_SEQ_OBJ) | $(LIB)
 	$(COMMON_2D_OBJ) \
 	$(CPU_2D_OBJ) \
 	$(MPI_OBJ) \
-	openmp/dg_tookit_kernels.o)
+	openmp/dg_toolkit_kernels.o)
 $(LIB)/libop2dgtoolkit_2d_mpi_openmp.a: $(2D_MPI_OMP_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -483,7 +487,7 @@ $(LIB)/libop2dgtoolkit_2d_mpi_openmp.a: $(2D_MPI_OMP_OBJ) | $(LIB)
 	$(COMMON_2D_OBJ) \
 	$(CUDA_2D_OBJ) \
 	$(MPI_OBJ) \
-	cuda/dg_tookit_kernels.o)
+	cuda/dg_toolkit_kernels.o)
 $(LIB)/libop2dgtoolkit_2d_mpi_cuda.a: $(2D_MPI_CUDA_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -492,7 +496,7 @@ $(LIB)/libop2dgtoolkit_2d_mpi_cuda.a: $(2D_MPI_CUDA_OBJ) | $(LIB)
 	$(COMMON_2D_OBJ) \
 	$(HIP_2D_OBJ) \
 	$(MPI_OBJ) \
-	hip/dg_tookit_kernels.o)
+	hip/dg_toolkit_kernels.o)
 $(LIB)/libop2dgtoolkit_2d_mpi_hip.a: $(2D_MPI_HIP_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -500,7 +504,7 @@ $(LIB)/libop2dgtoolkit_2d_mpi_hip.a: $(2D_MPI_HIP_OBJ) | $(LIB)
 3D_SEQ_OBJ := $(addprefix $(3D_SEQ_OBJ_DIR)/,\
 	$(COMMON_3D_OBJ) \
 	$(CPU_3D_OBJ) \
-	seq/dg_tookit_seqkernels.o)
+	seq/dg_toolkit_seqkernels.o)
 $(LIB)/libop2dgtoolkit_3d_seq.a: $(3D_SEQ_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -508,7 +512,7 @@ $(LIB)/libop2dgtoolkit_3d_seq.a: $(3D_SEQ_OBJ) | $(LIB)
 3D_OMP_OBJ := $(addprefix $(3D_OMP_OBJ_DIR)/,\
 	$(COMMON_3D_OBJ) \
 	$(CPU_3D_OBJ) \
-	openmp/dg_tookit_kernels.o)
+	openmp/dg_toolkit_kernels.o)
 $(LIB)/libop2dgtoolkit_3d_openmp.a: $(3D_OMP_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -516,7 +520,7 @@ $(LIB)/libop2dgtoolkit_3d_openmp.a: $(3D_OMP_OBJ) | $(LIB)
 3D_CUDA_OBJ := $(addprefix $(3D_CUDA_OBJ_DIR)/,\
 	$(COMMON_3D_OBJ) \
 	$(CUDA_3D_OBJ) \
-	cuda/dg_tookit_kernels.o)
+	cuda/dg_toolkit_kernels.o)
 $(LIB)/libop2dgtoolkit_3d_cuda.a: $(3D_CUDA_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -524,7 +528,7 @@ $(LIB)/libop2dgtoolkit_3d_cuda.a: $(3D_CUDA_OBJ) | $(LIB)
 3D_HIP_OBJ := $(addprefix $(3D_HIP_OBJ_DIR)/,\
 	$(COMMON_3D_OBJ) \
 	$(HIP_3D_OBJ) \
-	hip/dg_tookit_kernels.o)
+	hip/dg_toolkit_kernels.o)
 $(LIB)/libop2dgtoolkit_3d_hip.a: $(3D_HIP_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -533,7 +537,7 @@ $(LIB)/libop2dgtoolkit_3d_hip.a: $(3D_HIP_OBJ) | $(LIB)
 	$(COMMON_3D_OBJ) \
 	$(CPU_3D_OBJ) \
 	$(MPI_OBJ) \
-	seq/dg_tookit_seqkernels.o)
+	seq/dg_toolkit_seqkernels.o)
 $(LIB)/libop2dgtoolkit_3d_mpi.a: $(3D_MPI_SEQ_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -542,7 +546,7 @@ $(LIB)/libop2dgtoolkit_3d_mpi.a: $(3D_MPI_SEQ_OBJ) | $(LIB)
 	$(COMMON_3D_OBJ) \
 	$(CPU_3D_OBJ) \
 	$(MPI_OBJ) \
-	openmp/dg_tookit_kernels.o)
+	openmp/dg_toolkit_kernels.o)
 $(LIB)/libop2dgtoolkit_3d_mpi_openmp.a: $(3D_MPI_OMP_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -551,7 +555,7 @@ $(LIB)/libop2dgtoolkit_3d_mpi_openmp.a: $(3D_MPI_OMP_OBJ) | $(LIB)
 	$(COMMON_3D_OBJ) \
 	$(CUDA_3D_OBJ) \
 	$(MPI_OBJ) \
-	cuda/dg_tookit_kernels.o)
+	cuda/dg_toolkit_kernels.o)
 $(LIB)/libop2dgtoolkit_3d_mpi_cuda.a: $(3D_MPI_CUDA_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
@@ -560,7 +564,7 @@ $(LIB)/libop2dgtoolkit_3d_mpi_cuda.a: $(3D_MPI_CUDA_OBJ) | $(LIB)
 	$(COMMON_3D_OBJ) \
 	$(HIP_3D_OBJ) \
 	$(MPI_OBJ) \
-	hip/dg_tookit_kernels.o)
+	hip/dg_toolkit_kernels.o)
 $(LIB)/libop2dgtoolkit_3d_mpi_hip.a: $(3D_MPI_HIP_OBJ) | $(LIB)
 	$(CONFIG_AR) $@ $^
 
