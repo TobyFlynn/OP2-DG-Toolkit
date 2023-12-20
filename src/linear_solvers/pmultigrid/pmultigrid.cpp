@@ -9,7 +9,6 @@
 #define ARMA_ALLOW_FAKE_GCC
 #include <armadillo>
 
-#include "dg_matrices/3d/poisson_semi_matrix_free_3d.h"
 #include "op2_utils.h"
 #include "timing.h"
 #include "config.h"
@@ -177,12 +176,12 @@ void PMultigridPoissonSolver::init() {
 }
 
 void PMultigridPoissonSolver::set_matrix(PoissonMatrix *mat) {
-  if(dynamic_cast<PoissonSemiMatrixFree*>(mat) == nullptr && dynamic_cast<PoissonMatrixFreeDiag*>(mat) == nullptr) {
-    throw std::runtime_error("PMultigridPoissonSolver matrix should be of type PoissonSemiMatrixFree or PoissonMatrixFreeDiag\n");
+  if(dynamic_cast<PoissonMatrixFreeBlockDiag*>(mat) == nullptr && dynamic_cast<PoissonMatrixFreeDiag*>(mat) == nullptr) {
+    throw std::runtime_error("PMultigridPoissonSolver matrix should be of type PoissonMatrixFreeBlockDiag or PoissonMatrixFreeDiag\n");
   }
   matrix = mat;
-  if(dynamic_cast<PoissonSemiMatrixFree*>(mat)) {
-    smfMatrix = dynamic_cast<PoissonSemiMatrixFree*>(mat);
+  if(dynamic_cast<PoissonMatrixFreeBlockDiag*>(mat)) {
+    mfbdMatrix = dynamic_cast<PoissonMatrixFreeBlockDiag*>(mat);
     diagMat = false;
   } else {
     mfdMatrix = dynamic_cast<PoissonMatrixFreeDiag*>(mat);
@@ -201,10 +200,10 @@ void PMultigridPoissonSolver::set_matrix(PoissonMatrix *mat) {
                   op_arg_dat(mfdMatrix->diag, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
                   op_arg_dat(diag_dats[i], -1, OP_ID, DG_NP, "float", OP_WRITE));
     } else {
-      smfMatrix->calc_mat_partial();
+      mfbdMatrix->calc_mat_partial();
       op_par_loop(copy_diag, "copy_diag", mesh->cells,
                   op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
-                  op_arg_dat(smfMatrix->op1, -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
+                  op_arg_dat(mfbdMatrix->block_diag, -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_READ),
                   op_arg_dat(diag_dats[i],   -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
     }
     eig_vals.push_back(maxEigenValue());

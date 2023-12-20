@@ -50,6 +50,14 @@ PETScBlockJacobiSolver::~PETScBlockJacobiSolver() {
   KSPDestroy(&ksp);
 }
 
+void PETScBlockJacobiSolver::set_matrix(PoissonMatrix *mat) {
+  if(dynamic_cast<PoissonMatrixFreeBlockDiag*>(mat) == nullptr)
+    throw std::runtime_error("PETScBlockJacobiSolver matrix should be of type PoissonMatrixFreeBlockDiag\n");
+  
+  matrix = mat;
+  block_matrix = dynamic_cast<PoissonMatrixFreeBlockDiag*>(mat);
+}
+
 bool PETScBlockJacobiSolver::solve(op_dat rhs, op_dat ans) {
   timer->startTimer("PETScBlockJacobiSolver - solve");
   // TODO only call when necessary
@@ -66,7 +74,7 @@ bool PETScBlockJacobiSolver::solve(op_dat rhs, op_dat ans) {
   }
 
   if(bc)
-    matrix->apply_bc(rhs, bc);
+    block_matrix->apply_bc(rhs, bc);
 
   Vec b, x;
   PETScUtils::create_vec(&b, mesh->cells);
@@ -112,7 +120,7 @@ void PETScBlockJacobiSolver::calc_rhs(Vec in, Vec out) {
   DGTempDat tmp_out = dg_dat_pool->requestTempDatCells(DG_NP);
   PETScUtils::store_vec(&in, tmp_in.dat);
 
-  matrix->mult(tmp_in.dat, tmp_out.dat);
+  block_matrix->mult(tmp_in.dat, tmp_out.dat);
 
   PETScUtils::load_vec(&out, tmp_out.dat);
   dg_dat_pool->releaseTempDatCells(tmp_in);
@@ -141,12 +149,12 @@ void PETScBlockJacobiSolver::precond(Vec in, Vec out) {
 
 void PETScBlockJacobiSolver::calc_precond_mat() {
   timer->startTimer("PETScBlockJacobiSolver - calc_precond_mat");
-  const DG_FP *op1_ptr = getOP2PtrHost(matrix->op1, OP_READ);
+  const DG_FP *block_diag_ptr = getOP2PtrHost(block_matrix->block_diag, OP_READ);
   DG_FP *pre_ptr = getOP2PtrHost(pre, OP_WRITE);
 
   #pragma omp parallel for
   for(int i = 0; i < mesh->cells->size; i++) {
-    const DG_FP *in_c = op1_ptr + i * matrix->op1->dim;
+    const DG_FP *in_c = block_diag_ptr + i * block_matrix->block_diag->dim;
     DG_FP *inv_c      = pre_ptr + i * pre->dim;
 
     arma::Mat<DG_FP> a(in_c, DG_NP, DG_NP);
@@ -160,7 +168,7 @@ void PETScBlockJacobiSolver::calc_precond_mat() {
     // b = arma::inv_sympd(a);
   }
 
-  releaseOP2PtrHost(matrix->op1, OP_READ, op1_ptr);
+  releaseOP2PtrHost(block_matrix->block_diag, OP_READ, block_diag_ptr);
   releaseOP2PtrHost(pre, OP_WRITE, pre_ptr);
   timer->endTimer("PETScBlockJacobiSolver - calc_precond_mat");
 }
@@ -176,7 +184,7 @@ void PETScBlockJacobiSolver::create_shell_mat() {
   if(pMatInit)
     MatDestroy(&pMat);
 
-  MatCreateShell(PETSC_COMM_WORLD, matrix->getUnknowns(), matrix->getUnknowns(), PETSC_DETERMINE, PETSC_DETERMINE, this, &pMat);
+  MatCreateShell(PETSC_COMM_WORLD, block_matrix->getUnknowns(), block_matrix->getUnknowns(), PETSC_DETERMINE, PETSC_DETERMINE, this, &pMat);
   MatShellSetOperation(pMat, MATOP_MULT, (void(*)(void))matMultPBJS);
 
   #if defined(OP2_DG_CUDA)

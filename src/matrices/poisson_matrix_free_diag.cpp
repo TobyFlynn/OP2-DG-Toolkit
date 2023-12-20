@@ -9,16 +9,16 @@
 extern Timing *timer;
 
 bool PoissonMatrixFreeDiag::getPETScMat(Mat** mat) {
-  throw std::runtime_error("Not able to get PETSc Matrices for Semi Matrix Free class\n");
+  throw std::runtime_error("Not able to get PETSc Matrices for PoissonMatrixFreeDiag\n");
   return false;
 }
 
 void PoissonMatrixFreeDiag::calc_mat() {
-  throw std::runtime_error("calc_mat has not been implemented for this Semi Matrix Free class\n");
+  throw std::runtime_error("calc_mat has not been implemented for this PoissonMatrixFreeDiag\n");
 }
 
 void PoissonMatrixFreeDiag::mult(op_dat in, op_dat out) {
-  throw std::runtime_error("mult has not been implemented for this Semi Matrix Free class\n");
+  throw std::runtime_error("mult has not been implemented for this PoissonMatrixFreeDiag\n");
 }
 
 void PoissonMatrixFreeDiag::multJacobi(op_dat in, op_dat out) {
@@ -33,7 +33,7 @@ void PoissonMatrixFreeDiag::multJacobi(op_dat in, op_dat out) {
 }
 
 void PoissonMatrixFreeDiag::setPETScMatrix() {
-  throw std::runtime_error("Not able to set PETSc Matrices for Semi Matrix Free class\n");
+  throw std::runtime_error("Not able to set PETSc Matrices for PoissonMatrixFreeDiag\n");
 }
 
 void PoissonMatrixFreeDiag::calc_glb_ind() {

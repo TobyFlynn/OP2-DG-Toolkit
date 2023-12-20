@@ -41,10 +41,8 @@ python3 $OP2_TRANSLATOR \
   blas/dg_op2_blas.cpp dg_operators/dg_operators_2d.cpp \
   matrices/poisson_matrix.cpp \
   matrices/poisson_coarse_matrix.cpp \
-  matrices/poisson_semi_matrix_free.cpp \
   matrices/poisson_matrix_free_diag.cpp \
   matrices/poisson_matrix_free_block_diag.cpp \
-  matrices/poisson_matrix_free.cpp \
   matrices/2d/poisson_coarse_matrix.cpp \
   matrices/2d/poisson_matrix_free_mult.cpp \
   matrices/2d/poisson_matrix_free_diag.cpp \
@@ -93,25 +91,24 @@ python3 $OP2_TRANSLATOR \
   blas/dg_op2_blas.cpp dg_operators/dg_operators_3d.cpp \
   matrices/poisson_matrix.cpp \
   matrices/poisson_coarse_matrix.cpp \
-  matrices/poisson_semi_matrix_free.cpp \
   matrices/poisson_matrix_free_diag.cpp \
   matrices/poisson_matrix_free_block_diag.cpp \
   matrices/3d/poisson_matrix.cpp \
   matrices/3d/poisson_coarse_matrix.cpp \
-  matrices/3d/poisson_semi_matrix_free.cpp \
+  matrices/3d/poisson_matrix_free_block_diag.cpp \
   matrices/3d/poisson_matrix_free_mult.cpp \
   matrices/3d/poisson_matrix_free_diag.cpp \
   matrices/3d/mm_poisson_matrix.cpp \
   matrices/3d/mm_poisson_matrix_free.cpp \
   matrices/3d/factor_poisson_matrix.cpp \
   matrices/3d/factor_poisson_coarse_matrix.cpp \
-  matrices/3d/factor_poisson_semi_matrix_free.cpp \
-  matrices/3d/factor_poisson_matrix_free_diag.cpp \
   matrices/3d/factor_poisson_matrix_free_mult.cpp \
+  matrices/3d/factor_poisson_matrix_free_diag.cpp \
+  matrices/3d/factor_poisson_matrix_free_block_diag.cpp \
   matrices/3d/factor_mm_poisson_matrix.cpp \
-  matrices/3d/factor_mm_poisson_semi_matrix_free.cpp \
   matrices/3d/factor_mm_poisson_matrix_free.cpp \
   matrices/3d/factor_mm_poisson_matrix_free_diag.cpp \
+  matrices/3d/factor_mm_poisson_matrix_free_block_diag.cpp \
   linear_solvers/petsc_block_jacobi/petsc_block_jacobi.cpp \
   linear_solvers/pmultigrid/pmultigrid.cpp \
   linear_solvers/petsc_inv_mass/petsc_inv_mass.cpp \

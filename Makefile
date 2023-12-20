@@ -183,7 +183,6 @@ COMMON_OBJ := blas_op/dg_op2_blas_op.o \
 	timing.o \
 	matrices_op/poisson_matrix_op.o \
 	matrices_op/poisson_coarse_matrix_op.o \
-	matrices_op/poisson_semi_matrix_free_op.o \
 	matrices/poisson_matrix_free.o \
 	matrices_op/poisson_matrix_free_diag_op.o \
 	matrices_op/poisson_matrix_free_block_diag_op.o \
@@ -284,7 +283,7 @@ COMMON_3D_OBJ := dg_constants/dg_constants_3d.o \
 	dg_operators_op/dg_operators_3d_op.o \
 	matrices_op/3d/poisson_matrix_op.o \
 	matrices_op/3d/poisson_coarse_matrix_op.o \
-	matrices_op/3d/poisson_semi_matrix_free_op.o \
+	matrices_op/3d/poisson_matrix_free_block_diag_op.o \
 	matrices/3d/poisson_matrix_free.o \
 	matrices_op/3d/poisson_matrix_free_mult_op.o \
 	matrices_op/3d/poisson_matrix_free_diag_op.o \
@@ -292,14 +291,14 @@ COMMON_3D_OBJ := dg_constants/dg_constants_3d.o \
 	matrices_op/3d/mm_poisson_matrix_free_op.o \
 	matrices_op/3d/factor_poisson_matrix_op.o \
 	matrices_op/3d/factor_poisson_coarse_matrix_op.o \
-	matrices_op/3d/factor_poisson_semi_matrix_free_op.o \
 	matrices_op/3d/factor_poisson_matrix_free_diag_op.o \
+	matrices_op/3d/factor_poisson_matrix_free_block_diag_op.o \
 	matrices/3d/factor_poisson_matrix_free.o \
 	matrices_op/3d/factor_poisson_matrix_free_mult_op.o \
 	matrices_op/3d/factor_mm_poisson_matrix_op.o \
-	matrices_op/3d/factor_mm_poisson_semi_matrix_free_op.o \
 	matrices_op/3d/factor_mm_poisson_matrix_free_op.o \
 	matrices_op/3d/factor_mm_poisson_matrix_free_diag_op.o \
+	matrices_op/3d/factor_mm_poisson_matrix_free_block_diag_op.o \
 	$(COMMON_OBJ) \
 	$(LINEAR_SOLVER_OBJ)
 

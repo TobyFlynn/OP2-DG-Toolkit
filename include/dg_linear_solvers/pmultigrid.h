@@ -7,8 +7,8 @@
 #include "petscksp.h"
 #include "linear_solver.h"
 #include "dg_matrices/poisson_coarse_matrix.h"
-#include "dg_matrices/poisson_semi_matrix_free.h"
 #include "dg_matrices/poisson_matrix_free_diag.h"
+#include "dg_matrices/poisson_matrix_free_block_diag.h"
 
 #include <vector>
 
@@ -45,8 +45,8 @@ private:
   DGMesh *mesh;
   LinearSolver *coarseSolver;
 
-  PoissonSemiMatrixFree *smfMatrix;
   PoissonMatrixFreeDiag *mfdMatrix;
+  PoissonMatrixFreeBlockDiag *mfbdMatrix;
   PoissonCoarseMatrix *coarseMatrix;
   bool coarseMatCalcRequired;
   bool diagMat;
