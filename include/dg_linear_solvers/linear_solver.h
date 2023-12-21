@@ -15,6 +15,7 @@ public:
   void set_nullspace(bool ns);
   virtual bool solve(op_dat rhs, op_dat ans) = 0;
   virtual void init();
+  virtual void set_tol_and_iter(const double rtol, const double atol, const int maxiter) = 0;
 
 protected:
   PoissonMatrix *matrix;

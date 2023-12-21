@@ -22,6 +22,7 @@ public:
   virtual void set_matrix(PoissonMatrix *mat) override;
   void set_coarse_matrix(PoissonCoarseMatrix *c_mat);
   bool solve(op_dat rhs, op_dat ans) override;
+  virtual void set_tol_and_iter(const double rtol, const double atol, const int maxiter) override;
 
   void calc_rhs(const DG_FP *u_d, DG_FP *rhs_d);
 private:

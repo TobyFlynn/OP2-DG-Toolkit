@@ -33,8 +33,10 @@ HYPREAMGSolver::HYPREAMGSolver(DGMesh *m) {
   // Read parameters from config file
   max_pcg_iter = 100;
   config->getInt("hypre", "max_pcg_iter", max_pcg_iter);
-  pcg_tol = 1e-7;
-  config->getDouble("hypre", "pcg_tol", pcg_tol);
+  pcg_rtol = 1e-7;
+  config->getDouble("hypre", "pcg_rtol", pcg_tol);
+  pcg_atol = 1e-7;
+  config->getDouble("hypre", "pcg_atol", pcg_tol);
   pcg_print_level = 2;
   config->getInt("hypre", "pcg_print_level", pcg_print_level);
   pcg_logging = 1;
@@ -119,8 +121,8 @@ bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
 
       HYPRE_ParCSRPCGCreate(MPI_COMM_WORLD, &solver);
       HYPRE_PCGSetMaxIter(solver, max_pcg_iter);
-      HYPRE_PCGSetTol(solver, pcg_tol);
-      HYPRE_PCGSetAbsoluteTol(solver, 0.1 * pcg_tol);
+      HYPRE_PCGSetTol(solver, pcg_rtol);
+      HYPRE_PCGSetAbsoluteTol(solver, pcg_atol);
       HYPRE_PCGSetTwoNorm(solver, 1);
       HYPRE_PCGSetPrintLevel(solver, pcg_print_level);
       HYPRE_PCGSetLogging(solver, pcg_logging);
@@ -231,4 +233,10 @@ bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
   timer->endTimer("HYPREAMGSolver - Transfer vec");
 
   return true;
+}
+
+void HYPREAMGSolver::set_tol_and_iter(const double rtol, const double atol, const int maxiter) {
+  max_pcg_iter = maxiter;
+  pcg_rtol = rtol;
+  pcg_atol = atol;
 }

@@ -149,3 +149,7 @@ bool AmgXAMGSolver::solve(op_dat rhs, op_dat ans) {
 
   return true;
 }
+
+void AmgXAMGSolver::set_tol_and_iter(const double rtol, const double atol, const int maxiter) {
+  throw std::runtime_error("Cannot use set_tol_and_iter function with AMGx, use input JSON file");
+}

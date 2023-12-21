@@ -32,8 +32,6 @@ PETScPMultigrid::PETScPMultigrid(DGMesh *m) {
     r_tol = 1e-5;
     a_tol = 1e-6;
   }
-  config->getDouble("top-level-linear-solvers", "r_tol", r_tol);
-  config->getDouble("top-level-linear-solvers", "a_tol", a_tol);
   KSPSetTolerances(ksp, r_tol, a_tol, 1e5, 2.5e2);
   KSPSetInitialGuessNonzero(ksp, PETSC_TRUE);
   PC pc;
@@ -191,4 +189,8 @@ PetscErrorCode preconPPMS(PC pc, Vec x, Vec y) {
 void PETScPMultigrid::set_shell_pc(PC pc) {
   PCShellSetApply(pc, preconPPMS);
   PCShellSetContext(pc, this);
+}
+
+void PETScPMultigrid::set_tol_and_iter(const double rtol, const double atol, const int maxiter) {
+  KSPSetTolerances(ksp, rtol, atol, 1e5, maxiter);
 }

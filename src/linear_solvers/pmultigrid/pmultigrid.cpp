@@ -530,3 +530,7 @@ void PMultigridPoissonSolver::chebyshev_smoother(const int level) {
   dg_dat_pool->releaseTempDatCellsSP(tmp1);
   dg_dat_pool->releaseTempDatCellsSP(tmp2);
 }
+
+void PMultigridPoissonSolver::set_tol_and_iter(const double rtol, const double atol, const int maxiter) {
+  throw std::runtime_error("PMultigridPoissonSolver does not use set_tol_and_iter as iterations are fixed and does not run until a specified tolerance");
+}
