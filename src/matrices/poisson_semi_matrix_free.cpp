@@ -2,23 +2,22 @@
 
 #include "op_seq.h"
 
-#include <stdexcept>
-
+#include "dg_abort.h"
 #include "timing.h"
 
 extern Timing *timer;
 
 bool PoissonSemiMatrixFree::getPETScMat(Mat** mat) {
-  throw std::runtime_error("Not able to get PETSc Matrices for Semi Matrix Free class\n");
+  dg_abort("Not able to get PETSc Matrices for Semi Matrix Free class\n");
   return false;
 }
 
 void PoissonSemiMatrixFree::calc_mat() {
-  throw std::runtime_error("calc_mat has not been implemented for this Semi Matrix Free class\n");
+  dg_abort("calc_mat has not been implemented for this Semi Matrix Free class\n");
 }
 
 void PoissonSemiMatrixFree::mult(op_dat in, op_dat out) {
-  throw std::runtime_error("mult has not been implemented for this Semi Matrix Free class\n");
+  dg_abort("mult has not been implemented for this Semi Matrix Free class\n");
 }
 
 void PoissonSemiMatrixFree::multJacobi(op_dat in, op_dat out) {
@@ -33,9 +32,9 @@ void PoissonSemiMatrixFree::multJacobi(op_dat in, op_dat out) {
 }
 
 void PoissonSemiMatrixFree::setPETScMatrix() {
-  throw std::runtime_error("Not able to set PETSc Matrices for Semi Matrix Free class\n");
+  dg_abort("Not able to set PETSc Matrices for Semi Matrix Free class\n");
 }
 
 void PoissonSemiMatrixFree::calc_glb_ind() {
-  throw std::runtime_error("calc_glb_ind has not been implemented for Matrix Free class\n");
+  dg_abort("calc_glb_ind has not been implemented for Matrix Free class\n");
 }

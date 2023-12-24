@@ -198,7 +198,8 @@ COMMON_OBJ := blas_op/dg_op2_blas_op.o \
 	matrices_op/poisson_semi_matrix_free_op.o \
 	matrices/poisson_matrix_free.o \
 	matrices_op/poisson_matrix_free_diag_op.o \
-	config.o
+	config.o \
+	dg_abort.o
 
 # MPI objects
 MPI_OBJ := mpi_helper_func.o

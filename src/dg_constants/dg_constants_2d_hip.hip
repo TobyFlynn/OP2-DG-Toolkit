@@ -1,8 +1,7 @@
 #include "dg_constants/dg_constants_2d.h"
 
+#include "dg_abort.h"
 #include "op_hip_rt_support.h"
-
-#include <stdexcept>
 
 __constant__ DG_FP *dg_r_kernel;
 __constant__ DG_FP *dg_s_kernel;
@@ -180,12 +179,12 @@ DG_FP* DGConstants2D::get_mat_ptr_device(Constant_Matrix matrix) {
     case CUBSURF2D_LIFT:
       return dg_cubLiftSurf_d;
     default:
-      throw std::runtime_error("This constant matrix is not supported by DGConstants2D\n");
+      dg_abort("This constant matrix is not supported by DGConstants2D\n");
       return nullptr;
   }
 }
 
 float* DGConstants2D::get_mat_ptr_device_sp(Constant_Matrix matrix) {
-  throw std::runtime_error("get_mat_ptr_device_sp is not implemented yet for 2D\n");
+  dg_abort("get_mat_ptr_device_sp is not implemented yet for 2D\n");
   return nullptr;
 }

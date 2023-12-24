@@ -11,6 +11,7 @@
 #include "timing.h"
 #include "config.h"
 #include "dg_dat_pool.h"
+#include "dg_abort.h"
 
 #define ARMA_ALLOW_FAKE_GCC
 #include <armadillo>
@@ -65,7 +66,7 @@ bool PETScJacobiSolver::solve(op_dat rhs, op_dat ans) {
   timer->startTimer("PETScJacobiSolver - solve");
 
   if(dynamic_cast<PoissonMatrixFreeDiag*>(matrix) == nullptr) {
-    throw std::runtime_error("PETScJacobiSolver matrix should be of type PoissonMatrixFreeDiag\n");
+    dg_abort("PETScJacobiSolver matrix should be of type PoissonMatrixFreeDiag\n");
   }
   diagMat = dynamic_cast<PoissonMatrixFreeDiag*>(matrix);
 

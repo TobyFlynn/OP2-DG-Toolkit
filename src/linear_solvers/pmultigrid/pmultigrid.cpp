@@ -4,7 +4,6 @@
 
 #include <random>
 #include <string>
-#include <stdexcept>
 
 #define ARMA_ALLOW_FAKE_GCC
 #include <armadillo>
@@ -14,6 +13,7 @@
 #include "timing.h"
 #include "config.h"
 #include "dg_dat_pool.h"
+#include "dg_abort.h"
 
 #include "dg_linear_solvers/amgx_amg.h"
 #include "dg_linear_solvers/hypre_amg.h"
@@ -51,7 +51,7 @@ PMultigridPoissonSolver::PMultigridPoissonSolver(DGMesh *m) {
         contains_first_order = true;
     }
     if(!contains_first_order) {
-      throw std::runtime_error("\nParsed orders for P-Multigrid does not contain a first order solve.\n");
+      dg_abort("\nParsed orders for P-Multigrid does not contain a first order solve.\n");
     }
   } else {
     int tmp_order = DG_ORDER;
@@ -67,7 +67,7 @@ PMultigridPoissonSolver::PMultigridPoissonSolver(DGMesh *m) {
   if(config->getStr("p-multigrid", "pre_it", pre_str)) {
     pre_it = parseInts(pre_str);
     if(!(pre_it.size() == num_levels)) {
-      throw std::runtime_error("\nParsed pre smoothing iterations for P-Multigrid does not match number of levels.\n");
+      dg_abort("\nParsed pre smoothing iterations for P-Multigrid does not match number of levels.\n");
     }
   } else {
     pre_it.push_back(20);
@@ -80,7 +80,7 @@ PMultigridPoissonSolver::PMultigridPoissonSolver(DGMesh *m) {
   if(config->getStr("p-multigrid", "post_it", post_str)) {
     post_it = parseInts(post_str);
     if(!(post_it.size() == num_levels)) {
-      throw std::runtime_error("\nParsed post smoothing iterations for P-Multigrid does not match number of levels.\n");
+      dg_abort("\nParsed post smoothing iterations for P-Multigrid does not match number of levels.\n");
     }
   } else {
     post_it.push_back(10);
@@ -93,7 +93,7 @@ PMultigridPoissonSolver::PMultigridPoissonSolver(DGMesh *m) {
   if(config->getStr("p-multigrid", "cheb_orders", cheb_str)) {
     cheb_orders = parseInts(cheb_str);
     if(!(cheb_orders.size() == num_levels)) {
-      throw std::runtime_error("\nParsed Chebyshev orders for P-Multigrid does not match number of levels.\n");
+      dg_abort("\nParsed Chebyshev orders for P-Multigrid does not match number of levels.\n");
     }
   } else {
     for(int i = 0; i < num_levels; i++) {
@@ -141,14 +141,14 @@ PMultigridPoissonSolver::PMultigridPoissonSolver(DGMesh *m) {
       #if defined(INS_BUILD_WITH_AMGX) && defined(OP2_DG_CUDA)
       coarseSolver = new AmgXAMGSolver(mesh);
       #else
-      throw std::runtime_error("Not built with AmgX");
+      dg_abort("Not built with AmgX");
       #endif
       break;
     case HYPRE:
       #ifdef INS_BUILD_WITH_HYPRE
       coarseSolver = new HYPREAMGSolver(mesh);
       #else
-      throw std::runtime_error("Not built with HYPRE");
+      dg_abort("Not built with HYPRE");
       #endif
       break;
   }
@@ -178,7 +178,7 @@ void PMultigridPoissonSolver::init() {
 
 void PMultigridPoissonSolver::set_matrix(PoissonMatrix *mat) {
   if(dynamic_cast<PoissonSemiMatrixFree*>(mat) == nullptr && dynamic_cast<PoissonMatrixFreeDiag*>(mat) == nullptr) {
-    throw std::runtime_error("PMultigridPoissonSolver matrix should be of type PoissonSemiMatrixFree or PoissonMatrixFreeDiag\n");
+    dg_abort("PMultigridPoissonSolver matrix should be of type PoissonSemiMatrixFree or PoissonMatrixFreeDiag\n");
   }
   matrix = mat;
   if(dynamic_cast<PoissonSemiMatrixFree*>(mat)) {
@@ -461,7 +461,7 @@ void PMultigridPoissonSolver::smooth(const int iter, const int level) {
 }
 
 void PMultigridPoissonSolver::jacobi_smoother(const int level) {
-  throw std::runtime_error("jacobi_smoother not implemented\n");
+  dg_abort("jacobi_smoother not implemented\n");
   /*
   DGTempDat tmp_dat = dg_dat_pool->requestTempDatCells(DG_NP);
   matrix->mult(u_dat[level], tmp_dat.dat);

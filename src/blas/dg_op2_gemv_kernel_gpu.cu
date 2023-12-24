@@ -3,11 +3,10 @@
 #include "op_cuda_reduction.h"
 
 #include "dg_compiler_defs.h"
+#include "dg_abort.h"
 
 #include "kernels/non_templated_aos.h"
 #include "kernels/templated_aos.h"
-
-#include <stdexcept>
 
 cublasHandle_t cublas_handle;
 
@@ -21,7 +20,7 @@ void destroy_op2_gemv() {
 
 void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, const float alpha,
   const float beta, const DG_FP *matrix, op_dat arg4, op_dat arg5) {
-  throw std::runtime_error("SP");
+  dg_abort("SP");
 }
 
 void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
@@ -155,5 +154,5 @@ void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, cons
 void custom_kernel_gemv_halo_exchange(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
   const DG_FP beta, const DG_FP *matrix, op_dat x, op_dat y) {
 
-  throw std::runtime_error("gemv_halo_exchange not fully supported yet\n");
+  dg_abort("gemv_halo_exchange not fully supported yet\n");
 }

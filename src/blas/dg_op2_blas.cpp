@@ -3,9 +3,9 @@
 #include "op_seq.h"
 
 #include "dg_compiler_defs.h"
+#include "dg_abort.h"
 
 #include <iostream>
-#include <stdexcept>
 
 extern DGConstants *constants;
 
@@ -366,7 +366,7 @@ void op2_gemv_cub3d_np_np(DGMesh *mesh, bool transpose, const DG_FP alpha, const
   const int m = DG_CUB_3D_NP;
   const int k = DG_NP;
   #if defined(USE_OP2_KERNELS)
-  throw std::runtime_error("op2_gemv_cub3d_np_np does not have a OP2 kernel implementation");
+  dg_abort("op2_gemv_cub3d_np_np does not have a OP2 kernel implementation");
   #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
   custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, matrix, x, y);
   #else
@@ -380,7 +380,7 @@ void op2_gemv_np_cub3d_np(DGMesh *mesh, bool transpose, const DG_FP alpha, const
   const int m = DG_NP;
   const int k = DG_CUB_3D_NP;
   #if defined(USE_OP2_KERNELS)
-  throw std::runtime_error("op2_gemv_cub3d_np_np does not have a OP2 kernel implementation");
+  dg_abort("op2_gemv_cub3d_np_np does not have a OP2 kernel implementation");
   #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
   custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, matrix, x, y);
   #else
@@ -424,7 +424,7 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
       const int m = DG_CUB_SURF_3D_NP * DG_NUM_FACES;
       const int k = DG_NPF * DG_NUM_FACES;
       #if defined(USE_OP2_KERNELS)
-      throw std::runtime_error("DGConstants::CUBSURF3D_INTERP does not have a OP2 kernel implementation");
+      dg_abort("DGConstants::CUBSURF3D_INTERP does not have a OP2 kernel implementation");
       #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
       custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device(matrix), x, y);
       #else
@@ -437,7 +437,7 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
       const int m = DG_NP;
       const int k = DG_CUB_SURF_3D_NP * DG_NUM_FACES;
       #if defined(USE_OP2_KERNELS)
-      throw std::runtime_error("DGConstants::CUBSURF3D_LIFT does not have a OP2 kernel implementation");
+      dg_abort("DGConstants::CUBSURF3D_LIFT does not have a OP2 kernel implementation");
       #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
       custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device(matrix), x, y);
       #else
@@ -450,7 +450,7 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
       const int m = DG_CUB_2D_NP;
       const int k = DG_NP;
       #if defined(USE_OP2_KERNELS)
-      throw std::runtime_error("DGConstants::CUB2D_INTERP does not have a OP2 kernel implementation");
+      dg_abort("DGConstants::CUB2D_INTERP does not have a OP2 kernel implementation");
       #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
       custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device(matrix), x, y);
       #else
@@ -465,7 +465,7 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
       const int m = DG_NP;
       const int k = DG_CUB_2D_NP;
       #if defined(USE_OP2_KERNELS)
-      throw std::runtime_error("DGConstants::CUB2D_PROJ does not have a OP2 kernel implementation");
+      dg_abort("DGConstants::CUB2D_PROJ does not have a OP2 kernel implementation");
       #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
       custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device(matrix), x, y);
       #else
@@ -478,7 +478,7 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
       const int m = DG_CUB_SURF_2D_NP * DG_NUM_FACES;
       const int k = DG_NUM_FACES * DG_NPF;
       #if defined(USE_OP2_KERNELS)
-      throw std::runtime_error("DGConstants::CUBSURF2D_INTERP does not have a OP2 kernel implementation");
+      dg_abort("DGConstants::CUBSURF2D_INTERP does not have a OP2 kernel implementation");
       #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
       custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device(matrix), x, y);
       #else
@@ -491,7 +491,7 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
       const int m = DG_NP;
       const int k = DG_CUB_SURF_2D_NP * DG_NUM_FACES;
       #if defined(USE_OP2_KERNELS)
-      throw std::runtime_error("DGConstants::CUBSURF2D_LIFT does not have a OP2 kernel implementation");
+      dg_abort("DGConstants::CUBSURF2D_LIFT does not have a OP2 kernel implementation");
       #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
       custom_kernel_gemv(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device(matrix), x, y);
       #else
@@ -540,7 +540,7 @@ void op2_gemv_np_np_halo_exchange(DGMesh *mesh, bool transpose, const DG_FP alph
                     const DG_FP *matrix, op_dat x, const DG_FP beta,
                     op_dat y) {
   #if defined(USE_OP2_KERNELS) || ((defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)) && DG_DIM == 2)
-  throw std::runtime_error("gemv_halo_exchange not fully supported yet\n");
+  dg_abort("gemv_halo_exchange not fully supported yet\n");
   #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
   const int order = ((DGMesh3D *)mesh)->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
@@ -574,7 +574,7 @@ void op2_gemv_halo_exchange(DGMesh *mesh, bool transpose, const DG_FP alpha,
 void op2_gemv_lift_sp(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                    const DG_FP beta, op_dat y) {
   #if defined(USE_OP2_KERNELS)
-  throw std::runtime_error("SP");
+  dg_abort("SP");
   #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
   const int order = mesh->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
@@ -594,7 +594,7 @@ void op2_gemv_lift_sp(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
 void op2_gemv_emat_sp(DGMesh *mesh, bool transpose, const DG_FP alpha, op_dat x,
                    const DG_FP beta, op_dat y) {
   #if defined(USE_OP2_KERNELS)
-  throw std::runtime_error("SP");
+  dg_abort("SP");
   #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
   const int order = mesh->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
@@ -615,7 +615,7 @@ void op2_gemv_np_np_sp(DGMesh *mesh, bool transpose, const DG_FP alpha,
                     const float *matrix, op_dat x, const DG_FP beta,
                     op_dat y) {
   #if defined(USE_OP2_KERNELS)
-  throw std::runtime_error("SP");
+  dg_abort("SP");
   #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
   const int order = mesh->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
@@ -658,7 +658,7 @@ void op2_gemv_sp(DGMesh *mesh, bool transpose, const DG_FP alpha,
       const int m = DG_CUB_2D_NP;
       const int k = DG_NP;
       #if defined(USE_OP2_KERNELS)
-      throw std::runtime_error("DGConstants::CUB2D_INTERP does not have a OP2 kernel implementation");
+      dg_abort("DGConstants::CUB2D_INTERP does not have a OP2 kernel implementation");
       #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
       custom_kernel_gemv_sp(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device_sp(matrix), x, y);
       #else
@@ -673,7 +673,7 @@ void op2_gemv_sp(DGMesh *mesh, bool transpose, const DG_FP alpha,
       const int m = DG_NP;
       const int k = DG_CUB_2D_NP;
       #if defined(USE_OP2_KERNELS)
-      throw std::runtime_error("DGConstants::CUB2D_PROJ does not have a OP2 kernel implementation");
+      dg_abort("DGConstants::CUB2D_PROJ does not have a OP2 kernel implementation");
       #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
       custom_kernel_gemv_sp(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device_sp(matrix), x, y);
       #else
@@ -686,7 +686,7 @@ void op2_gemv_sp(DGMesh *mesh, bool transpose, const DG_FP alpha,
       const int m = DG_CUB_SURF_2D_NP * DG_NUM_FACES;
       const int k = DG_NUM_FACES * DG_NPF;
       #if defined(USE_OP2_KERNELS)
-      throw std::runtime_error("DGConstants::CUBSURF2D_INTERP does not have a OP2 kernel implementation");
+      dg_abort("DGConstants::CUBSURF2D_INTERP does not have a OP2 kernel implementation");
       #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
       custom_kernel_gemv_sp(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device_sp(matrix), x, y);
       #else
@@ -699,7 +699,7 @@ void op2_gemv_sp(DGMesh *mesh, bool transpose, const DG_FP alpha,
       const int m = DG_NP;
       const int k = DG_CUB_SURF_2D_NP * DG_NUM_FACES;
       #if defined(USE_OP2_KERNELS)
-      throw std::runtime_error("DGConstants::CUBSURF2D_LIFT does not have a OP2 kernel implementation");
+      dg_abort("DGConstants::CUBSURF2D_LIFT does not have a OP2 kernel implementation");
       #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
       custom_kernel_gemv_sp(mesh->cells, transpose, m, k, alpha, beta, constants->get_mat_ptr_device_sp(matrix), x, y);
       #else
@@ -718,7 +718,7 @@ void op2_gemv_np_np_halo_exchange_sp(DGMesh *mesh, bool transpose, const DG_FP a
                     const float *matrix, op_dat x, const DG_FP beta,
                     op_dat y) {
   #if defined(USE_OP2_KERNELS) || ((defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)) && DG_DIM == 2)
-  throw std::runtime_error("gemv_halo_exchange not fully supported yet\n");
+  dg_abort("gemv_halo_exchange not fully supported yet\n");
   #elif defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
   const int order = mesh->order_int;
   const int m = DG_CONSTANTS_TK[(order - 1) * DG_NUM_CONSTANTS];
