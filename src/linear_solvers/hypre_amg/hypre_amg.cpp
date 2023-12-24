@@ -4,10 +4,10 @@
 #include "timing.h"
 #include "config.h"
 #include "op2_utils.h"
+#include "dg_abort.h"
 
 #include <iostream>
 #include <type_traits>
-#include <stdexcept>
 #ifdef OP2_DG_CUDA
 #include <cuda_runtime.h>
 #endif
@@ -88,7 +88,7 @@ HYPREAMGSolver::~HYPREAMGSolver() {
 bool HYPREAMGSolver::solve(op_dat rhs, op_dat ans) {
   timer->startTimer("HYPREAMGSolver - solve");
   if(dynamic_cast<PoissonCoarseMatrix*>(matrix) == nullptr) {
-    throw std::runtime_error("HYPREAMGSolver matrix should be of type PoissonCoarseMatrix\n");
+    dg_abort("HYPREAMGSolver matrix should be of type PoissonCoarseMatrix\n");
   }
 
   PoissonCoarseMatrix *coarse_mat = dynamic_cast<PoissonCoarseMatrix*>(matrix);

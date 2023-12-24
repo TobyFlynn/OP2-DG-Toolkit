@@ -50,6 +50,7 @@ INIPP_INC = -I$(INIPP_DIR)
 MPI_INC = -I$(MPI_DIR)/include
 HIGHFIVE_INC = -I$(HIGHFIVE_DIR)
 HYPRE_INC = -I$(HYPRE_DIR)/include
+HDF5_INC = -I$(HDF5_DIR)/include
 
 HDF5_LIB = -L$(HDF5_DIR)/lib -lhdf5
 OP2_MPI_LIB = -L$(OP2_DIR)/lib -lop2_mpi

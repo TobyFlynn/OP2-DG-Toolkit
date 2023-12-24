@@ -2,16 +2,16 @@
 
 #include <memory>
 #include <iostream>
-#include <stdexcept>
 
 #include "dg_utils.h"
+#include "dg_abort.h"
 
 DG_FP *getOP2PtrDevice(op_dat dat, op_access acc) {
-  throw std::runtime_error("\ngetOP2PtrDevice not implemented for CPU\n");
+  dg_abort("\ngetOP2PtrDevice not implemented for CPU\n");
 }
 
 void releaseOP2PtrDevice(op_dat dat, op_access acc, const DG_FP *ptr) {
-  throw std::runtime_error("\releaseOP2PtrDevice not implemented for CPU\n");
+  dg_abort("\releaseOP2PtrDevice not implemented for CPU\n");
 }
 
 DG_FP *getOP2PtrHost(op_dat dat, op_access acc) {
@@ -53,11 +53,11 @@ void releaseOP2PtrHostSP(op_dat dat, op_access acc, const float *ptr) {
 }
 
 DG_FP *getOP2PtrDeviceHE(op_dat dat, op_access acc) {
-  throw std::runtime_error("\ngetOP2PtrDevice not implemented for CPU\n");
+  dg_abort("\ngetOP2PtrDevice not implemented for CPU\n");
 }
 
 void releaseOP2PtrDeviceHE(op_dat dat, op_access acc, const DG_FP *ptr) {
-  throw std::runtime_error("\releaseOP2PtrDevice not implemented for CPU\n");
+  dg_abort("\releaseOP2PtrDevice not implemented for CPU\n");
 }
 
 DG_FP *getOP2PtrHostHE(op_dat dat, op_access acc) {

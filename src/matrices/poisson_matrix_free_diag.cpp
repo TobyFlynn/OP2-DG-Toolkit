@@ -2,23 +2,22 @@
 
 #include "op_seq.h"
 
-#include <stdexcept>
-
+#include "dg_abort.h"
 #include "timing.h"
 
 extern Timing *timer;
 
 bool PoissonMatrixFreeDiag::getPETScMat(Mat** mat) {
-  throw std::runtime_error("Not able to get PETSc Matrices for PoissonMatrixFreeDiag\n");
+  dg_abort("Not able to get PETSc Matrices for PoissonMatrixFreeDiag\n");
   return false;
 }
 
 void PoissonMatrixFreeDiag::calc_mat() {
-  throw std::runtime_error("calc_mat has not been implemented for this PoissonMatrixFreeDiag\n");
+  dg_abort("calc_mat has not been implemented for this PoissonMatrixFreeDiag\n");
 }
 
 void PoissonMatrixFreeDiag::mult(op_dat in, op_dat out) {
-  throw std::runtime_error("mult has not been implemented for this PoissonMatrixFreeDiag\n");
+  dg_abort("mult has not been implemented for this PoissonMatrixFreeDiag\n");
 }
 
 void PoissonMatrixFreeDiag::multJacobi(op_dat in, op_dat out) {
@@ -33,9 +32,9 @@ void PoissonMatrixFreeDiag::multJacobi(op_dat in, op_dat out) {
 }
 
 void PoissonMatrixFreeDiag::setPETScMatrix() {
-  throw std::runtime_error("Not able to set PETSc Matrices for PoissonMatrixFreeDiag\n");
+  dg_abort("Not able to set PETSc Matrices for PoissonMatrixFreeDiag\n");
 }
 
 void PoissonMatrixFreeDiag::calc_glb_ind() {
-  throw std::runtime_error("calc_glb_ind has not been implemented for Matrix Free class\n");
+  dg_abort("calc_glb_ind has not been implemented for Matrix Free class\n");
 }

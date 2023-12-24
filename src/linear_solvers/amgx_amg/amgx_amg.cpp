@@ -4,10 +4,10 @@
 #include "timing.h"
 #include "config.h"
 #include "op2_utils.h"
+#include "dg_abort.h"
 
 #include <iostream>
 #include <type_traits>
-#include <stdexcept>
 #include <cuda_runtime_api.h>
 
 extern Timing *timer;
@@ -29,7 +29,7 @@ AmgXAMGSolver::AmgXAMGSolver(DGMesh *m) {
 
   std::string amgx_config_path = "";
   if(!config->getStr("amgx", "amgx_config_file", amgx_config_path))
-    throw std::runtime_error("AmgX configuration file not specified ('amgx_config_file' in ini file)");
+    dg_abort("AmgX configuration file not specified ('amgx_config_file' in ini file)");
 
   AMGX_SAFE_CALL(AMGX_initialize());
   AMGX_SAFE_CALL(AMGX_initialize_plugins());
@@ -67,7 +67,7 @@ AmgXAMGSolver::~AmgXAMGSolver() {
 bool AmgXAMGSolver::solve(op_dat rhs, op_dat ans) {
   timer->startTimer("AmgXAMGSolver - solve");
   if(dynamic_cast<PoissonCoarseMatrix*>(matrix) == nullptr) {
-    throw std::runtime_error("AmgXAMGSolver matrix should be of type PoissonCoarseMatrix\n");
+    dg_abort("AmgXAMGSolver matrix should be of type PoissonCoarseMatrix\n");
   }
 
   PoissonCoarseMatrix *coarse_mat = dynamic_cast<PoissonCoarseMatrix*>(matrix);
@@ -121,11 +121,11 @@ bool AmgXAMGSolver::solve(op_dat rhs, op_dat ans) {
     AMGX_solver_get_iterations_number(solver_amgx, &iter_num);
     switch(status) {
       case AMGX_SOLVE_FAILED:
-        throw std::runtime_error("AMGX solve failed after " + std::to_string(iter_num) + " iterations");
+        dg_abort("AMGX solve failed after " + std::to_string(iter_num) + " iterations");
       case AMGX_SOLVE_DIVERGED:
-        throw std::runtime_error("AMGX solve diverged after " + std::to_string(iter_num) + " iterations");
+        dg_abort("AMGX solve diverged after " + std::to_string(iter_num) + " iterations");
       default:
-        throw std::runtime_error("AMGX solve failed, unrecognised status");
+        dg_abort("AMGX solve failed, unrecognised status");
     }
   }
 
