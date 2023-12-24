@@ -45,35 +45,47 @@ ifeq ($(BUILD_WITH_HYPRE),1)
 	COMMON_COMPILE_DEFS_2D := $(COMMON_COMPILE_DEFS_2D) -DINS_BUILD_WITH_HYPRE
 	COMMON_COMPILE_DEFS_3D := $(COMMON_COMPILE_DEFS_3D) -DINS_BUILD_WITH_HYPRE
 endif
-TOOLS_INC := $(INC) $(VTK_INC) $(HIGHFIVE_INC) $(OP2_INC)
+TOOLS_INC := $(INC) $(VTK_INC) $(HIGHFIVE_INC) $(OP2_INC) $(HDF5_INC)
 
-all: base 2d 3d
+all: base 2d_all 3d_all
 
 base: $(LIB)/libdgtoolkit.a
 
-2d: cpu_2d cuda_2d
+2d_all: cpu_2d_all cuda_2d_all
+3d_all: cpu_3d_all cuda_3d_all
 
-3d: cpu_3d cuda_3d
+cpu_all: cpu_2d_all cpu_3d_all
+cpu_2d_all: cpu_seq_2d cpu_omp_2d cpu_mpi_seq_2d cpu_mpi_omp_2d
+cpu_3d_all: cpu_seq_3d cpu_omp_3d cpu_mpi_seq_3d cpu_mpi_omp_3d
 
-cpu: cpu_2d cpu_3d
+cpu_seq_2d: base $(LIB)/libop2dgtoolkit_2d_seq.a
+cpu_omp_2d: base $(LIB)/libop2dgtoolkit_2d_openmp.a
+cpu_mpi_seq_2d: base $(LIB)/libop2dgtoolkit_2d_mpi.a
+cpu_mpi_omp_2d: base $(LIB)/libop2dgtoolkit_2d_mpi_openmp.a
 
-cpu_2d: base $(LIB)/libop2dgtoolkit_2d_seq.a $(LIB)/libop2dgtoolkit_2d_openmp.a \
-	$(LIB)/libop2dgtoolkit_2d_mpi.a $(LIB)/libop2dgtoolkit_2d_mpi_openmp.a
+cpu_seq_3d: base $(LIB)/libop2dgtoolkit_3d_seq.a
+cpu_omp_3d: base $(LIB)/libop2dgtoolkit_3d_openmp.a
+cpu_mpi_seq_3d: base $(LIB)/libop2dgtoolkit_3d_mpi.a
+cpu_mpi_omp_3d: base $(LIB)/libop2dgtoolkit_3d_mpi_openmp.a
 
-cpu_3d: base $(LIB)/libop2dgtoolkit_3d_seq.a $(LIB)/libop2dgtoolkit_3d_openmp.a \
-	$(LIB)/libop2dgtoolkit_3d_mpi.a $(LIB)/libop2dgtoolkit_3d_mpi_openmp.a
+cuda_all: cuda_2d_all cuda_3d_all
+cuda_2d_all: cuda_2d mpi_cuda_2d
+cuda_3d_all: cuda_3d mpi_cuda_3d
 
-cuda: cuda_2d cuda_3d
+cuda_2d: base $(LIB)/libop2dgtoolkit_2d_cuda.a
+mpi_cuda_2d: base $(LIB)/libop2dgtoolkit_2d_mpi_cuda.a
 
-cuda_2d: base $(LIB)/libop2dgtoolkit_2d_cuda.a $(LIB)/libop2dgtoolkit_2d_mpi_cuda.a
+cuda_3d: base $(LIB)/libop2dgtoolkit_3d_cuda.a
+mpi_cuda_3d: base $(LIB)/libop2dgtoolkit_3d_mpi_cuda.a
 
-cuda_3d: base $(LIB)/libop2dgtoolkit_3d_cuda.a $(LIB)/libop2dgtoolkit_3d_mpi_cuda.a
+hip_all: hip_2d_all hip_3d_all
+hip_2d_all: hip_2d mpi_hip_2d
+hip_3d_all: hip_3d mpi_hip_3d
 
-hip: hip_2d hip_3d
-
-hip_2d: base $(LIB)/libop2dgtoolkit_2d_hip.a $(LIB)/libop2dgtoolkit_2d_mpi_hip.a
-
-hip_3d: base $(LIB)/libop2dgtoolkit_3d_hip.a $(LIB)/libop2dgtoolkit_3d_mpi_hip.a
+hip_2d: base $(LIB)/libop2dgtoolkit_2d_hip.a
+mpi_hip_2d: base $(LIB)/libop2dgtoolkit_2d_mpi_hip.a
+hip_3d: base $(LIB)/libop2dgtoolkit_3d_hip.a
+mpi_hip_3d: base $(LIB)/libop2dgtoolkit_3d_mpi_hip.a
 
 codegen: $(CODE_GEN_DIR)
 
