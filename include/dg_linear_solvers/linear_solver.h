@@ -10,6 +10,12 @@
 
 class LinearSolver {
 public:
+  enum Solvers {
+    AMGX_AMG, HYPRE_AMG, PETSC_AMG, PETSC_AMG_COARSE,
+    PETSC_JACOBI, PETSC_BLOCK_JACOBI, PETSC_INV_MASS,
+    PETSC_PMULTIGRID, PMULTIGRID
+  };
+
   virtual void set_matrix(PoissonMatrix *mat);
   void set_bcs(op_dat bcs);
   void set_nullspace(bool ns);
