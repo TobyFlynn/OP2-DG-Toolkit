@@ -40,7 +40,7 @@ private:
   };
 
   enum CoarseSolvers {
-    PETSC, AMGX, HYPRE
+    PETSC, AMGX, HYPRE, NONE
   };
 
   DGMesh *mesh;

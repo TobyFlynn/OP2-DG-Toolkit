@@ -106,7 +106,7 @@ PMultigridPoissonSolver::PMultigridPoissonSolver(DGMesh *m) {
   std::string smoother_str;
   smoother = CHEBYSHEV;
   if(config->getStr("p-multigrid", "smoother", smoother_str) && smoother_str == "jacobi") {
-      smoother = JACOBI;
+    smoother = JACOBI;
   }
 
   float *tmp_data = (float *)calloc(DG_NP * mesh->cells->size, sizeof(float));
@@ -121,15 +121,17 @@ PMultigridPoissonSolver::PMultigridPoissonSolver(DGMesh *m) {
   std::string coarseSolver_str;
   coarseSolver_type = PETSC;
   if(config->getStr("p-multigrid", "coarse_solver", coarseSolver_str)) {
-      if(coarseSolver_str == "petsc") {
-        coarseSolver_type = PETSC;
-      } else if(coarseSolver_str == "amgx") {
-        coarseSolver_type = AMGX;
-      } else if(coarseSolver_str == "hypre") {
-        coarseSolver_type = HYPRE;
-      } else {
-        op_printf("Unrecognised coarse solver for p-multigrid, defaulting to PETSc\n");
-      }
+    if(coarseSolver_str == "petsc") {
+      coarseSolver_type = PETSC;
+    } else if(coarseSolver_str == "amgx") {
+      coarseSolver_type = AMGX;
+    } else if(coarseSolver_str == "hypre") {
+      coarseSolver_type = HYPRE;
+    } else if(coarseSolver_str == "none") {
+      coarseSolver_type = NONE;
+    } else {
+      op_printf("Unrecognised coarse solver for p-multigrid, defaulting to PETSc\n");
+    }
   }
 
   switch(coarseSolver_type) {
@@ -172,7 +174,8 @@ PMultigridPoissonSolver::~PMultigridPoissonSolver() {
 }
 
 void PMultigridPoissonSolver::init() {
-  coarseSolver->init();
+  if(coarseSolver_type != NONE)
+    coarseSolver->init();
 }
 
 void PMultigridPoissonSolver::set_matrix(PoissonMatrix *mat) {
@@ -262,18 +265,19 @@ void PMultigridPoissonSolver::cycle(int order, const int level) {
   timer->endTimer("PMultigridPoissonSolver - Relaxation");
 
   if(order == 1) {
-    // u = A^-1 (F)
-    if(coarseMatCalcRequired) {
-      timer->startTimer("PMultigridPoissonSolver - Calc Mat");
-      coarseMatrix->calc_mat();
-      coarseMatCalcRequired = false;
-      timer->endTimer("PMultigridPoissonSolver - Calc Mat");
+    if(coarseSolver_type != NONE) {
+      // u = A^-1 (F)
+      if(coarseMatCalcRequired) {
+        timer->startTimer("PMultigridPoissonSolver - Calc Mat");
+        coarseMatrix->calc_mat();
+        coarseMatCalcRequired = false;
+        timer->endTimer("PMultigridPoissonSolver - Calc Mat");
+      }
+
+      timer->startTimer("PMultigridPoissonSolver - Direct Solve");
+      coarseSolver->solve(b_dat[level], u_dat[level]);
+      timer->endTimer("PMultigridPoissonSolver - Direct Solve");
     }
-
-    timer->startTimer("PMultigridPoissonSolver - Direct Solve");
-    coarseSolver->solve(b_dat[level], u_dat[level]);
-    timer->endTimer("PMultigridPoissonSolver - Direct Solve");
-
     // Relaxation
     // u = u + R^-1 (F - Au)
     timer->startTimer("PMultigridPoissonSolver - Relaxation");
@@ -329,13 +333,15 @@ void PMultigridPoissonSolver::cycle(int order, const int level) {
 
 void PMultigridPoissonSolver::set_coarse_matrix(PoissonCoarseMatrix *c_mat) {
   coarseMatrix = c_mat;
-  coarseSolver->set_matrix(coarseMatrix);
+  if(coarseSolver_type != NONE)
+    coarseSolver->set_matrix(coarseMatrix);
   coarseMatCalcRequired = true;
 }
 
 void PMultigridPoissonSolver::setupDirectSolve() {
   // coarseSolver->set_bcs(bc);
-  coarseSolver->set_nullspace(nullspace);
+  if(coarseSolver_type != NONE)
+    coarseSolver->set_nullspace(nullspace);
 }
 
 DG_FP PMultigridPoissonSolver::maxEigenValue() {
