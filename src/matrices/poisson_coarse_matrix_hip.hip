@@ -14,6 +14,7 @@
 #include "op2_utils.h"
 #include "dg_utils.h"
 #include "dg_global_constants/dg_global_constants_2d.h"
+#include "dg_abort.h"
 
 #include "timing.h"
 extern Timing *timer;
@@ -212,7 +213,7 @@ void PoissonCoarseMatrix::setPETScMatrix() {
 
 #ifdef INS_BUILD_WITH_HYPRE
 void PoissonCoarseMatrix::setHYPREMatrix() {
-  throw std::runtime_error("PoissonCoarseMatrix::setHYPREMatrix not implemented for HIP yet");
+  dg_abort("PoissonCoarseMatrix::setHYPREMatrix not implemented for HIP yet");
   /*
   int global_size = getUnknowns();
   int local_size = getUnknowns();

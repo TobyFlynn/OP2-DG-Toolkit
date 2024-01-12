@@ -1,8 +1,7 @@
 #include "dg_constants/dg_constants_2d.h"
 
+#include "dg_abort.h"
 #include "op_hip_rt_support.h"
-
-#include <stdexcept>
 
 __constant__ DG_FP *dg_r_kernel;
 __constant__ DG_FP *dg_s_kernel;
@@ -38,6 +37,12 @@ DG_FP *dg_MM_F0_d;
 DG_FP *dg_MM_F1_d;
 DG_FP *dg_MM_F2_d;
 DG_FP *dg_Emat_d;
+DG_FP *dg_cubInterp_d;
+DG_FP *dg_cubProj_d;
+DG_FP *dg_cubPDrT_d;
+DG_FP *dg_cubPDsT_d;
+DG_FP *dg_cubInterpSurf_d;
+DG_FP *dg_cubLiftSurf_d;
 
 void DGConstants2D::transfer_kernel_ptrs() {
   // Allocate device memory
@@ -75,6 +80,12 @@ void DGConstants2D::transfer_kernel_ptrs() {
   cutilSafeCall(hipMemcpy(dg_MM_F1_d, mmF1_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
   cutilSafeCall(hipMemcpy(dg_MM_F2_d, mmF2_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
   cutilSafeCall(hipMemcpy(dg_Emat_d, eMat_ptr, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_cubInterp_d, cubInterp_ptr, DG_NP * DG_CUB_2D_NP * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_cubProj_d, cubProj_ptr, DG_NP * DG_CUB_2D_NP * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_cubPDrT_d, cubPDrT_ptr, DG_NP * DG_CUB_2D_NP * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_cubPDsT_d, cubPDsT_ptr, DG_NP * DG_CUB_2D_NP * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_cubInterpSurf_d, cubInterpSurf_ptr, DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_2D_NP * sizeof(DG_FP), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_cubLiftSurf_d, cubLiftSurf_ptr, DG_NP * DG_NUM_FACES * DG_CUB_SURF_2D_NP * sizeof(DG_FP), hipMemcpyHostToDevice));
 
   // Set up pointers that are accessible from the device
   cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_r_kernel), &dg_r_d, sizeof(dg_r_d)));
@@ -113,6 +124,12 @@ void DGConstants2D::clean_up_kernel_ptrs() {
   hipFree(dg_MM_F1_kernel);
   hipFree(dg_MM_F2_kernel);
   hipFree(dg_Emat_d);
+  hipFree(dg_cubInterp_d);
+  hipFree(dg_cubProj_d);
+  hipFree(dg_cubPDrT_d);
+  hipFree(dg_cubPDsT_d);
+  hipFree(dg_cubInterpSurf_d);
+  hipFree(dg_cubLiftSurf_d);
 }
 
 DG_FP* DGConstants2D::get_mat_ptr_device(Constant_Matrix matrix) {
@@ -149,13 +166,25 @@ DG_FP* DGConstants2D::get_mat_ptr_device(Constant_Matrix matrix) {
       return dg_MM_F2_d;
     case EMAT:
       return dg_Emat_d;
+    case CUB2D_INTERP:
+      return dg_cubInterp_d;
+    case CUB2D_PROJ:
+      return dg_cubProj_d;
+    case CUB2D_PDR:
+      return dg_cubPDrT_d;
+    case CUB2D_PDS:
+      return dg_cubPDsT_d;
+    case CUBSURF2D_INTERP:
+      return dg_cubInterpSurf_d;
+    case CUBSURF2D_LIFT:
+      return dg_cubLiftSurf_d;
     default:
-      throw std::runtime_error("This constant matrix is not supported by DGConstants2D\n");
+      dg_abort("This constant matrix is not supported by DGConstants2D\n");
       return nullptr;
   }
 }
 
 float* DGConstants2D::get_mat_ptr_device_sp(Constant_Matrix matrix) {
-  throw std::runtime_error("get_mat_ptr_device_sp is not implemented yet for 2D\n");
+  dg_abort("get_mat_ptr_device_sp is not implemented yet for 2D\n");
   return nullptr;
 }

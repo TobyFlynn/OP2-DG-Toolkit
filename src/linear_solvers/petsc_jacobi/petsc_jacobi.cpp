@@ -11,6 +11,7 @@
 #include "timing.h"
 #include "config.h"
 #include "dg_dat_pool.h"
+#include "dg_abort.h"
 
 #define ARMA_ALLOW_FAKE_GCC
 #include <armadillo>
@@ -38,8 +39,6 @@ PETScJacobiSolver::PETScJacobiSolver(DGMesh *m) {
     r_tol = 1e-5;
     a_tol = 1e-6;
   }
-  config->getDouble("top-level-linear-solvers", "r_tol", r_tol);
-  config->getDouble("top-level-linear-solvers", "a_tol", a_tol);
   KSPSetTolerances(ksp, r_tol, a_tol, 1e5, 5e2);
   KSPSetInitialGuessNonzero(ksp, PETSC_TRUE);
   PC pc;
@@ -65,7 +64,7 @@ bool PETScJacobiSolver::solve(op_dat rhs, op_dat ans) {
   timer->startTimer("PETScJacobiSolver - solve");
 
   if(dynamic_cast<PoissonMatrixFreeDiag*>(matrix) == nullptr) {
-    throw std::runtime_error("PETScJacobiSolver matrix should be of type PoissonMatrixFreeDiag\n");
+    dg_abort("PETScJacobiSolver matrix should be of type PoissonMatrixFreeDiag\n");
   }
   diagMat = dynamic_cast<PoissonMatrixFreeDiag*>(matrix);
 
@@ -192,4 +191,8 @@ PetscErrorCode preconPJS(PC pc, Vec x, Vec y) {
 void PETScJacobiSolver::set_shell_pc(PC pc) {
   PCShellSetApply(pc, preconPJS);
   PCShellSetContext(pc, this);
+}
+
+void PETScJacobiSolver::set_tol_and_iter(const double rtol, const double atol, const int maxiter) {
+  KSPSetTolerances(ksp, rtol, atol, 1e5, maxiter);
 }

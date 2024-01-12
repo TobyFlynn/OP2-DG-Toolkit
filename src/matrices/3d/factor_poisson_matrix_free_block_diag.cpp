@@ -1,4 +1,4 @@
-#include "dg_matrices/3d/factor_poisson_semi_matrix_free_3d.h"
+#include "dg_matrices/3d/factor_poisson_matrix_free_block_diag_3d.h"
 
 #include "op_seq.h"
 
@@ -10,53 +10,53 @@
 extern DGConstants *constants;
 extern Timing *timer;
 
-FactorPoissonSemiMatrixFree3D::FactorPoissonSemiMatrixFree3D(DGMesh3D *m) : FactorPoissonMatrixFreeMult3D(m) {
+FactorPoissonMatrixFreeBlockDiag3D::FactorPoissonMatrixFreeBlockDiag3D(DGMesh3D *m) : FactorPoissonMatrixFreeMult3D(m) {
   _mesh = m;
 
-  op1 = op_decl_dat(mesh->cells, DG_NP * DG_NP, DG_FP_STR, (DG_FP *)NULL, "poisson_matrix_op1");
+  block_diag = op_decl_dat(mesh->cells, DG_NP * DG_NP, DG_FP_STR, (DG_FP *)NULL, "poisson_matrix_block_diag");
 }
 
-void FactorPoissonSemiMatrixFree3D::set_bc_types(op_dat bc_ty) {
+void FactorPoissonMatrixFreeBlockDiag3D::set_bc_types(op_dat bc_ty) {
   bc_types = bc_ty;
   mat_free_set_bc_types(bc_ty);
 }
 
-void FactorPoissonSemiMatrixFree3D::set_factor(op_dat f) {
+void FactorPoissonMatrixFreeBlockDiag3D::set_factor(op_dat f) {
   factor = f;
   mat_free_set_factor(f);
 }
 
-void FactorPoissonSemiMatrixFree3D::apply_bc(op_dat rhs, op_dat bc) {
+void FactorPoissonMatrixFreeBlockDiag3D::apply_bc(op_dat rhs, op_dat bc) {
   mat_free_apply_bc(rhs, bc);
 }
 
-void FactorPoissonSemiMatrixFree3D::mult(op_dat in, op_dat out) {
-  timer->startTimer("FactorPoissonSemiMatrixFree3D - mult");
+void FactorPoissonMatrixFreeBlockDiag3D::mult(op_dat in, op_dat out) {
+  timer->startTimer("FactorPoissonMatrixFreeBlockDiag3D - mult");
   mat_free_mult(in, out);
-  timer->endTimer("FactorPoissonSemiMatrixFree3D - mult");
+  timer->endTimer("FactorPoissonMatrixFreeBlockDiag3D - mult");
 }
 
-void FactorPoissonSemiMatrixFree3D::calc_mat_partial() {
-  timer->startTimer("FactorPoissonSemiMatrixFree3D - calc_mat_partial");
+void FactorPoissonMatrixFreeBlockDiag3D::calc_mat_partial() {
+  timer->startTimer("FactorPoissonMatrixFreeBlockDiag3D - calc_mat_partial");
   calc_op1();
   calc_op2();
   calc_opbc();
   petscMatResetRequired = true;
-  timer->endTimer("FactorPoissonSemiMatrixFree3D - calc_mat_partial");
+  timer->endTimer("FactorPoissonMatrixFreeBlockDiag3D - calc_mat_partial");
 }
 
-void FactorPoissonSemiMatrixFree3D::calc_op1() {
-  timer->startTimer("FactorPoissonSemiMatrixFree3D - calc_op1");
+void FactorPoissonMatrixFreeBlockDiag3D::calc_op1() {
+  timer->startTimer("FactorPoissonMatrixFreeBlockDiag3D - calc_op1");
   op_par_loop(factor_poisson_matrix_3d_op1, "factor_poisson_matrix_3d_op1", mesh->cells,
               op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(mesh->geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
               op_arg_dat(factor,   -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op1, -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_WRITE));
-  timer->endTimer("FactorPoissonSemiMatrixFree3D - calc_op1");
+              op_arg_dat(block_diag, -1, OP_ID, DG_NP * DG_NP, DG_FP_STR, OP_WRITE));
+  timer->endTimer("FactorPoissonMatrixFreeBlockDiag3D - calc_op1");
 }
 
-void FactorPoissonSemiMatrixFree3D::calc_op2() {
-  timer->startTimer("FactorPoissonSemiMatrixFree3D - calc_op2");
+void FactorPoissonMatrixFreeBlockDiag3D::calc_op2() {
+  timer->startTimer("FactorPoissonMatrixFreeBlockDiag3D - calc_op2");
   op_par_loop(factor_poisson_matrix_3d_op2_partial, "factor_poisson_matrix_3d_op2_partial", mesh->faces,
               op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
               op_arg_dat(mesh->faceNum, -1, OP_ID, 2, "int", OP_READ),
@@ -69,13 +69,13 @@ void FactorPoissonSemiMatrixFree3D::calc_op2() {
               op_arg_dat(mesh->sJ, -1, OP_ID, 2, DG_FP_STR, OP_READ),
               op_arg_dat(mesh->geof, -2, mesh->face2cells, 10, DG_FP_STR, OP_READ),
               op_arg_dat(factor, -2, mesh->face2cells, DG_NP, DG_FP_STR, OP_READ),
-              op_arg_dat(op1, 0, mesh->face2cells, DG_NP * DG_NP, DG_FP_STR, OP_INC),
-              op_arg_dat(op1, 1, mesh->face2cells, DG_NP * DG_NP, DG_FP_STR, OP_INC));
-  timer->endTimer("FactorPoissonSemiMatrixFree3D - calc_op2");
+              op_arg_dat(block_diag, 0, mesh->face2cells, DG_NP * DG_NP, DG_FP_STR, OP_INC),
+              op_arg_dat(block_diag, 1, mesh->face2cells, DG_NP * DG_NP, DG_FP_STR, OP_INC));
+  timer->endTimer("FactorPoissonMatrixFreeBlockDiag3D - calc_op2");
 }
 
-void FactorPoissonSemiMatrixFree3D::calc_opbc() {
-  timer->startTimer("FactorPoissonSemiMatrixFree3D - calc_opbc");
+void FactorPoissonMatrixFreeBlockDiag3D::calc_opbc() {
+  timer->startTimer("FactorPoissonMatrixFreeBlockDiag3D - calc_opbc");
   if(mesh->bface2cells) {
     op_par_loop(factor_poisson_matrix_3d_bop, "factor_poisson_matrix_3d_bop", mesh->bfaces,
                 op_arg_gbl(&mesh->order_int, 1, "int", OP_READ),
@@ -88,7 +88,7 @@ void FactorPoissonSemiMatrixFree3D::calc_opbc() {
                 op_arg_dat(mesh->bsJ, -1, OP_ID, 1, DG_FP_STR, OP_READ),
                 op_arg_dat(mesh->geof, 0, mesh->bface2cells, 10, DG_FP_STR, OP_READ),
                 op_arg_dat(factor,   0, mesh->bface2cells, DG_NP, DG_FP_STR, OP_READ),
-                op_arg_dat(op1, 0, mesh->bface2cells, DG_NP * DG_NP, DG_FP_STR, OP_INC));
+                op_arg_dat(block_diag, 0, mesh->bface2cells, DG_NP * DG_NP, DG_FP_STR, OP_INC));
   }
-  timer->endTimer("FactorPoissonSemiMatrixFree3D - calc_opbc");
+  timer->endTimer("FactorPoissonMatrixFreeBlockDiag3D - calc_opbc");
 }

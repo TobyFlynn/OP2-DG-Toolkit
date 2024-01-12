@@ -7,8 +7,8 @@
 #include "petscksp.h"
 #include "linear_solver.h"
 #include "dg_matrices/poisson_coarse_matrix.h"
-#include "dg_matrices/poisson_semi_matrix_free.h"
 #include "dg_matrices/poisson_matrix_free_diag.h"
+#include "dg_matrices/poisson_matrix_free_block_diag.h"
 
 #include <vector>
 
@@ -22,6 +22,7 @@ public:
   virtual void set_matrix(PoissonMatrix *mat) override;
   void set_coarse_matrix(PoissonCoarseMatrix *c_mat);
   bool solve(op_dat rhs, op_dat ans) override;
+  virtual void set_tol_and_iter(const double rtol, const double atol, const int maxiter) override;
 
   void calc_rhs(const DG_FP *u_d, DG_FP *rhs_d);
 private:
@@ -39,14 +40,14 @@ private:
   };
 
   enum CoarseSolvers {
-    PETSC, AMGX, HYPRE
+    PETSC, AMGX, HYPRE, NONE
   };
 
   DGMesh *mesh;
   LinearSolver *coarseSolver;
 
-  PoissonSemiMatrixFree *smfMatrix;
   PoissonMatrixFreeDiag *mfdMatrix;
+  PoissonMatrixFreeBlockDiag *mfbdMatrix;
   PoissonCoarseMatrix *coarseMatrix;
   bool coarseMatCalcRequired;
   bool diagMat;

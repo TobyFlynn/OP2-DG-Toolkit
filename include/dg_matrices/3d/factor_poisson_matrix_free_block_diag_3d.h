@@ -1,14 +1,14 @@
-#ifndef __DG_FACTOR_POISSON_SEMI_MATRIX_FREE_3D_H
-#define __DG_FACTOR_POISSON_SEMI_MATRIX_FREE_3D_H
+#ifndef __DG_FACTOR_POISSON_MATRIX_FREE_BLOCK_DIAG_3D_H
+#define __DG_FACTOR_POISSON_MATRIX_FREE_BLOCK_DIAG_3D_H
 
 #include "op_seq.h"
 #include "dg_mesh/dg_mesh_3d.h"
-#include "../poisson_semi_matrix_free.h"
+#include "../poisson_matrix_free_block_diag.h"
 #include "factor_poisson_matrix_free_mult_3d.h"
 
-class FactorPoissonSemiMatrixFree3D : public PoissonSemiMatrixFree, public FactorPoissonMatrixFreeMult3D {
+class FactorPoissonMatrixFreeBlockDiag3D : public PoissonMatrixFreeBlockDiag, public FactorPoissonMatrixFreeMult3D {
 public:
-  FactorPoissonSemiMatrixFree3D(DGMesh3D *m);
+  FactorPoissonMatrixFreeBlockDiag3D(DGMesh3D *m);
 
   virtual void set_bc_types(op_dat bc_ty) override;
   virtual void apply_bc(op_dat rhs, op_dat bc) override;

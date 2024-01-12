@@ -21,6 +21,7 @@ public:
   ~HYPREAMGSolver();
 
   virtual bool solve(op_dat rhs, op_dat ans) override;
+  virtual void set_tol_and_iter(const double rtol, const double atol, const int maxiter) override;
 
 protected:
   DGMesh *mesh;

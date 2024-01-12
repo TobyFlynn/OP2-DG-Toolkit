@@ -3,6 +3,7 @@
 #include "op_seq.h"
 
 #include "timing.h"
+#include "dg_abort.h"
 
 extern Timing *timer;
 
@@ -47,7 +48,7 @@ void PoissonMatrix::mult(op_dat in, op_dat out) {
 }
 
 void PoissonMatrix::mult_sp(op_dat in, op_dat out) {
-  throw std::runtime_error("mult_sp not implemented");
+  dg_abort("mult_sp not implemented");
 }
 
 void PoissonMatrix::multJacobi(op_dat in, op_dat out) {
@@ -62,7 +63,7 @@ void PoissonMatrix::multJacobi(op_dat in, op_dat out) {
 }
 
 void PoissonMatrix::multJacobi_sp(op_dat in, op_dat out) {
-  throw std::runtime_error("multJacobi_sp not implemented");
+  dg_abort("multJacobi_sp not implemented");
 }
 
 DG_MAT_IND_TYPE PoissonMatrix::getUnknowns() {

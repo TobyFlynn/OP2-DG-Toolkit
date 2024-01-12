@@ -133,3 +133,7 @@ bool PETScAMGSolver::solve(op_dat rhs, op_dat ans) {
 
   return converged;
 }
+
+void PETScAMGSolver::set_tol_and_iter(const double rtol, const double atol, const int maxiter) {
+  KSPSetTolerances(ksp, rtol, atol, 1e5, maxiter);
+}

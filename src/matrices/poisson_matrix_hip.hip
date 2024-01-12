@@ -9,6 +9,7 @@
 
 #include "dg_utils.h"
 #include "dg_global_constants/dg_global_constants_2d.h"
+#include "dg_abort.h"
 
 void get_num_nodes(const int N, int *Np, int *Nfp) {
   #if DG_DIM == 2
@@ -25,7 +26,7 @@ void PoissonMatrix::set_glb_ind() {
   global_ind = get_global_mat_start_ind(unknowns);
   #endif
   op_arg args[] = {
-    op_arg_dat(glb_ind, -1, OP_ID, 1, DG_MAT_IND_TYPE, OP_WRITE)
+    op_arg_dat(glb_ind, -1, OP_ID, 1, DG_MAT_IND_TYPE_STR, OP_WRITE)
   };
   op_mpi_halo_exchanges_cuda(_mesh->cells, 1, args);
 
@@ -47,7 +48,7 @@ void PoissonMatrix::set_glb_ind() {
 
 void PoissonMatrix::setPETScMatrix() {
   #ifdef DG_OP2_SOA
-  throw std::runtime_error("setPETScMatrix not implemented for SoA");
+  dg_abort("setPETScMatrix not implemented for SoA");
   #endif
   if(!petscMatInit) {
     MatCreate(PETSC_COMM_WORLD, &pMat);

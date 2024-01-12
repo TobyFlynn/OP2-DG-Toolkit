@@ -1,8 +1,7 @@
 #include "dg_constants/dg_constants_3d.h"
 
+#include "dg_abort.h"
 #include "op_hip_rt_support.h"
-
-#include <stdexcept>
 
 __constant__ DG_FP *dg_r_kernel;
 __constant__ DG_FP *dg_s_kernel;
@@ -320,7 +319,7 @@ DG_FP* DGConstants3D::get_mat_ptr_device(Constant_Matrix matrix) {
     case CUBSURF3D_LIFT:
       return dg_cubSurf3d_Lift_d;
     default:
-      throw std::runtime_error("This constant matrix is not supported by DGConstants3D\n");
+      dg_abort("This constant matrix is not supported by DGConstants3D\n");
       return nullptr;
   }
 }
@@ -368,7 +367,7 @@ float* DGConstants3D::get_mat_ptr_device_sp(Constant_Matrix matrix) {
     case CUBSURF3D_LIFT:
       return dg_cubLiftSurf_sp_d;
     default:
-      throw std::runtime_error("This sp constant matrix is not supported by DGConstants3D\n");
+      dg_abort("This sp constant matrix is not supported by DGConstants3D\n");
       return nullptr;
   }
 }

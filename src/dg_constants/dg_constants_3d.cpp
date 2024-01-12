@@ -1,7 +1,6 @@
 #include "dg_constants/dg_constants_3d.h"
 
-#include <stdexcept>
-
+#include "dg_abort.h"
 #include "dg_compiler_defs.h"
 #include "dg_utils.h"
 
@@ -272,7 +271,7 @@ void DGConstants3D::getCubatureData(const int N, arma::vec &cubr, arma::vec &cub
       break;
     }
     default:
-      throw std::runtime_error("Unsupported order of 3D cubature (" + std::to_string(N) + ")");
+      dg_abort("Unsupported order of 3D cubature (" + std::to_string(N) + ")");
   }
 }
 
@@ -473,7 +472,7 @@ DG_FP* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
     case CUBSURF3D_LIFT:
       return cubLiftSurf_ptr;
     default:
-      throw std::runtime_error("This constant matrix is not supported by DGConstants3D\n");
+      dg_abort("This constant matrix is not supported by DGConstants3D\n");
       return nullptr;
   }
 }

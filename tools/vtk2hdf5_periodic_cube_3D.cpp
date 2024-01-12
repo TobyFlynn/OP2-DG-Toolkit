@@ -2,6 +2,7 @@
 #define STRINGIFY(X) STRINGIFY2(X)
 
 #include <vtkSmartPointer.h>
+#include <vtkXMLUnstructuredGridReader.h>
 #include <vtkUnstructuredGridReader.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellIterator.h>
@@ -25,6 +26,7 @@ extern int  optind, opterr, optopt;
 static struct option options[] = {
   {"file", required_argument, 0, 0},
   {"out", required_argument, 0, 0},
+  {"xml", no_argument, 0, 0},
   {0,    0,                  0,  0}
 };
 
@@ -33,9 +35,11 @@ int main(int argc, char **argv) {
   std::string filename = "grid.vtk";
   std::string outdir = "./";
   int opt_index = 0;
+  bool xml_vtk = false;
   while(getopt_long_only(argc, argv, "", options, &opt_index) != -1) {
     if(strcmp((char*)options[opt_index].name,"file") == 0) filename = optarg;
     if(strcmp((char*)options[opt_index].name,"out") == 0) outdir = optarg;
+    if(strcmp((char*)options[opt_index].name,"xml") == 0) xml_vtk = true;
   }
 
   if(outdir.back() != '/') {
@@ -44,10 +48,17 @@ int main(int argc, char **argv) {
 
   // Read in VTK file
   vtkSmartPointer<vtkUnstructuredGrid> grid;
-  auto reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
-  reader->SetFileName (filename.c_str());
-  reader->Update();
-  grid = reader->GetOutput();
+  if(xml_vtk) {
+    auto reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+    reader->SetFileName (filename.c_str());
+    reader->Update();
+    grid = reader->GetOutput();
+  } else {
+    auto reader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
+    reader->SetFileName (filename.c_str());
+    reader->Update();
+    grid = reader->GetOutput();
+  }
 
   int numNodes = grid->GetNumberOfPoints();
 

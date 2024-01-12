@@ -1,7 +1,6 @@
 #include "dg_constants/dg_constants_2d.h"
 
-#include <stdexcept>
-
+#include "dg_abort.h"
 #include "dg_compiler_defs.h"
 #include "dg_utils.h"
 
@@ -457,7 +456,7 @@ DG_FP* DGConstants2D::get_mat_ptr(Constant_Matrix matrix) {
     case CUBSURF2D_LIFT:
       return cubLiftSurf_ptr;
     default:
-      throw std::runtime_error("This constant matrix is not supported by DGConstants2D\n");
+      dg_abort("This constant matrix is not supported by DGConstants2D\n");
       return nullptr;
   }
 }
