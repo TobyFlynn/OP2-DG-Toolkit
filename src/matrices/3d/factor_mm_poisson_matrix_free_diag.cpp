@@ -19,6 +19,7 @@ void FactorMMPoissonMatrixFreeDiag3D::set_mm_factor(op_dat f) {
 
 void FactorMMPoissonMatrixFreeDiag3D::calc_mat_partial() {
   timer->startTimer("FactorMMPoissonMatrixFreeDiag3D - calc_mat_partial");
+  check_current_order();
   calc_op1();
   calc_op2();
   calc_opbc();
