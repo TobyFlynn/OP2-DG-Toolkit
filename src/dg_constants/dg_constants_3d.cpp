@@ -358,6 +358,13 @@ void DGConstants3D::calc_interp_mats() {
   lift_ptr_sp = (float *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(float));
   eMat_ptr_sp = (float *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(float));
   order_interp_ptr_sp = (float *)calloc(N_max * N_max * Np_max * Np_max, sizeof(float));
+  cubInterp_ptr_sp = (float *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(float));
+  cubProj_ptr_sp = (float *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(float));
+  cubPDrT_ptr_sp = (float *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(float));
+  cubPDsT_ptr_sp = (float *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(float));
+  cubPDtT_ptr_sp = (float *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(float));
+  cubInterpSurf_ptr_sp = (float *)calloc(DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_3D_NP, sizeof(float));
+  cubLiftSurf_ptr_sp   = (float *)calloc(DG_NP * DG_NUM_FACES * DG_CUB_SURF_3D_NP, sizeof(float));
 
   for(int i = 0; i < N_max * Np_max * Np_max; i++) {
     Dr_ptr_sp[i] = (float)Dr_ptr[i];
@@ -379,6 +386,22 @@ void DGConstants3D::calc_interp_mats() {
 
   for(int i = 0; i < N_max * N_max * Np_max * Np_max; i++) {
     order_interp_ptr_sp[i] = (float)order_interp_ptr[i];
+  }
+
+  for(int i = 0; i < DG_NP * DG_CUB_3D_NP; i++) {
+    cubInterp_ptr_sp[i] = (float)cubInterp_ptr[i];
+    cubProj_ptr_sp[i] = (float)cubProj_ptr[i];
+    cubPDrT_ptr_sp[i] = (float)cubPDrT_ptr[i];
+    cubPDsT_ptr_sp[i] = (float)cubPDsT_ptr[i];
+    cubPDtT_ptr_sp[i] = (float)cubPDtT_ptr[i];
+  }
+
+  for(int i = 0; i < DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_3D_NP; i++) {
+    cubInterpSurf_ptr_sp[i] = (float)cubInterpSurf_ptr[i];
+  }
+
+  for(int i = 0; i < DG_NP * DG_NUM_FACES * DG_CUB_SURF_3D_NP; i++) {
+    cubLiftSurf_ptr_sp[i] = (float)cubLiftSurf_ptr[i];
   }
 
   transfer_kernel_ptrs();
@@ -498,4 +521,11 @@ DGConstants3D::~DGConstants3D() {
   free(lift_ptr_sp);
   free(eMat_ptr_sp);
   free(order_interp_ptr_sp);
+  free(cubInterp_ptr_sp);
+  free(cubProj_ptr_sp);
+  free(cubPDrT_ptr_sp);
+  free(cubPDsT_ptr_sp);
+  free(cubPDtT_ptr_sp);
+  free(cubInterpSurf_ptr_sp);
+  free(cubLiftSurf_ptr_sp);
 }

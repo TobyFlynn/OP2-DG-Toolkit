@@ -103,7 +103,9 @@ python3 $OP2_TRANSLATOR \
   matrices/3d/factor_poisson_matrix.cpp \
   matrices/3d/factor_poisson_coarse_matrix.cpp \
   matrices/3d/factor_poisson_matrix_free_mult.cpp \
+  matrices/3d/factor_poisson_matrix_free_mult_oi.cpp \
   matrices/3d/factor_poisson_matrix_free_diag.cpp \
+  matrices/3d/factor_poisson_matrix_free_diag_oi.cpp \
   matrices/3d/factor_poisson_matrix_free_block_diag.cpp \
   matrices/3d/factor_mm_poisson_matrix.cpp \
   matrices/3d/factor_mm_poisson_matrix_free.cpp \

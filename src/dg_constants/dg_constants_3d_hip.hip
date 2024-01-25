@@ -72,6 +72,13 @@ float *dg_V_sp_d;
 float *dg_Lift_sp_d;
 float *dg_Emat_sp_d;
 float *dg_Interp_sp_d;
+float *dg_cubInterp_sp_d;
+float *dg_cubProj_sp_d;
+float *dg_cubPDrT_sp_d;
+float *dg_cubPDsT_sp_d;
+float *dg_cubPDtT_sp_d;
+float *dg_cubInterpSurf_sp_d;
+float *dg_cubLiftSurf_sp_d;
 
 void DGConstants3D::transfer_kernel_ptrs() {
   // Allocate device memory
@@ -174,6 +181,13 @@ void DGConstants3D::transfer_kernel_ptrs() {
   cutilSafeCall(hipMalloc(&dg_Lift_sp_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(float)));
   cutilSafeCall(hipMalloc(&dg_Emat_sp_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(float)));
   cutilSafeCall(hipMalloc(&dg_Interp_sp_d, N_max * N_max * Np_max * Np_max * sizeof(float)));
+  cutilSafeCall(hipMalloc(&dg_cubInterp_sp_d, DG_NP * DG_CUB_3D_NP * sizeof(float)));
+  cutilSafeCall(hipMalloc(&dg_cubProj_sp_d, DG_NP * DG_CUB_3D_NP * sizeof(float)));
+  cutilSafeCall(hipMalloc(&dg_cubPDrT_sp_d, DG_NP * DG_CUB_3D_NP * sizeof(float)));
+  cutilSafeCall(hipMalloc(&dg_cubPDsT_sp_d, DG_NP * DG_CUB_3D_NP * sizeof(float)));
+  cutilSafeCall(hipMalloc(&dg_cubPDtT_sp_d, DG_NP * DG_CUB_3D_NP * sizeof(float)));
+  cutilSafeCall(hipMalloc(&dg_cubInterpSurf_sp_d, DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_3D_NP * sizeof(float)));
+  cutilSafeCall(hipMalloc(&dg_cubLiftSurf_sp_d, DG_NP * DG_NUM_FACES * DG_CUB_SURF_3D_NP * sizeof(float)));
 
   cutilSafeCall(hipMemcpy(dg_Dr_sp_d, Dr_ptr_sp, N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
   cutilSafeCall(hipMemcpy(dg_Ds_sp_d, Ds_ptr_sp, N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
@@ -188,6 +202,13 @@ void DGConstants3D::transfer_kernel_ptrs() {
   cutilSafeCall(hipMemcpy(dg_Lift_sp_d, lift_ptr_sp, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
   cutilSafeCall(hipMemcpy(dg_Emat_sp_d, eMat_ptr_sp, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
   cutilSafeCall(hipMemcpy(dg_Interp_sp_d, order_interp_ptr_sp, N_max * N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_cubInterp_sp_d, cubInterp_ptr_sp, DG_NP * DG_CUB_3D_NP * sizeof(float), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_cubProj_sp_d, cubProj_ptr_sp, DG_NP * DG_CUB_3D_NP * sizeof(float), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_cubPDrT_sp_d, cubPDrT_ptr_sp, DG_NP * DG_CUB_3D_NP * sizeof(float), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_cubPDsT_sp_d, cubPDsT_ptr_sp, DG_NP * DG_CUB_3D_NP * sizeof(float), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_cubPDtT_sp_d, cubPDtT_ptr_sp, DG_NP * DG_CUB_3D_NP * sizeof(float), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_cubInterpSurf_sp_d, cubInterpSurf_ptr_sp, DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_3D_NP * sizeof(float), hipMemcpyHostToDevice));
+  cutilSafeCall(hipMemcpy(dg_cubLiftSurf_sp_d, cubLiftSurf_ptr_sp, DG_NP * DG_NUM_FACES * DG_CUB_SURF_3D_NP * sizeof(float), hipMemcpyHostToDevice));
 }
 
 void DGConstants3D::clean_up_kernel_ptrs() {
@@ -232,6 +253,13 @@ void DGConstants3D::clean_up_kernel_ptrs() {
   hipFree(dg_Lift_sp_d);
   hipFree(dg_Emat_sp_d);
   hipFree(dg_Interp_sp_d);
+  hipFree(dg_cubInterp_sp_d);
+  hipFree(dg_cubProj_sp_d);
+  hipFree(dg_cubPDrT_sp_d);
+  hipFree(dg_cubPDsT_sp_d);
+  hipFree(dg_cubPDtT_sp_d);
+  hipFree(dg_cubInterpSurf_sp_d);
+  hipFree(dg_cubLiftSurf_sp_d);
 }
 
 DG_FP* DGConstants3D::get_mat_ptr_device(Constant_Matrix matrix) {
@@ -324,6 +352,20 @@ float* DGConstants3D::get_mat_ptr_device_sp(Constant_Matrix matrix) {
       return dg_Emat_sp_d;
     case INTERP_MATRIX_ARRAY:
       return dg_Interp_sp_d;
+    case CUB3D_INTERP:
+      return dg_cubInterp_sp_d;
+    case CUB3D_PROJ:
+      return dg_cubProj_sp_d;
+    case CUB3D_PDR:
+      return dg_cubPDrT_sp_d;
+    case CUB3D_PDS:
+      return dg_cubPDsT_sp_d;
+    case CUB3D_PDT:
+      return dg_cubPDtT_sp_d;
+    case CUBSURF3D_INTERP:
+      return dg_cubInterpSurf_sp_d;
+    case CUBSURF3D_LIFT:
+      return dg_cubLiftSurf_sp_d;
     default:
       dg_abort("This sp constant matrix is not supported by DGConstants3D\n");
       return nullptr;

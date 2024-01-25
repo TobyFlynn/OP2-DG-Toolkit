@@ -305,9 +305,11 @@ COMMON_3D_OBJ := dg_constants/dg_constants_3d.o \
 	matrices_op/3d/factor_poisson_matrix_op.o \
 	matrices_op/3d/factor_poisson_coarse_matrix_op.o \
 	matrices_op/3d/factor_poisson_matrix_free_diag_op.o \
+	matrices_op/3d/factor_poisson_matrix_free_diag_oi_op.o \
 	matrices_op/3d/factor_poisson_matrix_free_block_diag_op.o \
 	matrices/3d/factor_poisson_matrix_free.o \
 	matrices_op/3d/factor_poisson_matrix_free_mult_op.o \
+	matrices_op/3d/factor_poisson_matrix_free_mult_oi_op.o \
 	matrices_op/3d/factor_mm_poisson_matrix_op.o \
 	matrices_op/3d/factor_mm_poisson_matrix_free_op.o \
 	matrices_op/3d/factor_mm_poisson_matrix_free_diag_op.o \
