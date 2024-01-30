@@ -170,6 +170,10 @@ namespace DGUtils {
   * Interpolating values within a cell
   **********************************/
 
+  DG_FP val_at_pt_2d(const DG_FP r, const DG_FP s, const DG_FP *modal, 
+                     const int N);
+  void grad_at_pt_2d(const DG_FP r, const DG_FP s, const DG_FP *modal, 
+                     const int N, DG_FP &dr, DG_FP &ds);
   DG_FP val_at_pt_3d(const DG_FP r, const DG_FP s, const DG_FP t,
                       const DG_FP *modal, const int N);
   void grad_at_pt_3d(const DG_FP r, const DG_FP s, const DG_FP t,

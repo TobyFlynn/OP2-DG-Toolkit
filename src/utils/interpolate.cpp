@@ -320,10 +320,91 @@ void DGUtils::grad_at_pt_3d(const DG_FP r, const DG_FP s, const DG_FP t,
       for(int k = 0; k < N - i - j + 1; k++) {
         double dr_, ds_, dt_;
         gradSimplex3DP_d(a, b, c, i, j, k, dr_, ds_, dt_);
-        dr += modal[modal_ind] * dr;
-        ds += modal[modal_ind] * ds;
-        dt += modal[modal_ind++] * dt;
+        dr += modal[modal_ind] * dr_;
+        ds += modal[modal_ind] * ds_;
+        dt += modal[modal_ind++] * dt_;
       }
+    }
+  }
+}
+
+double simplex2DP_d(const double &a, const double &b, const int i, const int j) {
+  double h1 = jacobiP_d(a, 0, 0, i);
+  double h2 = jacobiP_d(b, 2 * i + 1, 0, j);
+  return sqrt(2.0) * h1 * h2 * pow(1.0 - b, i);
+}
+
+void gradSimplex2DP_d(const double &a, const double &b, const int i, const int j, 
+                      double &dr, double &ds) {
+  double fa  = jacobiP_d(a, 0, 0, i);
+  double gb  = jacobiP_d(b, 2 * i + 1, 0, j);
+  double dfa = gradJacobiP_d(a, 0, 0, i);
+  double dgb = gradJacobiP_d(b, 2 * i + 1, 0, j);
+
+  // r derivative
+  dr = dfa * gb;
+  if(i > 0) {
+    dr = dr * pow(0.5 * (1.0 - b), i - 1);
+  }
+
+  // s derivative
+  ds = dfa * (gb * (0.5 * (1.0 + a)));
+  if(i > 0) {
+    ds = ds * pow(0.5 * (1.0 - b), i - 1);
+  }
+
+  double tmp = dgb * pow(0.5 * (1.0 - b), i);
+  if(i > 0) {
+    tmp = tmp - 0.5 * i * gb * pow(0.5 * (1.0 - b), i - 1);
+  }
+  ds = ds + fa * tmp;
+
+  // Normalise
+  dr = pow(2.0, i + 0.5) * dr;
+  ds = pow(2.0, i + 0.5) * ds;
+}
+
+DG_FP DGUtils::val_at_pt_2d(const DG_FP r, const DG_FP s,
+                            const DG_FP *modal, const int N) {
+  DG_FP a;
+  if(s != 1.0) {
+    a = 2.0 * (1.0 + r) / (1.0 - s) - 1.0;
+  } else {
+    a = -1.0;
+  }
+  DG_FP b = s;
+  
+  int col = 0;
+  DG_FP ans = 0.0;
+  for(int i = 0; i < N + 1; i++) {
+    for(int j = 0; j < N + 1 - i; j++) {
+      double tmp = simplex2DP_d(a, b, i, j);
+      ans += modal[col++] * tmp;
+    }
+  }
+
+  return ans;
+}
+
+void DGUtils::grad_at_pt_2d(const DG_FP r, const DG_FP s, const DG_FP *modal, 
+                            const int N, DG_FP &dr, DG_FP &ds) {
+  DG_FP a;
+  if(s != 1.0) {
+    a = 2.0 * (1.0 + r) / (1.0 - s) - 1.0;
+  } else {
+    a = -1.0;
+  }
+  DG_FP b = s;
+
+  int col = 0;
+  dr = 0.0;
+  ds = 0.0;
+  for(int i = 0; i < N + 1; i++) {
+    for(int j = 0; j < N + 1 - i; j++) {
+      double dr_, ds_;
+      gradSimplex2DP_d(a, b, i, j, dr_, ds_);
+      dr += modal[col] * dr_;
+      ds += modal[col++] * ds_;
     }
   }
 }
