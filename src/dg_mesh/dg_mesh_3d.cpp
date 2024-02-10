@@ -262,3 +262,141 @@ void DGMesh3D::update_order_sp(int new_order, std::vector<op_dat> &dats_to_inter
 
   calc_mesh_constants();
 }
+
+void DGMesh3D::roofline_kernels() {
+  DGTempDat tmp_np_0 = dg_dat_pool->requestTempDatCells(DG_NP);
+  DGTempDat tmp_np_1 = dg_dat_pool->requestTempDatCells(DG_NP);
+  DGTempDat tmp_np_2 = dg_dat_pool->requestTempDatCells(DG_NP);
+  DGTempDat tmp_np_3 = dg_dat_pool->requestTempDatCells(DG_NP);
+  DGTempDat tmp_npf0 = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_NPF);
+  DGTempDat tmp_npf1 = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_NPF);
+  DGTempDat tmp_npf2 = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_NPF);
+  DGTempDat tmp_npf3 = dg_dat_pool->requestTempDatCells(DG_NUM_FACES * DG_NPF);
+  DGTempDat tmp_4 = dg_dat_pool->requestTempDatCells(4);
+
+  op_par_loop(one_np, "one_np", cells,
+              op_arg_dat(tmp_np_0.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+  op_par_loop(one_np, "one_np", cells,
+              op_arg_dat(tmp_np_1.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+  op_par_loop(one_np, "one_np", cells,
+              op_arg_dat(tmp_np_2.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+  op_par_loop(one_np, "one_np", cells,
+              op_arg_dat(tmp_np_3.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_WRITE));
+
+  op_par_loop(zero_npf, "zero_npf", cells,
+              op_arg_dat(tmp_npf0.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
+  op_par_loop(zero_npf, "zero_npf", cells,
+              op_arg_dat(tmp_npf1.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
+  op_par_loop(zero_npf, "zero_npf", cells,
+              op_arg_dat(tmp_npf2.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
+  op_par_loop(zero_npf, "zero_npf", cells,
+              op_arg_dat(tmp_npf3.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_WRITE));
+
+  op_par_loop(one_4, "one_4", cells,
+              op_arg_dat(tmp_4.dat, -1, OP_ID, 4, DG_FP_STR, OP_WRITE));
+
+  op_par_loop(fpmf_3d_grad_2, "fpmf_3d_grad_2:force_halo_compute", cells,
+              op_arg_gbl(&order_int, 1, "int", OP_READ),
+              op_arg_dat(geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_np_3.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_np_0.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(tmp_np_1.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW),
+              op_arg_dat(tmp_np_2.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_RW));
+
+  jump(tmp_np_0.dat, tmp_npf0.dat);
+  avg(tmp_np_1.dat, tmp_npf1.dat);
+
+  op_par_loop(fpmf_3d_mult_flux, "fpmf_3d_mult_flux", cells,
+                op_arg_gbl(&order_int, 1, "int", OP_READ),
+                op_arg_dat(nx_c, -1, OP_ID, 4, DG_FP_STR, OP_READ),
+                op_arg_dat(ny_c, -1, OP_ID, 4, DG_FP_STR, OP_READ),
+                op_arg_dat(nz_c, -1, OP_ID, 4, DG_FP_STR, OP_READ),
+                op_arg_dat(sJ_c, -1, OP_ID, 4, DG_FP_STR, OP_READ),
+                op_arg_dat(tmp_4.dat, -1, OP_ID, 4, DG_FP_STR, OP_READ),
+                op_arg_dat(tmp_np_2.dat, -1, OP_ID, DG_NP, DG_FP_STR, OP_READ),
+                op_arg_dat(tmp_npf0.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW),
+                op_arg_dat(tmp_npf1.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW),
+                op_arg_dat(tmp_npf2.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW),
+                op_arg_dat(tmp_npf3.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, DG_FP_STR, OP_RW));
+
+  op2_gemv(this, false, 1.0, DGConstants::EMAT, tmp_npf0.dat, 0.0, tmp_np_0.dat);
+  op2_gemv(this, false, 1.0, DGConstants::DR, tmp_np_1.dat, 0.0, tmp_np_2.dat);
+
+  dg_dat_pool->releaseTempDatCells(tmp_np_0);
+  dg_dat_pool->releaseTempDatCells(tmp_np_1);
+  dg_dat_pool->releaseTempDatCells(tmp_np_2);
+  dg_dat_pool->releaseTempDatCells(tmp_np_3);
+  dg_dat_pool->releaseTempDatCells(tmp_npf0);
+  dg_dat_pool->releaseTempDatCells(tmp_npf1);
+  dg_dat_pool->releaseTempDatCells(tmp_npf2);
+  dg_dat_pool->releaseTempDatCells(tmp_npf3);
+  dg_dat_pool->releaseTempDatCells(tmp_4);
+
+  DGTempDat tmp_np_0_sp = dg_dat_pool->requestTempDatCellsSP(DG_NP);
+  DGTempDat tmp_np_1_sp = dg_dat_pool->requestTempDatCellsSP(DG_NP);
+  DGTempDat tmp_np_2_sp = dg_dat_pool->requestTempDatCellsSP(DG_NP);
+  DGTempDat tmp_np_3_sp = dg_dat_pool->requestTempDatCellsSP(DG_NP);
+  DGTempDat tmp_npf0_sp = dg_dat_pool->requestTempDatCellsSP(DG_NUM_FACES * DG_NPF);
+  DGTempDat tmp_npf1_sp = dg_dat_pool->requestTempDatCellsSP(DG_NUM_FACES * DG_NPF);
+  DGTempDat tmp_npf2_sp = dg_dat_pool->requestTempDatCellsSP(DG_NUM_FACES * DG_NPF);
+  DGTempDat tmp_npf3_sp = dg_dat_pool->requestTempDatCellsSP(DG_NUM_FACES * DG_NPF);
+  DGTempDat tmp_4_sp = dg_dat_pool->requestTempDatCellsSP(4);
+
+  op_par_loop(one_np_sp, "one_np", cells,
+              op_arg_dat(tmp_np_0_sp.dat, -1, OP_ID, DG_NP, "float", OP_WRITE));
+  op_par_loop(one_np_sp, "one_np", cells,
+              op_arg_dat(tmp_np_1_sp.dat, -1, OP_ID, DG_NP, "float", OP_WRITE));
+  op_par_loop(one_np_sp, "one_np", cells,
+              op_arg_dat(tmp_np_2_sp.dat, -1, OP_ID, DG_NP, "float", OP_WRITE));
+  op_par_loop(one_np_sp, "one_np", cells,
+              op_arg_dat(tmp_np_3_sp.dat, -1, OP_ID, DG_NP, "float", OP_WRITE));
+
+  op_par_loop(zero_npf_1_sp, "zero_npf", cells,
+              op_arg_dat(tmp_npf0_sp.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_WRITE));
+  op_par_loop(zero_npf_1_sp, "zero_npf", cells,
+              op_arg_dat(tmp_npf1_sp.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_WRITE));
+  op_par_loop(zero_npf_1_sp, "zero_npf", cells,
+              op_arg_dat(tmp_npf2_sp.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_WRITE));
+  op_par_loop(zero_npf_1_sp, "zero_npf", cells,
+              op_arg_dat(tmp_npf3_sp.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_WRITE));
+
+  op_par_loop(one_4_sp, "one_4", cells,
+              op_arg_dat(tmp_4_sp.dat, -1, OP_ID, 4, "float", OP_WRITE));
+
+  op_par_loop(fpmf_3d_grad_sp, "fpmf_3d_grad_sp:force_halo_compute", cells,
+              op_arg_gbl(&order_int, 1, "int", OP_READ),
+              op_arg_dat(geof, -1, OP_ID, 10, DG_FP_STR, OP_READ),
+              op_arg_dat(tmp_np_3_sp.dat, -1, OP_ID, DG_NP, "float", OP_READ),
+              op_arg_dat(tmp_np_0_sp.dat, -1, OP_ID, DG_NP, "float", OP_RW),
+              op_arg_dat(tmp_np_1_sp.dat, -1, OP_ID, DG_NP, "float", OP_RW),
+              op_arg_dat(tmp_np_2_sp.dat, -1, OP_ID, DG_NP, "float", OP_RW));
+  
+  jump_sp(tmp_np_0_sp.dat, tmp_npf0_sp.dat);
+  avg_sp(tmp_np_1_sp.dat, tmp_npf1_sp.dat);
+
+  op_par_loop(fpmf_3d_mult_flux_sp, "fpmf_3d_mult_flux_sp", cells,
+                op_arg_gbl(&order_int, 1, "int", OP_READ),
+                op_arg_dat(nx_c, -1, OP_ID, 4, DG_FP_STR, OP_READ),
+                op_arg_dat(ny_c, -1, OP_ID, 4, DG_FP_STR, OP_READ),
+                op_arg_dat(nz_c, -1, OP_ID, 4, DG_FP_STR, OP_READ),
+                op_arg_dat(sJ_c, -1, OP_ID, 4, DG_FP_STR, OP_READ),
+                op_arg_dat(tmp_4.dat, -1, OP_ID, 4, DG_FP_STR, OP_READ),
+                op_arg_dat(tmp_np_0_sp.dat, -1, OP_ID, DG_NP, "float", OP_READ),
+                op_arg_dat(tmp_npf0_sp.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW),
+                op_arg_dat(tmp_npf1_sp.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW),
+                op_arg_dat(tmp_npf2_sp.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW),
+                op_arg_dat(tmp_npf3_sp.dat, -1, OP_ID, DG_NUM_FACES * DG_NPF, "float", OP_RW));
+  
+  op2_gemv_sp(this, false, 1.0, DGConstants::EMAT, tmp_npf0_sp.dat, 0.0, tmp_np_0_sp.dat);
+  op2_gemv_sp(this, false, 1.0, DGConstants::DR, tmp_np_1_sp.dat, 0.0, tmp_np_2_sp.dat);
+
+  dg_dat_pool->releaseTempDatCellsSP(tmp_np_0_sp);
+  dg_dat_pool->releaseTempDatCellsSP(tmp_np_1_sp);
+  dg_dat_pool->releaseTempDatCellsSP(tmp_np_2_sp);
+  dg_dat_pool->releaseTempDatCellsSP(tmp_np_3_sp);
+  dg_dat_pool->releaseTempDatCellsSP(tmp_npf0_sp);
+  dg_dat_pool->releaseTempDatCellsSP(tmp_npf1_sp);
+  dg_dat_pool->releaseTempDatCellsSP(tmp_npf2_sp);
+  dg_dat_pool->releaseTempDatCellsSP(tmp_npf3_sp);
+  dg_dat_pool->releaseTempDatCellsSP(tmp_4_sp);
+}

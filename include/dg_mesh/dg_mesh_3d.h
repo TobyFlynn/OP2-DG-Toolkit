@@ -41,6 +41,8 @@ public:
 
   void grad_halo_exchange(op_dat u, op_dat ux, op_dat uy, op_dat uz);
 
+  void roofline_kernels();
+
   // OP2 stuff
   op_dat node_coords, nodeX, nodeY, nodeZ, x, y, z;
   op_dat faceNum, bfaceNum, periodicFace, fmaskL, fmaskR, nx, ny, nz, sJ, fscale;
