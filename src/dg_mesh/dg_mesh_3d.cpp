@@ -263,6 +263,8 @@ void DGMesh3D::update_order_sp(int new_order, std::vector<op_dat> &dats_to_inter
   calc_mesh_constants();
 }
 
+void run_aligned_hip_example();
+
 void DGMesh3D::roofline_kernels() {
   DGTempDat tmp_np_0 = dg_dat_pool->requestTempDatCells(DG_NP);
   DGTempDat tmp_np_1 = dg_dat_pool->requestTempDatCells(DG_NP);
@@ -399,4 +401,7 @@ void DGMesh3D::roofline_kernels() {
   dg_dat_pool->releaseTempDatCellsSP(tmp_npf2_sp);
   dg_dat_pool->releaseTempDatCellsSP(tmp_npf3_sp);
   dg_dat_pool->releaseTempDatCellsSP(tmp_4_sp);
+
+  // Example with aligned memory
+  run_aligned_hip_example();
 }
