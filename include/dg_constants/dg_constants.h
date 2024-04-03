@@ -30,7 +30,6 @@ public:
   virtual float* get_mat_ptr_device_sp(Constant_Matrix matrix) = 0;
 
   int N_max, Np_max, Nfp_max;
-  DG_FP *decrease_order_ptr;
 };
 
 #endif

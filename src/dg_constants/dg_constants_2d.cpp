@@ -39,22 +39,22 @@ DGConstants2D::DGConstants2D(const int n_) {
   // gNfp_max = ceil(3.0 * DG_ORDER / 2.0) + 1;
   // gNp_max = 3 * gNfp_max;
 
-  // Allocate memory for matrices of all orders
+  // Create matrices of all orders
   r_ptr = (DG_FP *)calloc(N_max * Np_max, sizeof(DG_FP));
   s_ptr = (DG_FP *)calloc(N_max * Np_max, sizeof(DG_FP));
-  v_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  invV_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  mass_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  invMass_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  Dr_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  Ds_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  Drw_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  Dsw_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  lift_ptr = (DG_FP *)calloc(N_max * Np_max * DG_NUM_FACES * Nfp_max, sizeof(DG_FP));
-  mmF0_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  mmF1_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  mmF2_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  eMat_ptr = (DG_FP *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(DG_FP));
+  dg_mats.insert({V, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({INV_V, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({MASS, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({INV_MASS, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({DR, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({DS, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({DRW, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({DSW, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({EMAT, new DGConstantMatrix(Np_max, DG_NUM_FACES * Nfp_max, true)});
+  dg_mats.insert({LIFT, new DGConstantMatrix(Np_max, DG_NUM_FACES * Nfp_max, true)});
+  dg_mats.insert({MM_F0, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({MM_F1, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({MM_F2, new DGConstantMatrix(Np_max, Np_max, true)});
   order_interp_ptr = (DG_FP *)calloc(N_max * N_max * Np_max * Np_max, sizeof(DG_FP));
 
   for(int N = 1; N <= N_max; N++) {
@@ -73,10 +73,6 @@ DGConstants2D::DGConstants2D(const int n_) {
     arma::mat MassMatrix_ = invV_.t() * invV_;
     arma::mat Dr_, Ds_;
     DGUtils::dMatrices2D(r_, s_, V_, N, Dr_, Ds_);
-    // std::cout << "Dr_" << std::endl;
-    // std::cout << Dr_ << std::endl;
-    // std::cout << "Ds_" << std::endl;
-    // std::cout << Ds_ << std::endl;
 
     // FMask
     arma::uvec fmask1_ = arma::find(arma::abs(s_ + 1)  < 1e-12);
@@ -97,38 +93,23 @@ DGConstants2D::DGConstants2D(const int n_) {
     arma::mat Drw_ = (V_ * Vr.t()) * arma::inv(V_ * V_.t());
     arma::mat Dsw_ = (V_ * Vs.t()) * arma::inv(V_ * V_.t());
     arma::mat invMass = arma::inv(MassMatrix_);
-    // std::cout << "Drw_" << std::endl;
-    // std::cout << Drw_ << std::endl;
-    // std::cout << "Dsw_" << std::endl;
-    // std::cout << Dsw_ << std::endl;
 
-    // Copy armadillo vecs and mats to global memory
+    // Copy armadillo vecs and mats to DGConstantMatrix objects
     save_vec(r_ptr, r_, N, Np_max);
     save_vec(s_ptr, s_, N, Np_max);
-    save_mat(v_ptr, V_, N, Np_max * Np_max);
-    save_mat(invV_ptr, invV_, N, Np_max * Np_max);
-    save_mat(mass_ptr, MassMatrix_, N, Np_max * Np_max);
-    save_mat(invMass_ptr, invMass, N, Np_max * Np_max);
-    save_mat(Dr_ptr, Dr_, N, Np_max * Np_max);
-    save_mat(Ds_ptr, Ds_, N, Np_max * Np_max);
-    save_mat(Drw_ptr, Drw_, N, Np_max * Np_max);
-    save_mat(Dsw_ptr, Dsw_, N, Np_max * Np_max);
-    save_mat(eMat_ptr, eMat_, N, Np_max * DG_NUM_FACES * Nfp_max);
-    save_mat(lift_ptr, lift_, N, Np_max * DG_NUM_FACES * Nfp_max);
-    save_mat(mmF0_ptr, mmF0_, N, Np_max * Np_max);
-    save_mat(mmF1_ptr, mmF1_, N, Np_max * Np_max);
-    save_mat(mmF2_ptr, mmF2_, N, Np_max * Np_max);
-    // memcpy(&r_ptr[(N - 1) * Np_max], r_.memptr(), r_.n_elem * sizeof(DG_FP));
-    // memcpy(&s_ptr[(N - 1) * Np_max], s_.memptr(), s_.n_elem * sizeof(DG_FP));
-    // memcpy(&v_ptr[(N - 1) * Np_max * Np_max], V_.memptr(), V_.n_elem * sizeof(DG_FP));
-    // memcpy(&invV_ptr[(N - 1) * Np_max * Np_max], invV_.memptr(), invV_.n_elem * sizeof(DG_FP));
-    // memcpy(&mass_ptr[(N - 1) * Np_max * Np_max], MassMatrix_.memptr(), MassMatrix_.n_elem * sizeof(DG_FP));
-    // memcpy(&invMass_ptr[(N - 1) * Np_max * Np_max], invMass.memptr(), invMass.n_elem * sizeof(DG_FP));
-    // memcpy(&Dr_ptr[(N - 1) * Np_max * Np_max], Dr_.memptr(), Dr_.n_elem * sizeof(DG_FP));
-    // memcpy(&Ds_ptr[(N - 1) * Np_max * Np_max], Ds_.memptr(), Ds_.n_elem * sizeof(DG_FP));
-    // memcpy(&Drw_ptr[(N - 1) * Np_max * Np_max], Drw_.memptr(), Drw_.n_elem * sizeof(DG_FP));
-    // memcpy(&Dsw_ptr[(N - 1) * Np_max * Np_max], Dsw_.memptr(), Dsw_.n_elem * sizeof(DG_FP));
-    // memcpy(&lift_ptr[(N - 1) * Np_max * DG_NUM_FACES * Nfp_max], lift_.memptr(), lift_.n_elem * sizeof(DG_FP));
+    dg_mats.at(V)->set_mat(V_, N);
+    dg_mats.at(INV_V)->set_mat(invV_, N);
+    dg_mats.at(MASS)->set_mat(MassMatrix_, N);
+    dg_mats.at(INV_MASS)->set_mat(invMass, N);
+    dg_mats.at(DR)->set_mat(Dr_, N);
+    dg_mats.at(DS)->set_mat(Ds_, N);
+    dg_mats.at(DRW)->set_mat(Drw_, N);
+    dg_mats.at(DSW)->set_mat(Dsw_, N);
+    dg_mats.at(EMAT)->set_mat(eMat_, N);
+    dg_mats.at(LIFT)->set_mat(lift_, N);
+    dg_mats.at(MM_F0)->set_mat(mmF0_, N);
+    dg_mats.at(MM_F1)->set_mat(mmF1_, N);
+    dg_mats.at(MM_F2)->set_mat(mmF2_, N);
     std::vector<int> fmask_int = arma::conv_to<std::vector<int>>::from(fmask_);
     memcpy(&FMASK[(N - 1) * DG_NUM_FACES * Nfp_max], fmask_int.data(), fmask_int.size() * sizeof(int));
     memcpy(&FMASK_TK[(N - 1) * DG_NUM_FACES * Nfp_max], fmask_int.data(), fmask_int.size() * sizeof(int));
@@ -144,23 +125,6 @@ DGConstants2D::DGConstants2D(const int n_) {
 
   cubature(2 * DG_ORDER);
   gauss(2 * DG_ORDER);
-
-  arma::vec x_3, y_3, r_3, s_3;
-  DGUtils::setRefXY(DG_ORDER, x_3, y_3);
-  DGUtils::xy2rs(x_3, y_3, r_3, s_3);
-  arma::mat V_3 = DGUtils::vandermonde2D(r_3, s_3, DG_ORDER);
-  arma::mat invV_3 = arma::inv(V_3);
-
-  arma::vec x_2, y_2, r_2, s_2;
-  DGUtils::setRefXY(2, x_2, y_2);
-  DGUtils::xy2rs(x_2, y_2, r_2, s_2);
-  arma::mat V_2 = DGUtils::vandermonde2D(r_2, s_2, 2);
-  arma::mat invV_2 = arma::inv(V_2);
-
-  arma::mat decrease_order = DGUtils::interpMatrix2D(r_3, s_3, invV_2, 2) * DGUtils::interpMatrix2D(r_2, s_2, invV_3, DG_ORDER);
-
-  decrease_order_ptr = (DG_FP *)calloc(DG_NP * DG_NP, sizeof(DG_FP));
-  save_mat(decrease_order_ptr, decrease_order, 1, DG_NP * DG_NP);
 }
 
 void DGConstants2D::cubature(const int nCub) {
@@ -170,17 +134,13 @@ void DGConstants2D::cubature(const int nCub) {
   arma::mat V_ = DGUtils::vandermonde2D(r_, s_, DG_ORDER);
   arma::mat invV_ = arma::inv(V_);
 
+  // Get cubature points in R-S coordinates and cubature weights
   arma::vec cub_r, cub_s, cub_w;
   DGUtils::cubature2D(nCub, cub_r, cub_s, cub_w);
-  // const double cubTriR6[12] = {-5.611400349004336e-01, 1.222800698008678e-01,-5.611400349004341e-01,-3.972407177556988e-02,-3.972407177557002e-02,-9.205518564488601e-01,-7.167619681520639e-01, 6.780185194295818e-01,-9.612565512775184e-01, 6.780185194295824e-01,-7.167619681520634e-01,-9.612565512775182e-01};
-  // const double cubTriS6[12] = {-5.611400349004347e-01,-5.611400349004335e-01, 1.222800698008681e-01,-9.205518564488602e-01,-3.972407177556986e-02,-3.972407177556986e-02,-9.612565512775185e-01,-7.167619681520636e-01, 6.780185194295830e-01,-9.612565512775185e-01, 6.780185194295830e-01,-7.167619681520636e-01};
-  // const double cubTriW6[12] = { 3.426662483059627e-01, 3.426662483059627e-01, 3.426662483059627e-01, 1.614621791860623e-01, 1.614621791860623e-01, 1.614621791860623e-01, 8.126911958732136e-02, 8.126911958732136e-02, 8.126911958732136e-02, 8.126911958732136e-02, 8.126911958732136e-02, 8.126911958732136e-02};
 
-  // arma::vec cub_r(cubTriR6, 12);
-  // arma::vec cub_s(cubTriS6, 12);
-  // arma::vec cub_w(cubTriW6, 12);
-
+  // Matrix to interpolate to the cubature points
   arma::mat cubInterp = DGUtils::interpMatrix2D(cub_r, cub_s, invV_, DG_ORDER);
+
   arma::mat cubProj   = DGUtils::cubaturePMat2D(r_, s_, cub_r, cub_s, DG_ORDER);
   arma::mat cubPDrT, cubPDsT;
   DGUtils::cubaturePDwMat2D(r_, s_, cub_r, cub_s, DG_ORDER, cubPDrT, cubPDsT);
@@ -191,54 +151,29 @@ void DGConstants2D::cubature(const int nCub) {
     diag_w(i,i) = cub_w(i);
   }
 
-  printf("DG_CUB_2D_NP vs %d\n", cubNp);
+  // printf("DG_CUB_2D_NP vs %d\n", cubNp);
 
-  // std::cout << "Test" << std::endl;
-  // std::cout << cubProj * diag_w * cubInterp << std::endl;
-
-  // arma::mat tmp_cub_ident = cubProj * diag_w * cubInterp;
-  // save_mat(Drw_ptr, tmp_cub_ident, DG_ORDER, DG_NP * DG_NP);
-
-  // std::cout << "cubPDrT" << std::endl;
-  // std::cout << cubPDrT << std::endl;
-
-  // std::cout << "cubPDsT" << std::endl;
-  // std::cout << cubPDsT << std::endl;
-
-  // std::cout << "diag_w" << std::endl;
-  // std::cout << diag_w << std::endl;
-
+  // Matrix to project back to DG points
   cubProj = cubProj * diag_w;
+  // Matrices to project back to DG points while taking the gradient in R-S coordinates
   cubPDrT = cubPDrT * diag_w;
   cubPDsT = cubPDsT * diag_w;
-
-  // std::cout << "cubInterp" << std::endl;
-  // std::cout << cubInterp << std::endl;
-
-  // std::cout << "cubProj" << std::endl;
-  // std::cout << cubProj << std::endl;
-
-  // std::cout << "cubPDrT" << std::endl;
-  // std::cout << cubPDrT << std::endl;
-
-  // std::cout << "cubPDsT" << std::endl;
-  // std::cout << cubPDsT << std::endl;
 
   cub_r_ptr = (DG_FP *)calloc(DG_CUB_2D_NP, sizeof(DG_FP));
   cub_s_ptr = (DG_FP *)calloc(DG_CUB_2D_NP, sizeof(DG_FP));
   cub_w_ptr = (DG_FP *)calloc(DG_CUB_2D_NP, sizeof(DG_FP));
-  cubInterp_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_2D_NP, sizeof(DG_FP));
-  cubProj_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_2D_NP, sizeof(DG_FP));
-  cubPDrT_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_2D_NP, sizeof(DG_FP));
-  cubPDsT_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_2D_NP, sizeof(DG_FP));
+  dg_mats.insert({CUB2D_INTERP, new DGConstantMatrix(DG_CUB_2D_NP, DG_NP, false)});
+  dg_mats.insert({CUB2D_PROJ, new DGConstantMatrix(DG_NP, DG_CUB_2D_NP, false)});
+  dg_mats.insert({CUB2D_PDR, new DGConstantMatrix(DG_NP, DG_CUB_2D_NP, false)});
+  dg_mats.insert({CUB2D_PDS, new DGConstantMatrix(DG_NP, DG_CUB_2D_NP, false)});
 
   save_vec(cub_r_ptr, cub_r, 1, DG_CUB_2D_NP);
   save_vec(cub_s_ptr, cub_s, 1, DG_CUB_2D_NP);
   save_vec(cub_w_ptr, cub_w, 1, DG_CUB_2D_NP);
-  save_mat(cubInterp_ptr, cubInterp, 1, DG_NP * DG_CUB_2D_NP);
-  save_mat(cubProj_ptr, cubProj, 1, DG_NP * DG_CUB_2D_NP);
-  save_mat(cubPDrT_ptr, cubPDrT, 1, DG_NP * DG_CUB_2D_NP);
-  save_mat(cubPDsT_ptr, cubPDsT, 1, DG_NP * DG_CUB_2D_NP);
+  dg_mats.at(CUB2D_INTERP)->set_mat(cubInterp);
+  dg_mats.at(CUB2D_PROJ)->set_mat(cubProj);
+  dg_mats.at(CUB2D_PDR)->set_mat(cubPDrT);
+  dg_mats.at(CUB2D_PDS)->set_mat(cubPDsT);
 }
 
 void DGConstants2D::gauss(const int nGauss) {
@@ -266,7 +201,7 @@ void DGConstants2D::gauss(const int nGauss) {
   arma::vec face2s = g_x;
   arma::vec face3s = -g_x;
 
-  printf("DG_CUB_SURF_2D_NP vs %d\n", npf_cub);
+  // printf("DG_CUB_SURF_2D_NP vs %d\n", npf_cub);
 
   arma::vec interp_r(npf_cub * 3);
   arma::vec interp_s(npf_cub * 3);
@@ -285,6 +220,7 @@ void DGConstants2D::gauss(const int nGauss) {
 
   arma::mat tmp_interp_ = DGUtils::interpMatrix2D(interp_r, interp_s, invV_, DG_ORDER);
 
+  // Matrix to interpolate from the DG surface points to the cubature surface points
   arma::mat gauss_interp_;
   gauss_interp_.zeros(npf_cub * 3, DG_NPF * 3);
   for(int face = 0; face < 3; face++) {
@@ -307,13 +243,14 @@ void DGConstants2D::gauss(const int nGauss) {
     diagW(i,i) = interp_w[i];
   }
 
+  // Lift matrix while going from surface cubature points to DG points
   arma::mat gauss_lift_ = V_ * V_.t() * tmp_interp_.t() * diagW;
 
-  cubInterpSurf_ptr = (DG_FP *)calloc(DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_2D_NP, sizeof(DG_FP));
-  cubLiftSurf_ptr   = (DG_FP *)calloc(DG_NP * DG_NUM_FACES * DG_CUB_SURF_2D_NP, sizeof(DG_FP));
-
-  save_mat(cubInterpSurf_ptr, gauss_interp_, 1, DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_2D_NP);
-  save_mat(cubLiftSurf_ptr, gauss_lift_, 1, DG_NP * DG_NUM_FACES * DG_CUB_SURF_2D_NP);
+  dg_mats.insert({CUBSURF2D_INTERP, new DGConstantMatrix(DG_CUB_SURF_2D_NP * DG_NUM_FACES, DG_NUM_FACES * DG_NPF, false)});
+  dg_mats.insert({CUBSURF2D_LIFT, new DGConstantMatrix(DG_NP, DG_CUB_SURF_2D_NP * DG_NUM_FACES, false)});
+  
+  dg_mats.at(CUBSURF2D_INTERP)->set_mat(gauss_interp_);
+  dg_mats.at(CUBSURF2D_LIFT)->set_mat(gauss_lift_);
 
   int gNp = gauss_w_.n_elem * 3;
   DG_CONSTANTS[(DG_ORDER - 1) * 5 + 3] = gNp;
@@ -347,94 +284,28 @@ void DGConstants2D::calc_interp_mats() {
     }
   }
 
-  Dr_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  Ds_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  Drw_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  Dsw_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  mass_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  invMass_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  invV_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  v_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  lift_ptr_sp = (float *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(float));
-  eMat_ptr_sp = (float *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(float));
+  // Convert interpolation matrices to single-precision
   order_interp_ptr_sp = (float *)calloc(N_max * N_max * Np_max * Np_max, sizeof(float));
-  cubInterp_ptr_sp = (float *)calloc(DG_NP * DG_CUB_2D_NP, sizeof(float));
-  cubProj_ptr_sp = (float *)calloc(DG_NP * DG_CUB_2D_NP, sizeof(float));
-  cubPDrT_ptr_sp = (float *)calloc(DG_NP * DG_CUB_2D_NP, sizeof(float));
-  cubPDsT_ptr_sp = (float *)calloc(DG_NP * DG_CUB_2D_NP, sizeof(float));
-  cubInterpSurf_ptr_sp = (float *)calloc(DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_2D_NP, sizeof(float));
-  cubLiftSurf_ptr_sp   = (float *)calloc(DG_NP * DG_NUM_FACES * DG_CUB_SURF_2D_NP, sizeof(float));
-
-  for(int i = 0; i < N_max * Np_max * Np_max; i++) {
-    Dr_ptr_sp[i] = (float)Dr_ptr[i];
-    Ds_ptr_sp[i] = (float)Ds_ptr[i];
-    Drw_ptr_sp[i] = (float)Drw_ptr[i];
-    Dsw_ptr_sp[i] = (float)Dsw_ptr[i];
-    mass_ptr_sp[i] = (float)mass_ptr[i];
-    invMass_ptr_sp[i] = (float)invMass_ptr[i];
-    invV_ptr_sp[i] = (float)invV_ptr[i];
-    v_ptr_sp[i] = (float)v_ptr[i];
-  }
-
-  for(int i = 0; i < N_max * DG_NUM_FACES * Nfp_max * Np_max; i++) {
-    lift_ptr_sp[i] = (float)lift_ptr[i];
-    eMat_ptr_sp[i] = (float)eMat_ptr[i];
-  }
-
   for(int i = 0; i < N_max * N_max * Np_max * Np_max; i++) {
     order_interp_ptr_sp[i] = (float)order_interp_ptr[i];
   }
 
-  for(int i = 0; i < DG_NP * DG_CUB_2D_NP; i++) {
-    cubInterp_ptr_sp[i] = (float)cubInterp_ptr[i];
-    cubProj_ptr_sp[i] = (float)cubProj_ptr[i];
-    cubPDrT_ptr_sp[i] = (float)cubPDrT_ptr[i];
-    cubPDsT_ptr_sp[i] = (float)cubPDsT_ptr[i];
-  }
-
-  for(int i = 0; i < DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_2D_NP; i++) {
-    cubInterpSurf_ptr_sp[i] = (float)cubInterpSurf_ptr[i];
-  }
-
-  for(int i = 0; i < DG_NP * DG_NUM_FACES * DG_CUB_SURF_2D_NP; i++) {
-    cubLiftSurf_ptr_sp[i] = (float)cubLiftSurf_ptr[i];
+  // Copy all DGConstantMatrix matrices to device memory.
+  for(const auto &dg_mat : dg_mats) {
+    dg_mat.second->transfer_to_device();
   }
 
   transfer_kernel_ptrs();
 }
 
+// Get a pointer to the constant matrix (host memory).
+// For matrices with multiple DG orders, the pointer will point to the 1st order matrix.
 DG_FP* DGConstants2D::get_mat_ptr(Constant_Matrix matrix) {
   switch(matrix) {
     case R:
       return r_ptr;
     case S:
       return s_ptr;
-    case V:
-      return v_ptr;
-    case INV_V:
-      return invV_ptr;
-    case MASS:
-      return mass_ptr;
-    case INV_MASS:
-      return invMass_ptr;
-    case DR:
-      return Dr_ptr;
-    case DS:
-      return Ds_ptr;
-    case DRW:
-      return Drw_ptr;
-    case DSW:
-      return Dsw_ptr;
-    case LIFT:
-      return lift_ptr;
-    case MM_F0:
-      return mmF0_ptr;
-    case MM_F1:
-      return mmF1_ptr;
-    case MM_F2:
-      return mmF2_ptr;
-    case EMAT:
-      return eMat_ptr;
     case INTERP_MATRIX_ARRAY:
       return order_interp_ptr;
     case CUB2D_R:
@@ -443,20 +314,12 @@ DG_FP* DGConstants2D::get_mat_ptr(Constant_Matrix matrix) {
       return cub_s_ptr;
     case CUB2D_W:
       return cub_w_ptr;
-    case CUB2D_INTERP:
-      return cubInterp_ptr;
-    case CUB2D_PROJ:
-      return cubProj_ptr;
-    case CUB2D_PDR:
-      return cubPDrT_ptr;
-    case CUB2D_PDS:
-      return cubPDsT_ptr;
-    case CUBSURF2D_INTERP:
-      return cubInterpSurf_ptr;
-    case CUBSURF2D_LIFT:
-      return cubLiftSurf_ptr;
     default:
-      dg_abort("This constant matrix is not supported by DGConstants2D\n");
+      try {
+        return dg_mats.at(matrix)->get_mat_ptr_dp();
+      } catch (std::out_of_range &e) {
+        dg_abort("This constant matrix is not supported by DGConstants2D\n");
+      }
       return nullptr;
   }
 }
@@ -464,48 +327,16 @@ DG_FP* DGConstants2D::get_mat_ptr(Constant_Matrix matrix) {
 DGConstants2D::~DGConstants2D() {
   clean_up_kernel_ptrs();
 
+  // Free all DGConstantMatrix objects
+  for(auto &dg_mat : dg_mats) {
+    delete dg_mat.second;
+  }
+
   free(r_ptr);
   free(s_ptr);
-  free(v_ptr);
-  free(invV_ptr);
-  free(mass_ptr);
-  free(invMass_ptr);
-  free(Dr_ptr);
-  free(Ds_ptr);
-  free(Drw_ptr);
-  free(Dsw_ptr);
-  free(lift_ptr);
   free(cub_r_ptr);
   free(cub_s_ptr);
   free(cub_w_ptr);
-  free(cubInterp_ptr);
-  free(cubProj_ptr);
-  free(cubPDrT_ptr);
-  free(cubPDsT_ptr);
-  free(cubInterpSurf_ptr);
-  free(cubLiftSurf_ptr);
-  free(mmF0_ptr);
-  free(mmF1_ptr);
-  free(mmF2_ptr);
-  free(eMat_ptr);
   free(order_interp_ptr);
-  free(decrease_order_ptr);
-
-  free(Dr_ptr_sp);
-  free(Ds_ptr_sp);
-  free(Drw_ptr_sp);
-  free(Dsw_ptr_sp);
-  free(mass_ptr_sp);
-  free(invMass_ptr_sp);
-  free(invV_ptr_sp);
-  free(v_ptr_sp);
-  free(lift_ptr_sp);
-  free(eMat_ptr_sp);
   free(order_interp_ptr_sp);
-  free(cubInterp_ptr_sp);
-  free(cubProj_ptr_sp);
-  free(cubPDrT_ptr_sp);
-  free(cubPDsT_ptr_sp);
-  free(cubInterpSurf_ptr_sp);
-  free(cubLiftSurf_ptr_sp);
 }

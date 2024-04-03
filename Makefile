@@ -200,7 +200,8 @@ COMMON_OBJ := blas_op/dg_op2_blas_op.o \
 	matrices_op/poisson_matrix_free_diag_op.o \
 	matrices_op/poisson_matrix_free_block_diag_op.o \
 	config.o \
-	dg_abort.o
+	dg_abort.o \
+	dg_constants/dg_constant_matrix.o
 
 # MPI objects
 MPI_OBJ := mpi_helper_func.o
@@ -208,17 +209,21 @@ MPI_OBJ := mpi_helper_func.o
 # CPU objects
 CPU_OBJ := op2_utils/utils_cpu.o \
 	matrices/poisson_matrix_cpu.o \
-	matrices/poisson_coarse_matrix_cpu.o
+	matrices/poisson_coarse_matrix_cpu.o \
+	dg_constants/dg_constant_matrix_cpu.o \
+	blas/dg_op2_blas_cpu.o
 
 # CUDA objects
 CUDA_OBJ := op2_utils/utils_gpu.o \
 	matrices/poisson_matrix_gpu.o \
-	matrices/poisson_coarse_matrix_gpu.o
+	matrices/poisson_coarse_matrix_gpu.o \
+	dg_constants/dg_constant_matrix_gpu.o
 
 # HIP objects
 HIP_OBJ := op2_utils/utils_hip.o \
 	matrices/poisson_matrix_hip.o \
-	matrices/poisson_coarse_matrix_hip.o
+	matrices/poisson_coarse_matrix_hip.o \
+	dg_constants/dg_constant_matrix_hip.o
 
 # SOA specific object files
 ifeq ($(SOA),1)
