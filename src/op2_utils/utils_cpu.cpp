@@ -8,6 +8,7 @@
 
 DG_FP *getOP2PtrDevice(op_dat dat, op_access acc) {
   dg_abort("\ngetOP2PtrDevice not implemented for CPU\n");
+  return nullptr;
 }
 
 void releaseOP2PtrDevice(op_dat dat, op_access acc, const DG_FP *ptr) {
@@ -54,6 +55,7 @@ void releaseOP2PtrHostSP(op_dat dat, op_access acc, const float *ptr) {
 
 DG_FP *getOP2PtrDeviceHE(op_dat dat, op_access acc) {
   dg_abort("\ngetOP2PtrDevice not implemented for CPU\n");
+  return nullptr;
 }
 
 void releaseOP2PtrDeviceHE(op_dat dat, op_access acc, const DG_FP *ptr) {

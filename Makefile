@@ -45,7 +45,7 @@ ifeq ($(BUILD_WITH_HYPRE),1)
 	COMMON_COMPILE_DEFS_2D := $(COMMON_COMPILE_DEFS_2D) -DINS_BUILD_WITH_HYPRE
 	COMMON_COMPILE_DEFS_3D := $(COMMON_COMPILE_DEFS_3D) -DINS_BUILD_WITH_HYPRE
 endif
-TOOLS_INC := $(INC) $(VTK_INC) $(HIGHFIVE_INC) $(OP2_INC) $(HDF5_INC)
+TOOLS_INC := $(INC) $(VTK_INC) $(HIGHFIVE_INC) $(OP2_INC) $(HDF5_INC) $(CDT_INC)
 
 all: base 2d_all 3d_all
 
@@ -90,7 +90,8 @@ mpi_hip_3d: base $(LIB)/libop2dgtoolkit_3d_mpi_hip.a
 codegen: $(CODE_GEN_DIR)
 
 tools: $(BIN)/hdf52vtk_2D $(BIN)/hdf52vtk_3D $(BIN)/vtk2hdf5_2D \
-	$(BIN)/vtk2hdf5_3D $(BIN)/vtk2hdf5_periodic_cube_3D
+	$(BIN)/vtk2hdf5_3D $(BIN)/vtk2hdf5_periodic_cube_3D \
+	$(BIN)/hdf52vtk_3D_partial
 
 clean:
 	-rm -rf $(OBJ)
@@ -588,6 +589,8 @@ VTK2HDF5_LIBS := $(VTK_LIB) $(OP2_MPI_LIB) $(HDF5_LIB) $(PARTITION_LIB)
 $(BIN)/hdf52vtk_2D: tools/hdf52vtk_2D.cpp | $(BIN)
 	$(CXX) $(CXXFLAGS) $(COMMON_COMPILE_DEFS_2D) $(TOOLS_INC) $< $(HDF52VTK_LIBS) -o $@
 $(BIN)/hdf52vtk_3D: tools/hdf52vtk_3D.cpp | $(BIN)
+	$(CXX) $(CXXFLAGS) $(COMMON_COMPILE_DEFS_3D) $(TOOLS_INC) $< $(HDF52VTK_LIBS) -o $@
+$(BIN)/hdf52vtk_3D_partial: tools/hdf52vtk_3D_partial.cpp | $(BIN)
 	$(CXX) $(CXXFLAGS) $(COMMON_COMPILE_DEFS_3D) $(TOOLS_INC) $< $(HDF52VTK_LIBS) -o $@
 $(BIN)/vtk2hdf5_2D: tools/vtk2hdf5_2D.cpp | $(BIN)
 	$(CXX) $(CXXFLAGS) $(COMMON_COMPILE_DEFS_2D) -DOP2_PARTITIONER=$(PART_LIB_NAME) $(TOOLS_INC) $< $(VTK2HDF5_LIBS) -o $@

@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
 
     vtkNew<vtkUnstructuredGrid> vtkGrid;
     vtkNew<vtkPoints> vtkPoints;
-    vtkPoints->Allocate(x_vec.size());
+    vtkPoints->Allocate(x_vec.size() * DG_NP);
 
     // Set points
     for(int cell = 0; cell < numCells; cell++) {

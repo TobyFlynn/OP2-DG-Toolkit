@@ -17,6 +17,7 @@
 #include <cmath>
 
 #include "highfive/H5File.hpp"
+#include "CDT.h"
 
 #include "dg_compiler_defs.h"
 
@@ -60,6 +61,8 @@ void add_1d_vec_solution(File *file, const std::string &name, const std::string 
   }
 }
 
+std::vector<std::vector<int>> get_sub_cell_map(const std::vector<double> &x, const std::vector<double> &y);
+
 int main(int argc, char **argv) {
   for(int arg = 1; arg < argc; arg++) {
     std::string filename = argv[arg];
@@ -73,8 +76,7 @@ int main(int argc, char **argv) {
 
     vtkNew<vtkUnstructuredGrid> vtkGrid;
     vtkNew<vtkPoints> vtkPoints;
-    // TODO is this right? shouldn't it be x_vec.size() * DG_NP?
-    vtkPoints->Allocate(x_vec.size());
+    vtkPoints->Allocate(x_vec.size() * DG_NP);
 
     // Set points
     for(int cell = 0; cell < numCells; cell++) {
@@ -84,57 +86,11 @@ int main(int argc, char **argv) {
     }
     vtkGrid->SetPoints(vtkPoints);
 
-    #if DG_ORDER == 1
-    const int numSubCells = 1;
-    const vtkIdType subCellMap[1][3] = {
-      {0, 1, 2}
-    };
-    #elif DG_ORDER == 2
-    const int numSubCells = 4;
-    const vtkIdType subCellMap[4][3] = {
-      {0, 1, 3},
-      {1, 3, 4},
-      {1, 2, 4},
-      {3, 4, 5}
-    };
-    #elif DG_ORDER == 3
-    const int numSubCells = 9;
-    const vtkIdType subCellMap[9][3] = {
-      {0, 1, 4},
-      {1, 4, 5},
-      {1, 2, 5},
-      {2, 5, 6},
-      {2, 3, 6},
-      {4, 5, 7},
-      {5, 7, 8},
-      {5, 6, 8},
-      {7, 8, 9}
-    };
-    #elif DG_ORDER == 4
-    const int numSubCells = 16;
-    const vtkIdType subCellMap[16][3] = {
-      {0, 1, 5},
-      {1, 5, 6},
-      {1, 2, 6},
-      {2, 6, 7},
-      {2, 3, 7},
-      {3, 7, 8},
-      {3, 4, 8},
-      {5, 6, 9},
-      {6, 9, 10},
-      {6, 7, 10},
-      {7, 10, 11},
-      {7, 8, 11},
-      {9, 10, 12},
-      {10, 12, 13},
-      {10, 11, 13},
-      {12, 13, 14}
-    };
-    #endif
+    std::vector<std::vector<int>> subCellMap = get_sub_cell_map(x_vec[0], y_vec[0]);
 
-    vtkGrid->Allocate(numCells * numSubCells);
+    vtkGrid->Allocate(numCells * subCellMap.size());
     for(int cell = 0; cell < numCells; cell++) {
-      for(int i = 0; i < numSubCells; i++) {
+      for(int i = 0; i < subCellMap.size(); i++) {
         const int basePtInd = cell * DG_NP;
         vtkIdType ptIds[] = {subCellMap[i][0] + basePtInd, subCellMap[i][1] + basePtInd, subCellMap[i][2] + basePtInd};
         vtkGrid->InsertNextCell(VTK_TRIANGLE, 3, ptIds);
@@ -152,6 +108,8 @@ int main(int argc, char **argv) {
     add_1d_vec_solution(&file, "ins_solver_mu", "mu", numCells, vtkGrid);
     add_1d_vec_solution(&file, "ls_s", "level_set", numCells, vtkGrid);
     add_1d_vec_solution(&file, "ins_solver_curvature", "curvature", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "err", "error", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "ins_solver_p_star", "p_star", numCells, vtkGrid);
 
     add_2d_vec_solution(&file, "ins_solver_st00", "ins_solver_st01", "SurfTen", numCells, vtkGrid);
     add_2d_vec_solution(&file, "ins_solver_st10", "ins_solver_st11", "SurfTen", numCells, vtkGrid);
@@ -169,4 +127,91 @@ int main(int argc, char **argv) {
     writer->SetInputData(vtkGrid);
     writer->Write();
   }
+}
+
+struct Point {
+  double x;
+  double y;
+};
+
+bool double_eq(const double d0, const double d1) {
+  return fabs(d0 - d1) < 1e-8;
+}
+
+std::vector<std::vector<int>> get_sub_cell_map_CDT(const std::vector<double> &x, const std::vector<double> &y) {
+  std::vector<Point> pts;
+  for(int i = 0; i < x.size(); i++) {
+    pts.push_back({x[i], y[i]});
+  }
+  
+  CDT::Triangulation<double> cdt;
+  cdt.insertVertices(pts.begin(), pts.end(), [](const Point& p){ return p.x; }, [](const Point& p){ return p.y; });
+  cdt.eraseSuperTriangle();
+  auto triangles = cdt.triangles;
+  auto vertices = cdt.vertices;
+
+  std::map<int,int> vertices_map;
+  for(int i = 0; i < pts.size(); i++) {
+    for(int j = 0; j < pts.size(); j++) {
+      if(double_eq(vertices[i].x, pts[j].x) && double_eq(vertices[i].y, pts[j].y)) {
+        vertices_map.insert({i, j});
+        break;
+      }
+    }
+  }
+
+  std::vector<std::vector<int>> sub_cell_map;
+  for(const auto &tri : triangles) {
+    sub_cell_map.push_back({
+      vertices_map.at(tri.vertices[0]),
+      vertices_map.at(tri.vertices[1]),
+      vertices_map.at(tri.vertices[2])
+    });
+  }
+
+  return sub_cell_map;
+}
+
+std::vector<std::vector<int>> get_sub_cell_map(const std::vector<double> &x, const std::vector<double> &y) {
+  return get_sub_cell_map_CDT(x, y);
+  
+  std::vector<std::vector<int>> sub_cell_map;
+
+  #if DG_ORDER == 1
+  sub_cell_map.push_back({0, 1, 2});
+  #elif DG_ORDER == 2
+  sub_cell_map.push_back({0, 1, 3});
+  sub_cell_map.push_back({1, 3, 4});
+  sub_cell_map.push_back({1, 2, 4});
+  sub_cell_map.push_back({3, 4, 5});
+  #elif DG_ORDER == 3
+  sub_cell_map.push_back({0, 1, 4});
+  sub_cell_map.push_back({1, 4, 5});
+  sub_cell_map.push_back({1, 2, 5});
+  sub_cell_map.push_back({2, 5, 6});
+  sub_cell_map.push_back({2, 3, 6});
+  sub_cell_map.push_back({4, 5, 7});
+  sub_cell_map.push_back({5, 7, 8});
+  sub_cell_map.push_back({5, 6, 8});
+  sub_cell_map.push_back({7, 8, 9});
+  #elif DG_ORDER == 4
+  sub_cell_map.push_back({0, 1, 5});
+  sub_cell_map.push_back({1, 5, 6});
+  sub_cell_map.push_back({1, 2, 6});
+  sub_cell_map.push_back({2, 6, 7});
+  sub_cell_map.push_back({2, 3, 7});
+  sub_cell_map.push_back({3, 7, 8});
+  sub_cell_map.push_back({3, 4, 8});
+  sub_cell_map.push_back({5, 6, 9});
+  sub_cell_map.push_back({6, 9, 10});
+  sub_cell_map.push_back({6, 7, 10});
+  sub_cell_map.push_back({7, 10, 11});
+  sub_cell_map.push_back({7, 8, 11});
+  sub_cell_map.push_back({9, 10, 12});
+  sub_cell_map.push_back({10, 12, 13});
+  sub_cell_map.push_back({10, 11, 13});
+  sub_cell_map.push_back({12, 13, 14});
+  #endif
+
+  return sub_cell_map;
 }
