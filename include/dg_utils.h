@@ -186,6 +186,91 @@ namespace DGUtils {
                         const int N);
   std::vector<DG_FP> val_at_pt_N_1_2d_get_simplexes(const std::vector<DG_FP> &r,
                         const std::vector<DG_FP> &s, const int N);
+  
+  template<std::size_t DIM>
+  class Vec {
+  private:
+    double vals[DIM];
+  public:
+    Vec() {
+      for(int i = 0; i < DIM; i++)
+        vals[i] = 0.0;
+    }
+    template<typename... Args>
+    explicit Vec(Args... args): vals{args...} {}
+
+    double sqr_magnitude() {
+      double result = 0.0;
+      for(int i = 0; i < DIM; i++) {
+        result += vals[i] * vals[i];
+      }
+      return result;
+    }
+
+    double magnitude() {
+      return sqrt(sqr_magnitude());
+    }
+
+    double dot(const Vec<DIM> &rhs) {
+      double result = 0.0;
+      for(int i = 0; i < DIM; i++) {
+        result += vals[i] * rhs[i];
+      }
+      return result;
+    }
+
+    double& operator[](std::size_t idx) { return vals[idx]; }
+    const double& operator[](std::size_t idx) const { return vals[idx]; }
+    Vec<DIM>& operator+=(const Vec<DIM> &rhs) {
+      for(int i = 0; i < DIM; i++) {
+        vals[i] += rhs[i];
+      }
+      return *this;
+    }
+    Vec<DIM>& operator-=(const Vec<DIM> &rhs) {
+      for(int i = 0; i < DIM; i++) {
+        vals[i] -= rhs[i];
+      }
+      return *this;
+    }
+
+    friend bool operator==(const Vec<DIM> &lhs, const Vec<DIM> &rhs) {
+      for(int i = 0; i < DIM; i++) {
+        if(fabs(lhs[i] - rhs[i]) > 1e-8)
+          return false;
+      }
+      return true;
+    }
+    friend bool operator!=(const Vec<DIM> &lhs, const Vec<DIM> &rhs) { 
+      return !(lhs == rhs); 
+    }
+    friend bool operator<(const Vec<DIM> &lhs, const Vec<DIM> &rhs) {
+      for(int i = 0; i < DIM; i++) {
+        if(fabs(lhs[i] - rhs[i]) >= 1e-8)
+          return lhs[i] < rhs[i];
+      }
+      return false;
+    }
+    friend bool operator>(const Vec<DIM>& lhs, const Vec<DIM>& rhs) { return rhs < lhs; }
+    friend bool operator<=(const Vec<DIM>& lhs, const Vec<DIM>& rhs) { return !(lhs > rhs); }
+    friend bool operator>=(const Vec<DIM>& lhs, const Vec<DIM>& rhs) { return !(lhs < rhs); }
+    friend Vec<DIM> operator+(Vec<DIM> lhs, const Vec<DIM> &rhs) {
+      lhs += rhs;
+      return lhs; 
+    }
+    friend Vec<DIM> operator-(Vec<DIM> lhs, const Vec<DIM> &rhs) {
+      lhs -= rhs;
+      return lhs; 
+    }
+    friend Vec<DIM> operator*(const double &lhs, const Vec<DIM> &rhs) {
+      Vec<DIM> result = rhs;
+      for(int i = 0; i < DIM; i++) {
+        result[i] *= lhs;
+      }
+      return result; 
+    }
+    friend Vec<DIM> operator*(const Vec<DIM> &lhs, const double &rhs) { return rhs * lhs; }
+  };
 }
 
 #endif
