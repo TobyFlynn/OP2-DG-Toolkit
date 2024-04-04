@@ -15,6 +15,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <map>
 
 #include "highfive/H5File.hpp"
 #include "CDT.h"
@@ -143,7 +144,7 @@ std::vector<std::vector<int>> get_sub_cell_map_CDT(const std::vector<double> &x,
   for(int i = 0; i < x.size(); i++) {
     pts.push_back({x[i], y[i]});
   }
-  
+
   CDT::Triangulation<double> cdt;
   cdt.insertVertices(pts.begin(), pts.end(), [](const Point& p){ return p.x; }, [](const Point& p){ return p.y; });
   cdt.eraseSuperTriangle();
@@ -174,7 +175,7 @@ std::vector<std::vector<int>> get_sub_cell_map_CDT(const std::vector<double> &x,
 
 std::vector<std::vector<int>> get_sub_cell_map(const std::vector<double> &x, const std::vector<double> &y) {
   return get_sub_cell_map_CDT(x, y);
-  
+
   std::vector<std::vector<int>> sub_cell_map;
 
   #if DG_ORDER == 1

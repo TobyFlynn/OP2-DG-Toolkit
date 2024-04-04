@@ -248,7 +248,7 @@ void DGConstants2D::gauss(const int nGauss) {
 
   dg_mats.insert({CUBSURF2D_INTERP, new DGConstantMatrix(DG_CUB_SURF_2D_NP * DG_NUM_FACES, DG_NUM_FACES * DG_NPF, false)});
   dg_mats.insert({CUBSURF2D_LIFT, new DGConstantMatrix(DG_NP, DG_CUB_SURF_2D_NP * DG_NUM_FACES, false)});
-  
+
   dg_mats.at(CUBSURF2D_INTERP)->set_mat(gauss_interp_);
   dg_mats.at(CUBSURF2D_LIFT)->set_mat(gauss_lift_);
 
@@ -319,6 +319,22 @@ DG_FP* DGConstants2D::get_mat_ptr(Constant_Matrix matrix) {
         return dg_mats.at(matrix)->get_mat_ptr_dp();
       } catch (std::out_of_range &e) {
         dg_abort("This constant matrix is not supported by DGConstants2D\n");
+      }
+      return nullptr;
+  }
+}
+
+// Get a pointer to the constant matrix in single precision (host memory).
+// For matrices with multiple DG orders, the pointer will point to the 1st order matrix.
+float* DGConstants2D::get_mat_ptr_sp(Constant_Matrix matrix) {
+  switch(matrix) {
+    case INTERP_MATRIX_ARRAY:
+      return order_interp_ptr_sp;
+    default:
+      try {
+        return dg_mats.at(matrix)->get_mat_ptr_sp();
+      } catch (std::out_of_range &e) {
+        dg_abort("This single precision constant matrix is not supported by DGConstants2D\n");
       }
       return nullptr;
   }

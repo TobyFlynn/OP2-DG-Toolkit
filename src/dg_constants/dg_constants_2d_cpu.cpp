@@ -22,23 +22,23 @@ DG_FP *dg_cubSurf2d_Interp_kernel;
 
 // Set up pointers that are accessible within OP2 kernels
 void DGConstants2D::transfer_kernel_ptrs() {
-  dg_r_kernel = r_ptr;
-  dg_s_kernel = s_ptr;
-  dg_Dr_kernel = dg_mats.at(DR)->get_mat_ptr_dp();
-  dg_Ds_kernel = dg_mats.at(DS)->get_mat_ptr_dp();
-  dg_Drw_kernel = dg_mats.at(DRW)->get_mat_ptr_dp();
-  dg_Dsw_kernel = dg_mats.at(DSW)->get_mat_ptr_dp();
-  dg_Mass_kernel = dg_mats.at(MASS)->get_mat_ptr_dp();
-  dg_InvMass_kernel = dg_mats.at(INV_MASS)->get_mat_ptr_dp();
-  dg_InvV_kernel = dg_mats.at(INV_V)->get_mat_ptr_dp();
-  dg_V_kernel = dg_mats.at(V)->get_mat_ptr_dp();
-  dg_Lift_kernel = dg_mats.at(LIFT)->get_mat_ptr_dp();
-  dg_Interp_kernel = order_interp_ptr;
-  dg_MM_F0_kernel = dg_mats.at(MM_F0)->get_mat_ptr_dp();
-  dg_MM_F1_kernel = dg_mats.at(MM_F1)->get_mat_ptr_dp();
-  dg_MM_F2_kernel = dg_mats.at(MM_F2)->get_mat_ptr_dp();
-  dg_Emat_kernel = dg_mats.at(EMAT)->get_mat_ptr_dp();
-  dg_cubSurf2d_Interp_kernel = dg_mats.at(CUBSURF2D_INTERP)->get_mat_ptr_dp();
+  dg_r_kernel = get_mat_ptr(R);
+  dg_s_kernel = get_mat_ptr(S);
+  dg_Dr_kernel = get_mat_ptr(DR);
+  dg_Ds_kernel = get_mat_ptr(DS);
+  dg_Drw_kernel = get_mat_ptr(DRW);
+  dg_Dsw_kernel = get_mat_ptr(DSW);
+  dg_Mass_kernel = get_mat_ptr(MASS);
+  dg_InvMass_kernel = get_mat_ptr(INV_MASS);
+  dg_InvV_kernel = get_mat_ptr(INV_V);
+  dg_V_kernel = get_mat_ptr(V);
+  dg_Lift_kernel = get_mat_ptr(LIFT);
+  dg_Interp_kernel = get_mat_ptr(INTERP_MATRIX_ARRAY);
+  dg_MM_F0_kernel = get_mat_ptr(MM_F0);
+  dg_MM_F1_kernel = get_mat_ptr(MM_F1);
+  dg_MM_F2_kernel = get_mat_ptr(MM_F2);
+  dg_Emat_kernel = get_mat_ptr(EMAT);
+  dg_cubSurf2d_Interp_kernel = get_mat_ptr(CUBSURF2D_INTERP);
 }
 
 void DGConstants2D::clean_up_kernel_ptrs() {
@@ -46,33 +46,9 @@ void DGConstants2D::clean_up_kernel_ptrs() {
 }
 
 DG_FP* DGConstants2D::get_mat_ptr_device(Constant_Matrix matrix) {
-  switch(matrix) {
-    case R:
-      return dg_r_kernel;
-    case S:
-      return dg_s_kernel;
-    case INTERP_MATRIX_ARRAY:
-      return dg_Interp_kernel;
-    default:
-      try {
-        return dg_mats.at(matrix)->get_mat_ptr_dp_device();
-      } catch (std::out_of_range &e) {
-        dg_abort("This double-precision constant matrix is not supported by DGConstants2D\n");
-      }
-      return nullptr;
-  }
+  return get_mat_ptr(matrix);
 }
 
 float* DGConstants2D::get_mat_ptr_device_sp(Constant_Matrix matrix) {
- switch(matrix) {
-    case INTERP_MATRIX_ARRAY:
-      return order_interp_ptr_sp;
-    default:
-      try {
-          return dg_mats.at(matrix)->get_mat_ptr_sp_device();
-        } catch (std::out_of_range &e) {
-          dg_abort("This single-precision constant matrix is not supported by DGConstants2D\n");
-        }
-      return nullptr;
-  }
+  return get_mat_ptr_sp(matrix);
 }

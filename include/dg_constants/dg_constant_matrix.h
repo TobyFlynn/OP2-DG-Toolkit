@@ -33,14 +33,16 @@ public:
   float* get_mat_ptr_sp(const int N);
   float* get_mat_ptr_sp_device(const int N);
 
+  // So that I can copy the address of these pointers with cudaMemcpyToSymbol
+  DG_FP *mat_ptr_dp;
+  DG_FP *mat_ptr_dp_device;
+  float *mat_ptr_sp;
+  float *mat_ptr_sp_device;
+
 private:
   void save_mat(DG_FP *mem_ptr, arma::mat &mat, const int N, const int max_size);
 
   bool multiple_orders;
   int max_rows, max_cols;
   std::vector<int> rows, cols;
-  DG_FP *mat_ptr_dp;
-  DG_FP *mat_ptr_dp_device;
-  float *mat_ptr_sp;
-  float *mat_ptr_sp_device;
 };
