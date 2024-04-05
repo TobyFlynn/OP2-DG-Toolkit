@@ -34,232 +34,62 @@ __constant__ DG_FP *dg_cubSurf3d_Lift_kernel;
 DG_FP *dg_r_d;
 DG_FP *dg_s_d;
 DG_FP *dg_t_d;
-DG_FP *dg_Dr_d;
-DG_FP *dg_Ds_d;
-DG_FP *dg_Dt_d;
-DG_FP *dg_Drw_d;
-DG_FP *dg_Dsw_d;
-DG_FP *dg_Dtw_d;
-DG_FP *dg_Mass_d;
-DG_FP *dg_InvMass_d;
-DG_FP *dg_InvV_d;
-DG_FP *dg_V_d;
-DG_FP *dg_Lift_d;
-DG_FP *dg_MM_F0_d;
-DG_FP *dg_MM_F1_d;
-DG_FP *dg_MM_F2_d;
-DG_FP *dg_MM_F3_d;
-DG_FP *dg_Emat_d;
 DG_FP *dg_Interp_d;
-DG_FP *dg_cub3d_Interp_d;
-DG_FP *dg_cub3d_Proj_d;
-DG_FP *dg_cub3d_PDr_d;
-DG_FP *dg_cub3d_PDs_d;
-DG_FP *dg_cub3d_PDt_d;
-DG_FP *dg_cubSurf3d_Interp_d;
-DG_FP *dg_cubSurf3d_Lift_d;
 
-float *dg_Dr_sp_d;
-float *dg_Ds_sp_d;
-float *dg_Dt_sp_d;
-float *dg_Drw_sp_d;
-float *dg_Dsw_sp_d;
-float *dg_Dtw_sp_d;
-float *dg_Mass_sp_d;
-float *dg_InvMass_sp_d;
-float *dg_InvV_sp_d;
-float *dg_V_sp_d;
-float *dg_Lift_sp_d;
-float *dg_Emat_sp_d;
 float *dg_Interp_sp_d;
-float *dg_cubInterp_sp_d;
-float *dg_cubProj_sp_d;
-float *dg_cubPDrT_sp_d;
-float *dg_cubPDsT_sp_d;
-float *dg_cubPDtT_sp_d;
-float *dg_cubInterpSurf_sp_d;
-float *dg_cubLiftSurf_sp_d;
 
 void DGConstants3D::transfer_kernel_ptrs() {
-  // Allocate device memory
-  cutilSafeCall(hipMalloc(&dg_r_d, N_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_s_d, N_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_t_d, N_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_Dr_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_Ds_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_Dt_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_Drw_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_Dsw_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_Dtw_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_Mass_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_InvMass_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_InvV_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_V_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_Lift_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_MM_F0_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_MM_F1_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_MM_F2_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_MM_F3_d, N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_Emat_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_Interp_d, N_max * N_max * Np_max * Np_max * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_cub3d_Interp_d, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_cub3d_Proj_d, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_cub3d_PDr_d, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_cub3d_PDs_d, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_cub3d_PDt_d, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_cubSurf3d_Interp_d, DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_3D_NP * sizeof(DG_FP)));
-  cutilSafeCall(hipMalloc(&dg_cubSurf3d_Lift_d, DG_NP * DG_NUM_FACES * DG_CUB_SURF_3D_NP * sizeof(DG_FP)));
+// Allocate device memory
+cutilSafeCall(hipMalloc(&dg_r_d, N_max * Np_max * sizeof(DG_FP)));
+cutilSafeCall(hipMalloc(&dg_s_d, N_max * Np_max * sizeof(DG_FP)));
+cutilSafeCall(hipMalloc(&dg_t_d, N_max * Np_max * sizeof(DG_FP)));
+cutilSafeCall(hipMalloc(&dg_Interp_d, N_max * N_max * Np_max * Np_max * sizeof(DG_FP)));
 
-  // Transfer matrices to device
-  cutilSafeCall(hipMemcpy(dg_r_d, r_ptr, N_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_s_d, s_ptr, N_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_t_d, t_ptr, N_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Dr_d, Dr_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Ds_d, Ds_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Dt_d, Dt_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Drw_d, Drw_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Dsw_d, Dsw_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Dtw_d, Dtw_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Mass_d, mass_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_InvMass_d, invMass_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_InvV_d, invV_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_V_d, v_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Lift_d, lift_ptr, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_MM_F0_d, mmF0_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_MM_F1_d, mmF1_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_MM_F2_d, mmF2_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_MM_F3_d, mmF3_ptr, N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Emat_d, eMat_ptr, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Interp_d, order_interp_ptr, N_max * N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_cub3d_Interp_d, cubInterp_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_cub3d_Proj_d, cubProj_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_cub3d_PDr_d, cubPDrT_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_cub3d_PDs_d, cubPDsT_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_cub3d_PDt_d, cubPDtT_ptr, DG_NP * DG_CUB_3D_NP * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_cubSurf3d_Interp_d, cubInterpSurf_ptr, DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_3D_NP * sizeof(DG_FP), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_cubSurf3d_Lift_d, cubLiftSurf_ptr, DG_NP * DG_NUM_FACES * DG_CUB_SURF_3D_NP * sizeof(DG_FP), hipMemcpyHostToDevice));
+// Transfer matrices to device
+cutilSafeCall(hipMemcpy(dg_r_d, r_ptr, N_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+cutilSafeCall(hipMemcpy(dg_s_d, s_ptr, N_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+cutilSafeCall(hipMemcpy(dg_t_d, t_ptr, N_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
+cutilSafeCall(hipMemcpy(dg_Interp_d, order_interp_ptr, N_max * N_max * Np_max * Np_max * sizeof(DG_FP), hipMemcpyHostToDevice));
 
-  // Set up pointers that are accessible from the device
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_r_kernel), &dg_r_d, sizeof(dg_r_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_s_kernel), &dg_s_d, sizeof(dg_s_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_t_kernel), &dg_t_d, sizeof(dg_t_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Dr_kernel), &dg_Dr_d, sizeof(dg_Dr_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Ds_kernel), &dg_Ds_d, sizeof(dg_Ds_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Dt_kernel), &dg_Dt_d, sizeof(dg_Dt_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Drw_kernel), &dg_Drw_d, sizeof(dg_Drw_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Dsw_kernel), &dg_Dsw_d, sizeof(dg_Dsw_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Dtw_kernel), &dg_Dtw_d, sizeof(dg_Dtw_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Mass_kernel), &dg_Mass_d, sizeof(dg_Mass_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_InvMass_kernel), &dg_InvMass_d, sizeof(dg_InvMass_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_InvV_kernel), &dg_InvV_d, sizeof(dg_InvV_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_V_kernel), &dg_V_d, sizeof(dg_V_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Lift_kernel), &dg_Lift_d, sizeof(dg_Lift_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_MM_F0_kernel), &dg_MM_F0_d, sizeof(dg_MM_F0_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_MM_F1_kernel), &dg_MM_F1_d, sizeof(dg_MM_F1_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_MM_F2_kernel), &dg_MM_F2_d, sizeof(dg_MM_F2_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_MM_F3_kernel), &dg_MM_F3_d, sizeof(dg_MM_F3_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Emat_kernel), &dg_Emat_d, sizeof(dg_Emat_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Interp_kernel), &dg_Interp_d, sizeof(dg_Interp_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_cub3d_Interp_kernel), &dg_cub3d_Interp_d, sizeof(dg_cub3d_Interp_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_cub3d_Proj_kernel), &dg_cub3d_Proj_d, sizeof(dg_cub3d_Proj_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_cub3d_PDr_kernel), &dg_cub3d_PDr_d, sizeof(dg_cub3d_Interp_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_cub3d_PDs_kernel), &dg_cub3d_PDs_d, sizeof(dg_cub3d_PDs_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_cub3d_PDt_kernel), &dg_cub3d_PDt_d, sizeof(dg_cub3d_PDt_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_cubSurf3d_Interp_kernel), &dg_cubSurf3d_Interp_d, sizeof(dg_cubSurf3d_Interp_d)));
-  cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_cubSurf3d_Lift_kernel), &dg_cubSurf3d_Lift_d, sizeof(dg_cubSurf3d_Lift_d)));
+// Set up pointers that are accessible from the device
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_r_kernel), &dg_r_d, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_s_kernel), &dg_s_d, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_t_kernel), &dg_t_d, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Dr_kernel), &dg_mats.at(DR)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Ds_kernel), &dg_mats.at(DS)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Dt_kernel), &dg_mats.at(DT)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Drw_kernel), &dg_mats.at(DRW)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Dsw_kernel), &dg_mats.at(DSW)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Dtw_kernel), &dg_mats.at(DTW)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Mass_kernel), &dg_mats.at(MASS)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_InvMass_kernel), &dg_mats.at(INV_MASS)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_InvV_kernel), &dg_mats.at(INV_V)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_V_kernel), &dg_mats.at(V)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Lift_kernel), &dg_mats.at(LIFT)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_MM_F0_kernel), &dg_mats.at(MM_F0)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_MM_F1_kernel), &dg_mats.at(MM_F1)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_MM_F2_kernel), &dg_mats.at(MM_F2)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_MM_F3_kernel), &dg_mats.at(MM_F3)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Emat_kernel), &dg_mats.at(EMAT)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_Interp_kernel), &dg_Interp_d, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_cub3d_Interp_kernel), &dg_mats.at(CUB3D_INTERP)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_cub3d_Proj_kernel), &dg_mats.at(CUB3D_PROJ)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_cub3d_PDr_kernel), &dg_mats.at(CUB3D_PDR)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_cub3d_PDs_kernel), &dg_mats.at(CUB3D_PDS)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_cub3d_PDt_kernel), &dg_mats.at(CUB3D_PDT)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_cubSurf3d_Interp_kernel), &dg_mats.at(CUBSURF3D_INTERP)->mat_ptr_dp_device, sizeof(dg_r_d)));
+cutilSafeCall(hipMemcpyToSymbol(HIP_SYMBOL(dg_cubSurf3d_Lift_kernel), &dg_mats.at(CUBSURF3D_LIFT)->mat_ptr_dp_device, sizeof(dg_r_d)));
 
-  cutilSafeCall(hipMalloc(&dg_Dr_sp_d, N_max * Np_max * Np_max * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_Ds_sp_d, N_max * Np_max * Np_max * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_Dt_sp_d, N_max * Np_max * Np_max * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_Drw_sp_d, N_max * Np_max * Np_max * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_Dsw_sp_d, N_max * Np_max * Np_max * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_Dtw_sp_d, N_max * Np_max * Np_max * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_Mass_sp_d, N_max * Np_max * Np_max * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_InvMass_sp_d, N_max * Np_max * Np_max * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_InvV_sp_d, N_max * Np_max * Np_max * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_V_sp_d, N_max * Np_max * Np_max * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_Lift_sp_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_Emat_sp_d, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_Interp_sp_d, N_max * N_max * Np_max * Np_max * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_cubInterp_sp_d, DG_NP * DG_CUB_3D_NP * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_cubProj_sp_d, DG_NP * DG_CUB_3D_NP * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_cubPDrT_sp_d, DG_NP * DG_CUB_3D_NP * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_cubPDsT_sp_d, DG_NP * DG_CUB_3D_NP * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_cubPDtT_sp_d, DG_NP * DG_CUB_3D_NP * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_cubInterpSurf_sp_d, DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_3D_NP * sizeof(float)));
-  cutilSafeCall(hipMalloc(&dg_cubLiftSurf_sp_d, DG_NP * DG_NUM_FACES * DG_CUB_SURF_3D_NP * sizeof(float)));
-
-  cutilSafeCall(hipMemcpy(dg_Dr_sp_d, Dr_ptr_sp, N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Ds_sp_d, Ds_ptr_sp, N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Dt_sp_d, Dt_ptr_sp, N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Drw_sp_d, Drw_ptr_sp, N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Dsw_sp_d, Dsw_ptr_sp, N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Dtw_sp_d, Dtw_ptr_sp, N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Mass_sp_d, mass_ptr_sp, N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_InvMass_sp_d, invMass_ptr_sp, N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_InvV_sp_d, invV_ptr_sp, N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_V_sp_d, v_ptr_sp, N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Lift_sp_d, lift_ptr_sp, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Emat_sp_d, eMat_ptr_sp, N_max * DG_NUM_FACES * Nfp_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_Interp_sp_d, order_interp_ptr_sp, N_max * N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_cubInterp_sp_d, cubInterp_ptr_sp, DG_NP * DG_CUB_3D_NP * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_cubProj_sp_d, cubProj_ptr_sp, DG_NP * DG_CUB_3D_NP * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_cubPDrT_sp_d, cubPDrT_ptr_sp, DG_NP * DG_CUB_3D_NP * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_cubPDsT_sp_d, cubPDsT_ptr_sp, DG_NP * DG_CUB_3D_NP * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_cubPDtT_sp_d, cubPDtT_ptr_sp, DG_NP * DG_CUB_3D_NP * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_cubInterpSurf_sp_d, cubInterpSurf_ptr_sp, DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_3D_NP * sizeof(float), hipMemcpyHostToDevice));
-  cutilSafeCall(hipMemcpy(dg_cubLiftSurf_sp_d, cubLiftSurf_ptr_sp, DG_NP * DG_NUM_FACES * DG_CUB_SURF_3D_NP * sizeof(float), hipMemcpyHostToDevice));
+cutilSafeCall(hipMalloc(&dg_Interp_sp_d, N_max * N_max * Np_max * Np_max * sizeof(float)));
+cutilSafeCall(hipMemcpy(dg_Interp_sp_d, order_interp_ptr_sp, N_max * N_max * Np_max * Np_max * sizeof(float), hipMemcpyHostToDevice));
 }
 
 void DGConstants3D::clean_up_kernel_ptrs() {
   hipFree(dg_r_d);
   hipFree(dg_s_d);
   hipFree(dg_t_d);
-  hipFree(dg_Dr_d);
-  hipFree(dg_Ds_d);
-  hipFree(dg_Dt_d);
-  hipFree(dg_Drw_d);
-  hipFree(dg_Dsw_d);
-  hipFree(dg_Dtw_d);
-  hipFree(dg_Mass_d);
-  hipFree(dg_InvMass_d);
-  hipFree(dg_InvV_d);
-  hipFree(dg_V_d);
-  hipFree(dg_Lift_d);
-  hipFree(dg_MM_F0_d);
-  hipFree(dg_MM_F1_d);
-  hipFree(dg_MM_F2_d);
-  hipFree(dg_MM_F3_d);
-  hipFree(dg_Emat_d);
   hipFree(dg_Interp_d);
-  hipFree(dg_cub3d_Interp_d);
-  hipFree(dg_cub3d_Proj_kernel);
-  hipFree(dg_cub3d_PDr_d);
-  hipFree(dg_cub3d_PDs_d);
-  hipFree(dg_cub3d_PDt_d);
-  hipFree(dg_cubSurf3d_Interp_d);
-  hipFree(dg_cubSurf3d_Lift_d);
-
-  hipFree(dg_Dr_sp_d);
-  hipFree(dg_Ds_sp_d);
-  hipFree(dg_Dt_sp_d);
-  hipFree(dg_Drw_sp_d);
-  hipFree(dg_Dsw_sp_d);
-  hipFree(dg_Dtw_sp_d);
-  hipFree(dg_Mass_sp_d);
-  hipFree(dg_InvMass_sp_d);
-  hipFree(dg_InvV_sp_d);
-  hipFree(dg_V_sp_d);
-  hipFree(dg_Lift_sp_d);
-  hipFree(dg_Emat_sp_d);
   hipFree(dg_Interp_sp_d);
-  hipFree(dg_cubInterp_sp_d);
-  hipFree(dg_cubProj_sp_d);
-  hipFree(dg_cubPDrT_sp_d);
-  hipFree(dg_cubPDsT_sp_d);
-  hipFree(dg_cubPDtT_sp_d);
-  hipFree(dg_cubInterpSurf_sp_d);
-  hipFree(dg_cubLiftSurf_sp_d);
 }
 
 DG_FP* DGConstants3D::get_mat_ptr_device(Constant_Matrix matrix) {
@@ -270,104 +100,28 @@ DG_FP* DGConstants3D::get_mat_ptr_device(Constant_Matrix matrix) {
       return dg_s_d;
     case T:
       return dg_t_d;
-    case DR:
-      return dg_Dr_d;
-    case DS:
-      return dg_Ds_d;
-    case DT:
-      return dg_Dt_d;
-    case DRW:
-      return dg_Drw_d;
-    case DSW:
-      return dg_Dsw_d;
-    case DTW:
-      return dg_Dtw_d;
-    case MASS:
-      return dg_Mass_d;
-    case INV_MASS:
-      return dg_InvMass_d;
-    case INV_V:
-      return dg_InvV_d;
-    case V:
-      return dg_V_d;
-    case LIFT:
-      return dg_Lift_d;
-    case MM_F0:
-      return dg_MM_F0_d;
-    case MM_F1:
-      return dg_MM_F1_d;
-    case MM_F2:
-      return dg_MM_F2_d;
-    case MM_F3:
-      return dg_MM_F3_d;
-    case EMAT:
-      return dg_Emat_d;
     case INTERP_MATRIX_ARRAY:
       return dg_Interp_d;
-    case CUB3D_INTERP:
-      return dg_cub3d_Interp_d;
-    case CUB3D_PROJ:
-      return dg_cub3d_Proj_d;
-    case CUB3D_PDR:
-      return dg_cub3d_PDr_d;
-    case CUB3D_PDS:
-      return dg_cub3d_PDs_d;
-    case CUB3D_PDT:
-      return dg_cub3d_PDt_d;
-    case CUBSURF3D_INTERP:
-      return dg_cubSurf3d_Interp_d;
-    case CUBSURF3D_LIFT:
-      return dg_cubSurf3d_Lift_d;
     default:
-      dg_abort("This constant matrix is not supported by DGConstants3D\n");
+      try {
+        return dg_mats.at(matrix)->get_mat_ptr_dp_device();
+      } catch (std::out_of_range &e) {
+        dg_abort("This constant matrix is not supported by DGConstants3D\n");
+      }
       return nullptr;
   }
 }
 
 float* DGConstants3D::get_mat_ptr_device_sp(Constant_Matrix matrix) {
   switch(matrix) {
-    case DR:
-      return dg_Dr_sp_d;
-    case DS:
-      return dg_Ds_sp_d;
-    case DT:
-      return dg_Dt_sp_d;
-    case DRW:
-      return dg_Drw_sp_d;
-    case DSW:
-      return dg_Dsw_sp_d;
-    case DTW:
-      return dg_Dtw_sp_d;
-    case MASS:
-      return dg_Mass_sp_d;
-    case INV_MASS:
-      return dg_InvMass_sp_d;
-    case INV_V:
-      return dg_InvV_sp_d;
-    case V:
-      return dg_V_sp_d;
-    case LIFT:
-      return dg_Lift_sp_d;
-    case EMAT:
-      return dg_Emat_sp_d;
     case INTERP_MATRIX_ARRAY:
       return dg_Interp_sp_d;
-    case CUB3D_INTERP:
-      return dg_cubInterp_sp_d;
-    case CUB3D_PROJ:
-      return dg_cubProj_sp_d;
-    case CUB3D_PDR:
-      return dg_cubPDrT_sp_d;
-    case CUB3D_PDS:
-      return dg_cubPDsT_sp_d;
-    case CUB3D_PDT:
-      return dg_cubPDtT_sp_d;
-    case CUBSURF3D_INTERP:
-      return dg_cubInterpSurf_sp_d;
-    case CUBSURF3D_LIFT:
-      return dg_cubLiftSurf_sp_d;
     default:
-      dg_abort("This sp constant matrix is not supported by DGConstants3D\n");
+      try {
+        return dg_mats.at(matrix)->get_mat_ptr_sp_device();
+      } catch (std::out_of_range &e) {
+        dg_abort("This single precision constant matrix is not supported by DGConstants3D\n");
+      }
       return nullptr;
   }
 }

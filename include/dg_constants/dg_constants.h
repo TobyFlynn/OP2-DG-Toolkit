@@ -26,6 +26,7 @@ public:
 
   virtual void calc_interp_mats() = 0;
   virtual DG_FP* get_mat_ptr(Constant_Matrix matrix) = 0;
+  virtual float* get_mat_ptr_sp(Constant_Matrix matrix) = 0;
   virtual DG_FP* get_mat_ptr_device(Constant_Matrix matrix) = 0;
   virtual float* get_mat_ptr_device_sp(Constant_Matrix matrix) = 0;
 

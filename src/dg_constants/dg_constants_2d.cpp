@@ -42,6 +42,8 @@ DGConstants2D::DGConstants2D(const int n_) {
   // Create matrices of all orders
   r_ptr = (DG_FP *)calloc(N_max * Np_max, sizeof(DG_FP));
   s_ptr = (DG_FP *)calloc(N_max * Np_max, sizeof(DG_FP));
+  order_interp_ptr = (DG_FP *)calloc(N_max * N_max * Np_max * Np_max, sizeof(DG_FP));
+  
   dg_mats.insert({V, new DGConstantMatrix(Np_max, Np_max, true)});
   dg_mats.insert({INV_V, new DGConstantMatrix(Np_max, Np_max, true)});
   dg_mats.insert({MASS, new DGConstantMatrix(Np_max, Np_max, true)});
@@ -55,7 +57,6 @@ DGConstants2D::DGConstants2D(const int n_) {
   dg_mats.insert({MM_F0, new DGConstantMatrix(Np_max, Np_max, true)});
   dg_mats.insert({MM_F1, new DGConstantMatrix(Np_max, Np_max, true)});
   dg_mats.insert({MM_F2, new DGConstantMatrix(Np_max, Np_max, true)});
-  order_interp_ptr = (DG_FP *)calloc(N_max * N_max * Np_max * Np_max, sizeof(DG_FP));
 
   for(int N = 1; N <= N_max; N++) {
     int Np, Nfp;

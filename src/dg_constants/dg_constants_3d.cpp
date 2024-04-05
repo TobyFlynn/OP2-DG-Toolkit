@@ -34,26 +34,28 @@ DGConstants3D::DGConstants3D(const int n_) {
   // Set num points and num face points
   DGUtils::numNodes3D(N_max, &Np_max, &Nfp_max);
 
+  // Create matrices of all orders
   r_ptr   = (DG_FP *)calloc(N_max * Np_max, sizeof(DG_FP));
   s_ptr   = (DG_FP *)calloc(N_max * Np_max, sizeof(DG_FP));
   t_ptr   = (DG_FP *)calloc(N_max * Np_max, sizeof(DG_FP));
-  Dr_ptr  = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  Ds_ptr  = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  Dt_ptr  = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  Drw_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  Dsw_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  Dtw_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  mass_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  invMass_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  invV_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  v_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  lift_ptr = (DG_FP *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(DG_FP));
-  mmF0_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  mmF1_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  mmF2_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  mmF3_ptr = (DG_FP *)calloc(N_max * Np_max * Np_max, sizeof(DG_FP));
-  eMat_ptr = (DG_FP *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(DG_FP));
   order_interp_ptr = (DG_FP *)calloc(N_max * N_max * Np_max * Np_max, sizeof(DG_FP));
+
+  dg_mats.insert({DR, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({DS, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({DT, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({DRW, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({DSW, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({DTW, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({MASS, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({INV_MASS, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({INV_V, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({V, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({LIFT, new DGConstantMatrix(Np_max, DG_NUM_FACES * Nfp_max, true)});
+  dg_mats.insert({MM_F0, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({MM_F1, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({MM_F2, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({MM_F3, new DGConstantMatrix(Np_max, Np_max, true)});
+  dg_mats.insert({EMAT, new DGConstantMatrix(Np_max, DG_NUM_FACES * Nfp_max, true)});
 
   for(int N = 1; N <= N_max; N++) {
     int Np, Nfp;
@@ -90,22 +92,22 @@ DGConstants3D::DGConstants3D(const int n_) {
     save_vec(r_ptr, r_, N, Np_max);
     save_vec(s_ptr, s_, N, Np_max);
     save_vec(t_ptr, t_, N, Np_max);
-    save_mat(Dr_ptr, dr_, N, Np_max * Np_max);
-    save_mat(Ds_ptr, ds_, N, Np_max * Np_max);
-    save_mat(Dt_ptr, dt_, N, Np_max * Np_max);
-    save_mat(Drw_ptr, drw_, N, Np_max * Np_max);
-    save_mat(Dsw_ptr, dsw_, N, Np_max * Np_max);
-    save_mat(Dtw_ptr, dtw_, N, Np_max * Np_max);
-    save_mat(mass_ptr, mass_, N, Np_max * Np_max);
-    save_mat(invMass_ptr, inv_mass_, N, Np_max * Np_max);
-    save_mat(invV_ptr, invV_, N, Np_max * Np_max);
-    save_mat(v_ptr, v_, N, Np_max * Np_max);
-    save_mat(lift_ptr, lift_, N, DG_NUM_FACES * Nfp_max * Np_max);
-    save_mat(mmF0_ptr, mmF0_, N, Np_max * Np_max);
-    save_mat(mmF1_ptr, mmF1_, N, Np_max * Np_max);
-    save_mat(mmF2_ptr, mmF2_, N, Np_max * Np_max);
-    save_mat(mmF3_ptr, mmF3_, N, Np_max * Np_max);
-    save_mat(eMat_ptr, eMat_, N, DG_NUM_FACES * Nfp_max * Np_max);
+    dg_mats.at(DR)->set_mat(dr_, N);
+    dg_mats.at(DS)->set_mat(ds_, N);
+    dg_mats.at(DT)->set_mat(dt_, N);
+    dg_mats.at(DRW)->set_mat(drw_, N);
+    dg_mats.at(DSW)->set_mat(dsw_, N);
+    dg_mats.at(DTW)->set_mat(dtw_, N);
+    dg_mats.at(MASS)->set_mat(mass_, N);
+    dg_mats.at(INV_MASS)->set_mat(inv_mass_, N);
+    dg_mats.at(INV_V)->set_mat(invV_, N);
+    dg_mats.at(V)->set_mat(v_, N);
+    dg_mats.at(LIFT)->set_mat(lift_, N);
+    dg_mats.at(MM_F0)->set_mat(mmF0_, N);
+    dg_mats.at(MM_F1)->set_mat(mmF1_, N);
+    dg_mats.at(MM_F2)->set_mat(mmF2_, N);
+    dg_mats.at(MM_F3)->set_mat(mmF3_, N);
+    dg_mats.at(EMAT)->set_mat(eMat_, N);
 
     std::vector<int> fmask_int = arma::conv_to<std::vector<int>>::from(fmask_);
     memcpy(&FMASK[(N - 1) * DG_NUM_FACES * Nfp_max], fmask_int.data(), fmask_int.size() * sizeof(int));
@@ -153,21 +155,21 @@ DGConstants3D::DGConstants3D(const int n_) {
   cub_s_ptr = (DG_FP *)calloc(DG_CUB_3D_NP, sizeof(DG_FP));
   cub_t_ptr = (DG_FP *)calloc(DG_CUB_3D_NP, sizeof(DG_FP));
   cub_w_ptr = (DG_FP *)calloc(DG_CUB_3D_NP, sizeof(DG_FP));
-  cubInterp_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
-  cubProj_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
-  cubPDrT_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
-  cubPDsT_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
-  cubPDtT_ptr = (DG_FP *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(DG_FP));
+  dg_mats.insert({CUB3D_INTERP, new DGConstantMatrix(DG_CUB_3D_NP, DG_NP, false)});
+  dg_mats.insert({CUB3D_PROJ, new DGConstantMatrix(DG_NP, DG_CUB_3D_NP, false)});
+  dg_mats.insert({CUB3D_PDR, new DGConstantMatrix(DG_NP, DG_CUB_3D_NP, false)});
+  dg_mats.insert({CUB3D_PDS, new DGConstantMatrix(DG_NP, DG_CUB_3D_NP, false)});
+  dg_mats.insert({CUB3D_PDT, new DGConstantMatrix(DG_NP, DG_CUB_3D_NP, false)});
 
   save_vec(cub_r_ptr, cubr, 1, DG_CUB_3D_NP);
   save_vec(cub_s_ptr, cubs, 1, DG_CUB_3D_NP);
   save_vec(cub_t_ptr, cubt, 1, DG_CUB_3D_NP);
   save_vec(cub_w_ptr, cubw, 1, DG_CUB_3D_NP);
-  save_mat(cubInterp_ptr, cubInterp, 1, DG_NP * DG_CUB_3D_NP);
-  save_mat(cubProj_ptr, cubProj, 1, DG_NP * DG_CUB_3D_NP);
-  save_mat(cubPDrT_ptr, cubPDrT, 1, DG_NP * DG_CUB_3D_NP);
-  save_mat(cubPDsT_ptr, cubPDsT, 1, DG_NP * DG_CUB_3D_NP);
-  save_mat(cubPDtT_ptr, cubPDtT, 1, DG_NP * DG_CUB_3D_NP);
+  dg_mats.at(CUB3D_INTERP)->set_mat(cubInterp);
+  dg_mats.at(CUB3D_PROJ)->set_mat(cubProj);
+  dg_mats.at(CUB3D_PDR)->set_mat(cubPDrT);
+  dg_mats.at(CUB3D_PDS)->set_mat(cubPDsT);
+  dg_mats.at(CUB3D_PDT)->set_mat(cubPDtT);
 
   // 3D surface cubatures
   arma::vec cub_surf_r, cub_surf_s, cub_surf_w;
@@ -176,11 +178,11 @@ DGConstants3D::DGConstants3D(const int n_) {
   DGUtils::cubatureSurface3d(r_, s_, t_, fmask_, cub_surf_r, cub_surf_s,
                              cub_surf_w, DG_ORDER, interp_cub_surf, lift_cub_surf);
 
-  cubInterpSurf_ptr = (DG_FP *)calloc(DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_3D_NP, sizeof(DG_FP));
-  cubLiftSurf_ptr   = (DG_FP *)calloc(DG_NP * DG_NUM_FACES * DG_CUB_SURF_3D_NP, sizeof(DG_FP));
+  dg_mats.insert({CUBSURF3D_INTERP, new DGConstantMatrix(DG_CUB_SURF_3D_NP * DG_NUM_FACES, DG_NUM_FACES * DG_NPF, false)});
+  dg_mats.insert({CUBSURF3D_LIFT, new DGConstantMatrix(DG_NP, DG_CUB_SURF_3D_NP * DG_NUM_FACES, false)});
 
-  save_mat(cubInterpSurf_ptr, interp_cub_surf, 1, DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_3D_NP);
-  save_mat(cubLiftSurf_ptr, lift_cub_surf, 1, DG_NP * DG_NUM_FACES * DG_CUB_SURF_3D_NP);
+  dg_mats.at(CUBSURF3D_INTERP)->set_mat(interp_cub_surf);
+  dg_mats.at(CUBSURF3D_LIFT)->set_mat(lift_cub_surf);
 }
 
 void DGConstants3D::getCubatureData(const int N, arma::vec &cubr, arma::vec &cubs, arma::vec &cubt, arma::vec &cubw) {
@@ -296,37 +298,10 @@ void DGConstants3D::calc_interp_mats() {
           // interp_ = DGUtils::interpMatrix3D(r_0, s_0, t_0, invV_1, n1).t();
           // interp_ = DGUtils::interpMatrix3D(r_1, s_1, t_1, invV_0, n0);
           interp_ = DGUtils::interpMatrix3D(r_1, s_1, t_1, invV_0, n0);
-
-          // arma::mat tmp_M(r_0.n_elem, r_0.n_elem, arma::fill::zeros);
-          // arma::mat tmp_vT_inv_1 = arma::inv(v_1.t());
-          // arma::mat tmp_vT_inv_0 = arma::inv(v_0.t());
-          // for(int i = 0; i < r_0.n_elem; i++) {
-          //   for(int j = 0; j < r_0.n_elem; j++) {
-          //     for(int n = 0; n < r_0.n_elem; n++) {
-          //       tmp_M(i, j) += tmp_vT_inv_0(i, n) * tmp_vT_inv_0(j, n);
-          //     }
-          //   }
-          // }
-          // arma::mat interp_points = DGUtils::interpMatrix3D(r_1, s_1, t_1, invV_0, n0);
-          // interp_ = arma::inv(invV_1.t() * invV_1) * interp_points * tmp_M;
         } else {
           // interp_ = DGUtils::interpMatrix3D(r_1, s_1, t_1, invV_0, n0);
           // interp_ = DGUtils::interpMatrix3D(r_0, s_0, t_0, invV_1, n1).t();
           interp_ = DGUtils::interpMatrix3D(r_0, s_0, t_0, invV_1, n1).t();
-
-          // arma::mat tmp_M(r_1.n_elem, r_1.n_elem, arma::fill::zeros);
-          // arma::mat tmp_vT_inv_1 = arma::inv(v_1.t());
-          // arma::mat tmp_vT_inv_0 = arma::inv(v_0.t());
-          // for(int i = 0; i < r_1.n_elem; i++) {
-          //   for(int j = 0; j < r_1.n_elem; j++) {
-          //     for(int n = 0; n < r_0.n_elem; n++) {
-          //       tmp_M(i, j) += tmp_vT_inv_1(i, n) * tmp_vT_inv_1(j, n);
-          //     }
-          //   }
-          // }
-          // arma::mat interp_points = DGUtils::interpMatrix3D(r_0, s_0, t_0, invV_1, n1);
-          // interp_ = arma::inv(invV_0.t() * invV_0) * interp_points * tmp_M;
-          // interp_ = interp_.t();
         }
         #ifdef DG_COL_MAJ
         arma::Mat<DG_FP> interp_2 = arma::conv_to<arma::Mat<DG_FP>>::from(interp_);
@@ -338,75 +313,22 @@ void DGConstants3D::calc_interp_mats() {
     }
   }
 
-
-  // for(int p0 = 0; p0 < N_max; p0++) {
-  //   for(int p1 = p0 + 1; p1 < N_max; p1++) {
-  //     memcpy(&order_interp_ptr[(p1 * DG_ORDER + p0) * DG_NP * DG_NP], &order_interp_ptr[(p0 * DG_ORDER + p1) * DG_NP * DG_NP], DG_NP * DG_NP * sizeof(DG_FP));
-  //   }
-  // }
-
-  Dr_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  Ds_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  Dt_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  Drw_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  Dsw_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  Dtw_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  mass_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  invMass_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  invV_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  v_ptr_sp = (float *)calloc(N_max * Np_max * Np_max, sizeof(float));
-  lift_ptr_sp = (float *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(float));
-  eMat_ptr_sp = (float *)calloc(N_max * DG_NUM_FACES * Nfp_max * Np_max, sizeof(float));
+  // Convert interpolation matrices to single-precision
   order_interp_ptr_sp = (float *)calloc(N_max * N_max * Np_max * Np_max, sizeof(float));
-  cubInterp_ptr_sp = (float *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(float));
-  cubProj_ptr_sp = (float *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(float));
-  cubPDrT_ptr_sp = (float *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(float));
-  cubPDsT_ptr_sp = (float *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(float));
-  cubPDtT_ptr_sp = (float *)calloc(DG_NP * DG_CUB_3D_NP, sizeof(float));
-  cubInterpSurf_ptr_sp = (float *)calloc(DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_3D_NP, sizeof(float));
-  cubLiftSurf_ptr_sp   = (float *)calloc(DG_NP * DG_NUM_FACES * DG_CUB_SURF_3D_NP, sizeof(float));
-
-  for(int i = 0; i < N_max * Np_max * Np_max; i++) {
-    Dr_ptr_sp[i] = (float)Dr_ptr[i];
-    Ds_ptr_sp[i] = (float)Ds_ptr[i];
-    Dt_ptr_sp[i] = (float)Dt_ptr[i];
-    Drw_ptr_sp[i] = (float)Drw_ptr[i];
-    Dsw_ptr_sp[i] = (float)Dsw_ptr[i];
-    Dtw_ptr_sp[i] = (float)Dtw_ptr[i];
-    mass_ptr_sp[i] = (float)mass_ptr[i];
-    invMass_ptr_sp[i] = (float)invMass_ptr[i];
-    invV_ptr_sp[i] = (float)invV_ptr[i];
-    v_ptr_sp[i] = (float)v_ptr[i];
-  }
-
-  for(int i = 0; i < N_max * DG_NUM_FACES * Nfp_max * Np_max; i++) {
-    lift_ptr_sp[i] = (float)lift_ptr[i];
-    eMat_ptr_sp[i] = (float)eMat_ptr[i];
-  }
-
   for(int i = 0; i < N_max * N_max * Np_max * Np_max; i++) {
     order_interp_ptr_sp[i] = (float)order_interp_ptr[i];
   }
 
-  for(int i = 0; i < DG_NP * DG_CUB_3D_NP; i++) {
-    cubInterp_ptr_sp[i] = (float)cubInterp_ptr[i];
-    cubProj_ptr_sp[i] = (float)cubProj_ptr[i];
-    cubPDrT_ptr_sp[i] = (float)cubPDrT_ptr[i];
-    cubPDsT_ptr_sp[i] = (float)cubPDsT_ptr[i];
-    cubPDtT_ptr_sp[i] = (float)cubPDtT_ptr[i];
-  }
-
-  for(int i = 0; i < DG_NUM_FACES * DG_NPF * DG_NUM_FACES * DG_CUB_SURF_3D_NP; i++) {
-    cubInterpSurf_ptr_sp[i] = (float)cubInterpSurf_ptr[i];
-  }
-
-  for(int i = 0; i < DG_NP * DG_NUM_FACES * DG_CUB_SURF_3D_NP; i++) {
-    cubLiftSurf_ptr_sp[i] = (float)cubLiftSurf_ptr[i];
+  // Copy all DGConstantMatrix matrices to device memory.
+  for(const auto &dg_mat : dg_mats) {
+    dg_mat.second->transfer_to_device();
   }
 
   transfer_kernel_ptrs();
 }
 
+// Get a pointer to the constant matrix (host memory).
+// For matrices with multiple DG orders, the pointer will point to the 1st order matrix.
 DG_FP* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
   switch(matrix) {
     case R:
@@ -415,38 +337,6 @@ DG_FP* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
       return s_ptr;
     case T:
       return t_ptr;
-    case DR:
-      return Dr_ptr;
-    case DS:
-      return Ds_ptr;
-    case DT:
-      return Dt_ptr;
-    case DRW:
-      return Drw_ptr;
-    case DSW:
-      return Dsw_ptr;
-    case DTW:
-      return Dtw_ptr;
-    case MASS:
-      return mass_ptr;
-    case INV_MASS:
-      return invMass_ptr;
-    case INV_V:
-      return invV_ptr;
-    case V:
-      return v_ptr;
-    case LIFT:
-      return lift_ptr;
-    case MM_F0:
-      return mmF0_ptr;
-    case MM_F1:
-      return mmF1_ptr;
-    case MM_F2:
-      return mmF2_ptr;
-    case MM_F3:
-      return mmF3_ptr;
-    case EMAT:
-      return eMat_ptr;
     case INTERP_MATRIX_ARRAY:
       return order_interp_ptr;
     case CUB3D_R:
@@ -457,22 +347,28 @@ DG_FP* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
       return cub_t_ptr;
     case CUB3D_W:
       return cub_w_ptr;
-    case CUB3D_INTERP:
-      return cubInterp_ptr;
-    case CUB3D_PROJ:
-      return cubProj_ptr;
-    case CUB3D_PDR:
-      return cubPDrT_ptr;
-    case CUB3D_PDS:
-      return cubPDsT_ptr;
-    case CUB3D_PDT:
-      return cubPDtT_ptr;
-    case CUBSURF3D_INTERP:
-      return cubInterpSurf_ptr;
-    case CUBSURF3D_LIFT:
-      return cubLiftSurf_ptr;
     default:
-      dg_abort("This constant matrix is not supported by DGConstants3D\n");
+      try {
+        return dg_mats.at(matrix)->get_mat_ptr_dp();
+      } catch (std::out_of_range &e) {
+        dg_abort("This constant matrix is not supported by DGConstants3D\n");
+      }
+      return nullptr;
+  }
+}
+
+// Get a pointer to the constant matrix in single precision (host memory).
+// For matrices with multiple DG orders, the pointer will point to the 1st order matrix.
+float* DGConstants3D::get_mat_ptr_sp(Constant_Matrix matrix) {
+  switch(matrix) {
+    case INTERP_MATRIX_ARRAY:
+      return order_interp_ptr_sp;
+    default:
+      try {
+        return dg_mats.at(matrix)->get_mat_ptr_sp();
+      } catch (std::out_of_range &e) {
+        dg_abort("This single precision constant matrix is not supported by DGConstants3D\n");
+      }
       return nullptr;
   }
 }
@@ -480,52 +376,19 @@ DG_FP* DGConstants3D::get_mat_ptr(Constant_Matrix matrix) {
 DGConstants3D::~DGConstants3D() {
   clean_up_kernel_ptrs();
 
+  // Free all DGConstantMatrix objects
+  for(auto &dg_mat : dg_mats) {
+    delete dg_mat.second;
+  }
+
   free(r_ptr);
   free(s_ptr);
   free(t_ptr);
-  free(Dr_ptr);
-  free(Ds_ptr);
-  free(Dt_ptr);
-  free(Drw_ptr);
-  free(Dsw_ptr);
-  free(Dtw_ptr);
-  free(mass_ptr);
-  free(invMass_ptr);
-  free(invV_ptr);
-  free(v_ptr);
-  free(lift_ptr);
-  free(mmF0_ptr);
-  free(mmF1_ptr);
-  free(mmF2_ptr);
-  free(mmF3_ptr);
-  free(eMat_ptr);
   free(order_interp_ptr);
-  free(cubInterp_ptr);
-  free(cubProj_ptr);
-  free(cubPDrT_ptr);
-  free(cubPDsT_ptr);
-  free(cubPDtT_ptr);
-  free(cubInterpSurf_ptr);
-  free(cubLiftSurf_ptr);
+  free(cub_r_ptr);
+  free(cub_s_ptr);
+  free(cub_t_ptr);
+  free(cub_w_ptr);
 
-  free(Dr_ptr_sp);
-  free(Ds_ptr_sp);
-  free(Dt_ptr_sp);
-  free(Drw_ptr_sp);
-  free(Dsw_ptr_sp);
-  free(Dtw_ptr_sp);
-  free(mass_ptr_sp);
-  free(invMass_ptr_sp);
-  free(invV_ptr_sp);
-  free(v_ptr_sp);
-  free(lift_ptr_sp);
-  free(eMat_ptr_sp);
   free(order_interp_ptr_sp);
-  free(cubInterp_ptr_sp);
-  free(cubProj_ptr_sp);
-  free(cubPDrT_ptr_sp);
-  free(cubPDsT_ptr_sp);
-  free(cubPDtT_ptr_sp);
-  free(cubInterpSurf_ptr_sp);
-  free(cubLiftSurf_ptr_sp);
 }

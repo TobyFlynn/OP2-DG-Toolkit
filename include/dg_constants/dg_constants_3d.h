@@ -7,6 +7,7 @@
 #include <armadillo>
 
 #include "dg_constants.h"
+#include "dg_constant_matrix.h"
 
 class DGConstants3D : public DGConstants {
 public:
@@ -15,6 +16,7 @@ public:
 
   void calc_interp_mats() override;
   DG_FP* get_mat_ptr(Constant_Matrix matrix) override;
+  float* get_mat_ptr_sp(Constant_Matrix matrix) override;
   DG_FP* get_mat_ptr_device(Constant_Matrix matrix) override;
   float* get_mat_ptr_device_sp(Constant_Matrix matrix) override;
 
@@ -23,23 +25,18 @@ private:
   void transfer_kernel_ptrs();
   void clean_up_kernel_ptrs();
 
+  // Map of DG constant matrices
+  std::map<int,DGConstantMatrix*> dg_mats;
+
+  // Pointers to all vectors that are returned by get_mat_ptr
   DG_FP *r_ptr, *s_ptr, *t_ptr;
-  DG_FP *Dr_ptr, *Ds_ptr, *Dt_ptr, *Drw_ptr, *Dsw_ptr, *Dtw_ptr;
-  DG_FP *mass_ptr, *invMass_ptr, *invV_ptr, *v_ptr, *lift_ptr;
-  DG_FP *mmF0_ptr, *mmF1_ptr, *mmF2_ptr, *mmF3_ptr, *eMat_ptr;
+  DG_FP *cub_r_ptr, *cub_s_ptr, *cub_t_ptr, *cub_w_ptr;
+
   // Effectively a 2D array of interp matrices. Size [DG_ORDER][DG_ORDER]
   // To get an interp array:
   // int ind = ((order_from - 1) * DG_ORDER + (order_to - 1)) * DG_NP * DG_NP
   DG_FP *order_interp_ptr;
-  DG_FP *cub_r_ptr, *cub_s_ptr, *cub_t_ptr, *cub_w_ptr;
-  DG_FP *cubInterp_ptr, *cubProj_ptr, *cubPDrT_ptr, *cubPDsT_ptr, *cubPDtT_ptr;
-  DG_FP *cubInterpSurf_ptr, *cubLiftSurf_ptr;
-
-  float *Dr_ptr_sp, *Ds_ptr_sp, *Dt_ptr_sp, *Drw_ptr_sp, *Dsw_ptr_sp, *Dtw_ptr_sp;
-  float *mass_ptr_sp, *invMass_ptr_sp, *invV_ptr_sp, *v_ptr_sp, *lift_ptr_sp, *eMat_ptr_sp;
   float *order_interp_ptr_sp;
-  float *cubInterp_ptr_sp, *cubProj_ptr_sp, *cubPDrT_ptr_sp, *cubPDsT_ptr_sp, *cubPDtT_ptr_sp;
-  float *cubInterpSurf_ptr_sp, *cubLiftSurf_ptr_sp;
 };
 
 #endif
