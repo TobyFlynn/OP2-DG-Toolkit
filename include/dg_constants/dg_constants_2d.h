@@ -21,6 +21,7 @@ public:
   float* get_mat_ptr_sp(Constant_Matrix matrix) override;
   DG_FP* get_mat_ptr_device(Constant_Matrix matrix) override;
   float* get_mat_ptr_device_sp(Constant_Matrix matrix) override;
+  DGConstantMatrix* get_dg_constant_matrix_ptr(Constant_Matrix matrix) override;
 
   int cNp_max, gNp_max, gNfp_max;
 

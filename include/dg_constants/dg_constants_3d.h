@@ -19,6 +19,7 @@ public:
   float* get_mat_ptr_sp(Constant_Matrix matrix) override;
   DG_FP* get_mat_ptr_device(Constant_Matrix matrix) override;
   float* get_mat_ptr_device_sp(Constant_Matrix matrix) override;
+  DGConstantMatrix* get_dg_constant_matrix_ptr(Constant_Matrix matrix) override;
 
 private:
   void getCubatureData(const int N, arma::vec &cubr, arma::vec &cubs, arma::vec &cubt, arma::vec &cubw);

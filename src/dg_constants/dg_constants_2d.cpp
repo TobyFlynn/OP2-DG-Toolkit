@@ -43,7 +43,7 @@ DGConstants2D::DGConstants2D(const int n_) {
   r_ptr = (DG_FP *)calloc(N_max * Np_max, sizeof(DG_FP));
   s_ptr = (DG_FP *)calloc(N_max * Np_max, sizeof(DG_FP));
   order_interp_ptr = (DG_FP *)calloc(N_max * N_max * Np_max * Np_max, sizeof(DG_FP));
-  
+
   dg_mats.insert({V, new DGConstantMatrix(Np_max, Np_max, true)});
   dg_mats.insert({INV_V, new DGConstantMatrix(Np_max, Np_max, true)});
   dg_mats.insert({MASS, new DGConstantMatrix(Np_max, Np_max, true)});
@@ -339,6 +339,15 @@ float* DGConstants2D::get_mat_ptr_sp(Constant_Matrix matrix) {
       }
       return nullptr;
   }
+}
+
+DGConstantMatrix* DGConstants2D::get_dg_constant_matrix_ptr(Constant_Matrix matrix) {
+  try {
+    return dg_mats.at(matrix);
+  } catch (std::out_of_range &e) {
+    dg_abort("This constant matrix is not supported by DGConstants2D\n");
+  }
+  return nullptr;
 }
 
 DGConstants2D::~DGConstants2D() {

@@ -373,6 +373,15 @@ float* DGConstants3D::get_mat_ptr_sp(Constant_Matrix matrix) {
   }
 }
 
+DGConstantMatrix* DGConstants3D::get_dg_constant_matrix_ptr(Constant_Matrix matrix) {
+  try {
+    return dg_mats.at(matrix);
+  } catch (std::out_of_range &e) {
+    dg_abort("This constant matrix is not supported by DGConstants3D\n");
+  }
+  return nullptr;
+}
+
 DGConstants3D::~DGConstants3D() {
   clean_up_kernel_ptrs();
 

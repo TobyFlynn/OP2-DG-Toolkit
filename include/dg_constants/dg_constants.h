@@ -2,6 +2,7 @@
 #define __DG_CONSTANTS_H
 
 #include "dg_compiler_defs.h"
+#include "dg_constant_matrix.h"
 
 #define ARMA_ALLOW_FAKE_GCC
 #include <armadillo>
@@ -29,6 +30,7 @@ public:
   virtual float* get_mat_ptr_sp(Constant_Matrix matrix) = 0;
   virtual DG_FP* get_mat_ptr_device(Constant_Matrix matrix) = 0;
   virtual float* get_mat_ptr_device_sp(Constant_Matrix matrix) = 0;
+  virtual DGConstantMatrix* get_dg_constant_matrix_ptr(Constant_Matrix matrix) = 0;
 
   int N_max, Np_max, Nfp_max;
 };
