@@ -108,6 +108,7 @@ int main(int argc, char **argv) {
     add_1d_vec_solution(&file, "ins_solver_shock_cap_art_vis", "art_vis", numCells, vtkGrid);
     add_1d_vec_solution(&file, "ins_solver_mu", "mu", numCells, vtkGrid);
     add_1d_vec_solution(&file, "ls_s", "level_set", numCells, vtkGrid);
+    add_1d_vec_solution(&file, "ls_kink", "kink", numCells, vtkGrid);
     add_1d_vec_solution(&file, "ins_solver_curvature", "curvature", numCells, vtkGrid);
     add_1d_vec_solution(&file, "err", "error", numCells, vtkGrid);
     add_1d_vec_solution(&file, "ins_solver_p_star", "p_star", numCells, vtkGrid);

@@ -213,7 +213,39 @@ int main(int argc, char **argv) {
   }
 
   // Do periodic boundary
-  if(bcType == "cylinder_p") {
+  if(bcType == "periodic_y") {
+    double min_y = *(std::min_element(y.begin(), y.end()));
+    double max_y = *(std::max_element(y.begin(), y.end()));
+    int number_of_periodic_edges = 0;
+
+    map<pair<double,double>,pair<int,int>,cmpCoords> periodic_map;
+    cout << "Doing periodic boundary conditions" << endl;
+    for(auto const &edge : internalEdgeMap) {
+      if(edge.second->cells[1] == -1) {
+        double x0 = x[edge.second->points[0]];
+        double y0 = y[edge.second->points[0]];
+        double x1 = x[edge.second->points[1]];
+        double y1 = y[edge.second->points[1]];
+        if((y0 > min_y + 1e-1 && y0 < max_y - 1e-1) || y0 != y1) continue;
+        double x_k0 = x0 < x1 ? x0 : x1;
+        double x_k1 = x0 > x1 ? x0 : x1;
+
+        if(periodic_map.count({x_k0, x_k1}) == 0) {
+          periodic_map.insert({{x_k0, x_k1}, edge.first});
+        } else {
+          // Update one of the edges
+          edge.second->cells[1] = internalEdgeMap.at(periodic_map.at({x_k0, x_k1}))->cells[0];
+          edge.second->num[1] = internalEdgeMap.at(periodic_map.at({x_k0, x_k1}))->num[0];
+          // Remove the other edge
+          internalEdgeMap.erase(periodic_map.at({x_k0, x_k1}));
+          periodic_map.erase({x_k0, x_k1});
+          number_of_periodic_edges++;
+        }
+      }
+    }
+    cout << "Number of periodic edges: " << number_of_periodic_edges << endl;
+    cout << "Number of edges that do not match up: " << periodic_map.size() << endl;
+  } else if(bcType == "cylinder_p") {
     map<pair<double,double>,pair<int,int>,cmpCoords> periodic_map;
     cout << "Doing periodic boundary conditions" << endl;
     for(auto const &edge : internalEdgeMap) {
