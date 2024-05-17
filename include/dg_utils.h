@@ -262,6 +262,12 @@ namespace DGUtils {
       lhs -= rhs;
       return lhs; 
     }
+    Vec<DIM>& operator*=(const double &rhs) {
+      for(int i = 0; i < DIM; i++) {
+        vals[i] *= rhs;
+      }
+      return *this;
+    }
     friend Vec<DIM> operator*(const double &lhs, const Vec<DIM> &rhs) {
       Vec<DIM> result = rhs;
       for(int i = 0; i < DIM; i++) {
@@ -270,6 +276,19 @@ namespace DGUtils {
       return result; 
     }
     friend Vec<DIM> operator*(const Vec<DIM> &lhs, const double &rhs) { return rhs * lhs; }
+    Vec<DIM>& operator/=(const double &rhs) {
+      for(int i = 0; i < DIM; i++) {
+        vals[i] /= rhs;
+      }
+      return *this;
+    }
+    friend Vec<DIM> operator/(const Vec<DIM> &lhs, const double &rhs) {
+      Vec<DIM> result = lhs;
+      for(int i = 0; i < DIM; i++) {
+        result[i] /= rhs;
+      }
+      return result; 
+    }
   };
 }
 
