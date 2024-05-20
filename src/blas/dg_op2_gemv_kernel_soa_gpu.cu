@@ -91,7 +91,7 @@ void templated_wrapper_sp(bool trans, int nblocks, int nthread, int sh_mem_size,
 }
 
 void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, const float alpha,
-  const float beta, const float *A_sp, op_dat x, op_dat y) {
+  const float beta, const float *matrix, op_dat x, op_dat y) {
 
   int nargs = 2;
   op_arg args[2] = {
@@ -106,56 +106,18 @@ void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, c
     const int nblocks = (set->size - 1) / nthread + 1;
     const int strideX = getSetSizeFromOpArg(&args[0]);
     const int strideY = getSetSizeFromOpArg(&args[1]);
+    const float *x_ptr = (float *)args[0].data_d;
+    float *y_ptr = (float *)args[1].data_d;
+    const int num_vecs = set->size;
 
-    if(m == 4 && n == 4) {
-      templated_wrapper_sp<4,4>(t, nblocks,nthread, n*m*sizeof(float),
-                                strideX, strideY, alpha, beta, A_sp,
-                                (float *) args[0].data_d,
-                                (float *) args[1].data_d, set->size);
-    } else if(m == 10 && n == 10) {
-      templated_wrapper_sp<10,10>(t, nblocks,nthread, n*m*sizeof(float),
-                                  strideX, strideY, alpha, beta, A_sp,
-                                  (float *) args[0].data_d,
-                                  (float *) args[1].data_d, set->size);
-    } else if(m == 20 && n == 20) {
-      templated_wrapper_sp<20,20>(t, nblocks,nthread, n*m*sizeof(float),
-                                  strideX, strideY, alpha, beta, A_sp,
-                                  (float *) args[0].data_d,
-                                  (float *) args[1].data_d, set->size);
-    } else if(m == 4 && n == 12) {
-      templated_wrapper_sp<4,12>(t, nblocks,nthread, n*m*sizeof(float),
-                                 strideX, strideY, alpha, beta, A_sp,
-                                 (float *) args[0].data_d,
-                                 (float *) args[1].data_d, set->size);
-    } else if(m == 10 && n == 24) {
-      templated_wrapper_sp<10,24>(t, nblocks,nthread, n*m*sizeof(float),
-                                  strideX, strideY, alpha, beta, A_sp,
-                                  (float *) args[0].data_d,
-                                  (float *) args[1].data_d, set->size);
-    } else if(m == 20 && n == 40) {
-      templated_wrapper_sp<20,40>(t, nblocks,nthread, n*m*sizeof(float),
-                                  strideX, strideY, alpha, beta, A_sp,
-                                  (float *) args[0].data_d,
-                                  (float *) args[1].data_d, set->size);
-    } else if(m == 20 && n == 4) {
-      templated_wrapper_sp<20,4>(t, nblocks,nthread, n*m*sizeof(float),
-                                 strideX, strideY, alpha, beta, A_sp,
-                                 (float *) args[0].data_d,
-                                 (float *) args[1].data_d, set->size);
-    } else if(m == 4 && n == 20) {
-      templated_wrapper_sp<4,20>(t, nblocks,nthread, n*m*sizeof(float),
-                                 strideX, strideY, alpha, beta, A_sp,
-                                 (float *) args[0].data_d,
-                                 (float *) args[1].data_d, set->size);
-    } else {
+    [OP2_DG_GPU_SOA_SP_BLAS_STUB]
+    else {
       if(t) {
-        cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, set->size, n, m,
-                      &alpha, (float *)args[0].data_d, strideX, A_sp, m,
-                      &beta, (float *)args[1].data_d, strideY);
+        cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, num_vecs, n, m,
+                      &alpha, x_ptr, strideX, matrix, m, &beta, y_ptr, strideY);
       } else {
-        cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, set->size, m, n,
-                    &alpha, (float *)args[0].data_d, strideX, A_sp, m, &beta,
-                    (float *)args[1].data_d, strideY);
+        cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, num_vecs, m, n,
+                    &alpha, x_ptr, strideX, matrix, m, &beta, y_ptr, strideY);
       }
     }
   }
@@ -165,7 +127,7 @@ void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, c
 }
 
 void custom_kernel_gemv_halo_exchange_sp(op_set set, const bool t, const int m, const int n, const float alpha,
-  const float beta, const float *A_sp, op_dat x, op_dat y) {
+  const float beta, const float *matrix, op_dat x, op_dat y) {
 
   int nargs = 2;
   op_arg args[2] = {
@@ -191,50 +153,19 @@ void custom_kernel_gemv_halo_exchange_sp(op_set set, const bool t, const int m, 
 
       const float *x_ptr = (float *)args[0].data_d + start;
       float *y_ptr = (float *)args[1].data_d + start;
-
       const int nthread = 256;
       const int nblocks = (end - start) / nthread + 1;
+      const int num_vecs = end - start;
 
-      if(m == 4 && n == 4) {
-        templated_wrapper_sp<4,4>(t, nblocks,nthread, n*m*sizeof(float),
-                                  strideX, strideY, alpha, beta, A_sp,
-                                  x_ptr, y_ptr, end - start);
-      } else if(m == 10 && n == 10) {
-        templated_wrapper_sp<10,10>(t, nblocks,nthread, n*m*sizeof(float),
-                                    strideX, strideY, alpha, beta, A_sp,
-                                    x_ptr, y_ptr, end - start);
-      } else if(m == 20 && n == 20) {
-        templated_wrapper_sp<20,20>(t, nblocks,nthread, n*m*sizeof(float),
-                                    strideX, strideY, alpha, beta, A_sp,
-                                    x_ptr, y_ptr, end - start);
-      } else if(m == 4 && n == 12) {
-        templated_wrapper_sp<4,12>(t, nblocks,nthread, n*m*sizeof(float),
-                                   strideX, strideY, alpha, beta, A_sp,
-                                   x_ptr, y_ptr, end - start);
-      } else if(m == 10 && n == 24) {
-        templated_wrapper_sp<10,24>(t, nblocks,nthread, n*m*sizeof(float),
-                                    strideX, strideY, alpha, beta, A_sp,
-                                    x_ptr, y_ptr, end - start);
-      } else if(m == 20 && n == 40) {
-        templated_wrapper_sp<20,40>(t, nblocks,nthread, n*m*sizeof(float),
-                                    strideX, strideY, alpha, beta, A_sp,
-                                    x_ptr, y_ptr, end - start);
-      } else if(m == 20 && n == 4) {
-        templated_wrapper_sp<20,4>(t, nblocks,nthread, n*m*sizeof(float),
-                                   strideX, strideY, alpha, beta, A_sp,
-                                   x_ptr, y_ptr, end - start);
-      } else if(m == 4 && n == 20) {
-        templated_wrapper_sp<4,20>(t, nblocks,nthread, n*m*sizeof(float),
-                                   strideX, strideY, alpha, beta, A_sp,
-                                   x_ptr, y_ptr, end - start);
-      } else {
+      [OP2_DG_GPU_SOA_SP_BLAS_STUB]
+      else {
         if(t) {
-          cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, end - start, n,
-                      m, &alpha, x_ptr, strideX, A_sp, m, &beta, y_ptr,
+          cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, num_vecs, n,
+                      m, &alpha, x_ptr, strideX, matrix, m, &beta, y_ptr,
                       strideY);
         } else {
-          cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, end - start, m,
-                      n, &alpha, x_ptr, strideX, A_sp, m, &beta, y_ptr,
+          cublasSgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, num_vecs, m,
+                      n, &alpha, x_ptr, strideX, matrix, m, &beta, y_ptr,
                       strideY);
         }
       }
@@ -330,61 +261,18 @@ void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, cons
     const int nblocks = (set->size - 1) / nthread + 1;
     const int strideX = getSetSizeFromOpArg(&args[0]);
     const int strideY = getSetSizeFromOpArg(&args[1]);
+    const double *x_ptr = (double *)args[0].data_d;
+    double *y_ptr = (double *)args[1].data_d;
+    const int num_vecs = set->size;
 
-    if(m == 4 && n == 4) {
-      templated_wrapper_dp<4,4>(t, nblocks,nthread, n*m*sizeof(double),
-                                strideX, strideY, alpha, beta, matrix,
-                                (double *) args[0].data_d,
-                                (double *) args[1].data_d, set->size);
-    } else if(m == 10 && n == 10) {
-      templated_wrapper_dp<10,10>(t, nblocks,nthread, n*m*sizeof(double),
-                                  strideX, strideY, alpha, beta, matrix,
-                                  (double *) args[0].data_d,
-                                  (double *) args[1].data_d, set->size);
-    } else if(m == 20 && n == 20) {
-      templated_wrapper_dp<20,20>(t, nblocks,nthread, n*m*sizeof(double),
-                                  strideX, strideY, alpha, beta, matrix,
-                                  (double *) args[0].data_d,
-                                  (double *) args[1].data_d, set->size);
-    } else if(m == 4 && n == 12) {
-      templated_wrapper_dp<4,12>(t, nblocks,nthread, n*m*sizeof(double),
-                                 strideX, strideY, alpha, beta, matrix,
-                                 (double *) args[0].data_d,
-                                 (double *) args[1].data_d, set->size);
-    } else if(m == 10 && n == 24) {
-      templated_wrapper_dp<10,24>(t, nblocks,nthread, n*m*sizeof(double),
-                                  strideX, strideY, alpha, beta, matrix,
-                                  (double *) args[0].data_d,
-                                  (double *) args[1].data_d, set->size);
-    } else if(m == 20 && n == 40) {
-      templated_wrapper_dp<20,40>(t, nblocks,nthread, n*m*sizeof(double),
-                                  strideX, strideY, alpha, beta, matrix,
-                                  (double *) args[0].data_d,
-                                  (double *) args[1].data_d, set->size);
-    } else if(m == 20 && n == 4) {
-      templated_wrapper_dp<20,4>(t, nblocks,nthread, n*m*sizeof(double),
-                                 strideX, strideY, alpha, beta, matrix,
-                                 (double *) args[0].data_d,
-                                 (double *) args[1].data_d, set->size);
-    } else if(m == 4 && n == 20) {
-      templated_wrapper_dp<4,20>(t, nblocks,nthread, n*m*sizeof(double),
-                                 strideX, strideY, alpha, beta, matrix,
-                                 (double *) args[0].data_d,
-                                 (double *) args[1].data_d, set->size);
-    } else if(m == 23 && n == 20) {
-      templated_wrapper_dp<23,20>(t, nblocks,nthread, n*m*sizeof(double),
-                                  strideX, strideY, alpha, beta, matrix,
-                                  (double *) args[0].data_d,
-                                  (double *) args[1].data_d, set->size);
-    } else {
+    [OP2_DG_GPU_SOA_DP_BLAS_STUB]
+    else {
       if(t) {
-        cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, set->size, n, m,
-                      &alpha, (double *)args[0].data_d, strideX, matrix, m,
-                      &beta, (double *)args[1].data_d, strideY);
+        cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, num_vecs, n, m,
+                    &alpha, x_ptr, strideX, matrix, m, &beta, y_ptr, strideY);
       } else {
-        cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, set->size, m, n,
-                    &alpha, (double *)args[0].data_d, strideX, matrix, m, &beta,
-                    (double *)args[1].data_d, strideY);
+        cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, num_vecs, m, n,
+                    &alpha, x_ptr, strideX, matrix, m, &beta, y_ptr, strideY);
       }
     }
   }
@@ -418,53 +306,18 @@ void custom_kernel_gemv_halo_exchange(op_set set, const bool t, const int m, con
 
       const double *x_ptr = (double *)args[0].data_d + start;
       double *y_ptr = (double *)args[1].data_d + start;
-
       const int nthread = 256;
       const int nblocks = (end - start) / nthread + 1;
+      const int num_vecs = end - start;
 
-      if(m == 4 && n == 4) {
-        templated_wrapper_dp<4,4>(t, nblocks,nthread, n*m*sizeof(double),
-                                  strideX, strideY, alpha, beta, matrix,
-                                  x_ptr, y_ptr, end - start);
-      } else if(m == 10 && n == 10) {
-        templated_wrapper_dp<10,10>(t, nblocks,nthread, n*m*sizeof(double),
-                                    strideX, strideY, alpha, beta, matrix,
-                                    x_ptr, y_ptr, end - start);
-      } else if(m == 20 && n == 20) {
-        templated_wrapper_dp<20,20>(t, nblocks,nthread, n*m*sizeof(double),
-                                    strideX, strideY, alpha, beta, matrix,
-                                    x_ptr, y_ptr, end - start);
-      } else if(m == 4 && n == 12) {
-        templated_wrapper_dp<4,12>(t, nblocks,nthread, n*m*sizeof(double),
-                                   strideX, strideY, alpha, beta, matrix,
-                                   x_ptr, y_ptr, end - start);
-      } else if(m == 10 && n == 24) {
-        templated_wrapper_dp<10,24>(t, nblocks,nthread, n*m*sizeof(double),
-                                    strideX, strideY, alpha, beta, matrix,
-                                    x_ptr, y_ptr, end - start);
-      } else if(m == 20 && n == 40) {
-        templated_wrapper_dp<20,40>(t, nblocks,nthread, n*m*sizeof(double),
-                                    strideX, strideY, alpha, beta, matrix,
-                                    x_ptr, y_ptr, end - start);
-      } else if(m == 20 && n == 4) {
-        templated_wrapper_dp<20,4>(t, nblocks,nthread, n*m*sizeof(double),
-                                   strideX, strideY, alpha, beta, matrix,
-                                   x_ptr, y_ptr, end - start);
-      } else if(m == 4 && n == 20) {
-        templated_wrapper_dp<4,20>(t, nblocks,nthread, n*m*sizeof(double),
-                                   strideX, strideY, alpha, beta, matrix,
-                                   x_ptr, y_ptr, end - start);
-      } else if(m == 23 && n == 20) {
-        templated_wrapper_dp<23,20>(t, nblocks,nthread, n*m*sizeof(double),
-                                    strideX, strideY, alpha, beta, matrix,
-                                    x_ptr, y_ptr, end - start);
-      } else {
+      [OP2_DG_GPU_SOA_DP_BLAS_STUB]
+      else {
         if(t) {
-          cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, end - start, n,
+          cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, num_vecs, n,
                       m, &alpha, x_ptr, strideX, matrix, m, &beta, y_ptr,
                       strideY);
         } else {
-          cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, end - start, m,
+          cublasDgemm(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_T, num_vecs, m,
                       n, &alpha, x_ptr, strideX, matrix, m, &beta, y_ptr,
                       strideY);
         }

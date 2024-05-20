@@ -49,18 +49,33 @@
 #define DG_NUM_FACES 3
 #define DG_NUM_CONSTANTS 5
 
-#if DG_ORDER == 4
+#if DG_ORDER == 7
+
+// Number of points per triangle
+#define DG_NP 36
+// Number of points per face
+#define DG_NPF 8
+
+#elif DG_ORDER == 6
+
+// Number of points per triangle
+#define DG_NP 28
+// Number of points per face
+#define DG_NPF 7
+
+#elif DG_ORDER == 5
+
+// Number of points per triangle
+#define DG_NP 21
+// Number of points per face
+#define DG_NPF 6
+
+#elif DG_ORDER == 4
 
 // Number of points per triangle
 #define DG_NP 15
 // Number of points per face
 #define DG_NPF 5
-// Number of cubature points per triangle
-#define DG_CUB_NP 46
-// Number of gauss points per triangle
-#define DG_G_NP 21
-// Number of gauss points per face
-#define DG_GF_NP 7
 
 #elif DG_ORDER == 3
 
@@ -68,12 +83,6 @@
 #define DG_NP 10
 // Number of points per face
 #define DG_NPF 4
-// Number of cubature points per triangle
-#define DG_CUB_NP 36
-// Number of gauss points per triangle
-#define DG_G_NP 18
-// Number of gauss points per face
-#define DG_GF_NP 6
 
 #elif DG_ORDER == 2
 
@@ -81,12 +90,6 @@
 #define DG_NP 6
 // Number of points per face
 #define DG_NPF 3
-// Number of cubature points per triangle
-#define DG_CUB_NP 16
-// Number of gauss points per triangle
-#define DG_G_NP 12
-// Number of gauss points per face
-#define DG_GF_NP 4
 
 #elif DG_ORDER == 1
 
@@ -94,12 +97,6 @@
 #define DG_NP 3
 // Number of points per face
 #define DG_NPF 2
-// Number of cubature points per triangle
-#define DG_CUB_NP 12
-// Number of gauss points per triangle
-#define DG_G_NP 9
-// Number of gauss points per face
-#define DG_GF_NP 3
 
 #endif
 
@@ -107,22 +104,8 @@
 
 #define DG_NUM_FACES 4
 #define DG_NUM_CONSTANTS 2
-// Just to get things compiled, not actually used for 3D
-#define DG_CUB_NP 1
-#define DG_G_NP 1
-#define DG_GF_NP 1
 
-#define DG_CUB_3D_NP 23
-#define DG_CUB_SURF_3D_NP 12
-
-#if DG_ORDER == 8
-
-// Number of points per element
-#define DG_NP 165
-// Number of points per face
-#define DG_NPF 45
-
-#elif DG_ORDER == 7
+#if DG_ORDER == 7
 
 // Number of points per element
 #define DG_NP 120

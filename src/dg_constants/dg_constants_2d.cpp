@@ -6,13 +6,9 @@
 
 int FMASK[DG_ORDER * DG_NUM_FACES * DG_NPF];
 int DG_CONSTANTS[DG_ORDER * 5];
-DG_FP cubW_g[DG_ORDER * DG_CUB_NP];
-DG_FP gaussW_g[DG_ORDER * DG_GF_NP];
 
 int FMASK_TK[DG_ORDER * DG_NUM_FACES * DG_NPF];
 int DG_CONSTANTS_TK[DG_ORDER * 5];
-DG_FP cubW_g_TK[DG_ORDER * DG_CUB_NP];
-DG_FP gaussW_g_TK[DG_ORDER * DG_GF_NP];
 
 void save_mat(DG_FP *mem_ptr, arma::mat &mat, const int N, const int max_size) {
   #ifdef DG_COL_MAJ

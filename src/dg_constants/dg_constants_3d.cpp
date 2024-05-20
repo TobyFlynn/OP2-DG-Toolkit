@@ -10,10 +10,6 @@ int DG_CONSTANTS[DG_ORDER * DG_NUM_CONSTANTS];
 int FMASK_TK[DG_ORDER * DG_NUM_FACES * DG_NPF];
 int DG_CONSTANTS_TK[DG_ORDER * DG_NUM_CONSTANTS];
 
-// TODO not require this
-DG_FP cubW_g[1];
-DG_FP gaussW_g[1];
-
 void save_mat(DG_FP *mem_ptr, arma::mat &mat, const int N, const int max_size) {
   #ifdef DG_COL_MAJ
   arma::Mat<DG_FP> mat_2 = arma::conv_to<arma::Mat<DG_FP>>::from(mat);
