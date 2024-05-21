@@ -295,6 +295,26 @@ def generate_custom_gpu_soa_blas_calls(max_order, max_shared_mem_bytes, double_p
         first = False
     return code
 
+gpu_have_custom_blas_template = \
+"""if(m == {row} && n == {col}) {{
+  return true;
+}}"""
+def generate_gpu_have_custom_kernel(max_order, max_shared_mem_bytes, double_precision):
+    num_bytes_per_element = 8 # doubles
+    if not double_precision:
+        num_bytes_per_element = 4 # floats
+    matrix_sizes = get_valid_matrix_sizes(max_order, max_shared_mem_bytes, num_bytes_per_element)
+
+    # Generate templated function calls
+    code = ""
+    first = True
+    for matrix in matrix_sizes:
+        if not first:
+            code = code + " else "
+        code = code + gpu_have_custom_blas_template.format(row = matrix[0], col = matrix[1])
+        first = False
+    return code
+
 inputfiles = []
 
 for dirpath, _, filenames in os.walk("src"):
@@ -342,8 +362,12 @@ for f in inputfiles:
         max_shared_mem_bytes = 64 * 1024 # TODO confirm
         gpu_dp_custom_kernel_calls = generate_custom_gpu_soa_blas_calls(int(dg_order), max_shared_mem_bytes, True)
         gpu_sp_custom_kernel_calls = generate_custom_gpu_soa_blas_calls(int(dg_order), max_shared_mem_bytes, False)
+        gpu_dp_have_custom_kernel = generate_gpu_have_custom_kernel(int(dg_order), max_shared_mem_bytes, True)
+        gpu_sp_have_custom_kernel = generate_gpu_have_custom_kernel(int(dg_order), max_shared_mem_bytes, False)
         newdata = newdata.replace("[OP2_DG_GPU_SOA_DP_BLAS_STUB]", gpu_dp_custom_kernel_calls)
         newdata = newdata.replace("[OP2_DG_GPU_SOA_SP_BLAS_STUB]", gpu_sp_custom_kernel_calls)
+        newdata = newdata.replace("[OP2_DG_GPU_SOA_HAVE_DP_CUSTOM_KERNEL]", gpu_dp_have_custom_kernel)
+        newdata = newdata.replace("[OP2_DG_GPU_SOA_HAVE_SP_CUSTOM_KERNEL]", gpu_sp_have_custom_kernel)
 
     if dim == "2":
         with open("code_gen/gen_2d/" + f, "w") as file:

@@ -15,6 +15,7 @@ public:
   ~DGConstants3D();
 
   void calc_interp_mats() override;
+  void profile_blas(DGMesh *mesh) override;
   DG_FP* get_mat_ptr(Constant_Matrix matrix) override;
   float* get_mat_ptr_sp(Constant_Matrix matrix) override;
   DG_FP* get_mat_ptr_device(Constant_Matrix matrix) override;

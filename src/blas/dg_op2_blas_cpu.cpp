@@ -28,6 +28,14 @@ void destroy_op2_gemv() {
   #endif
 }
 
+bool op2_gemv_have_dp_custom_kernel(int m, int n) {
+  return false;
+}
+
+bool op2_gemv_have_sp_custom_kernel(int m, int n) {
+  return false;
+}
+
 // Assumes all elements are same order (does not work for p-adaptivity)
 void op2_cpu_gemm(const int m, const int n, const int k,
                   const DG_FP alpha, const bool trans, const DG_FP *A,

@@ -18,6 +18,14 @@ void destroy_op2_gemv() {
   cublasDestroy(cublas_handle);
 }
 
+bool op2_gemv_have_dp_custom_kernel(int m, int n) {
+  return false;
+}
+
+bool op2_gemv_have_sp_custom_kernel(int m, int n) {
+  return false;
+}
+
 void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, const float alpha,
   const float beta, const DG_FP *matrix, op_dat arg4, op_dat arg5) {
   dg_abort("SP");

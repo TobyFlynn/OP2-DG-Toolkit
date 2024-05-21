@@ -89,6 +89,8 @@ DGMesh2D::~DGMesh2D() {
 }
 
 void DGMesh2D::init() {
+  constants->profile_blas(this);
+
   op_par_loop(init_nodes, "init_nodes", cells,
               op_arg_dat(node_coords, -3, cell2nodes, 2, DG_FP_STR, OP_READ),
               op_arg_dat(nodeX, -1, OP_ID, 3, DG_FP_STR, OP_WRITE),

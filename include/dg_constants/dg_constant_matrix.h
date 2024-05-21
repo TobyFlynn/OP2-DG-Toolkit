@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dg_compiler_defs.h"
+#include "dg_mesh/dg_mesh.h"
 
 #include <vector>
 
@@ -15,8 +16,11 @@ public:
   void set_mat(arma::mat &matrix);
   void set_mat(arma::mat &matrix, const int N);
   void transfer_to_device();
+  void profile_blas(DGMesh *mesh);
 
   bool has_multiple_orders();
+  bool use_custom_blas_kernel_dp(const int N);
+  bool use_custom_blas_kernel_sp(const int N);
 
   int get_rows(const int N);
   int get_cols(const int N);
@@ -45,4 +49,5 @@ private:
   bool multiple_orders;
   int max_rows, max_cols;
   std::vector<int> rows, cols;
+  std::vector<bool> use_custom_kernel_dp, use_custom_kernel_sp;
 };

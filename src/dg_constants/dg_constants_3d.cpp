@@ -397,3 +397,9 @@ DGConstants3D::~DGConstants3D() {
 
   free(order_interp_ptr_sp);
 }
+
+void DGConstants3D::profile_blas(DGMesh *mesh) {
+  for(const auto &dg_mat : dg_mats) {
+    dg_mat.second->profile_blas(mesh);
+  }
+}

@@ -97,3 +97,19 @@ float* DGConstantMatrix::get_mat_ptr_sp_device(const int N) {
 bool DGConstantMatrix::has_multiple_orders() {
   return multiple_orders;
 }
+
+bool DGConstantMatrix::use_custom_blas_kernel_dp(const int N) {
+  if(multiple_orders) {
+    return use_custom_kernel_dp[N - 1];
+  } else {
+    return use_custom_kernel_dp[0];
+  }
+}
+
+bool DGConstantMatrix::use_custom_blas_kernel_sp(const int N) {
+  if(multiple_orders) {
+    return use_custom_kernel_sp[N - 1];
+  } else {
+    return use_custom_kernel_sp[0];
+  }
+}

@@ -3,6 +3,7 @@
 
 #include "dg_compiler_defs.h"
 #include "dg_constant_matrix.h"
+#include "dg_mesh/dg_mesh.h"
 
 #define ARMA_ALLOW_FAKE_GCC
 #include <armadillo>
@@ -26,6 +27,7 @@ public:
   };
 
   virtual void calc_interp_mats() = 0;
+  virtual void profile_blas(DGMesh *mesh) = 0;
   virtual DG_FP* get_mat_ptr(Constant_Matrix matrix) = 0;
   virtual float* get_mat_ptr_sp(Constant_Matrix matrix) = 0;
   virtual DG_FP* get_mat_ptr_device(Constant_Matrix matrix) = 0;

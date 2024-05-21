@@ -16,36 +16,7 @@ extern DGConstants *constants;
 #include "dg_mesh/dg_mesh_3d.h"
 #endif
 
-#if !defined(OP2_DG_CUDA) && !defined(OP2_DG_HIP)
-void op2_cpu_gemm(const int m, const int n, const int k,
-                  const DG_FP alpha, const bool trans, const DG_FP *A,
-                  const int lda, op_dat b_dat, const int ldb, const DG_FP beta,
-                  op_dat c_dat, const int ldc);
-
-void op2_cpu_gemm_halo_exchange(const int m, const int k,
-                  const DG_FP alpha, const bool trans, const DG_FP *A,
-                  const int lda, op_dat b_dat, const int ldb, const DG_FP beta,
-                  op_dat c_dat, const int ldc);
-
-void op2_cpu_gemm_sp(const int m, const int n, const int k,
-                  const float alpha, const bool trans, const float *A_sp,
-                  const int lda, op_dat b_dat, const int ldb, const float beta,
-                  op_dat c_dat, const int ldc);
-
-void op2_cpu_gemm_halo_exchange_sp(const int m, const int k,
-                  const float alpha, const bool trans, const float *A_sp,
-                  const int lda, op_dat b_dat, const int ldb, const float beta,
-                  op_dat c_dat, const int ldc);
-#else
-void custom_kernel_gemv(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
-  const DG_FP beta, const DG_FP *matrix, op_dat arg4, op_dat arg5);
-void custom_kernel_gemv_halo_exchange(op_set set, const bool t, const int m, const int n, const DG_FP alpha,
-  const DG_FP beta, const DG_FP *matrix, op_dat arg4, op_dat arg5);
-void custom_kernel_gemv_sp(op_set set, const bool t, const int m, const int n, const float alpha,
-  const float beta, const float *matrix, op_dat arg4, op_dat arg5);
-void custom_kernel_gemv_halo_exchange_sp(op_set set, const bool t, const int m, const int n, const float alpha,
-  const float beta, const float *matrix, op_dat arg4, op_dat arg5);
-#endif
+#include "dg_op2_custom_blas.h"
 
 void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
               DGConstants::Constant_Matrix matrix, op_dat x, const DG_FP beta,
@@ -61,7 +32,11 @@ void op2_gemv(DGMesh *mesh, bool transpose, const DG_FP alpha,
   const int n = x->set->size;
 
   #if defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
-  custom_kernel_gemv(x->set, transpose, rows, cols, alpha, beta, matrix_ptr->get_mat_ptr_dp_device(mesh->order_int), x, y);
+  if(matrix_ptr->use_custom_blas_kernel_dp(mesh->order_int)) {
+    custom_kernel_gemv(x->set, transpose, rows, cols, alpha, beta, matrix_ptr->get_mat_ptr_dp_device(mesh->order_int), x, y);
+  } else {
+    standard_blas_lib_gemv(x->set, transpose, rows, cols, alpha, beta, matrix_ptr->get_mat_ptr_dp_device(mesh->order_int), x, y);
+  }
   #else
   op2_cpu_gemm(transpose ? cols : rows, n, transpose ? rows : cols, alpha, transpose, matrix_ptr->get_mat_ptr_dp_device(mesh->order_int), rows, x, x->dim, beta, y, y->dim);
   #endif
@@ -110,7 +85,11 @@ void op2_gemv_halo_exchange(DGMesh *mesh, bool transpose, const DG_FP alpha,
     dg_abort("op_dats passed to op2_gemv_halo_exchange are defined on different op_sets");
 
   #if defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
-  custom_kernel_gemv_halo_exchange(x->set, transpose, rows, cols, alpha, beta, matrix_ptr->get_mat_ptr_dp_device(mesh->order_int), x, y);
+  if(matrix_ptr->use_custom_blas_kernel_dp(mesh->order_int)) {
+    custom_kernel_gemv_halo_exchange(x->set, transpose, rows, cols, alpha, beta, matrix_ptr->get_mat_ptr_dp_device(mesh->order_int), x, y);
+  } else {
+    standard_blas_lib_gemv_halo_exchange(x->set, transpose, rows, cols, alpha, beta, matrix_ptr->get_mat_ptr_dp_device(mesh->order_int), x, y);
+  }
   #else
   op2_cpu_gemm_halo_exchange(transpose ? cols : rows, transpose ? rows : cols, alpha, transpose, matrix_ptr->get_mat_ptr_dp_device(mesh->order_int), rows, x, x->dim, beta, y, y->dim);
   #endif
@@ -130,7 +109,11 @@ void op2_gemv_sp(DGMesh *mesh, bool transpose, const DG_FP alpha,
   const int n = x->set->size;
 
   #if defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
-  custom_kernel_gemv_sp(x->set, transpose, rows, cols, alpha, beta, matrix_ptr->get_mat_ptr_sp_device(mesh->order_int), x, y);
+  if(matrix_ptr->use_custom_blas_kernel_sp(mesh->order_int)) {
+    custom_kernel_gemv_sp(x->set, transpose, rows, cols, alpha, beta, matrix_ptr->get_mat_ptr_sp_device(mesh->order_int), x, y);
+  } else {
+    standard_blas_lib_gemv_sp(x->set, transpose, rows, cols, alpha, beta, matrix_ptr->get_mat_ptr_sp_device(mesh->order_int), x, y);
+  }
   #else
   op2_cpu_gemm_sp(transpose ? cols : rows, n, transpose ? rows : cols, alpha, transpose, matrix_ptr->get_mat_ptr_sp_device(mesh->order_int), rows, x, x->dim, beta, y, y->dim);
   #endif
@@ -149,7 +132,11 @@ void op2_gemv_halo_exchange_sp(DGMesh *mesh, bool transpose, const DG_FP alpha,
     dg_abort("op_dats passed to op2_gemv_halo_exchange are defined on different op_sets");
 
   #if defined(OP2_DG_CUDA) || defined(OP2_DG_HIP)
-  custom_kernel_gemv_halo_exchange_sp(x->set, transpose, rows, cols, alpha, beta, matrix_ptr->get_mat_ptr_sp_device(mesh->order_int), x, y);
+  if(matrix_ptr->use_custom_blas_kernel_sp(mesh->order_int)) {
+    custom_kernel_gemv_halo_exchange_sp(x->set, transpose, rows, cols, alpha, beta, matrix_ptr->get_mat_ptr_sp_device(mesh->order_int), x, y);
+  } else {
+    standard_blas_lib_gemv_halo_exchange_sp(x->set, transpose, rows, cols, alpha, beta, matrix_ptr->get_mat_ptr_sp_device(mesh->order_int), x, y);
+  }
   #else
   op2_cpu_gemm_halo_exchange_sp(transpose ? cols : rows, transpose ? rows : cols, alpha, transpose, matrix_ptr->get_mat_ptr_sp_device(mesh->order_int), rows, x, x->dim, beta, y, y->dim);
   #endif
