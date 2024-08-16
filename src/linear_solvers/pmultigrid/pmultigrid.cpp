@@ -23,7 +23,6 @@ extern Config *config;
 extern DGDatPool *dg_dat_pool;
 
 #define RAND_VEC_SIZE 25
-#define MAX_ITER_EIG_APPROX 10
 
 std::vector<int> parseInts(const std::string &str) {
   std::vector<int> result;
@@ -99,6 +98,12 @@ PMultigridPoissonSolver::PMultigridPoissonSolver(DGMesh *m) {
       cheb_orders.push_back(2);
     }
   }
+
+  max_iter_eig_approx = 10;
+  config->getInt("p-multigrid", "max_iter_eig_approx", max_iter_eig_approx);
+
+  cheb_min_lamda_factor = 1.0 / 10.0;
+  config->getDouble("p-multigrid", "cheb_min_lamda_factor", cheb_min_lamda_factor);
 
   eigen_val_saftey_factor = 1.1;
   config->getDouble("p-multigrid", "eigen_val_saftey_factor", eigen_val_saftey_factor);
@@ -347,7 +352,7 @@ void PMultigridPoissonSolver::setupDirectSolve() {
 DG_FP PMultigridPoissonSolver::maxEigenValue() {
   // Get approx eigenvector using power iteration
   const int N = mesh->order_int;
-  const int k = std::min(MAX_ITER_EIG_APPROX, (N + 1) * (N + 2) * (N + 3) / 6);
+  const int k = std::min(max_iter_eig_approx, (N + 1) * (N + 2) * (N + 3) / 6);
   std::vector<DGTempDat> tmp_dats;
   eigen_tmps.clear();
   for(int i = 0; i < k; i++) {
@@ -483,7 +488,7 @@ void PMultigridPoissonSolver::jacobi_smoother(const int level) {
 
 void PMultigridPoissonSolver::chebyshev_smoother(const int level) {
   const float lamda1 = max_eig;
-  const float lamda0 = lamda1 / 10.0;
+  const float lamda0 = lamda1 * cheb_min_lamda_factor;
   const float theta = 0.5 * (lamda1 + lamda0);
   const float delta = 0.5 * (lamda1 - lamda0);
   const float invTheta = 1.0 / theta;

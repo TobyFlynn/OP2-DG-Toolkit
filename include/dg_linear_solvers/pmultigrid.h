@@ -63,9 +63,9 @@ private:
   std::vector<int> cheb_orders;
   std::vector<double> eig_vals;
   std::vector<op_dat> u_dat, b_dat, diag_dats, eigen_tmps;
-  double eigen_val_saftey_factor;
+  double eigen_val_saftey_factor, cheb_min_lamda_factor;
 
-  int num_levels;
+  int num_levels, max_iter_eig_approx;
 
   DG_FP w, max_eig;
 };
