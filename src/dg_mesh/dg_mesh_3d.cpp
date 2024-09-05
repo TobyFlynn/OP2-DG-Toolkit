@@ -9,6 +9,7 @@
 #include "dg_op2_blas.h"
 #include "dg_global_constants/dg_global_constants_3d.h"
 #include "dg_dat_pool.h"
+#include "dg_abort.h"
 
 void init_op2_gemv();
 void destroy_op2_gemv();
@@ -145,8 +146,7 @@ void DGMesh3D::init() {
               op_arg_dat(nodeZ, -2, face2cells, 4, DG_FP_STR, OP_READ),
               op_arg_gbl(&num_norm, 1, "int", OP_INC));
   if(num_norm != 0) {
-    std::cout << "Number of normal errors: " << num_norm << std::endl;
-    exit(-1);
+    dg_abort("Number of normal errors: " + std::to_string(num_norm));
   }
 
   op_par_loop(copy_normals_3d, "copy_normals_3d", faces,
@@ -210,8 +210,7 @@ void DGMesh3D::calc_mesh_constants() {
                 op_arg_dat(fmaskR, -1, OP_ID, DG_NPF, "int", OP_WRITE),
                 op_arg_gbl(&num, 1, "int", OP_INC));
     if(num > 0) {
-      std::cout << "Number of non matching points on faces: " << num << std::endl;
-      exit(-1);
+      dg_abort("Number of non matching points on faces: " + std::to_string(num));
     }
   } else {
     int num = 0;
@@ -225,8 +224,7 @@ void DGMesh3D::calc_mesh_constants() {
                 op_arg_dat(fmaskR, -1, OP_ID, DG_NPF, "int", OP_WRITE),
                 op_arg_gbl(&num, 1, "int", OP_INC));
     if(num > 0) {
-      std::cout << "Number of non matching points on faces: " << num << std::endl;
-      exit(-1);
+      dg_abort("Number of non matching points on faces: " + std::to_string(num));
     }
   }
 
@@ -238,8 +236,7 @@ void DGMesh3D::calc_mesh_constants() {
 void DGMesh3D::update_order(int new_order, std::vector<op_dat> &dats_to_interp) {
   for(int i = 0; i < dats_to_interp.size(); i++) {
     if(dats_to_interp[i]->dim != DG_NP) {
-      std::cerr << "Interpolating between orders for non DG_NP dim dats is not implemented ...  exiting" << std::endl;
-      exit(-1);
+      dg_abort("Interpolating between orders for non DG_NP dim dats is not implemented ...  exiting");
     }
 
     interp_dat_between_orders(order_int, new_order, dats_to_interp[i]);
@@ -253,8 +250,7 @@ void DGMesh3D::update_order(int new_order, std::vector<op_dat> &dats_to_interp) 
 void DGMesh3D::update_order_sp(int new_order, std::vector<op_dat> &dats_to_interp) {
   for(int i = 0; i < dats_to_interp.size(); i++) {
     if(dats_to_interp[i]->dim != DG_NP) {
-      std::cerr << "Interpolating between orders for non DG_NP dim dats is not implemented ...  exiting" << std::endl;
-      exit(-1);
+      dg_abort("Interpolating between orders for non DG_NP dim dats is not implemented ...  exiting");
     }
 
     interp_dat_between_orders_sp(order_int, new_order, dats_to_interp[i]);
